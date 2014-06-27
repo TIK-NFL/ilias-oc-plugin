@@ -1,0 +1,54 @@
+{
+	"pluginlist":{
+		"plugins":[
+			{
+				"name":"EngagePluginDescription",
+				"id":"8",
+				"description":"Simple engage description plugin",
+				"static-path":"8\/static"
+			},
+			{
+				"name":"EngagePluginVideoVideoJS",
+				"id":"4",
+				"description":"Videodisplay plugin which uses videoJS",
+				"static-path":"4\/static"
+			},
+			{
+				"name":"EngagePluginControls",
+				"id":"5",
+				"description":"Simple implementation of a control bar",
+				"static-path":"5\/static"
+			},
+			{
+				"name":"EngagePluginCustomUsertracking",
+				"id":"7",
+				"description":"Custom plugin to process usertracking footprints",
+				"static-path":"7\/static"
+			},
+			{
+				"name":"EngagePluginTabSlidetext",
+				"id":"3",
+				"description":"Simple implementation of a tab with the text of the slides",
+				"static-path":"3\/static"
+			},
+			{
+				"name":"EngagePluginTimelineStatistics",
+				"id":"1",
+				"description":"implementation timeline plugin to view usertracking stats",
+				"static-path":"1\/static"
+			},
+			{
+				"name":"EngagePluginTabDescription",
+				"id":"2",
+				"description":"Simple implementation of a tab with the video description",
+				"static-path":"2\/static"
+			},
+			{
+				"name":"EngagePluginCustomMhConnection",
+				"id":"6",
+				"description":"Handles Matterhorns Endpoints",
+				"static-path":"6\/static"
+			}
+		]
+	}
+}
