@@ -1,9 +1,0 @@
-XSendFile On
-
-RedirectMatch 403 ^.*/mh-realdata/*$
-
-RewriteBase /
-
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond $1#%{REQUEST_URI} ([^#]*)#(.*?)\1$
-RewriteRule ^(.*)$ %2sendfile.php?url=$1 [QSA,L]
