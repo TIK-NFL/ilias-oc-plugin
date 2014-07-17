@@ -1,0 +1,38 @@
+// 
+// English Language File for ExampleObject Plugin
+//
+
+<!-- language file start -->
+obj_mh#:#Example
+objs_mh#:#Examples
+obj_mh_duplicate#:#Copy
+objs_mh_duplicate#:#Copy Example
+obj_mh_select#:#Select Example
+mh_add#:#Add Example
+mh_new#:#Add New Example
+mh_read#:#Read access to Example
+mh_write#:#Edit Example
+mh_delete#:#Delete Example
+mh_visible#:#Example is visible
+mh_edit_permission#:#Change permission settings
+crs_create_mh#:#Create Example
+grp_create_mh#:#Create Example
+fold_create_mh#:#Create Example
+root_create_mh#:#Create Example
+cat_create_mh#:#Create Example
+content#:#Content
+properties#:#Properties
+edit_properties#:#Edit Properties
+title#:#Title
+description#:#Description
+option_one#:#Option One
+option_two#:#Option Two
+save#:#Save
+cancel#:#Cancel
+edit#:#Edit
+status#:#Status
+offline#:#Offline
+matterhorn_plugin_configuration#:#Exampl Plugin Configuration
+setting_1#:#Setting 1
+setting_2#:#Setting 2
+saving_invoked#:#Save procedure has been executed. Please note that this example does not save anything to DB.
