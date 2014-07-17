@@ -58,13 +58,68 @@ class ilObjMatterhorn extends ilObjectPlugin
 	{
 		global $ilDB;
 		
+		$url = "http://localhost:8080/series/";
+		$fields = array(
+				'series'=>urlencode('<?xml version="1.0"?>
+<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
+
+  <dcterms:title xml:lang="en">'.
+	$this->getTitle().
+    '</dcterms:title>
+  <dcterms:subject>
+    climate, land, vegetation
+    </dcterms:subject>
+  <dcterms:description xml:lang="en">
+    Introduction lecture from the Institute for
+    Atmospheric and Climate Science.
+    </dcterms:description>
+  <dcterms:publisher>
+    ETH Zurich, Switzerland
+    </dcterms:publisher>
+  <dcterms:identifier>
+    ilias_xmh_'.$this->getId().
+    '</dcterms:identifier>
+  <dcterms:modified xsi:type="dcterms:W3CDTF">
+    2007-12-05
+    </dcterms:modified>
+  <dcterms:format xsi:type="dcterms:IMT">
+    video/x-dv
+    </dcterms:format>
+  <oc:promoted>
+    true
+  </oc:promoted>
+</dublincore>'),
+				'acl'=>urlencode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security"><ace><role>admin</role><action>delete</action><allow>true</allow></ace></acl>')
+		);
+		
+		//url-ify the data for the POST
+		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+		rtrim($fields_string,'&');
+		
+		//open connection
+		$ch = curl_init();
+		
+		//set the url, number of POST vars, POST data
+		curl_setopt($ch, CURLOPT_URL,$url);
+		curl_setopt($ch, CURLOPT_POST,count($fields));
+		curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+		curl_setopt($ch, CURLOPT_USERPWD, 'matterhorn_system_account:CHANGE_ME');
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+		$result = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);				
+
 		$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
-			"(id, is_online, option_one, option_two) VALUES (".
-			$ilDB->quote($this->getId(), "integer").",".
-			$ilDB->quote(0, "integer").",".
-			$ilDB->quote("default 1", "text").",".
-			$ilDB->quote("default 2", "text").
-			")");
+				"(id, is_online, option_one, option_two) VALUES (".
+				$ilDB->quote($this->getId(), "integer").",".
+				$ilDB->quote(0, "integer").",".
+				$ilDB->quote($result, "text").",".
+				$ilDB->quote($httpCode, "text").
+				")");
+		
 	}
 	
 	/**
