@@ -32,6 +32,12 @@ include_once("./Services/Repository/classes/class.ilObjectPlugin.php");
 */
 class ilObjMatterhorn extends ilObjectPlugin
 {
+
+	/**
+	 * Stores the search result from doRead()
+	 */
+	var $searchResult;
+	
 	/**
 	* Constructor
 	*
@@ -93,6 +99,10 @@ class ilObjMatterhorn extends ilObjectPlugin
 </dublincore>'),
 				'acl'=>urlencode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security"><ace><role>admin</role><action>delete</action><allow>true</allow></ace></acl>')
 		);
+
+		$fields = array(
+						'series'=>urlencode('<?xml version="1.0"?>'));
+				
 		
 		//url-ify the data for the POST
 		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
@@ -127,7 +137,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doRead()
 	{
-		global $ilDB;
+		global $ilDB, $ilLog;
 		
 		$set = $ilDB->query("SELECT * FROM rep_robj_xmh_data ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "integer")
@@ -138,6 +148,27 @@ class ilObjMatterhorn extends ilObjectPlugin
 			$this->setOptionOne($rec["option_one"]);
 			$this->setOptionTwo($rec["option_two"]);
 		}
+		
+		$url = "http://localhost:8080/search/episode.json";
+
+		/* $_GET Parameters to Send */
+		$params = array('sid' =>'ilias_xmh_'.$this->getId());
+		
+		/* Update URL to container Query String of Paramaters */
+		$url .= '?' . http_build_query($params);
+		
+		//open connection
+		$ch = curl_init();
+		
+		//set the url, number of POST vars, POST data
+		curl_setopt($ch, CURLOPT_URL,$url);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+		curl_setopt($ch, CURLOPT_USERPWD, 'matterhorn_system_account:CHANGE_ME');
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+		$this->searchResult = json_decode(curl_exec($ch),true);
+		//$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		
 	}
 	
 	/**
@@ -245,5 +276,14 @@ class ilObjMatterhorn extends ilObjectPlugin
 		return $this->option_two;
 	}
 
+	/**
+	 * The series information returned by matterhorn
+	 * 
+	 * @return string the series information returned by matterhorn as json
+	 */
+	function getSearchResult(){
+		return $this->searchResult;
+	}
+	
 }
 ?>

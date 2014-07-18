@@ -274,23 +274,18 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$this->checkPermission("read");
 		
 	
-		//$med_items = $this->object->getSortedItemsArray();
 		$this->plugin->includeClass("class.ilObjMatterhornTableGUI.php");
 		
-//		include_once("./Modules/MediaCast/classes/class.ilMediaCastTableGUI.php");
 		$table_gui = new ilObjMatterhornTableGUI($this, "listItems");
 
-		$med_items[] = [
-    "title" => "bar1",
-    "nr" => "foo1",
-    "mhid" => $this->obj_id."/Unscheduled-nflmhcav4702-1404403594017"
-		];
-		$med_items[] = [
-		"title" => "bar2",
-		"nr" => "foo2",
-		"mhid" => $this->obj_id."/Unscheduled-nflmhcav4702-1404403594017"
-		];
-		
+		$med_items = array();
+		foreach($this->object->searchResult['search-results']['result'] as $key => $value) {		
+				$med_items[$key] = [
+		    "title" => $value['dcTitle'],
+		    "nr" => $key+1,
+		    "mhid" => $this->obj_id."/".$value['id']
+				];
+		}		
 		           // array of assoc. data arrays
 
 		$table_gui->setDefaultOrderField("nr");

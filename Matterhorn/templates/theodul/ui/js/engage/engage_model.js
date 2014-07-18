@@ -41,7 +41,7 @@ define(['require', 'jquery', 'underscore', 'backbone'], function (require, $, _,
    * Model with informations about the current user and the current MH configuration
    */
   var MeInfoModel = Backbone.Model.extend({
-    urlRoot: "/ilias44/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/info/me.json",
+    urlRoot: "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/info/me.json",
     initialize : function () {
       this.ready = false;
       this.fetch({

@@ -1,9 +1,9 @@
 /*global requirejs*/
 requirejs.config({
-  baseUrl: '/ilias44/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/lib',
+  baseUrl: '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/lib',
   paths: {
     engage: '../engage',
-    plugins: '/ilias44/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/plugin/*/static'
+    plugins: '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/plugin/*/static'
   },
   shim: {
     'bootstrap': {
@@ -31,7 +31,7 @@ requirejs.config({
     }
   }
 });
-var PLUGIN_MANAGER_PATH = '/ilias44/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/manager/list.json';
-var PLUGIN_PATH = '/ilias44/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/plugin/';
+var PLUGIN_MANAGER_PATH = '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/manager/list.json';
+var PLUGIN_PATH = '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/plugin/';
 //start core logic
 require(["engage/engage_core"]);

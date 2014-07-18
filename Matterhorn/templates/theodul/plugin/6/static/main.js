@@ -33,8 +33,8 @@ define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], fu
     // local privates//
 
 
-    var SEARCH_ENDPOINT = "/ilias44/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/episode.json";
-    var USERTRACKING_ENDPOINT = "/ilias44/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/usertracking/footprint.json"
+    var SEARCH_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/episode.json";
+    var USERTRACKING_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/usertracking/footprint.json"
     var mediaPackageID = "";  
     var mediaPackage; // Mediapackage data
     var mediaInfo; // media infos like video tracks and attachments
