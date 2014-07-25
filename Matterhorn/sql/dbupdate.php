@@ -29,5 +29,23 @@ $ilDB->createTable("rep_robj_xmh_data", $fields);
 $ilDB->addPrimaryKey("rep_robj_xmh_data", array("id"));
 ?>
 <#2>
+<#3>
 <?php
+$fields = array(
+		'cfgkey' => array(
+				'type' => 'text',
+				'length' => 20,
+				'notnull' => true
+		),
+		'cfgvalue' => array(
+				'type' => 'text',
+				'length' => 100,
+				'fixed' => false,
+				'notnull' => false
+		)
+);
+
+$ilDB->createTable("rep_robj_xmh_config", $fields);
+$ilDB->addPrimaryKey("rep_robj_xmh_config", array("cfgkey"));
+
 ?>

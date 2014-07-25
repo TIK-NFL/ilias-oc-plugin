@@ -114,6 +114,13 @@ class ilMatterhornSendfile
 
 
 	/**
+	 * the configuration for the matterhorn object
+	 * @var ilMatterhornConfig
+	 * @access private
+	 */
+	var $configObject;
+	
+	/**
 	* Constructor
 	* @access	public
 	*/
@@ -156,7 +163,8 @@ class ilMatterhornSendfile
 
 
 		}
-				
+		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
+		$this->configObject = new ilMatterhornConfig(); 
 		// debugging
 /*		echo "<pre>";
 		var_dump($this->params);
@@ -335,19 +343,16 @@ class ilMatterhornSendfile
 	 * @access public
 	 */
 	public function sendEpisode(){
-        #        header('x-sendfile: /var/www/localhost/engage-data/episodes/'.$this->obj_id.'/'.$this->episode_id.'.json');
-
-		#$mime = ilMimeTypeUtil::getMimeType('/var/www/localhost/engage-data/episodes/'.$this->obj_id.'.json');
-        #        header("Content-Type: ".$mime);
-
-		$service_url = 'http://localhost:8080/search/episode.json?id='.$this->episode_id;
+		global $basename;
+		
+		$service_url = $this->configObject->getMatterhornServer().'/search/episode.json?id='.$this->episode_id;
 		$curl = curl_init($service_url);
 		curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
 		curl_setopt($curl, CURLOPT_USERPWD, 'matterhorn_system_account:CHANGE_ME');
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		$curl_response = curl_exec($curl);
-		echo $curl_response;
+		$curl_response = curl_exec($curl);		
+		echo str_replace(str_replace("/", "\/", $this->configObject->getMatterhornServer())."\/static\/engage-player", "http://localhost/ilias".$basename."/ilias/".$this->obj_id,$curl_response);
 		curl_close($curl);
 	}
 	
@@ -358,9 +363,9 @@ class ilMatterhornSendfile
 	public function sendFile()
 	{
 
-		header('x-sendfile: /var/www/localhost/engage-data/files/' . substr($this->subpath, strlen($this->obj_id)));
+		header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
 		include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-		$mime = ilMimeTypeUtil::getMimeType('/var/www/localhost/engage-data/files/' . substr($this->subpath, strlen($this->obj_id)));
+		$mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
 		header("Content-Type: ".$mime);
 		return;
 	}

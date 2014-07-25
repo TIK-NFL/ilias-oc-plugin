@@ -51,6 +51,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	*/
 	protected function afterConstructor()
 	{
+		
+		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
+		$this->configObject = new ilMatterhornConfig();
+//		$ilCtrl->saveParameter();		
 		// anything needed after object has been constructed
 		// - example: append my_id GET parameter to each request
 		//   $ilCtrl->saveParameter($this, array("my_id"));
@@ -124,7 +128,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		// tab for the "show content" command
 		if ($ilAccess->checkAccess("read", "", $this->object->getRefId()))
 		{
-			$ilTabs->addTab("content", $this->txt("content"), $ilCtrl->getLinkTarget($this, "showContent"));
+			$ilTabs->addTab("content", $this->txt("content"), $ilCtrl->getLinkTarget($this, "showSeries"));
 		}
 
 		// standard info screen tab
@@ -141,8 +145,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	}
 	
 
-// THE FOLLOWING METHODS IMPLEMENT SOME EXAMPLE COMMANDS WITH COMMON FEATURES
-// YOU MAY REMOVE THEM COMPLETELY AND REPLACE THEM WITH YOUR OWN METHODS.
 
 //
 // Edit properties form
@@ -250,19 +252,15 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	*/
 	function showEpisode()
 	{                
-		global $tpl, $ilTabs,$ilCtrl;
+		global $tpl, $ilTabs;
 		$theodulbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
 
-//		27b54df9-f027-43af-b87f-80ca9b7d6944
-		$ilTabs->activateTab("content");
-
-		//$ilCtrl->setParameter("id","226/123123123");
-				
 		$player = new ilTemplate("tpl.player.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
 
 		$player->setVariable("INITJS",$theodulbase );
 		
 		$tpl->setContent("aAAAAA".$player->get()."bbbbb");
+		$ilTabs->activateTab("content");
 		
 	}
 	
@@ -286,7 +284,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		    "mhid" => $this->obj_id."/".$value['id']
 				];
 		}		
-		           // array of assoc. data arrays
 
 		$table_gui->setDefaultOrderField("nr");
 		$table_gui->setDefaultOrderDirection("asc");
@@ -296,20 +293,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$tpl->setContent($table_gui->getHTML());
 		
 		$tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
-/*		$theodulbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
-	
-		
 		$ilTabs->activateTab("content");
-
-		//$ilCtrl->setParameter("id","226/123123123");
-				
-		$series = new ilTemplate("tpl.series.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
-//		$ilCtrl->setParameter("")
-echo $ilCtrl->getLinkTarget($this, "showEpoisode", "", true, false);
-		$series->setVariable("EPISODELINK", $ilCtrl->getLinkTarget($this, "showEpoisode", "", true, false));		
-		$series->setVariable("INITJS",$theodulbase );
-		
-		$tpl->setContent("series".$series->get()."end");*/
 	}
 }
 ?>
