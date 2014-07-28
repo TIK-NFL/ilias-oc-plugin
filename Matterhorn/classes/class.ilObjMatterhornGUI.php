@@ -54,10 +54,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		
 		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
 		$this->configObject = new ilMatterhornConfig();
-//		$ilCtrl->saveParameter();		
-		// anything needed after object has been constructed
-		// - example: append my_id GET parameter to each request
-		//   $ilCtrl->saveParameter($this, array("my_id"));
 	}
 	
 	/**
@@ -211,6 +207,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	*/
 	function getPropertiesValues()
 	{
+		$values = array();
 		$values["title"] = $this->object->getTitle();
 		$values["desc"] = $this->object->getDescription();
 		$values["online"] = $this->object->getOnline();
@@ -259,7 +256,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
 		$player->setVariable("INITJS",$theodulbase );
 		
-		$tpl->setContent("aAAAAA".$player->get()."bbbbb");
+		$tpl->setContent($player->get());
 		$ilTabs->activateTab("content");
 		
 	}

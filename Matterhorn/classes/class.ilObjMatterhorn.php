@@ -137,7 +137,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doRead()
 	{
-		global $ilDB, $ilLog;
+		global $ilDB;
 		
 		$set = $ilDB->query("SELECT * FROM rep_robj_xmh_data ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "integer")
@@ -204,7 +204,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doClone($a_target_id,$a_copy_id,$new_obj)
 	{
-		global $ilDB;
+		global $ilDB; 
 		
 		$new_obj->setOnline($this->getOnline());
 		$new_obj->setOptionOne($this->getOptionOne());
