@@ -1,118 +1,298 @@
 /**
- *  Copyright 2009-2011 The Regents of the University of California
- *  Licensed under the Educational Community License, Version 2.0
- *  (the "License"); you may not use this file except in compliance
- *  with the License. You may obtain a copy of the License at
+ * Copyright 2009-2011 The Regents of the University of California Licensed
+ * under the Educational Community License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *  http://www.osedu.org/licenses/ECL-2.0
+ * http://www.osedu.org/licenses/ECL-2.0
  *
- *  Unless required by applicable law or agreed to in writing,
- *  software distributed under the License is distributed on an "AS IS"
- *  BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- *  or implied. See the License for the specific language governing
- *  permissions and limitations under the License.
- *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-
 define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], function (require, $, _, Backbone, Engage) {
-  //
-  "use strict"; // strict mode in all our application
-  //
-  var PLUGIN_NAME = "Slide Text";
-  var PLUGIN_TYPE = "engage_tab";
-  var PLUGIN_VERSION = "0.1";
-  var PLUGIN_TEMPLATE = "template.html";
-  var PLUGIN_STYLES = ["style.css"];
+    var PLUGIN_NAME = "Timeline Usertracking Statistics";
+    var PLUGIN_TYPE = "engage_timeline";
+    var PLUGIN_VERSION = "0.1",
+        PLUGIN_TEMPLATE = "template.html",
+        PLUGIN_TEMPLATE_MOBILE = "template.html",
+        PLUGIN_TEMPLATE_EMBED = "template.html",
+        PLUGIN_STYLES = [
+            "style.css"
+        ],
+        PLUGIN_STYLES_MOBILE = [
+            "style.css"
+        ],
+        PLUGIN_STYLES_EMBED = [
+            "style.css"
+        ];
 
-  var plugin = {
-    name: PLUGIN_NAME,
-    type: PLUGIN_TYPE,
-    version: PLUGIN_VERSION,
-    styles: PLUGIN_STYLES,
-    template: PLUGIN_TEMPLATE,
-    timeStrToSeconds: timeStrToSeconds
-  };
+    var plugin;
+    var events = {
+        plugin_load_done: new Engage.Event("Core:plugin_load_done", "", "handler")
+    };
 
-  var TEMPLATE_TAB_CONTENT_ID = "engage_slidetext_tab_content";
-  var segments=[];
-
-  var Segment = function (time,image_url) {
-    this.time = time;
-    this.image_url = image_url;
-  };
-
-  function timeStrToSeconds (timeStr) {
-    var elements = timeStr.match(/([0-9]{2})/g);
-    return parseInt(elements[0],10) * 3600 + parseInt(elements[1],10) * 60 + parseInt(elements[2],10);
-  }
-
-  function initPlugin () {
-    //only init if plugin template was inserted into the DOM
-    if(plugin.inserted === true){
-      Engage.log("TabSlideText: initializing plugin");
-      Engage.model.get("mediaPackage").on("change", function() {
-        var attachments = this.get("attachments");
-        if(attachments) {
-          // Extract segments which type is "segment+preview" out of the model
-          $(attachments).each(function(index, attachment) {
-            if (attachment.mimetype && attachment.type && attachment.type.match(/presentation\/segment\+preview/g) && attachment.mimetype.match(/image/g)) {
-              // Pull time string out of the ref property
-              // (e.g. "ref": "track:4ea9108d-c1df-4d8e-b729-e7c75c87519e;time=T00:00:00:0F1000")
-              var time = attachment.ref.match(/([0-9]{2}:[0-9]{2}:[0-9]{2})/g);
-              if (time.length > 0) {
-                segments.push(new Segment(time[0], attachment.url));
-              } else {
-                Engage.log("Failure on time evaluation for segment with url: " + attachment.url);
-              }
-            }
-          });
-          // Sort segments ascending by time
-          segments.sort(function(a, b){
-            return new Date("1970/1/1 " + a.time) - new Date("1970/1/1 " + b.time);
-          });
-          // Building html snippet for a segment and inject each in the template
-          if (segments.length > 0) {
-            $("#" + TEMPLATE_TAB_CONTENT_ID).empty();
-            $(segments).each(function(index, segment) {
-              var html_snippet = "";
-              var html_snippet_id = "tab_slidetext_segment_" + index;
-              var segment_name = "Segment " + index;
-              html_snippet += "<div class=\"media\" id=\"" + html_snippet_id + "\">";
-              html_snippet += "  <img class=\"media-object pull-left\" src=\"" + segment.image_url + "\" alt=\"" + segment_name + "\">";
-              html_snippet += "  <div class=\"media-body\">";
-              html_snippet += "    <h4 class=\"media-heading\">" + segment_name + "</h4>";
-              html_snippet += "    " + segment.time;
-              html_snippet += "  </div>";
-              html_snippet += "</div>";
-              $("#" + TEMPLATE_TAB_CONTENT_ID).append(html_snippet);
-
-              // Add click handler to each segment (slide)
-              $("#" + html_snippet_id).click(function() {
-                Engage.trigger("Video:seek", timeStrToSeconds(segment.time));
-              });
-            });
-          }
-        }
-      });
+    // desktop, embed and mobile logic
+    switch (Engage.model.get("mode")) {
+    case "mobile":
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES_MOBILE,
+            template: PLUGIN_TEMPLATE_MOBILE,
+            events: events
+        };
+        break;
+    case "embed":
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES_EMBED,
+            template: PLUGIN_TEMPLATE_EMBED,
+            events: events
+        };
+        break;
+    // fallback to desktop/default mode
+    case "desktop":
+    default:
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES,
+            template: PLUGIN_TEMPLATE,
+            events: events
+        };
+        break;
     }
-  }
 
-  //Init Event
-  Engage.log("Tab:Slidetext: init");
-  var relative_plugin_path = Engage.getPluginPath('EngagePluginTabSlidetext');
-  Engage.log('Tab:Slidetext: relative plugin path ' + relative_plugin_path);
+    /* change these variables */
+    var chartPath = "lib/Chart.min";
+    var momentPath = "lib/moment.min";
 
-  //All plugins loaded lets do some stuff
-  Engage.on("Core:plugin_load_done", function() {
-    Engage.log("Tab:Slidetext: receive plugin load done");
-  });
+    /* don't change these variables */
+    var mediapackageChange = "change:mediaPackage";
+    var footprintChange = "change:footprints";
+    var videoDataModelChange = "change:videoDataModel";
+    var initCount = 6;
 
-  Engage.model.on("change:mediaPackage", function() { // listen on a change/set of the mediaPackage model
-    Engage.log("Tab:SlideText: change:mediaPackage event");
-      initPlugin();
+    var StatisticsTimelineView = Backbone.View.extend({
+        initialize: function () {
+            this.setElement($(plugin.container)); // every plugin view has it's own container associated with it
+            this.videoData = Engage.model.get("videoDataModel");
+            this.footprints = Engage.model.get("footprints");
+            this.template = plugin.template;
+            // bind the render function always to the view
+            _.bindAll(this, "render");
+            // listen for changes of the model and bind the render function to this
+            this.videoData.bind("change", this.render);
+            this.footprints.bind("change", this.render);
+            this.render();
+        },
+        render: function () {
+            // format values
+            var tempVars = {
+                width: $(window).width(),
+                height: "60"
+            };
+            // compile template and load into the html
+            this.$el.html(_.template(this.template, tempVars));
+
+            var duration = this.videoData.get("duration");
+
+            // fill array 
+            var data = new Array();
+            var cView = 0;
+            for (i = 0; i < duration / 1000; i++) {
+                _.each(this.footprints, function (element, index, list) {
+                    if (this.footprints.at(index).get("position") == i)
+                        cView = this.footprints.at(index).get("views");
+                }, this);
+                data.push([i, cView]);
+            }
+            /*
+            var labels = new Array();
+            var data = new Array();
+            for(i=0;i<100;i++){
+              labels.push("");
+              if(i>50 && i<80){
+                data.push(5);
+              }else if(i>0 && i<10){
+                data.push(10);
+              }else{
+                data.push(0);
+              }
+            }*/
+            var labels = new Array(); // chart label array
+            var data = new Array(); // chart data array
+            var int = (duration / 1000) / 500; // interval length
+            var cTime = 0; // current time in process
+            var tmpViews = 0; // views per interval
+            var tmpViewsCount = 0; // view entry count per interval
+            for (i = 1; i <= 500; i++) {
+                tmpViews = 0;
+                tmpViewsCount = 0;
+                for (j = 1; j <= int; j++) { //real time loop
+                    cTime++;
+                    // count views for interval length
+                    _.each(this.footprints, function (element, index, list) {
+                        if (this.footprints.at(index).get("position") == cTime)
+                            tmpViews += this.footprints.at(index).get("views");
+                        tmpViewsCount++;
+                    }, this);
+                }
+                // push chart data each point
+                labels.push("");
+                if (tmpViews != 0 && tmpViewsCount != 0) {
+                    data.push(tmpViews / tmpViewsCount);
+                } else {
+                    data.push(0);
+                }
+            }
+
+            var options = {
+                // if we show the scale above the chart data     
+                scaleOverlay: true,
+                // if we want to override with a hard coded scale
+                scaleOverride: false,
+                //** required if scaleOverride is true **
+                // the number of steps in a hard coded scale
+                scaleSteps: 1,
+                // the value jump in the hard coded scale
+                scaleStepWidth: null,
+                // the scale starting value
+                scaleStartValue: 0,
+                // colour of the scale line 
+                scaleLineColor: "rgba(0,0,0,.1)",
+                // pixel width of the scale line  
+                scaleLineWidth: 1,
+                // whether to show labels on the scale 
+                scaleShowLabels: false,
+                // interpolated JS string - can access value
+                scaleLabel: "<%=value%>",
+                // scale label font declaration for the scale label
+                scaleFontFamily: "'Arial'",
+                // scale label font size in pixels  
+                scaleFontSize: 12,
+                // scale label font weight style  
+                scaleFontStyle: "normal",
+                // scale label font colour  
+                scaleFontColor: "#666",
+                // whether grid lines are shown across the chart
+                scaleShowGridLines: false,
+                // colour of the grid lines
+                scaleGridLineColor: "rgba(0,0,0,.05)",
+                // width of the grid lines
+                scaleGridLineWidth: 1,
+                // whether the line is curved between points
+                bezierCurve: true,
+                // whether to show a dot for each point
+                pointDot: false,
+                // radius of each point dot in pixels
+                pointDotRadius: 3,
+                // pixel width of point dot stroke
+                pointDotStrokeWidth: 1,
+                // whether to show a stroke for datasets
+                datasetStroke: false,
+                // pixel width of dataset stroke
+                datasetStrokeWidth: 1,
+                // whether to fill the dataset with a colour
+                datasetFill: true,
+                // whether to animate the chart
+                animation: false,
+                // number of animation steps
+                animationSteps: 60,
+                // animation easing effect
+                animationEasing: "easeOutQuart",
+                // function to fire when the animation is complete
+                onAnimationComplete: null
+            }
+
+            var lineChartData = {
+                labels: labels,
+                datasets: [{
+                    fillColor: "rgba(151,187,205,0.5)",
+                    strokeColor: "rgba(151,187,205,1)",
+                    pointColor: "rgba(151,187,205,1)",
+                    pointStrokeColor: "#fff",
+                    data: data
+                }]
+            }
+
+            this.chart = new Chart(document.getElementById("engage_timeline_statistics_chart").getContext("2d")).Line(lineChartData, options);
+        }
     });
 
-  return plugin;
+    function initPlugin() {
+        // only init if plugin template was inserted into the DOM
+        if (plugin.inserted === true) {
+            Engage.log("Timeline:Statistics: init view");
+            // create a new view with the media package model and the template
+            // new StatisticsTimelineView(Engage.model.get("mediaPackage"), plugin.template);
+            // new StatisticsTimelineView(Engage.model.get("videoDataModel"), plugin.template);
+            new StatisticsTimelineView("");
+        }
+    }
+
+    // init event
+    Engage.log("Timeline:Statistics: init");
+    var relative_plugin_path = Engage.getPluginPath('EngagePluginTimelineStatistics');
+    Engage.log('Timeline:Statistics: Relative plugin path: "' + relative_plugin_path + '"');
+
+    // listen on a change/set of the mediaPackage model
+    Engage.model.on(mediapackageChange, function () {
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+
+    Engage.model.on(footprintChange, function () {
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+
+    Engage.model.on(videoDataModelChange, function () {
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+
+    // load highchart lib
+    require([relative_plugin_path + chartPath], function (videojs) {
+        Engage.log("Timeline:Statistics: Lib chart loaded");
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+
+    // load moment lib
+    require([relative_plugin_path + momentPath], function (momentjs) {
+        Engage.log("Timeline:Statistics: Lib Moment loaded");
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+
+    // all plugins loaded
+    Engage.on(plugin.events.plugin_load_done.getName(), function () {
+        Engage.log("Tab:Slidetext: Plugin load done");
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+
+    return plugin;
 });

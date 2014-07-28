@@ -1,11 +1,15 @@
-#engage_basic_description h1 {
-  font-size: 22px;
+.engage_description_tab_entry {
+  
+}
+#engage_description_tab_content{
+	width: 60%;
 }
 
-#engage_basic_description h2 {
-  font-size: 18px;
+#engage_description_tab_left {
+  float: left;
+  padding: 0px 0px 0px 10px;
 }
-
-.engage_basic_description_wrap {
-	float:left;
+#engage_description_tab_right {
+  float: right;
+  padding: 0px 0px 0px 10px;
 }

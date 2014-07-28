@@ -15,235 +15,376 @@
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], function (require, $, _, Backbone, Engage) {
-	var PLUGIN_NAME = "Timeline Usertracking Statistics";
-	var PLUGIN_TYPE = "engage_timeline";
-	var PLUGIN_VERSION = "0.1";
-	var PLUGIN_TEMPLATE = "template.html";
-	var PLUGIN_STYLES = ["style.css"];
-  var plugin = {
-      name: PLUGIN_NAME,
-      type: PLUGIN_TYPE,
-      version: PLUGIN_VERSION,
-      styles: PLUGIN_STYLES,
-      template: PLUGIN_TEMPLATE
-  };
-  
-  var initCount = 6; //wait for 4 inits, plugin load done, mediapackage, 2 highchart libs
-  
-  var StatisticsTimelineView = Backbone.View.extend({
-    initialize: function() {
-        this.setElement($(plugin.container)); // Every plugin view has it's own container associated with it
-        this.videoData = Engage.model.get("videoDataModel");
-        this.footprints = Engage.model.get("footprints");
-        this.template = plugin.template;
-        //bound the render function always to the view
-        _.bindAll(this, "render");
-        //listen for changes of the model and bind the render function to this
-        this.videoData.bind("change", this.render);
-        this.footprints.bind("change", this.render);
-        this.render();
-    },
-    render: function() {
-        //format values
-        var tempVars = {
-            width: $(window).width(),
-            height: "60"
-        };
-        // compile template and load into the html
-        this.$el.html(_.template(this.template, tempVars));
-        
-        var duration = this.videoData.get("duration");
-        
-        //fill array 
-        var data = new Array();
-        var cView = 0;
-        for(i=0;i<duration/1000;i++){
-          _.each(this.footprints, function(element, index, list){
-            if(this.footprints.at(index).get("position") == i)
-              cView = this.footprints.at(index).get("views");
-          }, this);
-          data.push([i,cView]);
+define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], function(require, $, _, Backbone, Engage) {
+    "use strict"; // strict mode in all our application
+    var PLUGIN_NAME = "Engage Controls",
+        PLUGIN_TYPE = "engage_controls",
+        PLUGIN_VERSION = "0.1",
+        PLUGIN_TEMPLATE = "template.html",
+        PLUGIN_TEMPLATE_MOBILE = "template_mobile.html",
+        PLUGIN_TEMPLATE_EMBED = "template_embed.html",
+        PLUGIN_STYLES = [
+                         "style.css",
+                         "js/bootstrap/css/bootstrap.css",
+                         "js/bootstrap/css/bootstrap-responsive.css",
+                         "js/jqueryui/themes/base/jquery-ui.css"
+                         ],
+        PLUGIN_STYLES_MOBILE = [
+                                "style_mobile.css"
+                                ],
+        PLUGIN_STYLES_EMBED = [
+                                "style_embed.css"
+                              ];
+    var plugin = {};
+    var videosReady = false;
+    //switch mobile and desktop logic
+    switch(Engage.model.get("mode")){
+    case "desktop":
+      plugin = {
+          name: PLUGIN_NAME,
+          type: PLUGIN_TYPE,
+          version: PLUGIN_VERSION,
+          styles: PLUGIN_STYLES,
+          template: PLUGIN_TEMPLATE
+      };
+      break;
+    case "mobile":
+      plugin = {
+        name: PLUGIN_NAME,
+        type: PLUGIN_TYPE,
+        version: PLUGIN_VERSION,
+        styles: PLUGIN_STYLES_MOBILE,
+        template: PLUGIN_TEMPLATE_MOBILE
+      };     
+      break;
+    case "embed":
+      plugin = {
+        name: PLUGIN_NAME,
+        type: PLUGIN_TYPE,
+        version: PLUGIN_VERSION,
+        styles: PLUGIN_STYLES_EMBED,
+        template: PLUGIN_TEMPLATE_EMBED
+      };
+      break;
+    default:
+      plugin = {
+          name: PLUGIN_NAME,
+          type: PLUGIN_TYPE,
+          version: PLUGIN_VERSION,
+          styles: PLUGIN_STYLES,
+          template: PLUGIN_TEMPLATE
+      };
+    }
+    
+    var plugin_path = "";
+
+    var initCount = 4; //init resource count
+    var isPlaying = false;
+    var isSliding = false;
+    var isMuted = false;
+
+    var id_engage_controls = "engage_controls";
+    var id_slider = "slider";
+    var id_volume = "volume";
+    var id_volumeIcon = "volumeIcon";
+    var id_playpause_controls = "playpause_controls";
+    var id_fullscreen_button = "fullscreen_button";
+    var id_backward_button = "backward_button";
+    var id_forward_button = "forward_button";
+    var id_navigation_time = "navigation_time";
+    var id_navigation_time_current = "navigation_time_current";
+    var id_play_button = "play_button";
+    var id_pause_button = "pause_button";
+    var id_unmuted_button = "unmuted_button";
+    var id_muted_button = "muted_button";
+
+    var ControlsView = Backbone.View.extend({
+        el: $("#" + id_engage_controls), // every view has an element associated with it
+        initialize: function(videoDataModel, template, plugin_path) {
+            this.setElement($(plugin.container)); // every plugin view has it's own container associated with it
+            this.model = videoDataModel;
+            this.template = template;
+            this.pluginPath = plugin_path;
+            // bind the render function always to the view
+            _.bindAll(this, "render");
+            // listen for changes of the model and bind the render function to this
+            this.model.bind("change", this.render);
+            this.render();
+        },
+        render: function() {
+            var duration = this.model.get("duration");
+            // format values
+            var tempVars = {
+                plugin_path: this.pluginPath,
+                startTime: formatSeconds(0),
+                duration: (duration ? formatSeconds(duration / 1000) : formatSeconds(0)),
+                logoLink: ""
+            };
+            // compile template and load into the html
+            this.$el.html(_.template(this.template, tempVars));
+            initControlsEvents();
         }
-        /*
-        var labels = new Array();
-        var data = new Array();
-        for(i=0;i<100;i++){
-          labels.push("");
-          if(i>50 && i<80){
-            data.push(5);
-          }else if(i>0 && i<10){
-            data.push(10);
-          }else{
-            data.push(0);
-          }
-        }*/
-        var labels = new Array(); //chart label array
-        var data = new Array(); //chart data array
-        var int = (duration/1000)/500; //interval length
-        var cTime = 0; //current time in process
-        var tmpViews = 0; //views per interval
-        var tmpViewsCount = 0; //view entry count per interval
-        for(i=1;i<=500;i++){
-          tmpViews = 0;
-          tmpViewsCount = 0;
-          for(j=1;j<=int;j++){ //real time loop
-            cTime++;
-            //Count Views for interval length
-            _.each(this.footprints, function(element, index, list){
-              if(this.footprints.at(index).get("position") == cTime)
-                tmpViews += this.footprints.at(index).get("views");
-                tmpViewsCount++;
-            }, this);
-          }
-          //push chart data each point
-          labels.push("");
-          if(tmpViews != 0 && tmpViewsCount != 0){
-            data.push(tmpViews/tmpViewsCount);
-          }else{
-            data.push(0);
-          }       
+    });
+
+    /**
+     * @description Returns the Input Time in Milliseconds
+     * @param data Data in the Format ab:cd:ef
+     * @return Time from the Data in Milliseconds
+     */
+    function getTimeInMilliseconds(data) {
+        if ((data !== undefined)
+                && (data !== null)
+                && (data != 0)
+                && (data.length)
+                && (data.indexOf(':') != -1)) {
+            var values = data.split(':');
+            // If the Format is correct
+            if (values.length == 3) {
+                // Try to convert to Numbers
+                var val0 = values[0] * 1;
+                var val1 = values[1] * 1;
+                var val2 = values[2] * 1;
+                // Check and parse the Seconds
+                if (!isNaN(val0) && !isNaN(val1) && !isNaN(val2)) {
+                    // Convert Hours, Minutes and Seconds to Milliseconds
+                    val0 *= 60 * 60 * 1000; // 1 Hour = 60 Minutes = 60 * 60 Seconds = 60 * 60 * 1000 Milliseconds
+                    val1 *= 60 * 1000; // 1 Minute = 60 Seconds = 60 * 1000 Milliseconds
+                    val2 *= 1000; // 1 Second = 1000 Milliseconds
+                    // Add the Milliseconds and return it
+                    return val0 + val1 + val2;
+                }
+            }
         }
-
-        var options = { 
-            //Boolean - If we show the scale above the chart data     
-            scaleOverlay : true,
-            //Boolean - If we want to override with a hard coded scale
-            scaleOverride : false,
-            //** Required if scaleOverride is true **
-            //Number - The number of steps in a hard coded scale
-            scaleSteps : 1,
-            //Number - The value jump in the hard coded scale
-            scaleStepWidth : null,
-            //Number - The scale starting value
-            scaleStartValue : 0,
-            //String - Colour of the scale line 
-            scaleLineColor : "rgba(0,0,0,.1)",
-            //Number - Pixel width of the scale line  
-            scaleLineWidth : 1,
-            //Boolean - Whether to show labels on the scale 
-            scaleShowLabels : false,
-            //Interpolated JS string - can access value
-            scaleLabel : "<%=value%>",
-            //String - Scale label font declaration for the scale label
-            scaleFontFamily : "'Arial'",
-            //Number - Scale label font size in pixels  
-            scaleFontSize : 12,
-            //String - Scale label font weight style  
-            scaleFontStyle : "normal",
-            //String - Scale label font colour  
-            scaleFontColor : "#666",  
-            ///Boolean - Whether grid lines are shown across the chart
-            scaleShowGridLines : false,
-            //String - Colour of the grid lines
-            scaleGridLineColor : "rgba(0,0,0,.05)",
-            //Number - Width of the grid lines
-            scaleGridLineWidth : 1, 
-            //Boolean - Whether the line is curved between points
-            bezierCurve : true,
-            //Boolean - Whether to show a dot for each point
-            pointDot : false,
-            //Number - Radius of each point dot in pixels
-            pointDotRadius : 3,
-            //Number - Pixel width of point dot stroke
-            pointDotStrokeWidth : 1,
-            //Boolean - Whether to show a stroke for datasets
-            datasetStroke : false,
-            //Number - Pixel width of dataset stroke
-            datasetStrokeWidth : 1,
-            //Boolean - Whether to fill the dataset with a colour
-            datasetFill : true,
-            //Boolean - Whether to animate the chart
-            animation : false,
-            //Number - Number of animation steps
-            animationSteps : 60,
-            //String - Animation easing effect
-            animationEasing : "easeOutQuart",
-            //Function - Fires when the animation is complete
-            onAnimationComplete : null
-          }
-
-          var lineChartData = {
-            labels : labels,
-            datasets : [
-              {
-                fillColor : "rgba(151,187,205,0.5)",
-                strokeColor : "rgba(151,187,205,1)",
-                pointColor : "rgba(151,187,205,1)",
-                pointStrokeColor : "#fff",
-                data : data
-              }
-            ] 
-          }
-
-          this.chart = new Chart(document.getElementById("engage_timeline_statistics_chart").getContext("2d")).Line(lineChartData, options);
+        return 0;
     }
-  });
 
+    /**
+     * @description Returns formatted Seconds
+     * @param seconds Seconds to format
+     * @return formatted Seconds
+     */
+    function formatSeconds(seconds) {
+        if (!seconds) {
+            seconds = 0;
+        }
+        seconds = (seconds < 0) ? 0 : seconds;
+        var result = "";
+        if (parseInt(seconds / 3600) < 10) {
+            result += "0";
+        }
+        result += parseInt(seconds / 3600);
+        result += ":";
+        if ((parseInt(seconds / 60) - parseInt(seconds / 3600) * 60) < 10) {
+            result += "0";
+        }
+        result += parseInt(seconds / 60) - parseInt(seconds / 3600) * 60;
+        result += ":";
+        if (seconds % 60 < 10) {
+            result += "0";
+        }
+        result += seconds % 60;
+        if (result.indexOf(".") != -1) {
+            result = result.substring(0, result.lastIndexOf(".")); // get rid of the .ms
+        }
+        return result;
+    }
 
-  
-  function initPlugin() {
-    //only init if plugin template was inserted into the DOM
-    if(plugin.inserted === true){
-      Engage.log("Timeline: Statistics: init view");
-      //create a new view with the media package model and the template
-      //new StatisticsTimelineView(Engage.model.get("mediaPackage"), plugin.template);
-      //new StatisticsTimelineView(Engage.model.get("videoDataModel"), plugin.template);
-      new StatisticsTimelineView("");
+    function disable(id) {
+        $("#" + id).attr("disabled", "disabled");
     }
-  }
-  
-  var relative_plugin_path = Engage.getPluginPath('EngagePluginTimelineStatistics');
-  Engage.log('Statistics: relative plugin path ' + relative_plugin_path);
-  
-	//Init Event
-  Engage.log("Timeline: Statistics: init");
-  
-  Engage.model.on("change:mediaPackage", function() { // listen on a change/set of the mediaPackage model
-    initCount -= 1;
-    if (initCount === 0) {
-        initPlugin();
+
+    function greyOut(id) {
+        $("#" + id).animate({opacity: 0.5});
     }
-  });
-  
-  Engage.model.on("change:footprints", function() { 
-    initCount -= 1;
-    if (initCount === 0) {
-        initPlugin();
+
+    function initControlsEvents() {
+        // disable not used buttons
+        disable(id_backward_button);
+        disable(id_forward_button);
+        greyOut(id_backward_button);
+        greyOut(id_forward_button);
+        disable(id_navigation_time);
+        $("#" + id_navigation_time_current).keyup(function(e) {
+            // pressed enter
+            if (e.keyCode == 13) {
+                var time = getTimeInMilliseconds($(this).val()) / 1000;
+                var duration = Engage.model.get("videoDataModel").get("duration");
+                if (duration && (time <= duration)) {
+                    var videoDisplay = Engage.model.get("videoDataModel").get("ids")[0];
+                    videojs(videoDisplay).currentTime(time);
+                }
+            }
+        });
+
+        $("#" + id_slider).slider({
+            range: "min",
+            min: 0,
+            max: 1000,
+            value: 0
+        });
+
+        $("#" + id_volume).slider({
+            range: "min",
+            min: 1,
+            max: 100,
+            value: 100,
+            change: function(event, ui) {
+                Engage.trigger("Video:setVolume", (ui.value) / 100);
+            }
+        });
+
+        $("#" + id_volumeIcon).click(function() {
+            if (isMuted) {
+                Engage.trigger("Video:unmuted");
+            } else {
+                Engage.trigger("Video:muted");
+            }
+        });
+
+        $("#" + id_playpause_controls).click(function() {
+            if (isPlaying) {
+                Engage.trigger("Video:pause");
+            } else {
+                Engage.trigger("Video:play");
+            }
+        });
+
+        $("#" + id_fullscreen_button).click(function() {
+            var isInFullScreen = document.fullScreen ||
+                    document.mozFullScreen ||
+                    document.webkitIsFullScreen;
+            // just trigger the go event
+            if (!isInFullScreen) {
+                Engage.trigger("Video:goFullscreen");
+            }
+        });
+
+        // slider events
+        $("#" + id_slider).on("slidestart", function(event, ui) {
+            isSliding = true;
+            Engage.trigger("Slider:start", ui.value);
+        });
+        $("#" + id_slider).on("slidestop", function(event, ui) {
+            isSliding = false;
+            Engage.trigger("Slider:stop", ui.value);
+        });
+        $("#" + id_volume).on("slidestop", function(event, ui) {
+            Engage.trigger("Video:unmuted");
+        });
     }
-  });
-  
-  Engage.model.on("change:videoDataModel", function() {
-    initCount -= 1;
-    if (initCount === 0) {
-        initPlugin();
-    }      
-  });
-  
-  // load highchart lib
-  require([relative_plugin_path + "lib/Chart.min"], function(videojs) {
-      Engage.log("Statistics Timeline: Load Chart JS done");
+
+    function getVolume() {
+        if (isMuted) {
+            return 0;
+        } else {
+            var vol = $("#" + id_volume).slider("option", "value");
+            return vol;
+        }
+    }
+
+    //local function
+    function initPlugin() {
+        //only init if plugin template was inserted into the DOM
+        if(plugin.inserted === true){
+            new ControlsView(Engage.model.get("videoDataModel"), plugin.template, plugin.pluginPath);
+            $("#" + id_play_button).attr("disabled", "disabled");
+	    Engage.on("Video:ready", function() {
+                $("#" + id_play_button).removeAttr("disabled");
+		videosReady = true;
+            });
+            Engage.on("Video:play", function() {
+		if(videosReady) {
+                    $("#" + id_play_button).hide();
+                    $("#" + id_pause_button).show();
+                    isPlaying = true;
+		}
+            });
+            Engage.on("Video:pause", function() {
+		if(videosReady) {
+                    $("#" + id_play_button).show();
+                    $("#" + id_pause_button).hide();
+                    isPlaying = false;
+		}
+            });
+            Engage.on("Video:muted", function() {
+                $("#" + id_unmuted_button).hide();
+                $("#" + id_muted_button).show();
+                isMuted = true;
+                Engage.trigger("Video:setVolume", 0);
+            });
+            Engage.on("Video:unmuted", function() {
+                $("#" + id_unmuted_button).show();
+                $("#" + id_muted_button).hide();
+                isMuted = false;
+                Engage.trigger("Video:setVolume", getVolume());
+            });
+            Engage.on("Video:fullscreenChange", function() {
+                var isInFullScreen = document.fullScreen ||
+                        document.mozFullScreen ||
+                        document.webkitIsFullScreen;
+                // just trigger the cancel event
+                if (!isInFullScreen) {
+                    Engage.trigger("Video:cancelFullscreen");
+                }
+            });
+
+            Engage.on("Video:timeupdate", function(currentTime) {
+		if(videosReady) {
+                    // set slider
+                    var duration = Engage.model.get("videoDataModel").get("duration");
+                    if (!isSliding && duration) {
+			var normTime = (currentTime / (duration / 1000)) * 1000;
+			$("#" + id_slider).slider("option", "value", normTime);
+			if (!$("#" + id_navigation_time_current).is(":focus")) {
+                            // set time
+                            $("#" + id_navigation_time_current).val(formatSeconds(currentTime));
+			}
+                    }
+		}
+            });
+            Engage.on("Video:ended", function() {
+		if(videosReady) {
+                    Engage.trigger("Video:pause");
+		}
+            }); 
+        }
+    }
+
+    //local logic
+
+    //Init Event
+    Engage.log("Controls: init");
+    var relative_plugin_path = Engage.getPluginPath('EngagePluginControls');
+    Engage.log('Controls: relative plugin path ' + relative_plugin_path);
+    //Load other needed JS stuff with Require
+    require([relative_plugin_path + 'js/bootstrap/js/bootstrap'], function() {
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+    require([relative_plugin_path + 'js/jqueryui/jquery-ui.min'], function() {
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+    
+    Engage.model.on("change:videoDataModel", function() {
       initCount -= 1;
       if (initCount === 0) {
           initPlugin();
-      }
-  });
+      }      
+    });
 
-  // Load moment.js lib
-  require([relative_plugin_path + "lib/moment.min"], function(momentjs) {
-      Engage.log("Description: load moment.min.js done");
-      initCount -= 1;
-      if (initCount === 0) {
-          initPlugin();
-      }
-  });
-  //All plugins loaded lets do some stuff
-  Engage.on("Core:plugin_load_done", function() {   	
-    initCount -= 1;
-    if (initCount === 0) {
-        initPlugin();
-    }
-  });
-   
-  return plugin;
+    //All plugins loaded lets do some stuff
+    Engage.on("Core:plugin_load_done", function() {
+        Engage.log("Controls: receive plugin load done");
+        initCount -= 1;
+        if (initCount === 0) {
+            initPlugin();
+        }
+    });
+
+    return plugin;
 });

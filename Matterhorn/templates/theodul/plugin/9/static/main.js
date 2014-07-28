@@ -16,25 +16,26 @@
 /*global define*/
 define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], function (require, $, _, Backbone, Engage) {
     "use strict";
-    var PLUGIN_NAME = "Basic Engage Description";
-    var PLUGIN_TYPE = "engage_description";
-    var PLUGIN_VERSION = "0.1",
-		PLUGIN_TEMPLATE = "template.html",
-        PLUGIN_TEMPLATE_MOBILE = "template.html",
-        PLUGIN_TEMPLATE_EMBED = "template.html",
+    var PLUGIN_NAME = "Engage Plugin Custom Usertracking",
+        PLUGIN_TYPE = "engage_custom",
+        PLUGIN_VERSION = "0.1",
+        PLUGIN_TEMPLATE = "none",
+        PLUGIN_TEMPLATE_MOBILE = "none",
+        PLUGIN_TEMPLATE_EMBED = "none",
         PLUGIN_STYLES = [
-            "style.css"
+            ""
         ],
         PLUGIN_STYLES_MOBILE = [
-            "style.css"
+            ""
         ],
         PLUGIN_STYLES_EMBED = [
-            "style.css"
+            ""
         ];
 
     var plugin;
     var events = {
-        plugin_load_done: new Engage.Event("Core:plugin_load_done", "", "handler")
+        plugin_load_done: new Engage.Event("Core:plugin_load_done", "", "handler"),
+        timeupdate: new Engage.Event("Video:timeupdate", "notices a timeupdate", "handler")
     };
 
     // desktop, embed and mobile logic
@@ -74,55 +75,61 @@ define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], fu
     }
 
     /* change these variables */
-    var momentPath = 'lib/moment.min';
+    var USERTRACKING_ENDPOINT = '/usertracking';
+	var mediapackageChange = 'change:mediaPackage';
+	var footprintsChange = 'change:footprints';
 
     /* don't change these variables */
     var initCount = 3;
-    var id_engage_description = "engage_description";
-    var mediapackageChange = "change:mediaPackage";
+    var lastFootprint = undefined;
+    var mediapackageID;
 
-    // view //
-
-    var DescriptionView = Backbone.View.extend({
-        el: $("#" + id_engage_description), // every view has a element associated with it
-        initialize: function (mediaPackageModel, template) {
-            this.model = mediaPackageModel;
-            this.template = template;
-            // bind the render function always to the view
-            _.bindAll(this, "render");
-            // listen for changes of the model and bind the render function to this
-            this.model.bind("change", this.render);
-        },
-        render: function () {
-            // format values
-            var tempVars = {
-                title: this.model.get("title"),
-                creator: this.model.get("creator"),
-                date: this.model.get("date")
-            };
-            // try to format the date
-            if (moment(tempVars.date) !== null) {
-                tempVars.date = moment(this.model.get("date")).format("MMMM Do YYYY");
-            }
-            // compile template and load into the html
-            this.$el.html(_.template(this.template, tempVars));
-        }
-    });
-
+    //local function
     function initPlugin() {
-        // only init if plugin template was inserted into the DOM
-        if (plugin.inserted === true) {
-            // create a new view with the media package model and the template
-            new DescriptionView(Engage.model.get("mediaPackage"), plugin.template);
+        //Set Mediapackage ID
+        mediapackageID = Engage.model.get("urlParameters").id;
+        if (!mediapackageID) {
+            mediapackageID = "";
+            return;
         }
+		
+		/*
+        Engage.on(plugin.events.timeupdate.getName(), function (currentTime) {
+            //add footprint each rounded timeupdate
+            var cTime = Math.round(currentTime);
+            if (lastFootprint != undefined) {
+                if (lastFootprint != cTime) {
+                    lastFootprint = cTime;
+                    Engage.log("Usertracking: footprint at " + cTime);
+                    //put to mh endpoint
+                    $.ajax({
+                        url: USERTRACKING_ENDPOINT,
+                        data: {
+                            id: mediapackageID,
+                            in : cTime,
+                            out: cTime + 1,
+                            type: "FOOTPRINT"
+                        },
+                        type: 'PUT',
+                        success: function (result) {
+                            //update current footprint model
+                            Engage.model.get("footprints").update();
+                        }
+                    });
+                }
+            } else {
+                lastFootprint = cTime;
+            }
+        });
+		*/
     }
 
     // init event
-    Engage.log("Description: Init");
-    var relative_plugin_path = Engage.getPluginPath('EngagePluginDescription');
-    Engage.log('Description: Relative plugin path: "' + relative_plugin_path + '"');
+    Engage.log("Usertracking: Init");
+    var relative_plugin_path = Engage.getPluginPath('EngagePluginCustomUsertracking');
+    Engage.log('Usertracking: Relative plugin path: "' + relative_plugin_path + '"');
 
-    // listen on a change/set of the mediaPackage model
+    // mediapackage model created
     Engage.model.on(mediapackageChange, function () {
         initCount -= 1;
         if (initCount <= 0) {
@@ -130,9 +137,8 @@ define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], fu
         }
     });
 
-    // load moment lib
-    require([relative_plugin_path + momentPath], function (momentjs) {
-        Engage.log("Description: Loaded moment lib");
+    // footprints model created
+    Engage.model.on(footprintsChange, function () {
         initCount -= 1;
         if (initCount <= 0) {
             initPlugin();
@@ -141,6 +147,7 @@ define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], fu
 
     // all plugins loaded
     Engage.on(plugin.events.plugin_load_done.getName(), function () {
+        Engage.log("Usertracking: Plugin load done");
         initCount -= 1;
         if (initCount <= 0) {
             initPlugin();
