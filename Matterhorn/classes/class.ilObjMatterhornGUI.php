@@ -275,11 +275,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
 		$med_items = array();
 		foreach($this->object->searchResult['search-results']['result'] as $key => $value) {		
-				$med_items[$key] = [
+				$med_items[$key] = array(
+
 		    "title" => $value['dcTitle'],
 		    "nr" => $key+1,
 		    "mhid" => $this->obj_id."/".$value['id']
-				];
+				);
 		}		
 
 		$table_gui->setDefaultOrderField("nr");
