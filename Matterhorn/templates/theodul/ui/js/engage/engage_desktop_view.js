@@ -28,14 +28,14 @@ define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core', 'en
     link.attr({
       type : 'text/css',
       rel : 'stylesheet',
-      href : '/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/css/bootstrap/css/bootstrap.css'
+      href : '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/css/bootstrap/css/bootstrap.css'
     });
     $("head").append(link);
     link = $("<link>");
     link.attr({
       type : 'text/css',
       rel : 'stylesheet',
-      href : '/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/css/bootstrap/css/bootstrap-responsive.css'
+      href : '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/css/bootstrap/css/bootstrap-responsive.css'
     });
     $("head").append(link);
     //build timeline plugins

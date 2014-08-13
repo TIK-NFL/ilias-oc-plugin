@@ -11,341 +11,173 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], function(require, $, _, Backbone, Engage) {
-    "use strict"; // strict mode in all our application
-    var PLUGIN_NAME = "Engage VideoJS Videodisplay",
-            PLUGIN_TYPE = "engage_video",
-            PLUGIN_VERSION = "0.1",
-            PLUGIN_TEMPLATE = "template.html",
-            PLUGIN_STYLES = [
-        "style.css",
-        "lib/videojs/video-js.css"
-    ];
-    var plugin = {
-        name: PLUGIN_NAME,
-        type: PLUGIN_TYPE,
-        version: PLUGIN_VERSION,
-        styles: PLUGIN_STYLES,
-        template: PLUGIN_TEMPLATE,
-        events : {
-          ready : new Engage.Event("Video:ready", "when all videos have been successfully loaded", "trigger"),
-          play : new Engage.Event("Video:play", "plays the video", "handler"),
-          pause : new Engage.Event("Video:pause", "pauses the video", "handler"),
-          enablefullscreen : new Engage.Event("Video:goFullscreen", "go to fullscreen of the video", "handler"),
-          disablefullscreen : new Engage.Event("Video:cancelFullscreen", "cancel fullscreen of the video", "handler"),
-          setVolume : new Engage.Event("Video:setVolume", "set the volume of the player", "handler"),
-          getVolume : new Engage.Event("Video:getVolume", "get the volume of the player", "handler"), 
-          timeupdate : new Engage.Event("Video:timeupdate", "notices a timeupdate", "trigger"),
-          volumechange : new Engage.Event("Video:volumechange", "notices a volume change", "trigger"),
-          fullscreenChange : new Engage.Event("Video:fullscreenChange", "notices a fullscreen change", "trigger"),
-          ended : new Engage.Event("Video:ended", "end of the video", "trigger"),
-          sliderStop : new Engage.Event("Slider:stop", "notices a stop of the slider", "handler"),
-          seek : new Engage.Event("Video:seek", "seek video to time position given in seconds", "handler")
-        }
+define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], function (require, $, _, Backbone, Engage) {
+    var PLUGIN_NAME = "Slide text";
+    var PLUGIN_TYPE = "engage_tab";
+    var PLUGIN_VERSION = "0.1",
+        PLUGIN_TEMPLATE = "template.html",
+        PLUGIN_TEMPLATE_MOBILE = "template.html",
+        PLUGIN_TEMPLATE_EMBED = "template.html",
+        PLUGIN_STYLES = [
+            "style.css"
+        ],
+        PLUGIN_STYLES_MOBILE = [
+            "style.css"
+        ],
+        PLUGIN_STYLES_EMBED = [
+            "style.css"
+        ];
+
+    var plugin;
+    var events = {
+        plugin_load_done: new Engage.Event("Core:plugin_load_done", "", "handler")
     };
-    var initCount = 4;
-    var videoDisplayNamePrefix = "videojs_videodisplay_";
-    var class_vjsposter = "vjs-poster";
-    var id_engage_video = "engage_video";
-    var id_videojs_wrapper = "videojs_wrapper";
-    var videosReady = false;
 
-    var VideoDataView = Backbone.View.extend({
-        el: $("#" + id_engage_video), // every view has an element associated with it
-        initialize: function(videoDataModel, template, videojs_swf) {
-            this.setElement($(plugin.container)); // every plugin view has it's own container associated with it
-            this.model = videoDataModel;
-            this.template = template;
-            this.videojs_swf = videojs_swf;
-            // bind the render function always to the view
-            _.bindAll(this, "render");
-            // listen for changes of the model and bind the render function to this
-            this.model.bind("change", this.render);
-            this.render();
-        },
-        render: function() {
-            //format values
-            var tempVars = {
-                ids: this.model.get("ids")
-            };
-            // compile template and load into the html
-            this.$el.html(_.template(this.template, tempVars));
-
-            var i = 0;
-            var videoDisplays = this.model.get("ids");
-            var videoSources = this.model.get("videoSources");
-            for (var v in videoSources) {
-                if (videoSources[v].length > 0) {
-                    initVideojsVideo(videoDisplays[i], videoSources[v], this.videojs_swf);
-                    ++i;
-                }
-            }
-            // small hack for the posters: A poster is only being displayed when controls=true, so do it manually
-            $("." + class_vjsposter).show();
-
-            if (videoDisplays.length > 0) {
-                // set first videoDisplay as master
-                registerEvents(videoDisplays[0]);
-
-                var nr = 0;
-                for (var v in videoSources) {
-                    if (videoSources[v].length > 0) {
-                        ++nr;
-                    }
-                }
-                if (nr >= 2) {
-		    var i = 0;
-                    for (var vd in videoDisplays) {
-                        if (i > 0) {
-			    $(document).on("sjs:allPlayersReady", function(event) {
-				videosReady = true;
-				Engage.trigger("Video:ready");
-			    });
-                            // sync every other videodisplay with the master
-                            $.synchronizeVideos(0, videoDisplays[0], videoDisplays[vd]);
-                            Engage.log("Videodisplay " + vd + " is now being synchronized with the master videodisplay " + 0);
-                        }
-			++i;
-                    }
-                } else {
-		    videosReady = true;
-		    Engage.trigger("Video:ready");
-		}
-            }
-        }
-    });
-
-    var VideoDataModel = Backbone.Model.extend({
-        initialize: function(ids, videoSources, duration) {
-            Engage.log("Video: Init VideoDataModel");
-            this.attributes.ids = ids;
-            this.attributes.videoSources = videoSources;
-            this.attributes.duration = duration;
-        },
-        defaults: {
-            "ids": [],
-            "videoSources": [],
-            "isPlaying": false,
-            "currentTime": -1,
-            "duration": -1
-        }
-    });
-
-    function initVideojsVideo(id, videoSource, videojs_swf) {
-        Engage.log("Initializing video.js-display: " + id);
-        Engage.log("Initializing video source: ");
-        Engage.log(videoSource);
-
-        if (id) {
-            if (videoSource) {
-                var videoOptions = {
-                    "controls": false,
-                    "autoplay": false,
-                    "preload": "auto",
-                    "poster": videoSource.poster,
-                    "loop": false,
-                    "width": 640,
-                    "height": 480
-                };
-
-                // init videoJS
-                videojs(id, videoOptions, function() {
-                    var theodulVideodisplay = this;
-                    // set sources
-                    theodulVideodisplay.src(videoSource);
-                });
-                // URL to the Flash SWF
-                if (videojs_swf) {
-                    Engage.log("Loaded flash component");
-                    videojs.options.flash.swf = videojs_swf;
-                } else {
-                    Engage.log("No flash component loaded");
-                }
-            } else {
-                Engage.log("Error: No video source available");
-                $("#" + id_videojs_wrapper).html("No video sources available.");
-            }
-        } else {
-            Engage.log("Error: No ID available");
-            $("#" + id_videojs_wrapper).html("No video available.");
-        }
+    // desktop, embed and mobile logic
+    switch (Engage.model.get("mode")) {
+    case "mobile":
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES_MOBILE,
+            template: PLUGIN_TEMPLATE_MOBILE,
+            events: events,
+            timeStrToSeconds: timeStrToSeconds
+        };
+        break;
+    case "embed":
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES_EMBED,
+            template: PLUGIN_TEMPLATE_EMBED,
+            events: events,
+            timeStrToSeconds: timeStrToSeconds
+        };
+        break;
+    // fallback to desktop/default mode
+    case "desktop":
+    default:
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES,
+            template: PLUGIN_TEMPLATE,
+            events: events,
+            timeStrToSeconds: timeStrToSeconds
+        };
+        break;
     }
 
-    function registerEvents(videoDisplay) {
-        var theodulVideodisplay = videojs(videoDisplay);
-        Engage.on(plugin.events.play, function() {
-	    if(videosReady) {
-		theodulVideodisplay.play();
-	    }
-        });
-        Engage.on(plugin.events.pause, function() {
-            theodulVideodisplay.pause();
-        });
-        Engage.on(plugin.events.enablefullscreen, function() {
-            $("#" + videoDisplay).removeClass("vjs-controls-disabled").addClass("vjs-controls-enabled");
-            theodulVideodisplay.requestFullScreen();
-        });
-        Engage.on(plugin.events.disablefullscreen, function() {
-            $("#" + videoDisplay).removeClass("vjs-controls-enabled").addClass("vjs-controls-disabled");
-            theodulVideodisplay.cancelFullScreen();
-        });
-        Engage.on(plugin.events.setVolume, function(percentAsDecimal) {
-            theodulVideodisplay.volume(percentAsDecimal);
-        });
-        Engage.on(plugin.events.getVolume, function(callback) {
-            callback(theodulVideodisplay.volume());
-        });
-        Engage.on(plugin.events.seek, function(time) {
-	    if(videosReady) {
-		theodulVideodisplay.currentTime(time);
-	    }
-        });
-        Engage.on(plugin.events.sliderStop, function(time) {
-	    if(videosReady) {
-		var duration = Engage.model.get("videoDataModel").get("duration");
-		var normTime = (time / 1000) * (duration / 1000);
-		theodulVideodisplay.currentTime(normTime);
-	    }
-        });
-        theodulVideodisplay.on("timeupdate", function() {
-	    if(videosReady) {
-		Engage.log("CurrentTime while timeupdate: " + theodulVideodisplay.currentTime());
-		Engage.trigger("Video:timeupdate", theodulVideodisplay.currentTime());
-	    }
-        });
-        theodulVideodisplay.on("volumechange", function() {
-            Engage.trigger(plugin.events.volumechange, theodulVideodisplay.volume());
-        });
-        theodulVideodisplay.on("fullscreenchange", function() {
-            Engage.trigger(plugin.events.fullscreenChange);
-        });
-        theodulVideodisplay.on("ended", function() {
-	    if(videosReady) {
-		Engage.trigger(plugin.events.ended);
-		theodulVideodisplay.pause();
-		theodulVideodisplay.currentTime(theodulVideodisplay.duration());
-	    }
-        });
+
+    /* change these variables */
+    // nothing here...
+
+    /* don't change these variables */
+    var TEMPLATE_TAB_CONTENT_ID = "engage_slidetext_tab_content";
+    var segments = [];
+    var mediapackageChange = "change:mediaPackage";
+    var initCount = 2;
+
+    /**
+     * Segment
+     *
+     * @param time
+     * @param image_url
+     */
+    var Segment = function (time, image_url) {
+        this.time = time;
+        this.image_url = image_url;
+    };
+
+    /**
+     * timeStrToSeconds
+     *
+     * @param timeStr
+     */
+    function timeStrToSeconds(timeStr) {
+        var elements = timeStr.match(/([0-9]{2})/g);
+        return parseInt(elements[0], 10) * 3600 + parseInt(elements[1], 10) * 60 + parseInt(elements[2], 10);
     }
 
+    /**
+     * Initialize the plugin
+     */
     function initPlugin() {
-        //only init if plugin template was inserted into the DOM
-        if(plugin.inserted === true){
-            // set path to swf player
-            var videojs_swf = plugin.pluginPath + "lib/videojs/video-js.swf";
-
-            Engage.model.on("change:videoDataModel", function() {
-                new VideoDataView(this.get("videoDataModel"), plugin.template, videojs_swf);
-            });
-            Engage.model.get("mediaPackage").on("change", function() {
-                var mediaInfo = {};
-                mediaInfo.tracks = this.get("tracks");
-                mediaInfo.attachments = this.get("attachments");
-
-                if ((mediaInfo.tracks.length > 0) && (mediaInfo.attachments.length > 0)) {
-                    var videoDisplays = [];
-                    var videoSources = [];
-                    videoSources.presenter = [];
-                    videoSources.presentation = [];
-
-                    // look for video source
-                    var duration = 0;
-                    if (mediaInfo.tracks) {
-                        $(mediaInfo.tracks).each(function(i, track) {
-                            if (track.mimetype
-                                    && track.type
-                                    && track.mimetype.match(/video/g)) {
-                                // filter for different video sources
-                                if (track.type.match(/presenter/g)) {
-                                    if (track.duration > duration) {
-                                        duration = track.duration;
-                                    }
-                                    videoSources.presenter.push({
-                                        src: track.url,
-                                        type: track.mimetype,
-                                        typemh: track.type
-                                    });
-                                } else if (track.type.match(/presentation/g)) {
-                                    if (track.duration > duration) {
-                                        duration = track.duration;
-                                    }
-                                    videoSources.presentation.push({
-                                        src: track.url,
-                                        type: track.mimetype,
-                                        typemh: track.type
-                                    });
-                                }
+        // only init if plugin template was inserted into the DOM
+        if (plugin.inserted === true) {
+            Engage.log("TabSlideText: initializing plugin");
+            Engage.model.get("mediaPackage").on("change", function () {
+                var attachments = this.get("attachments");
+                if (attachments) {
+                    // extract segments which type is "segment+preview" out of the model
+                    $(attachments).each(function (index, attachment) {
+                        if (attachment.mimetype && attachment.type && attachment.type.match(/presentation\/segment\+preview/g) && attachment.mimetype.match(/image/g)) {
+                            // pull time string out of the ref property
+                            // (e.g. "ref": "track:4ea9108d-c1df-4d8e-b729-e7c75c87519e;time=T00:00:00:0F1000")
+                            var time = attachment.ref.match(/([0-9]{2}:[0-9]{2}:[0-9]{2})/g);
+                            if (time.length > 0) {
+                                segments.push(new Segment(time[0], attachment.url));
+                            } else {
+                                Engage.log("Failure on time evaluation for segment with url: " + attachment.url);
                             }
-                        });
-                    }
-                    if (mediaInfo.attachments) {
-                        $(mediaInfo.attachments).each(function(i, attachment) {
-                            if (attachment.mimetype
-                                    && attachment.type
-                                    && attachment.mimetype.match(/image/g)
-                                    && attachment.type.match(/player/g)) {
-                                // filter for different video sources
-                                if (attachment.type.match(/presenter/g)) {
-                                    videoSources.presenter.poster = attachment.url;
-                                }
-                                if (attachment.type.match(/presentation/g)) {
-                                    videoSources.presentation.poster = attachment.url;
-                                }
-                            }
-                        });
-                    }
-                    var i = 0;
-                    for (var v in videoSources) {
-                        if (videoSources[v].length > 0) {
-                            var name = videoDisplayNamePrefix.concat(i);
-                            videoDisplays.push(name);
-                            ++i;
                         }
+                    });
+                    // sort segments ascending by time
+                    segments.sort(function (a, b) {
+                        return new Date("1970/1/1 " + a.time) - new Date("1970/1/1 " + b.time);
+                    });
+                    // building html snippet for a segment and inject each in the template
+                    if (segments.length > 0) {
+                        $("#" + TEMPLATE_TAB_CONTENT_ID).empty();
+                        $(segments).each(function (index, segment) {
+                            var html_snippet = "";
+                            var html_snippet_id = "tab_slidetext_segment_" + index;
+                            var segment_name = "Segment " + index;
+                            html_snippet += "<div class=\"media\" id=\"" + html_snippet_id + "\">";
+                            html_snippet += "  <img class=\"media-object pull-left\" src=\"" + segment.image_url + "\" alt=\"" + segment_name + "\">";
+                            html_snippet += "  <div class=\"media-body\">";
+                            html_snippet += "    <h4 class=\"media-heading\">" + segment_name + "</h4>";
+                            html_snippet += "    " + segment.time;
+                            html_snippet += "  </div>";
+                            html_snippet += "</div>";
+                            $("#" + TEMPLATE_TAB_CONTENT_ID).append(html_snippet);
+
+                            // add click handler to each segment (slide)
+                            $("#" + html_snippet_id).click(function () {
+                                Engage.trigger("Video:seek", timeStrToSeconds(segment.time));
+                            });
+                        });
                     }
-                    Engage.model.set("videoDataModel", new VideoDataModel(videoDisplays, videoSources, duration));
                 }
             });
         }
     }
 
-    // init Event
-    Engage.log("Video: init");
-    var relative_plugin_path = Engage.getPluginPath('EngagePluginVideoVideoJS');
-    Engage.log('Video: relative plugin path ' + relative_plugin_path);
+    // init event
+    Engage.log("Tab:Slidetext: init");
+    var relative_plugin_path = Engage.getPluginPath('EngagePluginTabSlidetext');
+    Engage.log('Tab:Slidetext: Relative plugin path: "' + relative_plugin_path + '"');
 
-    Engage.model.on("change:mediaPackage", function() { // listen on a change/set of the mediaPackage model
+    // listen on a change/set of the mediaPackage model
+    Engage.model.on(mediapackageChange, function () {
         initCount -= 1;
-        if (initCount === 0) {
-            initPlugin();
-        }
-    });
-    // load video.js lib
-    require([relative_plugin_path + "lib/videojs/video"], function(videojs) {
-        Engage.log("Video: Load video.js done");
-        initCount -= 1;
-        if (initCount === 0) {
-            initPlugin();
-        }
-    });
-
-    // load synchronize lib
-    require([relative_plugin_path + "lib/synchronize"], function(videojs) {
-        Engage.log("Video: Load synchronize.js done");
-        initCount -= 1;
-        if (initCount === 0) {
+        if (initCount <= 0) {
             initPlugin();
         }
     });
 
     // all plugins loaded
-    Engage.on("Core:plugin_load_done", function() {
-        Engage.log("Video: Plugin load done");
+    Engage.on(plugin.events.plugin_load_done.getName(), function () {
+        Engage.log("Tab:Slidetext: Plugin load done");
         initCount -= 1;
-        if (initCount === 0) {
+        if (initCount <= 0) {
             initPlugin();
         }
     });

@@ -33,16 +33,16 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 	function configure()
 	{
 		global $tpl;
-
 		$form = $this->initConfigurationForm();
+		$values = array();
+		$values['mh_server'] = $this->configObject->getValue('mh_server');
+		$values['mh_digest_user'] = $this->configObject->getValue('mh_digest_user');
+		$values['mh_digest_password'] = $this->configObject->getValue('mh_digest_password');
+		$values['xsendfile_basedir'] = $this->configObject->getXSendfileBasedir();
+		$form->setValuesByArray($values);
 		$tpl->setContent($form->getHTML());
 	}
-	
-	//
-	// From here on, this is just an example implementation using
-	// a standard form (without saving anything)
-	//
-	
+		
 	/**
 	 * Init configuration form.
 	 *
@@ -51,23 +51,45 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 	public function initConfigurationForm()
 	{
 		global $lng, $ilCtrl;
+
+		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
+
+		$this->configObject = new ilMatterhornConfig();
 		
 		$pl = $this->getPluginObject();
 	
 		include_once("Services/Form/classes/class.ilPropertyFormGUI.php");
 		$form = new ilPropertyFormGUI();
-	
-		// setting 1 (a checkbox)
-		$cb = new ilCheckboxInputGUI($pl->txt("setting_1"), "setting_1");
-		$form->addItem($cb);
+			
+		// mh server
+		$mh_server = new ilTextInputGUI($pl->txt("mh_server"), "mh_server");
+		$mh_server->setRequired(true);
+		$mh_server->setMaxLength(100);
+		$mh_server->setSize(100);
+		$form->addItem($mh_server);
+
+		// mh digest user
+		$mh_digest_user = new ilTextInputGUI($pl->txt("mh_digest_user"), "mh_digest_user");
+		$mh_digest_user->setRequired(true);
+		$mh_digest_user->setMaxLength(100);
+		$mh_digest_user->setSize(100);
+		$form->addItem($mh_digest_user);
+
+		// mh digest password
+		$mh_digest_password = new ilTextInputGUI($pl->txt("mh_digest_password"), "mh_digest_password");
+		$mh_digest_password->setRequired(true);
+		$mh_digest_password->setMaxLength(100);
+		$mh_digest_password->setSize(100);
+		$form->addItem($mh_digest_password);
+
+		// xsendfile basedir
+		$xsendfile_basedir = new ilTextInputGUI($pl->txt("xsendfile_basedir"), "xsendfile_basedir");
+		$xsendfile_basedir->setRequired(true);
+		$xsendfile_basedir->setMaxLength(100);
+		$xsendfile_basedir->setSize(100);
+		$form->addItem($xsendfile_basedir);
 		
-		// setting 2 (text)
-		$ti = new ilTextInputGUI($pl->txt("setting_2"), "setting_2");
-		$ti->setRequired(true);
-		$ti->setMaxLength(10);
-		$ti->setSize(10);
-		$form->addItem($ti);
-	
+		
 		$form->addCommandButton("save", $lng->txt("save"));
 	                
 		$form->setTitle($pl->txt("matterhorn_plugin_configuration"));
@@ -76,23 +98,23 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		return $form;
 	}
 	
-	/**
-	 * Save form input (currently does not save anything to db)
-	 *
-	 */
 	public function save()
 	{
-		global $tpl, $lng, $ilCtrl;
+		global $tpl,$ilCtrl;
 	
-		$pl = $this->getPluginObject();
-		
+		$pl = $this->getPluginObject();		
 		$form = $this->initConfigurationForm();
 		if ($form->checkInput())
 		{
-			$set1 = $form->getInput("setting_1");
-			$set2 = $form->getInput("setting_2");
-	
-			// @todo: implement saving to db
+			$mh_server = $form->getInput("mh_server");
+			$mh_digest_user = $form->getInput("mh_digest_user");
+			$mh_digest_password = $form->getInput("mh_digest_password");
+			$xsendfile_basedir = $form->getInput("xsendfile_basedir");
+			
+			$this->configObject->setValue('mh_server',$mh_server);			
+			$this->configObject->setValue('mh_digest_user',$mh_digest_user);
+			$this->configObject->setValue('mh_digest_password',$mh_digest_password);
+			$this->configObject->setXSendfileBasedir($xsendfile_basedir);
 			
 			ilUtil::sendSuccess($pl->txt("saving_invoked"), true);
 			$ilCtrl->redirect($this, "configure");

@@ -3,106 +3,185 @@
  * under the Educational Community License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.osedu.org/licenses/ECL-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], function(require, $, _, Backbone, Engage) {
-    "use strict"; // strict mode in all our application
-    var PLUGIN_NAME = "Engage Plugin Custom Usertracking",
-            PLUGIN_TYPE = "engage_custom",
-            PLUGIN_VERSION = "0.1",
-            PLUGIN_TEMPLATE = "none",
-            PLUGIN_STYLES = ["", ""];
-    var plugin = {
-        name: PLUGIN_NAME,
-        type: PLUGIN_TYPE,
-        version: PLUGIN_VERSION,
-        styles: PLUGIN_STYLES,
-        template: PLUGIN_TEMPLATE,
-        events : {
-          timeupdate : new Engage.Event("Video:timeupdate", "notices a timeupdate", "handler")
-        }
+define(['require', 'jquery', 'underscore', 'backbone', 'engage/engage_core'], function (require, $, _, Backbone, Engage) {
+    "use strict";
+    var PLUGIN_NAME = "Engage Custom Notifications",
+        PLUGIN_TYPE = "engage_custom",
+        PLUGIN_VERSION = "0.1",
+        PLUGIN_TEMPLATE = "none",
+        PLUGIN_TEMPLATE_MOBILE = "none",
+        PLUGIN_TEMPLATE_EMBED = "none",
+        PLUGIN_STYLES = [
+            "lib/alertify/alertify.core.css",
+            "lib/alertify/alertify.default.css"
+        ],
+        PLUGIN_STYLES_MOBILE = [
+            "lib/alertify/alertify.core.css",
+            "lib/alertify/alertify.default.css"
+        ],
+        PLUGIN_STYLES_EMBED = [
+            "lib/alertify/alertify.core.css",
+            "lib/alertify/alertify.default.css"
+        ];
+
+    var plugin;
+    var events = {
+        plugin_load_done: new Engage.Event("Core:plugin_load_done", "when the core loaded the event successfully", "handler"),
+        ready: new Engage.Event("Video:ready", "all videos loaded successfully", "handler"),
+        buffering: new Engage.Event("Video:buffering", "buffering a video", "handler"),
+        bufferedAndAutoplaying: new Engage.Event("Video:bufferedAndAutoplaying", "buffering successful, was playing, autoplaying now", "handler"),
+        bufferedButNotAutoplaying: new Engage.Event("Video:bufferedButNotAutoplaying", "buffering successful, was not playing, not autoplaying now", "handler")
     };
 
-    // local privates//
-
-    var initCount = 3; //init resource count
-    var USERTRACKING_ENDPOINT = "/usertracking";
-    var lastFootprint = undefined;
-    var mediapackageID;
-
-    // model prototypes //
-
-
-    // plugin logic //
-
-    Engage.log("Usertracking: init");
-
-    //local function
-    function initPlugin() {
-      //Set Mediapackage ID
-      mediapackageID = Engage.model.get("urlParameters").id;
-      if (!mediapackageID) {
-        mediapackageID = "";
-        return;
-      }
-      
-      /*
-      Engage.on(plugin.events.timeupdate.getName(), function(currentTime) {
-        //add footprint each rounded timeupdate
-        var cTime = Math.round(currentTime);
-        if(lastFootprint != undefined){
-          if(lastFootprint != cTime){
-            lastFootprint = cTime;
-            Engage.log("Usertracking: footprint at "+cTime);
-            //put to mh endpoint
-            $.ajax({
-              url: USERTRACKING_ENDPOINT,
-              data: {id: mediapackageID, in: cTime, out: cTime+1, type: "FOOTPRINT"},
-              type: 'PUT',
-              success: function(result) {
-                  //update current footprint model
-                  Engage.model.get("footprints").update();
-                }
-            });
-          }
-        }else{
-          lastFootprint = cTime;
-        }
-      });  
-      */    
+    // desktop, embed and mobile logic
+    switch (Engage.model.get("mode")) {
+    case "mobile":
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES_MOBILE,
+            template: PLUGIN_TEMPLATE_MOBILE,
+            events: events
+        };
+        break;
+    case "embed":
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES_EMBED,
+            template: PLUGIN_TEMPLATE_EMBED,
+            events: events
+        };
+        break;
+    // fallback to desktop/default mode
+    case "desktop":
+    default:
+        plugin = {
+            name: PLUGIN_NAME,
+            type: PLUGIN_TYPE,
+            version: PLUGIN_VERSION,
+            styles: PLUGIN_STYLES,
+            template: PLUGIN_TEMPLATE,
+            events: events
+        };
+        break;
     }
-    
-    // All plugins loaded
-    Engage.on("Core:plugin_load_done", function() {
-        Engage.log("Usertracking: receive plugin load done");
+
+    /* change these variables */
+    var alertifyMessageDelay = 5000; // ms
+    var alertifyDisplayDatetime = false;
+    var alertifyPath = "lib/alertify/alertify";
+
+    /* don't change these variables */
+    var alertify;
+    var initCount = 2;
+    var videoLoaded = false;
+    var videoBuffering = false;
+
+    /* format today's date */
+    Date.prototype.today = function () {
+        return ((this.getDate() < 10) ? "0" : "") + this.getDate() + "." + (((this.getMonth() + 1) < 10) ? "0" : "") + (this.getMonth() + 1) + "." + this.getFullYear();
+    }
+
+    /* format current time */
+    Date.prototype.timeNow = function () {
+        return ((this.getHours() < 10) ? "0" : "") + this.getHours() + ":" + ((this.getMinutes() < 10) ? "0" : "") + this.getMinutes() + ":" + ((this.getSeconds() < 10) ? "0" : "") + this.getSeconds();
+    }
+
+    /**
+     * Format the current date and time
+     *
+     * @return a formatted current date and time string
+     */
+    function getCurrentDateTime() {
+        var date = new Date();
+        var datetime = date.today() + ", " + date.timeNow();
+
+        return datetime;
+    }
+
+    /**
+     * Format a message for alertify
+     *
+     * @param msg message to format
+     * @return the formatted message
+     */
+    function getAlertifyMessage(msg) {
+        return (alertifyDisplayDatetime ? (getCurrentDateTime() + ": ") : "") + msg;
+    }
+
+    /**
+     * Initialize the plugin
+     */
+    function initPlugin() {
+        alertify.init();
+        alertify.set({
+            delay: alertifyMessageDelay
+        });
+
+        alertify.error(getAlertifyMessage("The video is now being loaded. Please wait a moment."));
+
+        Engage.on(plugin.events.ready.getName(), function (callback) {
+            if (!videoLoaded) {
+                videoLoaded = true;
+                alertify.success(getAlertifyMessage("The video has been loaded successfully."));
+            }
+        });
+        Engage.on(plugin.events.buffering.getName(), function (callback) {
+            if (!videoBuffering) {
+                videoBuffering = true;
+                alertify.success(getAlertifyMessage("The video is currently buffering. Please wait a moment."));
+            }
+        });
+        Engage.on(plugin.events.bufferedAndAutoplaying.getName(), function (callback) {
+            if (videoBuffering) {
+                videoBuffering = false;
+                alertify.success(getAlertifyMessage("The video has been buffered successfully and is now autoplaying."));
+            }
+        });
+        Engage.on(plugin.events.bufferedButNotAutoplaying.getName(), function (callback) {
+            if (videoBuffering) {
+                videoBuffering = false;
+                alertify.success(getAlertifyMessage("The video has been buffered successfully."));
+            }
+        });
+    }
+
+    // init event
+    Engage.log("Notifications: Init");
+    var relative_plugin_path = Engage.getPluginPath('EngagePluginCustomNotifications');
+    Engage.log('Notifications: Relative plugin path: "' + relative_plugin_path + '"');
+
+    // load alertify lib
+    require([relative_plugin_path + alertifyPath], function (_alertify) {
+        Engage.log("Notifications: Lib alertify loaded");
+        alertify = _alertify;
         initCount -= 1;
-        if (initCount === 0) {
+        if (initCount <= 0) {
             initPlugin();
         }
     });
-    //Mediapackage model created
-    Engage.model.on("change:mediaPackage", function() {
-      initCount -= 1;
-      if (initCount === 0) {
-          initPlugin();
-      }      
-    });
-    //Footprints model created
-    Engage.model.on("change:footprints", function() {
-      initCount -= 1;
-      if (initCount === 0) {
-          initPlugin();
-      }      
+
+    // all plugins loaded
+    Engage.on(plugin.events.plugin_load_done.getName(), function () {
+        Engage.log("Notifications: Plugin load done");
+        initCount -= 1;
+        if (initCount <= 0) {
+            initPlugin();
+        }
     });
 
     return plugin;
