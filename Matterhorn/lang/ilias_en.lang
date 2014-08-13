@@ -3,23 +3,23 @@
 //
 
 <!-- language file start -->
-obj_mh#:#Example
-objs_mh#:#Examples
-obj_mh_duplicate#:#Copy
-objs_mh_duplicate#:#Copy Example
-obj_mh_select#:#Select Example
-mh_add#:#Add Example
-mh_new#:#Add New Example
-mh_read#:#Read access to Example
-mh_write#:#Edit Example
-mh_delete#:#Delete Example
-mh_visible#:#Example is visible
+obj_xmh#:#Matterhorn Object
+objs_xmh#:#Matterhorn Objects
+obj_xmh_duplicate#:#Copy
+objs_xmh_duplicate#:#Copy Matterhorn Object
+obj_xmh_select#:#Select Matterhorn Object
+xmh_add#:#Add Matterhorn Object
+xmh_new#:#New Matterhorn Object
+xmh_read#:#Read access to Matterhorn Object
+xmh_write#:#Edit Matterhorn Object
+xmh_delete#:#Delete Matterhorn Object
+xmh_visible#:#Matterhorn Object is visible
 mh_edit_permission#:#Change permission settings
-crs_create_mh#:#Create Example
-grp_create_mh#:#Create Example
-fold_create_mh#:#Create Example
-root_create_mh#:#Create Example
-cat_create_mh#:#Create Example
+crs_create_xmh#:#Create Example
+grp_create_xmh#:#Create Example
+fold_create_xmh#:#Create Example
+root_create_xmh#:#Create Example
+cat_create_xmh#:#Create Example
 content#:#Content
 properties#:#Properties
 edit_properties#:#Edit Properties
