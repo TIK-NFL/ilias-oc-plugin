@@ -49,3 +49,11 @@ $ilDB->createTable("rep_robj_xmh_config", $fields);
 $ilDB->addPrimaryKey("rep_robj_xmh_config", array("cfgkey"));
 
 ?>
+<#4>
+<?php
+        $ilDB->modifyTableColumn('rep_robj_xmh_data', 'option_one',
+                array("type" => "text", "length" => 1000, "notnull" => false));
+        $ilDB->modifyTableColumn('rep_robj_xmh_data', 'option_two',
+                array("type" => "text", "length" => 1000, "notnull" => false));
+
+?>

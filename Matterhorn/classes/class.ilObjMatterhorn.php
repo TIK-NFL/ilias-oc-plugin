@@ -46,8 +46,10 @@ class ilObjMatterhorn extends ilObjectPlugin
 	function __construct($a_ref_id = 0)
 	{
 		parent::__construct($a_ref_id);
-	}
-	
+        include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
+        $this->configObject = new ilMatterhornConfig();
+
+	}	
 
 	/**
 	* Get type.
@@ -64,7 +66,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	{
 		global $ilDB;
 		
-		$url = "http://localhost:8080/series/";
+		$url = $this->configObject->getMatterhornServer()."/series/";
 		$fields = array(
 				'series'=>urlencode('<?xml version="1.0"?>
 <dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -72,7 +74,7 @@ class ilObjMatterhorn extends ilObjectPlugin
   xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
 
   <dcterms:title xml:lang="en">'.
-	$this->getTitle().
+	htmlentities($this->getTitle(),ENT_XML1).
     '</dcterms:title>
   <dcterms:subject>
     climate, land, vegetation
@@ -99,9 +101,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 </dublincore>'),
 				'acl'=>urlencode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security"><ace><role>admin</role><action>delete</action><allow>true</allow></ace></acl>')
 		);
-
-		$fields = array(
-						'series'=>urlencode('<?xml version="1.0"?>'));
 				
 		
 		//url-ify the data for the POST

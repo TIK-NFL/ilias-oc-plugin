@@ -185,15 +185,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$this->form->addItem($cb);
 		
 		// option 1
-		$ti = new ilTextInputGUI($this->txt("option_one"), "op1");
-		$ti->setMaxLength(10);
-		$ti->setSize(10);
+		$ti = new ilTextAreaInputGUI($this->txt("option_one"), "op1");
+		$ti->setCols(200);
+		$ti->setRows(10);
 		$this->form->addItem($ti);
 		
 		// option 2
-		$ti = new ilTextInputGUI($this->txt("option_two"), "op2");
-		$ti->setMaxLength(10);
-		$ti->setSize(10);
+		$ti = new ilTextAreaInputGUI($this->txt("option_two"), "op2");
+		$ti->setCols(200);
 		$this->form->addItem($ti);
 
 		$this->form->addCommandButton("updateProperties", $this->txt("save"));
@@ -264,7 +263,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	function showSeries()
 	{     
 
-		global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar;
+		global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog;
 		
 		$this->checkPermission("read");
 		
@@ -274,15 +273,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$table_gui = new ilObjMatterhornTableGUI($this, "listItems");
 
 		$med_items = array();
-		foreach($this->object->searchResult['search-results']['result'] as $key => $value) {		
-				$med_items[$key] = array(
+		if($this->object->searchResult['search-results']['total'] > 0){
+			foreach($this->object->searchResult['search-results']['result'] as $key => $value) {		
+					$med_items[$key] = array(
 
-		    "title" => $value['dcTitle'],
-		    "nr" => $key+1,
-		    "mhid" => $this->obj_id."/".$value['id']
-				);
-		}		
-
+			    "title" => $value['dcTitle'],
+			    "nr" => $key+1,
+			    "mhid" => $this->obj_id."/".$value['id']
+					);
+			}		
+		}
 		$table_gui->setDefaultOrderField("nr");
 		$table_gui->setDefaultOrderDirection("asc");
 		
