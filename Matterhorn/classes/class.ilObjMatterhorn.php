@@ -149,7 +149,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			$this->setOptionTwo($rec["option_two"]);
 		}
 		
-		$url = $this->configObject->getMatterhornServer()."/search/episode.json";
+		$url = $this->configObject->getMatterhornEngageServer()."/search/episode.json";
 
 		/* $_GET Parameters to Send */
 		$params = array('sid' =>'ilias_xmh_'.$this->getId());
