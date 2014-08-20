@@ -64,9 +64,10 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doCreate()
 	{
-		global $ilDB;
+		global $ilDB, $ilLog;
 		
 		$url = $this->configObject->getMatterhornServer()."/series/";
+		$ilLog->write("MHObj MHServer:".$url);
 		$fields = array(
 				'series'=>urlencode('<?xml version="1.0"?>
 <dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -74,7 +75,7 @@ class ilObjMatterhorn extends ilObjectPlugin
   xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
 
   <dcterms:title xml:lang="en">'.
-	htmlentities($this->getTitle(),ENT_XML1).
+	$this->getTitle().
     '</dcterms:title>
   <dcterms:subject>
     climate, land, vegetation
