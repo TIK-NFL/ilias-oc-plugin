@@ -115,7 +115,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		curl_setopt($ch, CURLOPT_POST,count($fields));
 		curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-		curl_setopt($ch, CURLOPT_USERPWD, 'matterhorn_system_account:CHANGE_ME');
+		curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
 		$result = curl_exec($ch);
@@ -148,7 +148,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			$this->setOptionTwo($rec["option_two"]);
 		}
 		
-		$url = "http://localhost:8080/search/episode.json";
+		$url = $this->configObject->getMatterhornServer()."/search/episode.json";
 
 		/* $_GET Parameters to Send */
 		$params = array('sid' =>'ilias_xmh_'.$this->getId());
@@ -162,7 +162,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		//set the url, number of POST vars, POST data
 		curl_setopt($ch, CURLOPT_URL,$url);
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-		curl_setopt($ch, CURLOPT_USERPWD, 'matterhorn_system_account:CHANGE_ME');
+		curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
 		$this->searchResult = json_decode(curl_exec($ch),true);

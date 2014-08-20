@@ -35,9 +35,9 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		global $tpl;
 		$form = $this->initConfigurationForm();
 		$values = array();
-		$values['mh_server'] = $this->configObject->getValue('mh_server');
-		$values['mh_digest_user'] = $this->configObject->getValue('mh_digest_user');
-		$values['mh_digest_password'] = $this->configObject->getValue('mh_digest_password');
+		$values['mh_server'] = $this->configObject->getMatterhornServer();
+		$values['mh_digest_user'] = $this->configObject->getMatterhornUser();
+		$values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
 		$values['xsendfile_basedir'] = $this->configObject->getXSendfileBasedir();
 		$form->setValuesByArray($values);
 		$tpl->setContent($form->getHTML());
@@ -111,9 +111,9 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 			$mh_digest_password = $form->getInput("mh_digest_password");
 			$xsendfile_basedir = $form->getInput("xsendfile_basedir");
 			
-			$this->configObject->setValue('mh_server',$mh_server);			
-			$this->configObject->setValue('mh_digest_user',$mh_digest_user);
-			$this->configObject->setValue('mh_digest_password',$mh_digest_password);
+			$this->configObject->setMatterhornServer($mh_server);			
+			$this->configObject->setMatterhornUser($mh_digest_user);
+			$this->configObject->setMatterhornPassword($mh_digest_password);
 			$this->configObject->setXSendfileBasedir($xsendfile_basedir);
 			
 			ilUtil::sendSuccess($pl->txt("saving_invoked"), true);
