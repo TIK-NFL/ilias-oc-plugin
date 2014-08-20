@@ -16,6 +16,18 @@ class ilMatterhornConfig
 	public function setMatterhornServer($a_server){
 		$this->setValue("mh_server",$a_server);
 	}
+
+	public function getMatterhornEngageServer(){
+		$retVal = $this->getValue("mh_server_engage");
+		if(!$retVal){
+			return "http://host.is.unset";
+		}
+		return $retVal;
+	}
+	
+	public function setMatterhornEngageServer($a_server){
+		$this->setValue("mh_server_engage",$a_server);
+	}
 	
 	public function getMatterhornUser(){
 		$retVal = $this->getValue("mh_digest_user");

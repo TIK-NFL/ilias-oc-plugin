@@ -34,6 +34,7 @@ status#:#Status
 offline#:#Offline
 matterhorn_plugin_configuration#:#Matterhorn Plugin Configuration
 mh_server#:#Base URL of the Matterhorn Server
+mh_server_engage#:#Base URL of the Matterhorn Engage Server
 mh_digest_user#:#Username of the Matterhorn Digest User
 mh_digest_password#:#Password of the Matterhorn Digest User
 xsendfile_basedir#:#Base directory for XSendfile

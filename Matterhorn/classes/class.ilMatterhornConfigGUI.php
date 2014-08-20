@@ -36,6 +36,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		$form = $this->initConfigurationForm();
 		$values = array();
 		$values['mh_server'] = $this->configObject->getMatterhornServer();
+		$values['mh_server_engage'] = $this->configObject->getMatterhornEngageServer();
 		$values['mh_digest_user'] = $this->configObject->getMatterhornUser();
 		$values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
 		$values['xsendfile_basedir'] = $this->configObject->getXSendfileBasedir();
@@ -68,6 +69,13 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		$mh_server->setSize(100);
 		$form->addItem($mh_server);
 
+		// mh engage server
+		$mh_server_engage = new ilTextInputGUI($pl->txt("mh_server_engage"), "mh_server_engage");
+		$mh_server_engage->setRequired(true);
+		$mh_server_engage->setMaxLength(100);
+		$mh_server_engage->setSize(100);
+		$form->addItem($mh_server_engage);
+		
 		// mh digest user
 		$mh_digest_user = new ilTextInputGUI($pl->txt("mh_digest_user"), "mh_digest_user");
 		$mh_digest_user->setRequired(true);
@@ -107,11 +115,13 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		if ($form->checkInput())
 		{
 			$mh_server = $form->getInput("mh_server");
+			$mh_server_engage = $form->getInput("mh_server_engage");
 			$mh_digest_user = $form->getInput("mh_digest_user");
 			$mh_digest_password = $form->getInput("mh_digest_password");
 			$xsendfile_basedir = $form->getInput("xsendfile_basedir");
 			
-			$this->configObject->setMatterhornServer($mh_server);			
+			$this->configObject->setMatterhornServer($mh_server);
+			$this->configObject->setMatterhornEngageServer($mh_server_engage);			
 			$this->configObject->setMatterhornUser($mh_digest_user);
 			$this->configObject->setMatterhornPassword($mh_digest_password);
 			$this->configObject->setXSendfileBasedir($xsendfile_basedir);
