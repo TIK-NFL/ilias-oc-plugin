@@ -1,5 +1,7 @@
 XSendFile On
 
+RewriteEngine On
+
 RedirectMatch 403 ^.*/mh-realdata/*$
 
 RewriteBase /

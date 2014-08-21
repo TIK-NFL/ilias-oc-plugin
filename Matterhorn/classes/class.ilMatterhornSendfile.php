@@ -167,7 +167,7 @@ class ilMatterhornSendfile
 		$this->configObject = new ilMatterhornConfig(); 
 		// debugging
 /*		echo "<pre>";
-		var_dump($this->params);
+		var_dump($uri);
 		echo "REQUEST_URI:         ". $_SERVER["REQUEST_URI"]. "\n";
 		echo "Parsed URI:          ". $uri["path"]. "\n";
 		echo "DOCUMENT_ROOT:       ". $_SERVER["DOCUMENT_ROOT"]. "\n";
@@ -189,7 +189,7 @@ class ilMatterhornSendfile
 		echo "</pre>";
 */
 		#		echo phpinfo();
-#		exit;
+	#	exit;
 		
 		
 		/*
@@ -267,7 +267,9 @@ class ilMatterhornSendfile
 	*/
 	public function checkFileAccess()
 	{
+                global $ilLog;
 
+                $ilLog->write("MHSendfile: check access");
 		// an error already occurred at class initialisation
 		if ($this->errorcode)
 		{
@@ -293,12 +295,11 @@ class ilMatterhornSendfile
 			$this->errortext = $this->lng->txt("obj_not_found");
 			return false;
 		}
-			
+                $ilLog->write("MHSendfile: check access");
 		if ($this->checkAccessObject($this->obj_id))
 		{
 			return true;
 		}
-		break;
 
 		// none of the checks above gives access
 		$this->errorcode = 403;
@@ -343,16 +344,23 @@ class ilMatterhornSendfile
 	 * @access public
 	 */
 	public function sendEpisode(){
-		global $basename;
+		global $basename,$ilLog;
 		
-		$service_url = $this->configObject->getMatterhornServer().'/search/episode.json?id='.$this->episode_id;
-		$curl = curl_init($service_url);
+		$url = $this->configObject->getMatterhornEngageServer().'/search/episode.json?id='.$this->episode_id;
+                $ilLog->write("EngageURL: ".$url);
+		$curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL,$url);
 		curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-		curl_setopt($curl, CURLOPT_USERPWD, 'matterhorn_system_account:CHANGE_ME');
+		curl_setopt($curl, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		$curl_response = curl_exec($curl);		
-		echo str_replace(str_replace("/", "\/", $this->configObject->getMatterhornServer())."\/static\/engage-player", "http://localhost/ilias".$basename."/ilias/".$this->obj_id,$curl_response);
+		$curl_response = curl_exec($curl);	
+                $ilLog->write("CurlRespone:".$curl_respone);	
+#curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || 
+                    $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+#                /ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/sendfile.php
+		echo str_replace(str_replace("/", "\/", $this->configObject->getMatterhornEngageServer())."\/static\/engage-player", $protocol.$_SERVER['HTTP_HOST'].substr($_SERVER["PHP_SELF"],0,-12)."ilias/".$this->obj_id,$curl_response);
 		curl_close($curl);
 	}
 	
@@ -363,8 +371,10 @@ class ilMatterhornSendfile
 	public function sendFile()
 	{
 
+                global $ilLog;
 		header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
 		include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
+                $ilLog->write("MHSendfile: ".$this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
 		$mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
 		header("Content-Type: ".$mime);
 		return;

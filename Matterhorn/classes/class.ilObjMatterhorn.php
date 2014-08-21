@@ -137,7 +137,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doRead()
 	{
-		global $ilDB;
+		global $ilDB,$ilLog;
 		
 		$set = $ilDB->query("SELECT * FROM rep_robj_xmh_data ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "integer")
@@ -166,7 +166,8 @@ class ilObjMatterhorn extends ilObjectPlugin
 		curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-		$this->searchResult = json_decode(curl_exec($ch),true);
+                $curlret = curl_exec($ch);
+		$this->searchResult = json_decode($curlret,true);
 		//$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		
 	}
