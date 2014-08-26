@@ -166,8 +166,9 @@ class ilObjMatterhorn extends ilObjectPlugin
 		curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-                $curlret = curl_exec($ch);
+        $curlret = curl_exec($ch);        
 		$this->searchResult = json_decode($curlret,true);
+//		$ilLog->write("curl returned:".print_r($this->searchResult,true));
 		//$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		
 	}
@@ -204,9 +205,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	* Do Cloning
 	*/
 	function doClone($a_target_id,$a_copy_id,$new_obj)
-	{
-		global $ilDB; 
-		
+	{		
 		$new_obj->setOnline($this->getOnline());
 		$new_obj->setOptionOne($this->getOptionOne());
 		$new_obj->setOptionTwo($this->getOptionTwo());

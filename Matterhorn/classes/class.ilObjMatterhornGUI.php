@@ -273,14 +273,29 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$table_gui = new ilObjMatterhornTableGUI($this, "listItems");
 
 		$med_items = array();
-		if($this->object->searchResult['search-results']['total'] > 0){
-			foreach($this->object->searchResult['search-results']['result'] as $key => $value) {		
-					$med_items[$key] = array(
+		$totals = $this->object->searchResult['search-results']['total'];
+		if($totals > 0){
+			if($totals == 1){
+				for($i = 0; $i < $this->object->searchResult['search-results']['total']; $i++) {
+				$value = $this->object->searchResult['search-results']['result'];
+//				$ilLog->write("adding item result list:".print_r($value,true));		
+					$med_items[$i] = array(
 
 			    "title" => $value['dcTitle'],
-			    "nr" => $key+1,
+			    "nr" => $i+1,
 			    "mhid" => $this->obj_id."/".$value['id']
 					);
+				}		
+			} else {
+				foreach($this->object->searchResult['search-results']['result'] as $key => $value) {
+	//				$ilLog->write("adding item result list:".$key);		
+						$med_items[$key] = array(
+	
+				    "title" => $value['dcTitle'],
+				    "nr" => $key+1,
+				    "mhid" => $this->obj_id."/".$value['id']
+						);
+				}
 			}		
 		}
 		$table_gui->setDefaultOrderField("nr");
