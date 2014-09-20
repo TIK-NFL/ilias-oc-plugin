@@ -5,6 +5,10 @@
 
 }
 
+.clear {
+	clear: both;
+}
+
 #navigation_control {
 	float: left;
 	margin-left: 20px;
@@ -52,6 +56,36 @@
 	margin-right: 20px;
 	margin-top: 13px;
 }
+
+#engage_top_bar {
+	position: relative;
+}
+
+#engage_timeline_expand_btn {
+	position: absolute;
+}
+
+#engage_content {
+	width: auto;
+}
+
+#engage_video {
+	margin-top: 40px;
+}
+
+#engage_video #videoDisplay1 {
+	margin-left: auto;
+}
+
+#engage_video #videoDisplay2 {
+	margin-left: auto;
+}
+
+#information_wrapper {
+	margin-top: 40px;
+}
+
+
 
 /* SLIDER */
 #volume {
