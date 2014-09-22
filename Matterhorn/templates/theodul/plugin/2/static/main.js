@@ -232,7 +232,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
             Engage.log("MhConnection: Setting footprint at " + from);
             var thisModel = this;
             // put to mh endpoint
-            $.ajax({
+            /*$.ajax({
                 type: "PUT",
                 url: USERTRACKING_ENDPOINT,
                 data: {
@@ -245,7 +245,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
                     // update current footprint model
                     thisModel.update();
                 }
-            });
+            });*/
         },
         update: function() {
             // request collection data

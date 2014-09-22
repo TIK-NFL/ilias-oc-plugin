@@ -24,7 +24,7 @@
 /* loading animation container */
 .loading {
     display: none;
-    position: absolute;
+    position: relative;
     top: 10%;
     left: 10%;
     width: 50%;

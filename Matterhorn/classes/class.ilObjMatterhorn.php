@@ -78,14 +78,12 @@ class ilObjMatterhorn extends ilObjectPlugin
 	$this->getTitle().
     '</dcterms:title>
   <dcterms:subject>
-    climate, land, vegetation
     </dcterms:subject>
-  <dcterms:description xml:lang="en">
-    Introduction lecture from the Institute for
-    Atmospheric and Climate Science.
-    </dcterms:description>
+  <dcterms:description xml:lang="en">'.
+	$this->getDescription().
+    '</dcterms:description>
   <dcterms:publisher>
-    ETH Zurich, Switzerland
+    University of  Stuttgart, Germany
     </dcterms:publisher>
   <dcterms:identifier>
     ilias_xmh_'.$this->getId().
@@ -94,10 +92,10 @@ class ilObjMatterhorn extends ilObjectPlugin
     2007-12-05
     </dcterms:modified>
   <dcterms:format xsi:type="dcterms:IMT">
-    video/x-dv
+    video/mp4
     </dcterms:format>
   <oc:promoted>
-    true
+   	false
   </oc:promoted>
 </dublincore>'),
 				'acl'=>urlencode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security"><ace><role>admin</role><action>delete</action><allow>true</allow></ace></acl>')
@@ -145,8 +143,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 		while ($rec = $ilDB->fetchAssoc($set))
 		{
 			$this->setOnline($rec["is_online"]);
-			$this->setOptionOne($rec["option_one"]);
-			$this->setOptionTwo($rec["option_two"]);
 		}
 		
 		$url = $this->configObject->getMatterhornEngageServer()."/search/episode.json";
@@ -181,9 +177,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		global $ilDB;
 		
 		$ilDB->manipulate($up = "UPDATE rep_robj_xmh_data SET ".
-			" is_online = ".$ilDB->quote($this->getOnline(), "integer").",".
-			" option_one = ".$ilDB->quote($this->getOptionOne(), "text").",".
-			" option_two = ".$ilDB->quote($this->getOptionTwo(), "text").
+			" is_online = ".$ilDB->quote($this->getOnline(), "integer")." ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "integer")
 			);
 	}
@@ -207,8 +201,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 	function doClone($a_target_id,$a_copy_id,$new_obj)
 	{		
 		$new_obj->setOnline($this->getOnline());
-		$new_obj->setOptionOne($this->getOptionOne());
-		$new_obj->setOptionTwo($this->getOptionTwo());
 		$new_obj->update();
 	}
 	
@@ -236,46 +228,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 		return $this->online;
 	}
 	
-	/**
-	* Set option one
-	*
-	* @param	string		option one
-	*/
-	function setOptionOne($a_val)
-	{
-		$this->option_one = $a_val;
-	}
-	
-	/**
-	* Get option one
-	*
-	* @return	string		option one
-	*/
-	function getOptionOne()
-	{
-		return $this->option_one;
-	}
-	
-	/**
-	* Set option two
-	*
-	* @param	string		option two
-	*/
-	function setOptionTwo($a_val)
-	{
-		$this->option_two = $a_val;
-	}
-	
-	/**
-	* Get option two
-	*
-	* @return	string		option two
-	*/
-	function getOptionTwo()
-	{
-		return $this->option_two;
-	}
-
 	/**
 	 * The series information returned by matterhorn
 	 * 

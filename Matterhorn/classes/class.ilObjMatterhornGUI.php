@@ -184,17 +184,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$cb = new ilCheckboxInputGUI($this->lng->txt("online"), "online");
 		$this->form->addItem($cb);
 		
-		// option 1
-		$ti = new ilTextAreaInputGUI($this->txt("option_one"), "op1");
-		$ti->setCols(200);
-		$ti->setRows(10);
-		$this->form->addItem($ti);
-		
-		// option 2
-		$ti = new ilTextAreaInputGUI($this->txt("option_two"), "op2");
-		$ti->setCols(200);
-		$this->form->addItem($ti);
-
 		$this->form->addCommandButton("updateProperties", $this->txt("save"));
 	                
 		$this->form->setTitle($this->txt("edit_properties"));
@@ -210,8 +199,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$values["title"] = $this->object->getTitle();
 		$values["desc"] = $this->object->getDescription();
 		$values["online"] = $this->object->getOnline();
-		$values["op1"] = $this->object->getOptionOne();
-		$values["op2"] = $this->object->getOptionTwo();
 		$this->form->setValuesByArray($values);
 	}
 	
@@ -227,8 +214,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		{
 			$this->object->setTitle($this->form->getInput("title"));
 			$this->object->setDescription($this->form->getInput("desc"));
-			$this->object->setOptionOne($this->form->getInput("op1"));
-			$this->object->setOptionTwo($this->form->getInput("op2"));
 			$this->object->setOnline($this->form->getInput("online"));
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
@@ -284,6 +269,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 					$med_items[$i] = array(
 
 			    "title" => $value['dcTitle'],
+				"date" => $value['dcCreated'],
 			    "nr" => $i+1,
 			    "mhid" => $this->obj_id."/".$value['id']
 					);
@@ -294,6 +280,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 						$med_items[$key] = array(
 	
 				    "title" => $value['dcTitle'],
+					"date" => $value['dcCreated'],
 				    "nr" => $key+1,
 				    "mhid" => $this->obj_id."/".$value['id']
 						);
