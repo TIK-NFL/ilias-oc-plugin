@@ -3,3 +3,6 @@ RewriteBase /
 RewriteCond %{REQUEST_FILENAME} !sendfile.php$ [NC]
 RewriteCond $1#%{REQUEST_URI} ([^#]*)#(.*?)\1$  
 RewriteRule ^(.*)$ %2sendfile.php?url=$1 [QSA,L]
+
+AddType application/font-woff .woff
+

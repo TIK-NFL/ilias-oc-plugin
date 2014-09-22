@@ -65,6 +65,19 @@ class ilMatterhornConfig
 	public function setXSendfileBasedir($value){
 		$this->setValue("xsendfile_basedir", $value);
 	}
+
+	public function getMatterhornVersion(){
+		$retVal = $this->getValue("matterhorn_version");
+		if(!$retVal){
+			return "1.4";
+		}
+		return $retVal;
+	}
+	
+	public function setMatterhornVersion($value){
+		$this->setValue("matterhorn_version", $value);
+	}
+	
 	
 	/**
 	 * @param $key

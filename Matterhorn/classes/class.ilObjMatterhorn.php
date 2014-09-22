@@ -156,7 +156,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		
 		/* Update URL to container Query String of Paramaters */
 		$url .= '?' . http_build_query($params);
-		
+		$ilLog->write("mh query".$url);
 		//open connection
 		$ch = curl_init();
 		
@@ -169,7 +169,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $curlret = curl_exec($ch);        
 		$this->searchResult = json_decode($curlret,true);
 //		$ilLog->write("curl returned:".print_r($this->searchResult,true));
-		//$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+//		$ilLog->write("httpCode".curl_getinfo($ch, CURLINFO_HTTP_CODE));
 		
 	}
 	

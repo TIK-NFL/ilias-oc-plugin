@@ -274,11 +274,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
 		$med_items = array();
 		$totals = $this->object->searchResult['search-results']['total'];
+		$ilLog->write("Total:".print_r($this->object->searchResult,true));     
+		
 		if($totals > 0){
 			if($totals == 1){
 				for($i = 0; $i < $this->object->searchResult['search-results']['total']; $i++) {
 				$value = $this->object->searchResult['search-results']['result'];
-//				$ilLog->write("adding item result list:".print_r($value,true));		
+				$ilLog->write("adding item result list:".print_r($value,true));		
 					$med_items[$i] = array(
 
 			    "title" => $value['dcTitle'],
@@ -288,7 +290,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 				}		
 			} else {
 				foreach($this->object->searchResult['search-results']['result'] as $key => $value) {
-	//				$ilLog->write("adding item result list:".$key);		
+				$ilLog->write("adding item result list:".$key);		
 						$med_items[$key] = array(
 	
 				    "title" => $value['dcTitle'],

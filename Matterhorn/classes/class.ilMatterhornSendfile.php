@@ -371,10 +371,10 @@ class ilMatterhornSendfile
 	public function sendFile()
 	{
 
-                global $ilLog;
+        global $ilLog;
 		header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
 		include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-                $ilLog->write("MHSendfile: ".$this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
+		$ilLog->write("MHSendfile: ".$this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
 		$mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
 		header("Content-Type: ".$mime);
 		return;

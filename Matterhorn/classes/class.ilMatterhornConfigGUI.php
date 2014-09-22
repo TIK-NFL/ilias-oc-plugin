@@ -40,6 +40,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		$values['mh_digest_user'] = $this->configObject->getMatterhornUser();
 		$values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
 		$values['xsendfile_basedir'] = $this->configObject->getXSendfileBasedir();
+		$values['matterhorn_version'] = $this->configObject->getMatterhornVersion();
 		$form->setValuesByArray($values);
 		$tpl->setContent($form->getHTML());
 	}
@@ -96,6 +97,13 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		$xsendfile_basedir->setMaxLength(100);
 		$xsendfile_basedir->setSize(100);
 		$form->addItem($xsendfile_basedir);
+
+		// matterhorn version
+		$matterhorn_version = new ilTextInputGUI($pl->txt("matterhorn_version"), "matterhorn_version");
+		$matterhorn_version->setRequired(true);
+		$matterhorn_version->setMaxLength(10);
+		$matterhorn_version->setSize(10);
+		$form->addItem($matterhorn_version);
 		
 		
 		$form->addCommandButton("save", $lng->txt("save"));
@@ -119,12 +127,14 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 			$mh_digest_user = $form->getInput("mh_digest_user");
 			$mh_digest_password = $form->getInput("mh_digest_password");
 			$xsendfile_basedir = $form->getInput("xsendfile_basedir");
+			$matterhorn_version = $form->getInput("matterhorn_version");
 			
 			$this->configObject->setMatterhornServer($mh_server);
 			$this->configObject->setMatterhornEngageServer($mh_server_engage);			
 			$this->configObject->setMatterhornUser($mh_digest_user);
 			$this->configObject->setMatterhornPassword($mh_digest_password);
 			$this->configObject->setXSendfileBasedir($xsendfile_basedir);
+			$this->configObject->setMatterhornVersion($matterhorn_version);
 			
 			ilUtil::sendSuccess($pl->txt("saving_invoked"), true);
 			$ilCtrl->redirect($this, "configure");
