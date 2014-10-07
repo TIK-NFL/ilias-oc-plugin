@@ -20,6 +20,7 @@ properties#:#Properties
 edit_properties#:#Edit Properties
 title#:#Title
 description#:#Description
+lectureID#:#Lecture ID
 save#:#Save
 cancel#:#Cancel
 edit#:#Edit

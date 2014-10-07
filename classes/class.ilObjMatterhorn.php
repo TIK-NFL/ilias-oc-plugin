@@ -39,15 +39,19 @@ class ilObjMatterhorn extends ilObjectPlugin
 	var $searchResult;
 
 	/**
-	 * Stores the series from doRead()
+	 * Stores the series
 	 */
 	var $series;
 
 	/**
-	 * Stores the mhretval from doRead()
+	 * Stores the mhretval
 	 */
 	var $mhretval;
 	
+	/**
+	 * Stores the lectureID
+	 */
+	var $lectureID;
 	
 	/**
 	* Constructor
@@ -76,7 +80,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 	function doCreate($a_clone_mode)
 	{
 		global $ilDB, $ilLog;
-		if(! $a_clone_mode) {
 		$url = $this->configObject->getMatterhornServer()."/series/";
 		$ilLog->write("MHObj MHServer:".$url);
 		$fields = array(
@@ -99,6 +102,9 @@ class ilObjMatterhorn extends ilObjectPlugin
   <dcterms:identifier>
     ilias_xmh_'.$this->getId().
     '</dcterms:identifier>
+  <dcterms:references>'.
+	$this->getLectureID()
+  .'</dcterms:references>						
   <dcterms:modified xsi:type="dcterms:W3CDTF">'.
     date("Y-m-d").
     '</dcterms:modified>
@@ -132,18 +138,13 @@ class ilObjMatterhorn extends ilObjectPlugin
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);				
 		
 		$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
-				"(id, is_online, series, mhretval) VALUES (".
+				"(id, is_online, series, mhretval, lectureid) VALUES (".
 				$ilDB->quote($this->getId(), "integer").",".
 				$ilDB->quote(0, "integer").",".
 				$ilDB->quote($result, "text").",".
-				$ilDB->quote($httpCode, "text").
+				$ilDB->quote($httpCode, "text").",".
+				$ilDB->quote($this->getLectureID(), "text").
 				")");
-		} else {
-			$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
-					"(id) VALUES (".
-					$ilDB->quote($this->getId(), "integer").
-					")");
-		}
 	}
 	
 	/**
@@ -161,6 +162,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			$this->setOnline($rec["is_online"]);
 			$this->setSeries($rec["series"]);
 			$this->setMhRetVal($rec["mhretval"]);
+			$this->setLectureID($rec["lectureid"]);
 		}
 		
 		$url = $this->configObject->getMatterhornEngageServer()."/search/episode.json";
@@ -192,11 +194,70 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doUpdate()
 	{
-		global $ilDB;
+		global $ilDB,$ilLog;
+
+		$url = $this->configObject->getMatterhornServer()."/series/";
+		$ilLog->write("MHObj MHServer:".$url);
+		$fields = array(
+				'series'=>urlencode('<?xml version="1.0"?>
+<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
+		
+  <dcterms:title xml:lang="en">'.
+						$this->getTitle().
+						'</dcterms:title>
+  <dcterms:subject>
+    </dcterms:subject>
+  <dcterms:description xml:lang="en">'.
+						$this->getDescription().
+						'</dcterms:description>
+  <dcterms:publisher>
+    University of  Stuttgart, Germany
+    </dcterms:publisher>
+  <dcterms:identifier>
+    ilias_xmh_'.$this->getId().
+						'</dcterms:identifier>
+  <dcterms:references>'.
+						$this->getLectureID()
+						.'</dcterms:references>
+  <dcterms:modified xsi:type="dcterms:W3CDTF">'.
+						date("Y-m-d").
+						'</dcterms:modified>
+  <dcterms:format xsi:type="dcterms:IMT">
+    video/mp4
+    </dcterms:format>
+  <oc:promoted>
+   	false
+  </oc:promoted>
+</dublincore>'),
+				'acl'=>urlencode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security"><ace><role>admin</role><action>delete</action><allow>true</allow></ace></acl>')
+		);
+		
+		
+		//url-ify the data for the POST
+		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+		rtrim($fields_string,'&');
+		
+		//open connection
+		$ch = curl_init();
+		
+		//set the url, number of POST vars, POST data
+		curl_setopt($ch, CURLOPT_URL,$url);
+		curl_setopt($ch, CURLOPT_POST,count($fields));
+		curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+		curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+		$result = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		
 		
 		$ilDB->manipulate($up = "UPDATE rep_robj_xmh_data SET ".
 			" is_online = ".$ilDB->quote($this->getOnline(), "integer").",".
 			" series = ".$ilDB->quote($this->getSeries(), "text").",".
+			" lectureid = ".$ilDB->quote($this->getLectureID(), "text").",".
 			" mhretval = ".$ilDB->quote($this->getMhRetVal(), "text")." ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "text")
 			);
@@ -221,10 +282,10 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doCloneObject($new_obj, $a_target_id, $a_copy_id)
 	{	
-		$new_obj->setSeries($this->getSeries());
-		$new_obj->setMhRetVal($this->getMhRetVal());
-		$new_obj->setOnline($this->getOnline());
-		$new_obj->update();
+	#	$new_obj->setSeries($this->getSeries());
+#		$new_obj->setMhRetVal($this->getMhRetVal());
+#		$new_obj->setOnline($this->getOnline());
+#		$new_obj->update();
 	}
 	
 //
@@ -289,6 +350,26 @@ class ilObjMatterhorn extends ilObjectPlugin
 	function getMhRetVal()
 	{
 		return $this->mhretval;
+	}
+
+	/**
+	 * Set the lectureID 
+	 *
+	 * @param	String		lectureID
+	 */
+	function setLectureID($a_val)
+	{
+		$this->lectureID = $a_val;
+	}
+	
+	/**
+	 * Get the lectureID
+	 *
+	 * @return	string lectureID
+	 */
+	function getLectureID()
+	{
+		return $this->lectureID;
 	}
 	
 	

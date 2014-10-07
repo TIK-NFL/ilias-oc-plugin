@@ -47,3 +47,12 @@ $fields = array(
 $ilDB->createTable("rep_robj_xmh_config", $fields);
 $ilDB->addPrimaryKey("rep_robj_xmh_config", array("cfgkey"));
 ?>
+<#3>
+<?php
+	$ilDB->addTableColumn('rep_robj_xmh_data', 'lectureid', array(
+		'type' => 'text',
+		'length' => 20,
+		'fixed' => false,
+		'notnull' => false
+));
+?>

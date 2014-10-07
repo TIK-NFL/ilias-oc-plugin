@@ -171,6 +171,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		// description
 		$ta = new ilTextAreaInputGUI($this->txt("description"), "desc");
 		$this->form->addItem($ta);
+
+		// vorlesungsnummer
+		$tl = new ilTextAreaInputGUI($this->txt("lectureID"), "lectureID");
+		$this->form->addItem($tl);
+		
 		
 		// online
 		$cb = new ilCheckboxInputGUI($this->lng->txt("online"), "online");
@@ -190,6 +195,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$values = array();
 		$values["title"] = $this->object->getTitle();
 		$values["desc"] = $this->object->getDescription();
+		$values["lectureID"] = $this->object->getLectureID();
 		$values["online"] = $this->object->getOnline();
 		$this->form->setValuesByArray($values);
 	}
@@ -206,6 +212,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		{
 			$this->object->setTitle($this->form->getInput("title"));
 			$this->object->setDescription($this->form->getInput("desc"));
+			$this->object->setLectureID($this->form->getInput("lectureID"));				
 			$this->object->setOnline($this->form->getInput("online"));
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
