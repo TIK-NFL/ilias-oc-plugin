@@ -73,20 +73,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		{
 			case "editProperties":		// list all commands that need write permission here
 			case "updateProperties":
-			//case "...":
 				$this->checkPermission("write");
 				$this->$cmd();
 				break;
 			
 			case "showSeries":			// list all commands that need read permission here
-			//case "...":
-			//case "...":
-				$this->checkPermission("read");
-				$this->$cmd();
-				break;
-			case "showEpisode":			// list all commands that need read permission here
-			//case "...":
-			//case "...":
+			case "showEpisode":
 				$this->checkPermission("read");
 				$this->$cmd();
 				break;
@@ -259,31 +251,29 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
 		$med_items = array();
 		$totals = $this->object->searchResult['search-results']['total'];
-		$ilLog->write("Total:".print_r($this->object->searchResult,true));     
+//		$ilLog->write("Total:".print_r($this->object->searchResult,true));     
 		
 		if($totals > 0){
 			if($totals == 1){
 				for($i = 0; $i < $this->object->searchResult['search-results']['total']; $i++) {
-				$value = $this->object->searchResult['search-results']['result'];
-				$ilLog->write("adding item result list:".print_r($value,true));		
+					$value = $this->object->searchResult['search-results']['result'];
+		//			$ilLog->write("adding item result list:".print_r($value,true));		
 					$med_items[$i] = array(
-
-			    "title" => $value['dcTitle'],
-				"date" => $value['dcCreated'],
-			    "nr" => $i+1,
-			    "mhid" => $this->obj_id."/".$value['id']
+					    "title" => $value['dcTitle'],
+						"date" => $value['dcCreated'],
+					    "nr" => $i+1,
+					    "mhid" => $this->obj_id."/".$value['id']
 					);
 				}		
 			} else {
 				foreach($this->object->searchResult['search-results']['result'] as $key => $value) {
-				$ilLog->write("adding item result list:".$key);		
-						$med_items[$key] = array(
-	
-				    "title" => $value['dcTitle'],
-					"date" => $value['dcCreated'],
-				    "nr" => $key+1,
-				    "mhid" => $this->obj_id."/".$value['id']
-						);
+			//		$ilLog->write("adding item result list:".$key);		
+					$med_items[$key] = array(
+					    "title" => $value['dcTitle'],
+						"date" => $value['dcCreated'],
+					    "nr" => $key+1,
+					    "mhid" => $this->obj_id."/".$value['id']
+					);
 				}
 			}		
 		}

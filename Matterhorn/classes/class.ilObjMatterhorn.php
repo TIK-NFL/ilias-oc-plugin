@@ -37,6 +37,17 @@ class ilObjMatterhorn extends ilObjectPlugin
 	 * Stores the search result from doRead()
 	 */
 	var $searchResult;
+
+	/**
+	 * Stores the series from doRead()
+	 */
+	var $series;
+
+	/**
+	 * Stores the mhretval from doRead()
+	 */
+	var $mhretval;
+	
 	
 	/**
 	* Constructor
@@ -62,10 +73,10 @@ class ilObjMatterhorn extends ilObjectPlugin
 	/**
 	* Create object
 	*/
-	function doCreate()
+	function doCreate($a_clone_mode)
 	{
 		global $ilDB, $ilLog;
-		
+		if(! $a_clone_mode) {
 		$url = $this->configObject->getMatterhornServer()."/series/";
 		$ilLog->write("MHObj MHServer:".$url);
 		$fields = array(
@@ -88,9 +99,9 @@ class ilObjMatterhorn extends ilObjectPlugin
   <dcterms:identifier>
     ilias_xmh_'.$this->getId().
     '</dcterms:identifier>
-  <dcterms:modified xsi:type="dcterms:W3CDTF">
-    2007-12-05
-    </dcterms:modified>
+  <dcterms:modified xsi:type="dcterms:W3CDTF">'.
+    date("Y-m-d").
+    '</dcterms:modified>
   <dcterms:format xsi:type="dcterms:IMT">
     video/mp4
     </dcterms:format>
@@ -119,15 +130,20 @@ class ilObjMatterhorn extends ilObjectPlugin
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
 		$result = curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);				
-
+		
 		$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
-				"(id, is_online, option_one, option_two) VALUES (".
+				"(id, is_online, series, mhretval) VALUES (".
 				$ilDB->quote($this->getId(), "integer").",".
 				$ilDB->quote(0, "integer").",".
 				$ilDB->quote($result, "text").",".
 				$ilDB->quote($httpCode, "text").
 				")");
-		
+		} else {
+			$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
+					"(id) VALUES (".
+					$ilDB->quote($this->getId(), "integer").
+					")");
+		}
 	}
 	
 	/**
@@ -143,6 +159,8 @@ class ilObjMatterhorn extends ilObjectPlugin
 		while ($rec = $ilDB->fetchAssoc($set))
 		{
 			$this->setOnline($rec["is_online"]);
+			$this->setSeries($rec["series"]);
+			$this->setMhRetVal($rec["mhretval"]);
 		}
 		
 		$url = $this->configObject->getMatterhornEngageServer()."/search/episode.json";
@@ -177,10 +195,13 @@ class ilObjMatterhorn extends ilObjectPlugin
 		global $ilDB;
 		
 		$ilDB->manipulate($up = "UPDATE rep_robj_xmh_data SET ".
-			" is_online = ".$ilDB->quote($this->getOnline(), "integer")." ".
-			" WHERE id = ".$ilDB->quote($this->getId(), "integer")
+			" is_online = ".$ilDB->quote($this->getOnline(), "integer").",".
+			" series = ".$ilDB->quote($this->getSeries(), "text").",".
+			" mhretval = ".$ilDB->quote($this->getMhRetVal(), "text")." ".
+			" WHERE id = ".$ilDB->quote($this->getId(), "text")
 			);
 	}
+	
 	
 	/**
 	* Delete data from db
@@ -198,14 +219,16 @@ class ilObjMatterhorn extends ilObjectPlugin
 	/**
 	* Do Cloning
 	*/
-	function doClone($a_target_id,$a_copy_id,$new_obj)
-	{		
+	function doCloneObject($new_obj, $a_target_id, $a_copy_id)
+	{	
+		$new_obj->setSeries($this->getSeries());
+		$new_obj->setMhRetVal($this->getMhRetVal());
 		$new_obj->setOnline($this->getOnline());
 		$new_obj->update();
 	}
 	
 //
-// Set/Get Methods for our example properties
+// Set/Get Methods for the properties
 //
 
 	/**
@@ -227,6 +250,47 @@ class ilObjMatterhorn extends ilObjectPlugin
 	{
 		return $this->online;
 	}
+	
+	/**
+	 * Set series information
+	 *
+	 * @param	String		series
+	 */
+	function setSeries($a_val)
+	{
+		$this->series = $a_val;
+	}
+	
+	/**
+	 * Get series information
+	 *
+	 * @return	String		series
+	 */
+	function getSeries()
+	{
+		return $this->series;
+	}
+
+	/**
+	 * Set the http return code when creating the series
+	 *
+	 * @param	int		mhretval
+	 */
+	function setMhRetVal($a_val)
+	{
+		$this->mhretval = $a_val;
+	}
+	
+	/**
+	 * Get the http return code when creating the series
+	 *
+	 * @return	int		mhretval
+	 */
+	function getMhRetVal()
+	{
+		return $this->mhretval;
+	}
+	
 	
 	/**
 	 * The series information returned by matterhorn

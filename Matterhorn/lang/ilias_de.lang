@@ -1,0 +1,34 @@
+// 
+// German Language File for Matterhorn Object Plugin
+//
+
+<!-- language file start -->
+obj_xmh#:#Matterhorn Objekt
+objs_xmh#:#Matterhorn Objekte
+obj_xmh_duplicate#:#Kopieren
+objs_xmh_duplicate#:#Matterhorn Objekt kopieren
+obj_xmh_select#:#Matterhorn Objekt ausw&auml;hlen
+xmh_add#:#Matterhorn Objekt hinzuf&uuml;gen
+xmh_new#:#Neues Matterhorn Objekt erstellen
+xmh_read#:#Matterhorn Objekt lesen
+xmh_write#:#Matterhorn Objekt bearbeiten
+xmh_delete#:#Delete Matterhorn Object l&ouml;schen
+xmh_visible#:#Matterhorn Object ist schichtbar
+xmh_edit_permission#:#Rechteverwaltung
+content#:#Inhalt
+properties#:#Eigenschaften
+edit_properties#:#Eigenschaften bearbeiten
+title#:#Titel
+description#:#Beschreibung
+save#:#Speichern
+cancel#:#Abbrechen
+edit#:#Bearbeiten
+status#:#Status
+offline#:#Offline
+matterhorn_plugin_configuration#:#Matterhorn Plugin Konfiguration
+mh_server#:#Basis URL des Matterhorn Server
+mh_server_engage#:#Basis URL des Matterhorn Engage Server
+mh_digest_user#:#Benutzername des Matterhorn Digest User
+mh_digest_password#:#Passwort des Matterhorn Digest User
+xsendfile_basedir#:#Basisverzeichnis f&uuml;r XSendfile
+saving_invoked#:#&Auml;nderungen erfolgreich gespeichert

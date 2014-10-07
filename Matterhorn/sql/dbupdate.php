@@ -11,13 +11,13 @@ $fields = array(
 		'length' => 1,
 		'notnull' => false
 	),
-	'option_one' => array(
+	'series' => array(
 		'type' => 'text',
-		'length' => 10,
+		'length' => 1000,
 		'fixed' => false,
 		'notnull' => false
 	),
-	'option_two' => array(
+	'mhretval' => array(
 		'type' => 'text',
 		'length' => 10,
 		'fixed' => false,
@@ -29,7 +29,6 @@ $ilDB->createTable("rep_robj_xmh_data", $fields);
 $ilDB->addPrimaryKey("rep_robj_xmh_data", array("id"));
 ?>
 <#2>
-<#3>
 <?php
 $fields = array(
 		'cfgkey' => array(
@@ -47,13 +46,4 @@ $fields = array(
 
 $ilDB->createTable("rep_robj_xmh_config", $fields);
 $ilDB->addPrimaryKey("rep_robj_xmh_config", array("cfgkey"));
-
-?>
-<#4>
-<?php
-        $ilDB->modifyTableColumn('rep_robj_xmh_data', 'option_one',
-                array("type" => "text", "length" => 1000, "notnull" => false));
-        $ilDB->modifyTableColumn('rep_robj_xmh_data', 'option_two',
-                array("type" => "text", "length" => 1000, "notnull" => false));
-
 ?>

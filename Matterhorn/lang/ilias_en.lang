@@ -1,5 +1,5 @@
 // 
-// English Language File for ExampleObject Plugin
+// English Language File for Matterhorn Object Plugin
 //
 
 <!-- language file start -->
@@ -14,19 +14,12 @@ xmh_read#:#Read access to Matterhorn Object
 xmh_write#:#Edit Matterhorn Object
 xmh_delete#:#Delete Matterhorn Object
 xmh_visible#:#Matterhorn Object is visible
-mh_edit_permission#:#Change permission settings
-crs_create_xmh#:#Create Example
-grp_create_xmh#:#Create Example
-fold_create_xmh#:#Create Example
-root_create_xmh#:#Create Example
-cat_create_xmh#:#Create Example
+xmh_edit_permission#:#Change permission settings
 content#:#Content
 properties#:#Properties
 edit_properties#:#Edit Properties
 title#:#Title
 description#:#Description
-option_one#:#Option One
-option_two#:#Option Two
 save#:#Save
 cancel#:#Cancel
 edit#:#Edit
