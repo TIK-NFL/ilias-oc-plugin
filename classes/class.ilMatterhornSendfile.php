@@ -189,7 +189,7 @@ class ilMatterhornSendfile
 		echo "</pre>";
 */
 		#		echo phpinfo();
-	#	exit;
+#		exit;
 		
 		
 		/*
@@ -226,11 +226,9 @@ class ilMatterhornSendfile
 	    else
 	    {
 	    	$this->check_users = array(ANONYMOUS_USER_ID);
-	    	
-    		$_SESSION["AccountId"] = ANONYMOUS_USER_ID;
+		$_SESSION["AccountId"] = ANONYMOUS_USER_ID;
 			$ilUser->setId(ANONYMOUS_USER_ID);
 			$ilUser->read();	
-	    	
 			return;
 	    }
 	}
@@ -241,6 +239,8 @@ class ilMatterhornSendfile
 	 */
 	public function checkEpisodeAccess()
 	{
+
+                global $ilLog;
 
 		// an error already occurred at class initialisation
 		if ($this->errorcode)
@@ -253,7 +253,6 @@ class ilMatterhornSendfile
 		{
 			return true;
 		}
-	
 		// none of the checks above gives access
 		$this->errorcode = 403;
 		$this->errortext = $this->lng->txt('msg_no_perm_read');
@@ -279,14 +278,12 @@ class ilMatterhornSendfile
 	    // do this here because ip based checking may be set after construction
 	    $this->determineUser();
 
-		echo $this->obj_id;
-	    if (is_numeric($this->obj_id)) {
-	    	echo "is integer\n";
-	    } else {
-	    	echo "is not an integer\n";
-	    }
-		
-	    
+#	echo $this->obj_id;
+#	    if (is_numeric($this->obj_id)) {
+#	    	echo "is integer\n";
+#	    } else {
+#	    	echo "is not an integer\n";
+#	    }
 		$type = 'xmh';
 		
 		if (!$this->obj_id || $type == 'none')
@@ -295,12 +292,12 @@ class ilMatterhornSendfile
 			$this->errortext = $this->lng->txt("obj_not_found");
 			return false;
 		}
-                $ilLog->write("MHSendfile: check access");
+		$ilLog->write("MHSendfile: check access");
 		if ($this->checkAccessObject($this->obj_id))
 		{
 			return true;
 		}
-
+		$ilLog->write("MHSendfile: no access found");
 		// none of the checks above gives access
 		$this->errorcode = 403;
 		$this->errortext = $this->lng->txt('msg_no_perm_read');
@@ -360,7 +357,7 @@ class ilMatterhornSendfile
                 $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || 
                     $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 #                /ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/sendfile.php
-		echo str_replace(str_replace("/", "\/", $this->configObject->getMatterhornEngageServer())."\/static\/engage-player", $protocol.$_SERVER['HTTP_HOST'].substr($_SERVER["PHP_SELF"],0,-12)."ilias/".$this->obj_id,$curl_response);
+		echo str_replace(str_replace("/", "\/", $this->configObject->getMatterhornEngageServer())."\/static\/engage-player", $protocol.$_SERVER['HTTP_HOST'].substr($_SERVER["PHP_SELF"],0,-12).CLIENT_ID."/".$this->obj_id,$curl_response);
 		curl_close($curl);
 	}
 	
@@ -372,12 +369,65 @@ class ilMatterhornSendfile
 	{
 
         global $ilLog;
-		header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
+//		header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
 		include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
 		$ilLog->write("MHSendfile: ".$this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
 		$mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
 		header("Content-Type: ".$mime);
-		return;
+#		if (isset($_SERVER['HTTP_RANGE'])) {
+#			$ilLog->write("range request".$_SERVER['HTTP_RANGE']);
+#		}
+		$file = $this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id));
+		$fp = @fopen($file, 'rb');
+		$size   = filesize($file); // File size
+		$length = $size;           // Content length
+		$start  = 0;               // Start byte
+		$end    = $size - 1;       // End byte
+
+		header("Accept-Ranges: 0-$length");
+		if (isset($_SERVER['HTTP_RANGE'])) {
+			$c_start = $start;
+			$c_end   = $end;
+
+			list(, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
+			if (strpos($range, ',') !== false) {
+				header('HTTP/1.1 416 Requested Range Not Satisfiable');
+				header("Content-Range: bytes $start-$end/$size");
+				exit;
+			}
+			if ($range == '-') {
+				$c_start = $size - substr($range, 1);
+			}else{
+				$range  = explode('-', $range);
+				$c_start = $range[0];
+				$c_end   = (isset($range[1]) && is_numeric($range[1])) ? $range[1] : $size;
+			}
+			$c_end = ($c_end > $end) ? $end : $c_end;
+			if ($c_start > $c_end || $c_start > $size - 1 || $c_end >= $size) {
+				header('HTTP/1.1 416 Requested Range Not Satisfiable');
+				header("Content-Range: bytes $start-$end/$size");
+				exit;
+			}
+			$start  = $c_start;
+			$end    = $c_end;
+			$length = $end - $start + 1;
+			fseek($fp, $start);
+			header('HTTP/1.1 206 Partial Content');
+		}
+
+		header("Content-Range: bytes $start-$end/$size");
+		header("Content-Length: ".$length);
+
+		$buffer = 1024 * 8;
+		while(!feof($fp) && ($p = ftell($fp)) <= $end) {
+			if ($p + $buffer > $end) {
+				$buffer = $end - $p + 1;
+			}
+			set_time_limit(0);
+			echo fread($fp, $buffer);
+			flush();
+		}
+		fclose($fp);
 	}
 	
 	
@@ -409,7 +459,7 @@ class ilMatterhornSendfile
 		$tpl->setCurrentBlock("HeadBaseTag");
 		$tpl->setVariable('BASE', ILIAS_HTTP_PATH . '/error.php');
 		$tpl->parseCurrentBlock();
-        $tpl->addBlockFile("CONTENT", "content", "tpl.error.html");
+		$tpl->addBlockFile("CONTENT", "content", "tpl.error.html");
 
 		// Check if user is logged in
 		$anonymous = ($ilUser->getId() == ANONYMOUS_USER_ID);
