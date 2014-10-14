@@ -25,7 +25,6 @@ class ilObjMatterhornTableGUI extends ilTable2GUI
 		$this->addColumn("");
 		$this->addColumn($lng->txt("title"));
 		$this->addColumn($lng->txt("date"));
-		$this->addColumn($lng->txt("view"));
 		$this->setFormAction($ilCtrl->getFormAction($a_parent_obj));
 		$this->setRowTemplate("tpl.table_matterhorn_row.html",
 			"Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
@@ -44,8 +43,9 @@ class ilObjMatterhornTableGUI extends ilTable2GUI
 		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilObjMatterhorn.php");
 		$ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $a_set['mhid']);
 		$this->tpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+		$this->tpl->setVariable("PREVIEWURL", $a_set["previewurl"]);
 		$this->tpl->setVariable("TXT_TITLE", $a_set["title"]);
-		$this->tpl->setVariable("TXT_DATE", $a_set["date"]);
+		$this->tpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($a_set["date"],IL_CAL_DATETIME)));
 		$this->tpl->setVariable("TXT_NR", $a_set["nr"]);
 	}	
 

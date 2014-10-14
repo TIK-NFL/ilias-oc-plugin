@@ -264,22 +264,37 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			if($totals == 1){
 				for($i = 0; $i < $this->object->searchResult['search-results']['total']; $i++) {
 					$value = $this->object->searchResult['search-results']['result'];
-		//			$ilLog->write("adding item result list:".print_r($value,true));		
+		//			$ilLog->write("adding item result list:".print_r($value,true));
+					$previewurl = "unset";
+					foreach ($value['mediapackage']['attachments']['attachment'] as $attachment){
+						if ('presentation/search+preview' ==  $attachment['type']){
+							$previewurl = $attachment['url'];
+						}  
+					}		
+					$ilLog->write("previewurl:".$previewurl);
 					$med_items[$i] = array(
 					    "title" => $value['dcTitle'],
 						"date" => $value['dcCreated'],
 					    "nr" => $i+1,
-					    "mhid" => $this->obj_id."/".$value['id']
+					    "mhid" => $this->obj_id."/".$value['id'],
+						"previewurl" => $previewurl
 					);
 				}		
 			} else {
 				foreach($this->object->searchResult['search-results']['result'] as $key => $value) {
+					$previewurl = "unset";
+					foreach ($value['mediapackage']['attachments']['attachment'] as $attachment){
+						if ('presentation/search+preview' ==  $attachment['type']){
+							$previewurl = $attachment['url'];
+						}
+					}						
 			//		$ilLog->write("adding item result list:".$key);		
 					$med_items[$key] = array(
 					    "title" => $value['dcTitle'],
 						"date" => $value['dcCreated'],
 					    "nr" => $key+1,
-					    "mhid" => $this->obj_id."/".$value['id']
+					    "mhid" => $this->obj_id."/".$value['id'],
+						"previewurl" => $previewurl
 					);
 				}
 			}		
