@@ -82,43 +82,8 @@ class ilObjMatterhorn extends ilObjectPlugin
 		global $ilDB, $ilLog;
 		$url = $this->configObject->getMatterhornServer()."/series/";
 		$ilLog->write("MHObj MHServer:".$url);
-		$fields = array(
-				'series'=>urlencode('<?xml version="1.0"?>
-<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
-  xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
-
-  <dcterms:title xml:lang="en">'.
-	$this->getTitle().
-    '</dcterms:title>
-  <dcterms:subject>
-    </dcterms:subject>
-  <dcterms:description xml:lang="en">'.
-	$this->getDescription().
-    '</dcterms:description>
-  <dcterms:publisher>
-    University of  Stuttgart, Germany
-    </dcterms:publisher>
-  <dcterms:identifier>
-    ilias_xmh_'.$this->getId().
-    '</dcterms:identifier>
-  <dcterms:references>'.
-	$this->getLectureID()
-  .'</dcterms:references>						
-  <dcterms:modified xsi:type="dcterms:W3CDTF">'.
-    date("Y-m-d").
-    '</dcterms:modified>
-  <dcterms:format xsi:type="dcterms:IMT">
-    video/mp4
-    </dcterms:format>
-  <oc:promoted>
-   	false
-  </oc:promoted>
-</dublincore>'),
-				'acl'=>urlencode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security"><ace><role>admin</role><action>delete</action><allow>true</allow></ace></acl>')
-		);
 				
-		
+		$fields = $this->createMHFields();
 		//url-ify the data for the POST
 		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
 		rtrim($fields_string,'&');
@@ -198,41 +163,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 
 		$url = $this->configObject->getMatterhornServer()."/series/";
 		$ilLog->write("MHObj MHServer:".$url);
-		$fields = array(
-				'series'=>urlencode('<?xml version="1.0"?>
-<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
-  xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
-		
-  <dcterms:title xml:lang="en">'.
-						$this->getTitle().
-						'</dcterms:title>
-  <dcterms:subject>
-    </dcterms:subject>
-  <dcterms:description xml:lang="en">'.
-						$this->getDescription().
-						'</dcterms:description>
-  <dcterms:publisher>
-    University of  Stuttgart, Germany
-    </dcterms:publisher>
-  <dcterms:identifier>
-    ilias_xmh_'.$this->getId().
-						'</dcterms:identifier>
-  <dcterms:references>'.
-						$this->getLectureID()
-						.'</dcterms:references>
-  <dcterms:modified xsi:type="dcterms:W3CDTF">'.
-						date("Y-m-d").
-						'</dcterms:modified>
-  <dcterms:format xsi:type="dcterms:IMT">
-    video/mp4
-    </dcterms:format>
-  <oc:promoted>
-   	false
-  </oc:promoted>
-</dublincore>'),
-				'acl'=>urlencode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security"><ace><role>admin</role><action>delete</action><allow>true</allow></ace></acl>')
-		);
+		$fields = $this->createPostFields();
 		
 		
 		//url-ify the data for the POST
@@ -286,6 +217,57 @@ class ilObjMatterhorn extends ilObjectPlugin
 #		$new_obj->setMhRetVal($this->getMhRetVal());
 #		$new_obj->setOnline($this->getOnline());
 #		$new_obj->update();
+	}
+	
+	private function createPostFields() {
+		
+		global  $ilUser, $ilLog;
+		
+		$userid = $ilUser->getLogin();
+		if (null != $ilUser->getExternalAccount) {
+			$userid = $ilUser->getExternalAccount();
+		}
+		$ilLog->write("Current User: ".$userid);
+		$acl = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security">
+								<ace><role>'.$userid.'</role><action>read</action><allow>true</allow></ace>
+								<ace><role>'.$userid.'</role><action>write</action><allow>true</allow></ace>
+						</acl>';
+		$fields = array(
+				'series'=>urlencode('<?xml version="1.0"?>
+<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
+		
+  <dcterms:title xml:lang="en">'.
+						$this->getTitle().
+						'</dcterms:title>
+  <dcterms:subject>
+    </dcterms:subject>
+  <dcterms:description xml:lang="en">'.
+						$this->getDescription().
+						'</dcterms:description>
+  <dcterms:publisher>
+    University of  Stuttgart, Germany
+    </dcterms:publisher>
+  <dcterms:identifier>
+    ilias_xmh_'.$this->getId().
+						'</dcterms:identifier>
+  <dcterms:references>'.
+						$this->getLectureID()
+						.'</dcterms:references>
+  <dcterms:modified xsi:type="dcterms:W3CDTF">'.
+						date("Y-m-d").
+						'</dcterms:modified>
+  <dcterms:format xsi:type="dcterms:IMT">
+    video/mp4
+    </dcterms:format>
+  <oc:promoted>
+   	false
+  </oc:promoted>
+</dublincore>'),
+				'acl'=>urlencode($acl)
+		);
+		return $fields;
 	}
 	
 //
