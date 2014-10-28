@@ -1,0 +1,17 @@
+.videos {
+        width: 160px;
+        display: inline-block;
+    border: 1px solid #eee;
+    padding: 6px 4px;
+    margin: 6px 4px;
+}
+.videos:hover {
+    background: #eee;
+}
+.ilTableFootLight {
+    font-size: 11px;
+}
+.videos img {
+    margin: 4px 0;
+}
+

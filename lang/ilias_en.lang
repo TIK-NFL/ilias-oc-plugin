@@ -16,6 +16,7 @@ xmh_delete#:#Delete Matterhorn Object
 xmh_visible#:#Matterhorn Object is visible
 xmh_edit_permission#:#Change permission settings
 content#:#Content
+viewmode#:#Use compact episode overview
 properties#:#Properties
 edit_properties#:#Edit Properties
 title#:#Title

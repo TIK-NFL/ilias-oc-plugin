@@ -175,7 +175,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		// vorlesungsnummer
 		$tl = new ilTextAreaInputGUI($this->txt("lectureID"), "lectureID");
 		$this->form->addItem($tl);
-		
+
+		// viewmode
+		$vm = new ilCheckboxInputGUI($this->txt("viewmode"), "viewMode");
+		$this->form->addItem($vm);
 		
 		// online
 		$cb = new ilCheckboxInputGUI($this->lng->txt("online"), "online");
@@ -197,6 +200,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$values["desc"] = $this->object->getDescription();
 		$values["lectureID"] = $this->object->getLectureID();
 		$values["online"] = $this->object->getOnline();
+		$values["viewMode"] = $this->object->getViewMode();
 		$this->form->setValuesByArray($values);
 	}
 	
@@ -214,6 +218,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			$this->object->setDescription($this->form->getInput("desc"));
 			$this->object->setLectureID($this->form->getInput("lectureID"));				
 			$this->object->setOnline($this->form->getInput("online"));
+			$this->object->setViewMode($this->form->getInput("viewMode"));
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
 			$ilCtrl->redirect($this, "editProperties");
@@ -247,14 +252,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	function showSeries()
 	{     
 
-		global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog;
+		global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog, $ilCtrl;
 		
 		$this->checkPermission("read");
 		
 	
 		$this->plugin->includeClass("class.ilObjMatterhornTableGUI.php");
 		
-		$table_gui = new ilObjMatterhornTableGUI($this, "listItems");
 
 		$med_items = array();
 		$totals = $this->object->searchResult['search-results']['total'];
@@ -267,7 +271,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		//			$ilLog->write("adding item result list:".print_r($value,true));
 					$previewurl = "unset";
 					foreach ($value['mediapackage']['attachments']['attachment'] as $attachment){
-						if ('presentation/search+preview' ==  $attachment['type']){
+						if ('presentation/search+preview' ==  $attachment['type'] || 'presenter/search+preview' ==  $attachment['type'] ){
 							$previewurl = $attachment['url'];
 						}  
 					}		
@@ -284,7 +288,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 				foreach($this->object->searchResult['search-results']['result'] as $key => $value) {
 					$previewurl = "unset";
 					foreach ($value['mediapackage']['attachments']['attachment'] as $attachment){
-						if ('presentation/search+preview' ==  $attachment['type']){
+						if ('presentation/search+preview' ==  $attachment['type'] || 'presenter/search+preview' ==  $attachment['type'] ){
 							$previewurl = $attachment['url'];
 						}
 					}						
@@ -299,15 +303,44 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 				}
 			}		
 		}
-		$table_gui->setDefaultOrderField("nr");
-		$table_gui->setDefaultOrderDirection("asc");
-		
-		$table_gui->setData($med_items);
-		
-		$tpl->setContent($table_gui->getHTML());
-		
+		uasort($med_items,array($this, 'sortbydate'));
+		if ( ! $this->object->getViewMode() ) {
+			$table_gui = new ilObjMatterhornTableGUI($this, "listItems");
+			$table_gui->setDefaultOrderField("nr");
+			$table_gui->setDefaultOrderDirection("asc");
+			$table_gui->setData($med_items);
+			$table_gui->setExternalSorting(true);
+			$tpl->setContent($table_gui->getHTML());
+		} else {		
+			$tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
+			$seriestpl = new ilTemplate("tpl.series.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+   	                foreach($med_items as $key => $item)
+                                {
+       
+	                                $seriestpl->setCurrentBlock("variable");
+					$ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+			                $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+					$seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
+			                $seriestpl->setVariable("TXT_TITLE", $item["title"]);
+			                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
+			                $seriestpl->setVariable("TXT_NR", $date["nr"]);
+                                        $seriestpl->parseCurrentBlock();
+                                }
+
+			$html = $seriestpl->get();
+			$tpl->setContent($html);
+		}
 		$tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
 		$ilTabs->activateTab("content");
 	}
+
+
+	function sortbydate($a, $b) {
+	    if ($a["date"] == $b["date"]) {
+        	return 0;
+	    }
+	    return ($a["date"] < $b["date"]) ? -1 : 1;
+	}
+
 }
 ?>

@@ -28,7 +28,6 @@ class ilObjMatterhornTableGUI extends ilTable2GUI
 		$this->setFormAction($ilCtrl->getFormAction($a_parent_obj));
 		$this->setRowTemplate("tpl.table_matterhorn_row.html",
 			"Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
-		
 		$this->setShowRowsSelector(false);
 	}
 	

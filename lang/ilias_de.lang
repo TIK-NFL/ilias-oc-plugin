@@ -16,6 +16,7 @@ xmh_delete#:#Delete Matterhorn Object l&ouml;schen
 xmh_visible#:#Matterhorn Object ist schichtbar
 xmh_edit_permission#:#Rechteverwaltung
 content#:#Inhalt
+viewmode#:#Kompakte &Uubersichtsseite verwenden
 properties#:#Eigenschaften
 edit_properties#:#Eigenschaften bearbeiten
 title#:#Titel

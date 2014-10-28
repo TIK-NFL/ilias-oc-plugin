@@ -54,6 +54,11 @@ class ilObjMatterhorn extends ilObjectPlugin
 	var $lectureID;
 	
 	/**
+	 * Stores the viewmode
+	 */
+	var $viewMode;
+
+	/**
 	* Constructor
 	*
 	* @access	public
@@ -83,7 +88,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		$url = $this->configObject->getMatterhornServer()."/series/";
 		$ilLog->write("MHObj MHServer:".$url);
 				
-		$fields = $this->createMHFields();
+		$fields = $this->createPostFields();
 		//url-ify the data for the POST
 		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
 		rtrim($fields_string,'&');
@@ -103,12 +108,13 @@ class ilObjMatterhorn extends ilObjectPlugin
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);				
 		
 		$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
-				"(id, is_online, series, mhretval, lectureid) VALUES (".
+				"(id, is_online, series, mhretval, lectureid,viewmode) VALUES (".
 				$ilDB->quote($this->getId(), "integer").",".
 				$ilDB->quote(0, "integer").",".
 				$ilDB->quote($result, "text").",".
 				$ilDB->quote($httpCode, "text").",".
-				$ilDB->quote($this->getLectureID(), "text").
+				$ilDB->quote($this->getLectureID(), "text").",".
+				$ilDB->quote(0, "integer").
 				")");
 	}
 	
@@ -128,6 +134,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			$this->setSeries($rec["series"]);
 			$this->setMhRetVal($rec["mhretval"]);
 			$this->setLectureID($rec["lectureid"]);
+			$this->setViewMode($rec["viewmode"]);
 		}
 		
 		$url = $this->configObject->getMatterhornEngageServer()."/search/episode.json";
@@ -189,6 +196,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			" is_online = ".$ilDB->quote($this->getOnline(), "integer").",".
 			" series = ".$ilDB->quote($this->getSeries(), "text").",".
 			" lectureid = ".$ilDB->quote($this->getLectureID(), "text").",".
+			" viewmode = ".$ilDB->quote($this->getViewMode(), "integer").",".
 			" mhretval = ".$ilDB->quote($this->getMhRetVal(), "text")." ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "text")
 			);
@@ -354,6 +362,25 @@ class ilObjMatterhorn extends ilObjectPlugin
 		return $this->lectureID;
 	}
 	
+	/**
+	 * Set the ViewMode 
+	 *
+	 * @param	Integer		viewMode
+	 */
+	function setViewMode($a_val)
+	{
+		$this->viewMode = $a_val;
+	}
+	
+	/**
+	 * Get the ViewMode
+	 *
+	 * @return	Integer viewMode
+	 */
+	function getViewMode()
+	{
+		return $this->viewMode;
+	}
 	
 	/**
 	 * The series information returned by matterhorn

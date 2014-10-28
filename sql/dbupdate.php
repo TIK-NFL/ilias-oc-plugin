@@ -56,3 +56,13 @@ $ilDB->addPrimaryKey("rep_robj_xmh_config", array("cfgkey"));
 		'notnull' => false
 ));
 ?>
+<#4>
+<#5>
+<?php
+	$ilDB->addTableColumn('rep_robj_xmh_data', 'viewmode', array(
+		'type' => 'integer',
+		'length' => 1,
+		'notnull' => false,
+	        'default' => 0
+));
+?>
