@@ -275,6 +275,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 							$previewurl = $attachment['url'];
 						}  
 					}		
+					$replacementString = substr($this->plugin->getStyleSheetLocation("css/xmh.css"),0,-21);
+					$previewurl = str_replace($this->configObject->getMatterhornEngageServer()."/static/engage-player/",$replacementString."MHData/".CLIENT_ID."/".$this->object->getId()."/",$previewurl);
 					$ilLog->write("previewurl:".$previewurl);
 					$med_items[$i] = array(
 					    "title" => $value['dcTitle'],
@@ -293,6 +295,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 						}
 					}						
 			//		$ilLog->write("adding item result list:".$key);		
+
+					$replacementString = substr($this->plugin->getStyleSheetLocation("css/xmh.css"),0,-21);
+					$previewurl = str_replace($this->configObject->getMatterhornEngageServer()."/static/engage-player/",$replacementString."MHData/".CLIENT_ID."/".$this->object->getId()."/",$previewurl);
 					$med_items[$key] = array(
 					    "title" => $value['dcTitle'],
 						"date" => $value['dcCreated'],
@@ -328,7 +333,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                                 }
 
 			$html = $seriestpl->get();
-$ilLog->write($html);
 			$tpl->setContent($html);
 		}
 		$tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
