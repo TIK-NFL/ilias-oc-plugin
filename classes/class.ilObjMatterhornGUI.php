@@ -313,10 +313,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			$tpl->setContent($table_gui->getHTML());
 		} else {		
 			$tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
-			$seriestpl = new ilTemplate("tpl.series.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+			$seriestpl = new ilTemplate("tpl.series.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
    	                foreach($med_items as $key => $item)
                                 {
-       
+     $ilLog->write("Adding: ".$item["title"]);  
 	                                $seriestpl->setCurrentBlock("variable");
 					$ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
 			                $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
@@ -328,6 +328,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                                 }
 
 			$html = $seriestpl->get();
+$ilLog->write($html);
 			$tpl->setContent($html);
 		}
 		$tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
