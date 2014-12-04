@@ -1,4 +1,4 @@
-XSendFile On
+#XSendFile On
 
 RewriteEngine On
 
