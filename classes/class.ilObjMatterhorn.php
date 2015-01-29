@@ -252,7 +252,7 @@ class ilObjMatterhorn extends ilObjectPlugin
   <dcterms:subject>
     </dcterms:subject>
   <dcterms:description xml:lang="en">'.
-						$this->getDescription().
+						$this->getRefId()." ".$this->getDescription().
 						'</dcterms:description>
   <dcterms:publisher>
     University of  Stuttgart, Germany
