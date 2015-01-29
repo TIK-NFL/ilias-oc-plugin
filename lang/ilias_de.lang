@@ -9,12 +9,15 @@ obj_xmh_duplicate#:#Kopieren
 objs_xmh_duplicate#:#Matterhorn Objekt kopieren
 obj_xmh_select#:#Matterhorn Objekt ausw&auml;hlen
 xmh_add#:#Matterhorn Objekt hinzuf&uuml;gen
-xmh_new#:#Neues Matterhorn Objekt erstellen
+xmh_new#:#Neues Matterhorn Objekt anlegen
 xmh_read#:#Matterhorn Objekt lesen
 xmh_write#:#Matterhorn Objekt bearbeiten
-xmh_delete#:#Delete Matterhorn Object l&ouml;schen
-xmh_visible#:#Matterhorn Object ist schichtbar
+xmh_delete#:#Matterhorn Objekt l&ouml;schen
+xmh_visible#:#Matterhorn Objekt ist schichtbar
 xmh_edit_permission#:#Rechteverwaltung
+grp_create_xmh#:#Matterhorn Objekt anlegen
+crs_create_xmh#:#Matterhorn Objekt anlegen
+fold_create_xmh#:#Matterhorn Objekt anlegen
 content#:#Inhalt
 viewmode#:#Kompakte Übersichtsseite verwenden
 properties#:#Eigenschaften

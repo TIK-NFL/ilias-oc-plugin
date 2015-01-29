@@ -15,6 +15,9 @@ xmh_write#:#Edit Matterhorn Object
 xmh_delete#:#Delete Matterhorn Object
 xmh_visible#:#Matterhorn Object is visible
 xmh_edit_permission#:#Change permission settings
+grp_create_xmh#:#Create Matterhorn Object
+crs_create_xmh#:#Create Matterhorn Object
+fold_create_xmh#:#Create Matterhorn Object
 content#:#Content
 viewmode#:#Use compact episode overview
 properties#:#Properties
