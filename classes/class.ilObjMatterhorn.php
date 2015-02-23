@@ -429,13 +429,13 @@ class ilObjMatterhorn extends ilObjectPlugin
         function getReleasedEpisodes(){
                 global $ilDB,$ilLog;
                 
-                $set = $ilDB->query("SELECT episodeId FROM rep_robj_xmh_released_episodes ".
-                        " WHERE seriesId = ".$ilDB->quote($this->getId(), "text")
+                $set = $ilDB->query("SELECT episode_id FROM rep_robj_xmh_rel_ep ".
+                        " WHERE series_id = ".$ilDB->quote($this->getId(), "text")
                         );
                 $released = array();
                 while ($rec = $ilDB->fetchAssoc($set))
                 {
-                        array_push($released,($rec["episodeId"]);
+                        array_push($released,($rec["episodeId"]));
                 }
                 return $released;
         }

@@ -73,7 +73,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		{
 			case "editProperties":		// list all commands that need write permission here
 			case "updateProperties":
-			case "editUpcomming":
+			case "editEpisodes":
 				$this->checkPermission("write");
 				$this->$cmd();
 				break;
@@ -126,7 +126,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		// a "properties" tab
 		if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
 		{
-                        $ilTabs->addTab("upcomming", $this->txt("upcomming"), $ilCtrl->getLinkTarget($this, "editUpcomming"));
+                        $ilTabs->addTab("manage", $this->txt("manage"), $ilCtrl->getLinkTarget($this, "editEpisodes"));
 			$ilTabs->addTab("properties", $this->txt("properties"), $ilCtrl->getLinkTarget($this, "editProperties"));
 		}
 
@@ -327,7 +327,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		}
 		uasort($med_items,array($this, 'sortbydate'));
 		if ( ! $this->object->getViewMode() ) {
-			$table_gui = new ilObjMatterhornTableGUI($this, "listItems");
+			$table_gui = new ilObjMatterhornTableSeriesGUI($this, "listItems");
 			$table_gui->setDefaultOrderField("nr");
 			$table_gui->setDefaultOrderDirection("asc");
 			$table_gui->setData($med_items);
@@ -365,7 +365,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	}
 
 	
-	function editUpcomming(){
+	function editEpisodes(){
                 global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog;
                 
                 $this->checkPermission("write");
@@ -373,7 +373,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         
                 $this->plugin->includeClass("class.ilObjMatterhornTableUpcommingGUI.php");
                 
-                $table_gui = new ilObjMatterhornTableGUI($this, "listItems");
+                $table_gui = new ilObjMatterhornTableUpcommingGUI($this, "listItems");
 
                 $med_items = array();
                 $totals = $this->object->searchResult['search-results']['total'];
@@ -426,7 +426,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $tpl->setContent($table_gui->getHTML());
                 
                 $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
-                $ilTabs->activateTab("content");
+                $ilTabs->activateTab("manage");
 	}
 }
 ?>
