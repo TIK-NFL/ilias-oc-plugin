@@ -73,6 +73,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		{
 			case "editProperties":		// list all commands that need write permission here
 			case "updateProperties":
+			case "editUpcomming":
 				$this->checkPermission("write");
 				$this->$cmd();
 				break;
@@ -125,6 +126,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		// a "properties" tab
 		if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
 		{
+                        $ilTabs->addTab("upcomming", $this->txt("upcomming"), $ilCtrl->getLinkTarget($this, "editUpcomming"));
 			$ilTabs->addTab("properties", $this->txt("properties"), $ilCtrl->getLinkTarget($this, "editProperties"));
 		}
 
@@ -236,10 +238,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	* Show content
 	*/
 	function showEpisode()
-	{                
+	{        
 		global $tpl, $ilTabs;
+		$this->checkPermission("read");
 		$theodulbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
 
+		
 		$player = new ilTemplate("tpl.player.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
 
 		$player->setVariable("INITJS",$theodulbase );
@@ -257,16 +261,24 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$this->checkPermission("read");
 		
 	
-		$this->plugin->includeClass("class.ilObjMatterhornTableGUI.php");
+		$this->plugin->includeClass("class.ilObjMatterhornTableSeriesGUI.php");
 		
 
 		$med_items = array();
 		$totals = $this->object->searchResult['search-results']['total'];
 //		$ilLog->write("Total:".print_r($this->object->searchResult,true));     
 		
+		$released  = $this->object->getReleasedEpisodes();
+		
+		
 		if($totals > 0){
 			if($totals == 1){
 				for($i = 0; $i < $this->object->searchResult['search-results']['total']; $i++) {
+                                        if ($this->object->getManualRelease()){
+                                                if(! in_array($released, $value['id'])){
+                                                        continue;
+                                                }
+                                        }
 					$value = $this->object->searchResult['search-results']['result'];
 		//			$ilLog->write("adding item result list:".print_r($value,true));
 					$previewurl = "unset";
@@ -288,6 +300,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 				}		
 			} else {
 				foreach($this->object->searchResult['search-results']['result'] as $key => $value) {
+                                        if ($this->object->getManualRelease()){
+                                                if(! in_array($released, $value['id'])){
+                                                        continue;
+                                                }
+                                        }
 					$previewurl = "unset";
 					foreach ($value['mediapackage']['attachments']['attachment'] as $attachment){
 						if ('presentation/search+preview' ==  $attachment['type'] || 'presenter/search+preview' ==  $attachment['type'] ){
@@ -321,7 +338,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			$seriestpl = new ilTemplate("tpl.series.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
    	                foreach($med_items as $key => $item)
                                 {
-     $ilLog->write("Adding: ".$item["title"]);  
+                                        $ilLog->write("Adding: ".$item["title"]);  
 	                                $seriestpl->setCurrentBlock("variable");
 					$ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
 			                $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
@@ -347,5 +364,69 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	    return ($a["date"] < $b["date"]) ? -1 : 1;
 	}
 
+	
+	function editUpcomming(){
+                global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog;
+                
+                $this->checkPermission("write");
+                
+        
+                $this->plugin->includeClass("class.ilObjMatterhornTableUpcommingGUI.php");
+                
+                $table_gui = new ilObjMatterhornTableGUI($this, "listItems");
+
+                $med_items = array();
+                $totals = $this->object->searchResult['search-results']['total'];
+//              $ilLog->write("Total:".print_r($this->object->searchResult,true));     
+                
+                if($totals > 0){
+                        if($totals == 1){
+                                for($i = 0; $i < $this->object->searchResult['search-results']['total']; $i++) {
+                                        $value = $this->object->searchResult['search-results']['result'];
+                //                      $ilLog->write("adding item result list:".print_r($value,true));
+                                        $previewurl = "unset";
+                                        foreach ($value['mediapackage']['attachments']['attachment'] as $attachment){
+                                                if ('presentation/search+preview' ==  $attachment['type']){
+                                                        $previewurl = $attachment['url'];
+                                                }  
+                                        }               
+                                        $ilLog->write("previewurl:".$previewurl);
+                                        $med_items[$i] = array(
+                                            "title" => $value['dcTitle'],
+                                                "date" => $value['dcCreated'],
+                                            "nr" => $i+1,
+                                            "mhid" => $this->obj_id."/".$value['id'],
+                                                "previewurl" => $previewurl
+                                        );
+                                }               
+                        } else {
+                                foreach($this->object->searchResult['search-results']['result'] as $key => $value) {
+                                        $previewurl = "unset";
+                                        foreach ($value['mediapackage']['attachments']['attachment'] as $attachment){
+                                                if ('presentation/search+preview' ==  $attachment['type']){
+                                                        $previewurl = $attachment['url'];
+                                                }
+                                        }                                               
+                        //              $ilLog->write("adding item result list:".$key);         
+                                        $med_items[$key] = array(
+                                            "title" => $value['dcTitle'],
+                                                "date" => $value['dcCreated'],
+                                            "nr" => $key+1,
+                                            "mhid" => $this->obj_id."/".$value['id'],
+                                                "previewurl" => $previewurl
+                                        );
+                                }
+                        }               
+                }
+                $table_gui->setDefaultOrderField("nr");
+                $table_gui->setDefaultOrderDirection("asc");
+                
+                $table_gui->setData($med_items);
+                
+                $tpl->setContent($table_gui->getHTML());
+                
+                $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
+                $ilTabs->activateTab("content");
+	}
 }
 ?>

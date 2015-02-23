@@ -66,3 +66,31 @@ $ilDB->addPrimaryKey("rep_robj_xmh_config", array("cfgkey"));
 	        'default' => 0
 ));
 ?>
+<#6>
+<?php
+  $ilDB->addTableColumn('rep_robj_xmh_data', 'manualrelease', array(
+          'type' => 'integer',
+          'length' => 1,
+          'notnull' => false,
+          'default' => 0
+));
+
+$fields = array(
+                'episodeId' => array(
+                                'type' => 'text',
+                                'length' => 50,
+                                'fixed' => false,
+                                'notnull' => true
+                ),
+                'seriesId' => array(
+                                'type' => 'text',
+                                'length' => 150,
+                                'fixed' => false,
+                                'notnull' => true
+                )
+);
+
+$ilDB->createTable("rep_robj_xmh_released_episodes", $fields);
+$ilDB->addPrimaryKey("rep_robj_xmh_released_episodes", array("episodeId"));
+$ilDB->addIndex("rep_robj_xmh_released_episodes", array("seriesId"),'seriesIdIndex');
+?>
