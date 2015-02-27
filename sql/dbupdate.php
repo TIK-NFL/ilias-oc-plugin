@@ -96,3 +96,12 @@ $ilDB->createTable("rep_robj_xmh_rel_ep", $fields);
 $ilDB->addPrimaryKey("rep_robj_xmh_rel_ep", array("episode_id"));
 $ilDB->addIndex("rep_robj_xmh_rel_ep", array("series_id"),'ser');
 ?>
+<#8>
+<?php
+  $ilDB->addTableColumn('rep_robj_xmh_data', 'fsinodupdate', array(
+          'type' => 'integer',
+          'length' => 8,
+          'notnull' => false,
+          'default' => 0
+));
+?>

@@ -18,15 +18,12 @@ class ilObjMatterhornTableSeriesGUI extends ilTable2GUI
 	function ilObjMatterhornTableSeriesGUI($parent, $parent_cmd = "")
 	{
 		global $ilCtrl, $lng;
-		
-		
 		parent::__construct($parent, $parent_cmd);
-		
 		$this->addColumn("");
 		$this->addColumn($lng->txt("title"));
 		$this->addColumn($lng->txt("date"));
 		$this->setFormAction($ilCtrl->getFormAction($parent));
-		$this->setRowTemplate("tpl.table_matterhorn_series_row.html",
+		$this->setRowTemplate("tpl.table_matterhorn_episode_row.html",
 			"Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
 		$this->setShowRowsSelector(false);
 	}

@@ -126,7 +126,7 @@ class ilMatterhornSendfile
 	*/
 	function ilMatterhornSendfile()
 	{
-		global  $ilAccess, $lng;
+		global  $ilAccess, $lng, $ilLog;
 		
 		$this->lng =& $lng;
 		$this->ilAccess =& $ilAccess;
@@ -138,9 +138,9 @@ class ilMatterhornSendfile
 		parse_str($uri["query"], $this->params);		
 
 		global $basename;				
-		
 		// check if it is a request for an episode
 		if(0 == strcmp(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json", $uri["path"])){
+            $ilLog->write("EpisodeRequest for: ".print_r($this->params,true));
 			$this->episodeRequest = true;
 			if (!preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
 				$this->errorcode = 404;
@@ -149,9 +149,8 @@ class ilMatterhornSendfile
 			}
 
 			list($this->obj_id,$this->episode_id) = explode('/', $this->params['id']);
-			
 		} else {
-                        $this->episodeRequest = false;
+            $this->episodeRequest = false;
 			$client_start = strpos($_SERVER['PHP_SELF'], $basename."/") + strlen($basename)+1;
 			$pattern = substr($_SERVER['REQUEST_URI'], $client_start+strlen(CLIENT_ID));
 			$this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern)+1));
@@ -160,6 +159,11 @@ class ilMatterhornSendfile
 			// build url path for virtual function
 			$this->virtual_path = str_replace($pattern, "virtual-" . $pattern, $uri["path"]);
 			$this->obj_id = substr($this->subpath,0,strpos($this->subpath,'/'));
+            if (!preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
+                $this->errorcode = 404;
+                $this->errortext = $this->lng->txt("no_such_episode");
+                return false;
+            }
 
 
 		}
@@ -187,11 +191,11 @@ class ilMatterhornSendfile
 		echo "ckeck_ip:            ". $this->check_ip. "\n";
 		echo "send_mimetype:       ". $this->send_mimetype. "\n";
 		echo "</pre>";
-*/
+
 		#		echo phpinfo();
-#		exit;
+		exit;
 		
-		
+	*/
 		/*
 		if (!file_exists($this->file))
 		{
@@ -240,7 +244,7 @@ class ilMatterhornSendfile
 	public function checkEpisodeAccess()
 	{
 
-                global $ilLog;
+        global $ilLog;
 
 		// an error already occurred at class initialisation
 		if ($this->errorcode)
@@ -266,9 +270,8 @@ class ilMatterhornSendfile
 	*/
 	public function checkFileAccess()
 	{
-                global $ilLog;
-
-                $ilLog->write("MHSendfile: check access");
+        global $ilLog;
+        $ilLog->write("MHSendfile: check access for ". $this->obj_id);
 		// an error already occurred at class initialisation
 		if ($this->errorcode)
 		{
@@ -285,15 +288,14 @@ class ilMatterhornSendfile
 #	    	echo "is not an integer\n";
 #	    }
 		$type = 'xmh';
-		
-		if (!$this->obj_id || $type == 'none')
+        $iliasid = substr($this->obj_id,10);
+		if (!$iliasid || $type == 'none')
 		{
 			$this->errorcode = 404;
 			$this->errortext = $this->lng->txt("obj_not_found");
 			return false;
 		}
-		$ilLog->write("MHSendfile: check access");
-		if ($this->checkAccessObject($this->obj_id))
+		if ($this->checkAccessObject($iliasid))
 		{
 			return true;
 		}
@@ -344,21 +346,94 @@ class ilMatterhornSendfile
 		global $basename,$ilLog;
 		
 		$url = $this->configObject->getMatterhornEngageServer().'/search/episode.json?id='.$this->episode_id;
-                $ilLog->write("EngageURL: ".$url);
-		$curl = curl_init();
-                curl_setopt($curl, CURLOPT_URL,$url);
-		curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-		curl_setopt($curl, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
-		curl_setopt($curl, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		$curl_response = curl_exec($curl);	
-                $ilLog->write("CurlRespone:".$curl_respone);	
-#curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || 
-                    $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
-#                /ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/sendfile.php
-		echo str_replace(str_replace("/", "\/", $this->configObject->getMatterhornEngageServer())."\/static\/engage-player", $protocol.$_SERVER['HTTP_HOST'].substr($_SERVER["PHP_SELF"],0,-12).CLIENT_ID."/".$this->obj_id,$curl_response);
-		curl_close($curl);
+        $ilLog->write("Manifestbasedir: ".$this->configObject->getXSendfileBasedir().$this->obj_id.'/'.$this->episode_id);
+        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/manifest.xml',NULL, TRUE);
+
+        $episode = array();
+        $episode['search-results'] = array("total"=>"1", "result"=>array());
+
+        $episode['search-results']["result"]["mediapackage"] =  array();
+        $attachments = array("attachment"=>array());
+        foreach ($manifest->attachments->attachment as $attachment){
+            $att= array();
+            if (isset($attachment['id'])) $att['id'] = (string)$attachment['id'];
+            if (isset($attachment['type'])) $att['type'] = (string)$attachment['type'];
+            if (isset($attachment['ref'])) $att['ref'] = (string)$attachment['ref'];
+            if (isset($attachment->mimetype)) $att['mimetype'] = (string)$attachment->mimetype;
+            if (isset($attachment->url)) $att['url'] = (string)$attachment->url;
+            if (isset($attachment->tags)){
+                $att['tags'] = array('tag'=>array());
+                foreach ($attachment->tags->tag as $tag){
+                    array_push($att['tags']['tag'], (string)$tag);
+                }
+            }
+            array_push($attachments['attachment'],$att);
+        }
+        $episode['search-results']["result"]["mediapackage"]['attachments'] = $attachments;
+
+        $metadata = array("catalog"=>array());
+        foreach ($manifest->metadata->catalog as $catalog){
+            $cat = array();
+            if (isset($catalog['id'])) $cat['id'] = (string)$catalog['id'];
+            if (isset($catalog['type'])) $cat['type'] = (string)$catalog['type'];
+            if (isset($catalog['ref'])) $cat['ref'] = (string)$catalog['ref'];
+            if (isset($catalog->mimetype)) $cat['mimetype'] = (string)$catalog->mimetype;
+            if (isset($catalog->url)) $cat['url'] = (string)$catalog->url;
+            if (isset($catalog->tags)){
+                $cat['tags'] = array('tag'=>array());
+                foreach ($catalog->tags->tag as $tag){
+                    array_push($cat['tags']['tag'], (string)$tag);
+                }
+            }
+            array_push($metadata['catalog'],$cat);
+        }
+        $episode['search-results']["result"]["mediapackage"]['metadata'] = $metadata;
+
+        $media = array("track"=>array());
+        foreach ($manifest->media->track as $track){
+            $trk = array();
+            if (isset($track['id'])) $trk['id'] = (string)$track['id'];
+            if (isset($track['type'])) $trk['type'] = (string)$track['type'];
+            if (isset($track['ref'])) $trk['ref'] = (string)$track['ref'];
+            if (isset($track->mimetype)) $trk['mimetype'] = (string)$track->mimetype;
+            if (isset($track->url)) $trk['url'] = (string)$track->url;
+            if (isset($track->duration)) $trk['duration'] = (string)$track->duration;
+            if (isset($track->tags)){
+                $trk['tags'] = array('tag'=>array());
+                foreach ($track->tags->tag as $tag){
+                    array_push($trk['tags']['tag'], (string)$tag);
+                }
+            }
+            if (isset($track->video)){
+                $trk['video'] = array();
+                $trk['video']['id'] = (string)$track->video['id'];
+                $trk['video']['resolution'] = (string)$track->video->resolution;
+            }
+            if (isset($track->audio)){
+                $trk['audio'] = array();
+                $trk['audio']['id'] = (string)$track->audio['id'];
+            }
+            array_push($media['track'],$trk);
+        }
+
+        $episode['search-results']["result"]["mediapackage"]['media'] = $media;
+        $episode['search-results']["result"]["mediapackage"]['duration'] = (string)$manifest['duration'];
+        $episode['search-results']["result"]["mediapackage"]['id'] = (string)$manifest['id'];
+
+        $episode['search-results']["result"]['id'] = (string)$manifest['id'];
+        $episode['search-results']["result"]['mediaType'] = "AudioVisual";
+        $episode['search-results']["result"]["dcCreated"] = (string)$manifest['start'];
+        $episode['search-results']["result"]["dcExtent"] = (string)$manifest['duration'];
+        $episode['search-results']["result"]["dcTitle"] = (string)$manifest->title;
+        $episode['search-results']["result"]["dcIsPartOf"] = $this->obj_id;
+        if (isset($manifest->creators)){
+            $creators = array();
+            foreach ($manifest->creators->creator as $creator){
+                array_push($creators, (string)$creator);
+            }
+            $episode['search-results']["result"]["dcCreator"] = $creators;
+        }
+        echo json_encode($episode, JSON_PRETTY_PRINT);
 	}
 	
 	/**
@@ -371,13 +446,13 @@ class ilMatterhornSendfile
         global $ilLog;
 //		header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
 		include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-		$ilLog->write("MHSendfile: ".$this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
-		$mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id)));
+		$ilLog->write("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$this->subpath);
+		$mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir().$this->subpath);
 		header("Content-Type: ".$mime);
 #		if (isset($_SERVER['HTTP_RANGE'])) {
 #			$ilLog->write("range request".$_SERVER['HTTP_RANGE']);
 #		}
-		$file = $this->configObject->getXSendfileBasedir().substr($this->subpath, strlen($this->obj_id));
+		$file = $this->configObject->getXSendfileBasedir().$this->subpath;
 		$fp = @fopen($file, 'rb');
 		$size   = filesize($file); // File size
 		$length = $size;           // Content length

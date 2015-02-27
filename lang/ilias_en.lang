@@ -36,4 +36,5 @@ mh_server_engage#:#Base URL of the Matterhorn Engage Server
 mh_digest_user#:#Username of the Matterhorn Digest User
 mh_digest_password#:#Password of the Matterhorn Digest User
 xsendfile_basedir#:#Base directory for XSendfile
+matterhorn_version#:#Matterhorn Version (Don't Change 1.4)
 saving_invoked#:#Save procedure has been executed

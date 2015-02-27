@@ -53,10 +53,15 @@ class ilObjMatterhorn extends ilObjectPlugin
 	 */
 	var $viewMode;
 
-        /**
-         * Stores the manual release
-         */
-        var $manualrelease;
+    /**
+      * Stores the manual release
+      */
+    var $manualrelease;
+
+    /**
+      * Stores the manual release
+      */
+    var $lastfsInodeUpdate;
 
 	
 	/**
@@ -138,6 +143,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			$this->setLectureID($rec["lectureid"]);
 			$this->setViewMode($rec["viewmode"]);
 			$this->setManualRelease($rec["manualrelease"]);
+			$this->setLastFSInodeUpdate($rec["fsinodeupdate"]);
 		}
 		
 	}
@@ -233,13 +239,13 @@ class ilObjMatterhorn extends ilObjectPlugin
   xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
 		
-  <dcterms:title xml:lang="en">'.
-						$this->getTitle().
+  <dcterms:title xml:lang="en">ILIAS-'.
+						$this->getId().':'.$this->getRefId().':'.$this->getTitle().
 						'</dcterms:title>
   <dcterms:subject>
     </dcterms:subject>
   <dcterms:description xml:lang="en">'.
-						$this->getRefId()." ".$this->getDescription().
+						$this->getDescription().
 						'</dcterms:description>
   <dcterms:publisher>
     University of  Stuttgart, Germany
@@ -370,56 +376,76 @@ class ilObjMatterhorn extends ilObjectPlugin
 	}
 
 	
-        /**
-        * Set manual release
-        *
-        * @param        boolean         manual release
-        */
-        function setManualRelease($a_val)
-        {
-                $this->manualrelease = $a_val;
-        }
-        
-        /**
-        * Get manual release
-        *
-        * @return       boolean         manualrelease
-        */
-        function getManualRelease()
-        {
-                return $this->manualrelease;
-        }
+    /**
+    * Set manual release
+    *
+    * @param        boolean         manual release
+    */
+    function setManualRelease($a_val)
+    {
+            $this->manualrelease = $a_val;
+    }
 
-	
+    /**
+    * Get manual release
+    *
+    * @return       boolean         manualrelease
+    */
+    function getManualRelease()
+    {
+            return $this->manualrelease;
+    }
+
+    /**
+    * Set fsinodeupdate
+    *
+    * @param        int         the timestamp of the last inode update
+    */
+    function setLastFSInodeUpdate($a_val)
+    {
+            $this->manualrelease = $a_val;
+    }
+
+    /**
+    * Get fsinodeupdate
+    *
+    * @return       int         the timestamp of the last inode update
+    */
+    function getLastFSInodeUpdate()
+    {
+            return $this->fsinodeupdate;
+    }
+
 	/**
 	 * The series information returned by matterhorn
 	 * 
 	 * @return array the episodes by matterhorn for the given seris
 	 */
-        function getSearchResult(){
-	                
-              $url = $this->configObject->getMatterhornEngageServer()."/search/episode.json";
+    function getSearchResult(){
+        #$this->fsinodeupdate
+	    global $ilLog;
 
-              /* $_GET Parameters to Send */
-              $params = array('sid' =>'ilias_xmh_'.$this->getId());
-              
-              /* Update URL to container Query String of Paramaters */
-              $url .= '?' . http_build_query($params);
-              $ilLog->write("mh query".$url);
-              //open connection
-              $ch = curl_init();
-              
-              //set the url, number of POST vars, POST data
-              curl_setopt($ch, CURLOPT_URL,$url);
-              curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-              curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
-              curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
-              curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-              $curlret = curl_exec($ch);        
-              $searchResult = json_decode($curlret,true);
-
-              return $searchResult;
+	    $basedir = $this->configObject->getXSendfileBasedir()."ilias_xmh_".$this->getId();
+        $ilLog->write("MHBasedir: " . $basedir);
+        $xmlstr = "<?xml version='1.0' standalone='yes'?>\n<results />";
+        $resultcount = 0;
+        $results = new SimpleXMLElement($xmlstr);
+        $domresults = dom_import_simplexml($results);
+        if (file_exists($basedir) && $handle = opendir($basedir)) {
+            while (false !== ($entry = readdir($handle))) {
+                if ($entry != "." && $entry != "..") {
+                    $manifest = new SimpleXMLElement($basedir.'/'.$entry.'/manifest.xml',NULL, TRUE);
+                    $dommanifest  = dom_import_simplexml($manifest);
+                    $dommanifest  = $domresults->ownerDocument->importNode($dommanifest, TRUE);
+                    $domresults->appendChild($dommanifest);
+                    $resultcount++;
+                }
+            }
+            closedir($handle);
         }
+        $results->addAttribute("total",$resultcount);
+        return $results;
+    }
 
 	/**
          * Returns a list of the Episodes that have been made public available by the lecturer
