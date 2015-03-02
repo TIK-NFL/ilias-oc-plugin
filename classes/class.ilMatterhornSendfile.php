@@ -12,7 +12,7 @@ $basename = "/Customizing/global/plugins/Services/Repository/RepositoryObject/Ma
 // "data" is assumed to be the ILIAS_WEB_DIR
 // (see ilInitialisation::buildHTTPPath() for details)
 define("ILIAS_MODULE", substr($_SERVER['PHP_SELF'],
-					   strpos($_SERVER['PHP_SELF'], $basename) + strlen($basename)+1));
+    strpos($_SERVER['PHP_SELF'], $basename) + strlen($basename)+1));
 
 // Define the cookie path to prevent a different session created for web access
 // (see ilInitialisation::setCookieParams() for details)
@@ -272,9 +272,10 @@ class ilMatterhornSendfile
 	{
         global $ilLog;
         $ilLog->write("MHSendfile: check access for ". $this->obj_id);
-		// an error already occurred at class initialisation
-		if ($this->errorcode)
-		{
+            // an error already occurred at class initialisation
+            if ($this->errorcode)
+            {
+                $ilLog->write("MHSendfile: check access already has error code for ". $this->obj_id);
 	        return false;
 	    }
 
