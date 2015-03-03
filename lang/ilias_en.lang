@@ -19,12 +19,16 @@ grp_create_xmh#:#Create Matterhorn Object
 crs_create_xmh#:#Create Matterhorn Object
 fold_create_xmh#:#Create Matterhorn Object
 content#:#Content
+manage#:#Manage Episodes
 viewmode#:#Use compact episode overview
 properties#:#Properties
 edit_properties#:#Edit Properties
 title#:#Title
 description#:#Description
 lectureID#:#Lecture ID
+manualRelease#:#Release recordings individually
+publish#:#Publish
+retract#:#Retract
 save#:#Save
 cancel#:#Cancel
 edit#:#Edit

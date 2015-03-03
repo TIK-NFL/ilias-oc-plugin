@@ -74,6 +74,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			case "editProperties":		// list all commands that need write permission here
 			case "updateProperties":
 			case "editEpisodes":
+			case "publish":
+			case "retract":
 				$this->checkPermission("write");
 				$this->$cmd();
 				break;
@@ -83,7 +85,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 				$this->checkPermission("read");
 				$this->$cmd();
 				break;
-				
+            default:
+                $this->checkPermission("read");
+                $this->showSeries();
 		}
 	}
 
@@ -181,7 +185,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		// viewmode
 		$vm = new ilCheckboxInputGUI($this->txt("viewmode"), "viewMode");
 		$this->form->addItem($vm);
-		
+
+		// release episodes individually
+        $mr = new ilCheckboxInputGUI($this->txt("manualRelease"), "manualRelease");
+        $this->form->addItem($mr);
+
 		// online
 		$cb = new ilCheckboxInputGUI($this->lng->txt("online"), "online");
 		$this->form->addItem($cb);
@@ -197,12 +205,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	*/
 	function getPropertiesValues()
 	{
+        global $ilLog;
 		$values = array();
 		$values["title"] = $this->object->getTitle();
 		$values["desc"] = $this->object->getDescription();
 		$values["lectureID"] = $this->object->getLectureID();
 		$values["online"] = $this->object->getOnline();
 		$values["viewMode"] = $this->object->getViewMode();
+        $values["manualRelease"] = $this->object->getManualRelease();
 		$this->form->setValuesByArray($values);
 	}
 	
@@ -221,6 +231,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			$this->object->setLectureID($this->form->getInput("lectureID"));				
 			$this->object->setOnline($this->form->getInput("online"));
 			$this->object->setViewMode($this->form->getInput("viewMode"));
+			$this->object->setManualRelease($this->form->getInput("manualRelease"));
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
 			$ilCtrl->redirect($this, "editProperties");
@@ -229,6 +240,33 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$this->form->setValuesByPost();
 		$tpl->setContent($this->form->getHtml());
 	}
+
+    public function publish()
+    {
+        global $tpl, $lng, $ilCtrl, $ilLog;
+        $ilLog->write("ID:".$_GET["id"]);
+        if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {            
+            $this->object->publish($_GET["id"]);
+            ilUtil::sendSuccess($lng->txt("msg_episode_published"), true);
+        } else {
+            $ilLog->write("ID does not match in publish episode:".$_GET["id"]);
+        }
+        $ilCtrl->redirect($this, "editEpisodes");
+    }
+
+    public function retract()
+    {
+        global $tpl, $lng, $ilCtrl, $ilLog;
+        $ilLog->write("ID:".$_GET["id"]);
+        if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {            
+            $this->object->retract($_GET["id"]);
+            ilUtil::sendSuccess($lng->txt("msg_episode_published"), true);
+        } else {
+            $ilLog->write("ID does not match in retract episode:".$_GET["id"]);
+        }
+        $ilCtrl->redirect($this, "editEpisodes");
+    }
+
 	
 //
 // Show content
@@ -270,10 +308,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		
 		$released  = $this->object->getReleasedEpisodes();
 		
-		
         foreach($this->object->getSearchResult()->mediapackage as $value) {
             if ($this->object->getManualRelease()){
-                    if(! in_array($released, $value['id'])){
+                    if(! in_array($value['id'],$released)){
                             continue;
                     }
             }
@@ -286,9 +323,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
             $ilLog->write("adding item result list:".$value['id']);
-
-            $replacementString = substr($this->plugin->getStyleSheetLocation("css/xmh.css"),0,-21);
-            $previewurl = str_replace($this->configObject->getMatterhornEngageServer()."/static/engage-player/",$replacementString."MHData/".CLIENT_ID."/".$this->object->getId()."/",$previewurl);
             $med_items[(string)$value['id']] = array(
                 "title" => (string)$value->title,
                 "date" => (string)$value['start'],
@@ -339,43 +373,51 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
 	
 	function editEpisodes(){
-          global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog;
+        global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog;
 
-          $this->checkPermission("write");
+        $this->checkPermission("write");
 
-          $this->plugin->includeClass("class.ilObjMatterhornTableUpcommingGUI.php");
+        $this->plugin->includeClass("class.ilObjMatterhornTableUpcommingGUI.php");
 
-          $table_gui = new ilObjMatterhornTableUpcommingGUI($this, "listItems");
+        $table_gui = new ilObjMatterhornTableUpcommingGUI($this, "listItems");
 
-          $med_items = array();
-          $totals = $this->object->searchResult['search-results']['total'];
-#          $ilLog->write("Total:".print_r($this->object->searchResult,true));     
-          
-          foreach($this->object->searchResult['search-results']['result'] as $key => $value) {
-                  $previewurl = "unset";
-                  foreach ($value['mediapackage']['attachments']['attachment'] as $attachment){
-                          if ('presentation/search+preview' ==  $attachment['type']){
-                                  $previewurl = $attachment['url'];
-                          }
-                  }                                               
-  //              $ilLog->write("adding item result list:".$key);         
-                  $med_items[$key] = array(
-                      "title" => $value['dcTitle'],
-                      "date" => $value['dcCreated'],
-                      "nr" => $key+1,
-                      "mhid" => $this->obj_id."/".$value['id'],
-                          "previewurl" => $previewurl
-                  );
-          }
-          $table_gui->setDefaultOrderField("nr");
-          $table_gui->setDefaultOrderDirection("asc");
-          
-          $table_gui->setData($med_items);
-          
-          $tpl->setContent($table_gui->getHTML());
-          
-          $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
-          $ilTabs->activateTab("manage");
+        $released  = $this->object->getReleasedEpisodes();
+        
+        $med_items = array();
+        $totals = $this->object->getSearchResult()['total'];
+        
+        foreach($this->object->getSearchResult()->mediapackage as $value) {
+            $previewurl = "unset";
+            foreach ($value->attachments->attachment as $attachment){
+          #      $ilLog->write("Attachment: ".print_r($attachment,true));
+                if ('presentation/search+preview' ==  $attachment['type'] || 'presenter/search+preview' ==  $attachment['type'] ){
+                    $ilLog->write("Setting preview url: ". $attachment->url);
+                    $previewurl = $attachment->url;
+                }
+            }
+            $ilLog->write("adding item to edit list:".$value['id']);         
+            $med_items[(string)$value['id']] = array(
+                "title" => (string)$value->title,
+                "date" => (string)$value['start'],
+                "nr" => $key+1,
+                "mhid" => (string)$value['id'],
+                "published" => in_array($value['id'],$released),
+                "previewurl" => $previewurl
+            );
+        }
+        $table_gui->setDefaultOrderField("nr");
+        $table_gui->setDefaultOrderDirection("asc");
+        
+        $table_gui->setData($med_items);
+        
+        $tpl->setContent($table_gui->getHTML());
+        
+        $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
+        $ilTabs->activateTab("manage");
 	}
+	
+	function getText($a_text){
+        return $this->txt($a_text);
+    }
 }
 ?>

@@ -19,9 +19,10 @@ class ilObjMatterhornTableSeriesGUI extends ilTable2GUI
 	{
 		global $ilCtrl, $lng;
 		parent::__construct($parent, $parent_cmd);
-		$this->addColumn("");
+
 		$this->addColumn($lng->txt("title"));
 		$this->addColumn($lng->txt("date"));
+		
 		$this->setFormAction($ilCtrl->getFormAction($parent));
 		$this->setRowTemplate("tpl.table_matterhorn_episode_row.html",
 			"Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
@@ -34,8 +35,8 @@ class ilObjMatterhornTableSeriesGUI extends ilTable2GUI
 	protected function fillRow($rowdata)
 	{
 		global $ilCtrl;
-
-		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilObjMatterhorn.php");
+        
+        include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilObjMatterhorn.php");
 		$ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $rowdata['mhid']);
 		$this->tpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
 		$this->tpl->setVariable("PREVIEWURL", $rowdata["previewurl"]);

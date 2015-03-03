@@ -19,12 +19,16 @@ grp_create_xmh#:#Matterhorn Objekt anlegen
 crs_create_xmh#:#Matterhorn Objekt anlegen
 fold_create_xmh#:#Matterhorn Objekt anlegen
 content#:#Inhalt
+manage#:#Aufzeichnungen verwalten
 viewmode#:#Kompakte Übersichtsseite verwenden
 properties#:#Eigenschaften
 edit_properties#:#Eigenschaften bearbeiten
 title#:#Titel
 description#:#Beschreibung
 lectureID#:#Vorlesungsnummer
+manualRelease#:#Aufzeichnung einzeln freigeben
+publish#:#Veröffentlichen
+retract#:#Zurückziehen
 save#:#Speichern
 cancel#:#Abbrechen
 edit#:#Bearbeiten

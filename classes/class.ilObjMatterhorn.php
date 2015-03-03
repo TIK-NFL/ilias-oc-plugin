@@ -130,7 +130,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doRead()
 	{
-		global $ilDB,$ilLog;
+		global $ilDB;
 		
 		$set = $ilDB->query("SELECT * FROM rep_robj_xmh_data ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "integer")
@@ -184,7 +184,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			" series = ".$ilDB->quote($this->getSeries(), "text").",".
 			" lectureid = ".$ilDB->quote($this->getLectureID(), "text").",".
 			" viewmode = ".$ilDB->quote($this->getViewMode(), "integer").",".
-                        " manualrelease = ".$ilDB->quote($this->getManualRelease(), "integer").",".
+            " manualrelease = ".$ilDB->quote($this->getManualRelease(), "integer").",".
 			" mhretval = ".$ilDB->quote($this->getMhRetVal(), "text")." ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "text")
 			);
@@ -208,7 +208,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	
 	
 	}
-	
+
 	/**
 	* Do Cloning
 	*/
@@ -389,7 +389,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     /**
     * Get manual release
     *
-    * @return       boolean         manualrelease
+    * @return boolean         manualrelease
     */
     function getManualRelease()
     {
@@ -403,7 +403,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     */
     function setLastFSInodeUpdate($a_val)
     {
-            $this->manualrelease = $a_val;
+            $this->fsinodeupdate = $a_val;
     }
 
     /**
@@ -414,6 +414,27 @@ class ilObjMatterhorn extends ilObjectPlugin
     function getLastFSInodeUpdate()
     {
             return $this->fsinodeupdate;
+    }
+
+    
+    function publish($episodeId){    
+        global $ilDB;
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_rel_ep ".
+            "(episode_id, series_id) VALUES (".
+            $ilDB->quote($episodeId, "text").",".
+            $ilDB->quote($this->getId(), "integer").") ".
+            "on duplicate key update  episode_id = episode_id"
+            );
+
+    }
+
+      function retract($episodeId){    
+        global $ilDB;
+        $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep WHERE ".
+            "episode_id=".$ilDB->quote($episodeId, "text")." AND series_id=".
+            $ilDB->quote($this->getId(), "integer")
+            );
+
     }
 
 	/**
@@ -456,12 +477,12 @@ class ilObjMatterhorn extends ilObjectPlugin
                 global $ilDB,$ilLog;
                 
                 $set = $ilDB->query("SELECT episode_id FROM rep_robj_xmh_rel_ep ".
-                        " WHERE series_id = ".$ilDB->quote($this->getId(), "text")
+                        " WHERE series_id = ".$ilDB->quote($this->getId(), "integer")
                         );
                 $released = array();
                 while ($rec = $ilDB->fetchAssoc($set))
                 {
-                        array_push($released,($rec["episodeId"]));
+                        array_push($released,($rec["episode_id"]));
                 }
                 return $released;
         }
