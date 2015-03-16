@@ -1,0 +1,41 @@
+<!-- BEGIN header -->     
+<H2>Finished Recordings</H2>
+<table>
+<thead>
+<tr><th>title</th><th>preview</th><th>date</th><th>action</th></tr>
+</thead>
+<tbody>
+<!-- END header -->       
+
+<!-- BEGIN finished -->     
+
+<tr>
+    <td><a href="{CMD_DOWNLOAD}">{TXT_TITLE}</a></td>
+    <td><a href="{CMD_DOWNLOAD}"><img src="{PREVIEWURL}" /></a></td>
+        <td>{TXT_DATE}</td><td><a href="{CMD_PUBLISH}">{TXT_PUBLISH}</a>
+     </td>   
+</tr>
+<!-- END finished -->       
+
+<!-- BEGIN middle -->     
+</tbody>
+</table>
+<H2>Scheduled Recordings</H2>
+<table>
+<thead>
+<tr><th>title</th><th>startdate</th><th>enddate</th><th>location</th></tr>
+</thead>
+<tbody>
+
+<!-- END middle -->       
+
+<!-- BEGIN scheduled -->     
+<tr>
+   <td>{TXT_TITLE}</td> <td>{TXT_STARTDATE} </td> <td> {TXT_STOPDATE} </td> <td> {TXT_LOCATION} </td>
+</tr>
+<!-- END scheduled -->       
+
+<!-- BEGIN footer -->     
+</tbody>
+</table>
+<!-- END footer -->       

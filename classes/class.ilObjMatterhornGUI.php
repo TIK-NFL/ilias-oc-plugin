@@ -247,7 +247,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $ilLog->write("ID:".$_GET["id"]);
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {            
             $this->object->publish($_GET["id"]);
-            ilUtil::sendSuccess($lng->txt("msg_episode_published"), true);
+            ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
         } else {
             $ilLog->write("ID does not match in publish episode:".$_GET["id"]);
         }
@@ -260,7 +260,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $ilLog->write("ID:".$_GET["id"]);
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {            
             $this->object->retract($_GET["id"]);
-            ilUtil::sendSuccess($lng->txt("msg_episode_published"), true);
+            ilUtil::sendSuccess($this->txt("msg_episode_retracted"), true);
         } else {
             $ilLog->write("ID does not match in retract episode:".$_GET["id"]);
         }
@@ -346,7 +346,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             foreach($med_items as $key => $item)
             {
                 $ilLog->write("Adding: ".$item["title"]);
-                $seriestpl->setCurrentBlock("variable");
+                    
 					$ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
 			                $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
 					$seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
@@ -373,13 +373,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
 	
 	function editEpisodes(){
-        global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog;
+        global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog, $ilCtrl;
 
         $this->checkPermission("write");
-
-        $this->plugin->includeClass("class.ilObjMatterhornTableUpcommingGUI.php");
-
-        $table_gui = new ilObjMatterhornTableUpcommingGUI($this, "listItems");
 
         $released  = $this->object->getReleasedEpisodes();
         
@@ -405,12 +401,64 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 "previewurl" => $previewurl
             );
         }
-        $table_gui->setDefaultOrderField("nr");
-        $table_gui->setDefaultOrderDirection("asc");
-        
-        $table_gui->setData($med_items);
-        
-        $tpl->setContent($table_gui->getHTML());
+        $scheduled_items = array();
+        #$ilLog->write(print_r($this->object->getUpcommingEpisodes(),true));
+        foreach($this->object->getScheduledEpisodes()['workflows']['workflow'] as $workflow) {
+            $ilLog->write("adding scheduled episodes to list:".$workflow['id']);         
+            $scheduled_items[$workflow['id']] = array(
+                "title" => $workflow['mediapackage']['title'],
+                "mhid" => $workflow['id'],
+                );
+            foreach($workflow['configurations']['configuration'] as $configuration){
+                switch ($configuration['key']) {
+                    case 'schedule.start':
+                        $scheduled_items[$workflow['id']]['startdate'] = $configuration['$']/1000;
+                        continue;
+                    case 'schedule.stop':
+                        $scheduled_items[$workflow['id']]['stopdate'] = $configuration['$']/1000;
+                        continue;
+                    case 'schedule.location':
+                        $scheduled_items[$workflow['id']]['location'] = $configuration['$'];
+                        continue;
+                }
+            }
+
+        }
+
+        $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
+        $seriestpl = new ilTemplate("tpl.series.edit.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+        $seriestpl->touchblock("header");
+        foreach($med_items as $key => $item)
+        {
+            $ilLog->write("Adding: ".$item["title"]);
+            $seriestpl->setCurrentBlock("finished");
+            $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+            $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+            $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
+            $seriestpl->setVariable("TXT_TITLE", $item["title"]);
+            $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
+            $seriestpl->setVariable("TXT_NR", $date["nr"]);
+            $seriestpl->setVariable("TXT_PUBLISH",$this->getText($item["published"]?"retract":"publish"));
+            $seriestpl->parseCurrentBlock();
+        }
+        $seriestpl->touchblock("middle");
+        foreach($scheduled_items as $key => $item)
+        {
+            $ilLog->write("Adding: ".$item["title"]);
+            $seriestpl->setCurrentBlock("scheduled");
+            $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+#            $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+            $seriestpl->setVariable("TXT_TITLE", $item["title"]);
+            $seriestpl->setVariable("TXT_STARTDATE", ilDatePresentation::formatDate(new ilDateTime($item["startdate"],IL_CAL_UNIX)));
+            $seriestpl->setVariable("TXT_STOPDATE", ilDatePresentation::formatDate(new ilDateTime($item["stopdate"],IL_CAL_UNIX)));
+            $seriestpl->setVariable("TXT_LOCATION",$item["location"]);
+            $seriestpl->parseCurrentBlock();
+        }
+        $seriestpl->touchblock("footer");
+  
+
+        $html = $seriestpl->get();
+        $tpl->setContent($html);
         
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
         $ilTabs->activateTab("manage");

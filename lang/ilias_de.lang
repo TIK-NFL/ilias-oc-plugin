@@ -29,6 +29,8 @@ lectureID#:#Vorlesungsnummer
 manualRelease#:#Aufzeichnung einzeln freigeben
 publish#:#Veröffentlichen
 retract#:#Zurückziehen
+msg_episode_published#:#Die Aufzeichnung wurde veröffentlicht.
+msg_episode_retracted#:#Die Aufzeichnung wurde zurückgezogen.
 save#:#Speichern
 cancel#:#Abbrechen
 edit#:#Bearbeiten

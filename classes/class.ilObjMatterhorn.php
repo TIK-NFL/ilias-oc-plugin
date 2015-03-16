@@ -488,16 +488,18 @@ class ilObjMatterhorn extends ilObjectPlugin
         }
         
         /**
-         * The upcomming information for this series returned by matterhorn
+         * The scheduled information for this series returned by matterhorn
          * 
-         * @return array the upcomming episodes for this series returned by matterhorn
+         * @return array the scheduled episodes for this series returned by matterhorn
          */
-        function getUpcommingEpisodes(){
+        function getScheduledEpisodes(){
                         
-                $url = $this->configObject->getMatterhornEngageServer()."/workflow/instances.json";
+                global $ilLog;
+                        
+                $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
 
                 /* $_GET Parameters to Send */
-                $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => 'SCHEDULED');
+                $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','op'=>'schedule');
                 
                 /* Update URL to container Query String of Paramaters */
                 $url .= '?' . http_build_query($params);

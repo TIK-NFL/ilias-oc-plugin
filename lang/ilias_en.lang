@@ -29,6 +29,8 @@ lectureID#:#Lecture ID
 manualRelease#:#Release recordings individually
 publish#:#Publish
 retract#:#Retract
+msg_episode_published#:#The episode has been published.
+msg_episode_retracted#:#The episode has been retracted.
 save#:#Save
 cancel#:#Cancel
 edit#:#Edit
