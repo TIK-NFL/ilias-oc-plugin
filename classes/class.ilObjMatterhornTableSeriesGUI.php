@@ -20,6 +20,7 @@ class ilObjMatterhornTableSeriesGUI extends ilTable2GUI
 		global $ilCtrl, $lng;
 		parent::__construct($parent, $parent_cmd);
 
+		$this->addColumn("");
 		$this->addColumn($lng->txt("title"));
 		$this->addColumn($lng->txt("date"));
 		

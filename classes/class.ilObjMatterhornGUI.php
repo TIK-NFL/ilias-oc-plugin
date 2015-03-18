@@ -406,7 +406,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         #$ilLog->write(print_r($this->object->getUpcommingEpisodes(),true));
         $scheduledEpisodes = $this->object->getScheduledEpisodes();
         $tempEpisodes = $scheduledEpisodes['workflows'];
-        if(is_array($tempEpisodes)){
+        if(is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']){
             if(1 == $tempEpisodes['totalCount']){
                 $workflow = $tempEpisodes['workflow'];
                 $workflowid = $workflow['id'];
@@ -458,36 +458,62 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
         $seriestpl = new ilTemplate("tpl.series.edit.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
-        $seriestpl->touchblock("header");
-        foreach($med_items as $key => $item)
-        {
-            $ilLog->write("Adding: ".$item["title"]);
-            $seriestpl->setCurrentBlock("finished");
-            $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
-            $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
-            $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
-            $seriestpl->setVariable("TXT_TITLE", $item["title"]);
-            $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
-            $seriestpl->setVariable("TXT_NR", $date["nr"]);
-            $seriestpl->setVariable("CMD_PUBLISH", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $item["published"]?"retract":"publish"));
-            $seriestpl->setVariable("TXT_PUBLISH",$this->getText($item["published"]?"retract":"publish"));
+        $seriestpl->setCurrentBlock("headerfinished");
+        $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
+        $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
+        $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
+        $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
+        $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+        $seriestpl->parseCurrentBlock();
+        if(count($med_items) > 0 ){
+            foreach($med_items as $key => $item)
+            {
+                $ilLog->write("Adding: ".$item["title"]);
+                $seriestpl->setCurrentBlock("finished");
+                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+                $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+                $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
+                $seriestpl->setVariable("TXT_EPISODE_TITLE", $item["title"]);            
+                $seriestpl->setVariable("TXT_EPISODE_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
+                $seriestpl->setVariable("TXT_NR", $date["nr"]);
+                $seriestpl->setVariable("CMD_PUBLISH", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $item["published"]?"retract":"publish"));
+                $seriestpl->setVariable("TXT_PUBLISH",$this->getText($item["published"]?"retract":"publish"));
+                $seriestpl->parseCurrentBlock();
+            }
+        } else {
+            $seriestpl->setCurrentBlock("nonefinished");
+            $seriestpl->setVariable("TXT_NONE_FINISHED", $this->getText("none_finished"));
             $seriestpl->parseCurrentBlock();
         }
-        $seriestpl->touchblock("middle");
-        foreach($scheduled_items as $key => $item)
-        {
-            $ilLog->write("Adding: ".$item["title"]);
-            $seriestpl->setCurrentBlock("scheduled");
-            $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
-#            $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
-            $seriestpl->setVariable("TXT_TITLE", $item["title"]);
-            $seriestpl->setVariable("TXT_STARTDATE", ilDatePresentation::formatDate(new ilDateTime($item["startdate"],IL_CAL_UNIX)));
-            $seriestpl->setVariable("TXT_STOPDATE", ilDatePresentation::formatDate(new ilDateTime($item["stopdate"],IL_CAL_UNIX)));
-            $seriestpl->setVariable("TXT_LOCATION",$item["location"]);
+        $seriestpl->touchblock("footerfinished");
+
+        $seriestpl->setCurrentBlock("headerscheduled");
+        $seriestpl->setVariable("TXT_SCHEDULED_RECORDING", $this->getText("scheduled_recordings"));
+        $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
+        $seriestpl->setVariable("TXT_STARTDATE", $this->getText("startdate"));
+        $seriestpl->setVariable("TXT_ENDDATE", $this->getText("enddate"));
+        $seriestpl->setVariable("TXT_LOCATION", $this->getText("location"));          
+        $seriestpl->parseCurrentBlock();
+        if(count($scheduled_items) > 0 ){
+            
+            foreach($scheduled_items as $key => $item)
+            {
+                $ilLog->write("Adding: ".$item["title"]);
+                $seriestpl->setCurrentBlock("scheduled");
+                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+                $seriestpl->setVariable("TXT_EPISODE_TITLE", $item["title"]);
+                $seriestpl->setVariable("TXT_EPISODE_STARTDATE", ilDatePresentation::formatDate(new ilDateTime($item["startdate"],IL_CAL_UNIX)));
+                $seriestpl->setVariable("TXT_EPISODE_STOPDATE", ilDatePresentation::formatDate(new ilDateTime($item["stopdate"],IL_CAL_UNIX)));
+                $seriestpl->setVariable("TXT_EPISODE_LOCATION",$item["location"]);
+                $seriestpl->parseCurrentBlock();
+            }
+        } else {
+            $seriestpl->setCurrentBlock("nonescheduled");
+            $seriestpl->setVariable("TXT_NONE_SCHEDULED", $this->getText("none_scheduled"));            
             $seriestpl->parseCurrentBlock();
         }
-        $seriestpl->touchblock("footer");
-  
+        $seriestpl->touchblock("footerscheduled");
+        
 
         $html = $seriestpl->get();
         $tpl->setContent($html);

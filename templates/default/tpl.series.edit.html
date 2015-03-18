@@ -1,41 +1,57 @@
-<!-- BEGIN header -->     
-<H2>Finished Recordings</H2>
-<table>
+<!-- BEGIN headerfinished -->     
+<H2>{TXT_FINISHED_RECORDINGS}</H2>
+<div class="ilTableOuter">
+<table class="fullwidth">
 <thead>
-<tr><th>title</th><th>preview</th><th>date</th><th>action</th></tr>
+<tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_PREVIEW}</th><th class="std">{TXT_DATE}</th><th class="std">{TXT_ACTION}</th></tr>
 </thead>
 <tbody>
-<!-- END header -->       
-
+<!-- END headerfinished -->       
 <!-- BEGIN finished -->     
 
 <tr>
-    <td><a href="{CMD_DOWNLOAD}">{TXT_TITLE}</a></td>
-    <td><a href="{CMD_DOWNLOAD}"><img src="{PREVIEWURL}" /></a></td>
-        <td>{TXT_DATE}</td><td><a href="{CMD_PUBLISH}">{TXT_PUBLISH}</a>
-     </td>   
+    <td class="std"><a href="{CMD_DOWNLOAD}">{TXT_EPISODE_TITLE}</a></td>
+    <td class="std"><a href="{CMD_DOWNLOAD}"><img src="{PREVIEWURL}" /></a></td>
+    <td class="std">{TXT_EPISODE_DATE}</td><td><a href="{CMD_PUBLISH}">{TXT_PUBLISH}</a></td>   
 </tr>
 <!-- END finished -->       
 
-<!-- BEGIN middle -->     
+<!-- BEGIN nonefinished -->     
+<tr class="tblrow1">
+    <td class="std" style="text-align:center;" colspan="4">{TXT_NONE_FINISHED}
+</td>
+</tr>
+<!-- END nonefinished -->       
+
+<!-- BEGIN footerfinished -->     
 </tbody>
 </table>
-<H2>Scheduled Recordings</H2>
-<table>
+</div>
+<!-- END footerfinished -->       
+
+<!-- BEGIN headerscheduled -->     
+<H2>{TXT_SCHEDULED_RECORDING}</H2>
+<div class="ilTableOuter">
+<table class="fullwidth">
 <thead>
-<tr><th>title</th><th>startdate</th><th>enddate</th><th>location</th></tr>
+<tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_STARTDATE}</th><th class="std">{TXT_ENDDATE}</th><th  class="std">{TXT_LOCATION}</th></tr>
 </thead>
 <tbody>
-
-<!-- END middle -->       
-
+<!-- END headerscheduled -->       
 <!-- BEGIN scheduled -->     
 <tr>
-   <td>{TXT_TITLE}</td> <td>{TXT_STARTDATE} </td> <td> {TXT_STOPDATE} </td> <td> {TXT_LOCATION} </td>
+   <td class="std">{TXT_EPISODE_TITLE}</td> <td class="std">{TXT_EPISODE_STARTDATE} </td> <td class="std"> {TXT_EPISODE_STOPDATE} </td> <td class="std"> {TXT_EPISODE_LOCATION} </td>
 </tr>
 <!-- END scheduled -->       
+<!-- BEGIN nonescheduled -->     
+<tr class="tblrow1">
+    <td class="std" style="text-align:center;" colspan="4">{TXT_NONE_SCHEDULED}
+</td>
+</tr>
 
-<!-- BEGIN footer -->     
+<!-- END nonescheduled -->       
+<!-- BEGIN footerscheduled -->     
 </tbody>
 </table>
-<!-- END footer -->       
+</div>
+<!-- END footerscheduled -->      

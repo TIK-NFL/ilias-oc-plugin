@@ -44,3 +44,15 @@ mh_digest_password#:#Password of the Matterhorn Digest User
 xsendfile_basedir#:#Base directory for XSendfile
 matterhorn_version#:#Matterhorn Version (Don't Change 1.4)
 saving_invoked#:#Save procedure has been executed
+
+finished_recordings#:#Finished Recordings
+preview#:#Preview
+date#:#Date
+action#:#Action
+none_finished#:#There are no finished recordings yet.
+
+scheduled_recordings#:#Scheduled Recordings
+startdate#:#Start date
+enddate#:#End date
+location#:#Location
+none_scheduled#:#There are no scheduled recordings for this series.

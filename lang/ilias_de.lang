@@ -44,3 +44,15 @@ mh_digest_password#:#Passwort des Matterhorn Digest User
 xsendfile_basedir#:#Basisverzeichnis f&uuml;r XSendfile
 matterhorn_version#:#Matterhorn Version (1.4 nicht verändern)
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert
+
+finished_recordings#:#Fertige Aufzeichnungen
+preview#:#Vorschau
+date#:#Datum
+action#:#Aktion
+none_finished#:#Es gibt keine fertigen Aufzeichnungen
+
+scheduled_recordings#:#Geplante Aufzeichnungen
+startdate#:#Startzeit
+enddate#:#Endzeit
+location#:#Aufzeichungsort
+none_scheduled#:#Es sind keine Aufzeichnungen geplant.
