@@ -434,7 +434,7 @@ class ilMatterhornSendfile
             }
             $episode['search-results']["result"]["dcCreator"] = $creators;
         }
-        echo json_encode($episode, JSON_PRETTY_PRINT);
+        echo json_encode($episode);
 	}
 	
 	/**

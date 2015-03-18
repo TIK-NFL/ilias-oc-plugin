@@ -303,7 +303,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		
 
 		$med_items = array();
-		$totals = $this->object->getSearchResult()['total'];
+		$temptotals = $this->object->getSearchResult();
+		$totals = $temptotals['total'];
 		#$ilLog->write("Total:".print_r($this->object->getSearchResult(),true));
 		
 		$released  = $this->object->getReleasedEpisodes();
@@ -380,8 +381,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $released  = $this->object->getReleasedEpisodes();
         
         $med_items = array();
-        $totals = $this->object->getSearchResult()['total'];
-        
+        $temptotals = $this->object->getSearchResult();
+        $totals = $temptotals['total'];
         foreach($this->object->getSearchResult()->mediapackage as $value) {
             $previewurl = "unset";
             foreach ($value->attachments->attachment as $attachment){
@@ -403,28 +404,58 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         $scheduled_items = array();
         #$ilLog->write(print_r($this->object->getUpcommingEpisodes(),true));
-        foreach($this->object->getScheduledEpisodes()['workflows']['workflow'] as $workflow) {
-            $ilLog->write("adding scheduled episodes to list:".$workflow['id']);         
-            $scheduled_items[$workflow['id']] = array(
-                "title" => $workflow['mediapackage']['title'],
-                "mhid" => $workflow['id'],
-                );
-            foreach($workflow['configurations']['configuration'] as $configuration){
-                switch ($configuration['key']) {
-                    case 'schedule.start':
-                        $scheduled_items[$workflow['id']]['startdate'] = $configuration['$']/1000;
-                        continue;
-                    case 'schedule.stop':
-                        $scheduled_items[$workflow['id']]['stopdate'] = $configuration['$']/1000;
-                        continue;
-                    case 'schedule.location':
-                        $scheduled_items[$workflow['id']]['location'] = $configuration['$'];
-                        continue;
+        $scheduledEpisodes = $this->object->getScheduledEpisodes();
+        $tempEpisodes = $scheduledEpisodes['workflows'];
+        if(is_array($tempEpisodes)){
+            if(1 == $tempEpisodes['totalCount']){
+                $workflow = $tempEpisodes['workflow'];
+                $workflowid = $workflow['id'];
+                $temparray = array( 
+                    'title' => $workflow["mediapackage"]['title'],
+                    'mhid' => $workflow['id'],
+                    );
+                $scheduled_items[$workflowid] = $temparray;
+                $tempworkflow = $workflow['configurations']['configuration'];
+                foreach($tempworkflow as $configuration){
+                    switch ($configuration['key']) {
+                        case 'schedule.start':
+                            $scheduled_items[$workflow['id']]['startdate'] = $configuration['$']/1000;
+                            continue;
+                        case 'schedule.stop':
+                            $scheduled_items[$workflow['id']]['stopdate'] = $configuration['$']/1000;
+                            continue;
+                        case 'schedule.location':
+                            $scheduled_items[$workflow['id']]['location'] = $configuration['$'];
+                            continue;
+                    }
+                }
+            }else {
+                foreach($tempEpisodes['workflow'] as $workflow) {
+                    $ilLog->write("adding scheduled episodes to list:".$workflow['id']);         
+                    $workflowid = $workflow['id'];
+                    $temparray = array( 
+                        'title' => $workflow["mediapackage"]['title'],
+                        'mhid' => $workflow['id'],
+                        );
+                    $scheduled_items[$workflowid] = $temparray;
+                    $tempworkflow = $workflow['configurations']['configuration'];
+                    foreach($tempworkflow as $configuration){
+                        switch ($configuration['key']) {
+                            case 'schedule.start':
+                                $scheduled_items[$workflow['id']]['startdate'] = $configuration['$']/1000;
+                                continue;
+                            case 'schedule.stop':
+                                $scheduled_items[$workflow['id']]['stopdate'] = $configuration['$']/1000;
+                                continue;
+                            case 'schedule.location':
+                                $scheduled_items[$workflow['id']]['location'] = $configuration['$'];
+                                continue;
+                        }
+                    }
+
                 }
             }
-
         }
-
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
         $seriestpl = new ilTemplate("tpl.series.edit.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
         $seriestpl->touchblock("header");
@@ -438,6 +469,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $seriestpl->setVariable("TXT_TITLE", $item["title"]);
             $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
             $seriestpl->setVariable("TXT_NR", $date["nr"]);
+            $seriestpl->setVariable("CMD_PUBLISH", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $item["published"]?"retract":"publish"));
             $seriestpl->setVariable("TXT_PUBLISH",$this->getText($item["published"]?"retract":"publish"));
             $seriestpl->parseCurrentBlock();
         }
