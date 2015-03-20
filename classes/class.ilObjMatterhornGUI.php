@@ -397,7 +397,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 "title" => (string)$value->title,
                 "date" => (string)$value['start'],
                 "nr" => $key+1,
-                "mhid" => (string)$value['id'],
+                "mhid" => $this->obj_id."/".(string)$value['id'],
                 "published" => in_array($value['id'],$released),
                 "previewurl" => $previewurl
             );

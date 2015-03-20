@@ -346,7 +346,6 @@ class ilMatterhornSendfile
 	public function sendEpisode(){
 		global $basename,$ilLog;
 		
-		$url = $this->configObject->getMatterhornEngageServer().'/search/episode.json?id='.$this->episode_id;
         $ilLog->write("Manifestbasedir: ".$this->configObject->getXSendfileBasedir().$this->obj_id.'/'.$this->episode_id);
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/manifest.xml',NULL, TRUE);
 
