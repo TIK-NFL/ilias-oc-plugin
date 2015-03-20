@@ -49,10 +49,10 @@ finished_recordings#:#Fertige Aufzeichnungen
 preview#:#Vorschau
 date#:#Datum
 action#:#Aktion
-none_finished#:#Es gibt keine fertigen Aufzeichnungen
+none_finished#:#Es sind keine fertigen Aufzeichnungen vorhanden
 
 scheduled_recordings#:#Geplante Aufzeichnungen
 startdate#:#Startzeit
 enddate#:#Endzeit
 location#:#Aufzeichungsort
-none_scheduled#:#Es sind keine Aufzeichnungen geplant.
+none_scheduled#:#Es sind keine Aufzeichnungen geplant

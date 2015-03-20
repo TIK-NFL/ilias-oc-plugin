@@ -49,10 +49,10 @@ finished_recordings#:#Finished Recordings
 preview#:#Preview
 date#:#Date
 action#:#Action
-none_finished#:#There are no finished recordings yet.
+none_finished#:#There are no finished recordings yet
 
 scheduled_recordings#:#Scheduled Recordings
 startdate#:#Start date
 enddate#:#End date
 location#:#Location
-none_scheduled#:#There are no scheduled recordings for this series.
+none_scheduled#:#There are no scheduled recordings for this series
