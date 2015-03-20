@@ -63,6 +63,9 @@ class ilMatterhornConfig
 	}
 	
 	public function setXSendfileBasedir($value){
+	    if(substr( $value, -1 ) != '/'){
+            $value = $value.'/';
+	    }
 		$this->setValue("xsendfile_basedir", $value);
 	}
 
