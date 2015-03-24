@@ -476,6 +476,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("TXT_EPISODE_TITLE", $item["title"]);            
                 $seriestpl->setVariable("TXT_EPISODE_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
                 $seriestpl->setVariable("TXT_NR", $date["nr"]);
+                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $key);
                 $seriestpl->setVariable("CMD_PUBLISH", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $item["published"]?"retract":"publish"));
                 $seriestpl->setVariable("TXT_PUBLISH",$this->getText($item["published"]?"retract":"publish"));
                 $seriestpl->parseCurrentBlock();
