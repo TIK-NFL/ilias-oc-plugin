@@ -372,6 +372,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	    return ($a["date"] < $b["date"]) ? -1 : 1;
 	}
 
+	    function sortbystartdate($a, $b) {
+        if ($a["startdate"] == $b["startdate"]) {
+            return 0;
+        }
+        return ($a["startdate"] < $b["startdate"]) ? -1 : 1;
+    }
+
 	
 	function editEpisodes(){
         global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog, $ilCtrl;
@@ -402,6 +409,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 "previewurl" => $previewurl
             );
         }
+        uasort($med_items,array($this, 'sortbydate'));
         $scheduled_items = array();
         #$ilLog->write(print_r($this->object->getUpcommingEpisodes(),true));
         $scheduledEpisodes = $this->object->getScheduledEpisodes();
@@ -456,6 +464,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
         }
+        uasort($scheduled_items,array($this, 'sortbydate'));
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
         $seriestpl = new ilTemplate("tpl.series.edit.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
         $seriestpl->setCurrentBlock("headerfinished");
