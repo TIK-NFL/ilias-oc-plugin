@@ -1,2 +1,2 @@
-# ilias-mh
-An ILIAS plugin for Matterhorn
+# ilias-oc
+An ILIAS plugin for OpenCast
