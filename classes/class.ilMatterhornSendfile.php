@@ -372,6 +372,7 @@ class ilMatterhornSendfile
         $episode['search-results']["result"]["mediapackage"]['attachments'] = $attachments;
 
         $metadata = array("catalog"=>array());
+        $segments = null;
         foreach ($manifest->metadata->catalog as $catalog){
             $cat = array();
             if (isset($catalog['id'])) $cat['id'] = (string)$catalog['id'];
@@ -384,6 +385,10 @@ class ilMatterhornSendfile
                 foreach ($catalog->tags->tag as $tag){
                     array_push($cat['tags']['tag'], (string)$tag);
                 }
+            }
+            if (isset($catalog['type']) && 0 == strcmp((string)$catalog['type'],'mpeg-7/segments')) {
+                $ilLog->write("setting catalog to ".(string)$catalog['type']);
+                $segments = $catalog;
             }
             array_push($metadata['catalog'],$cat);
         }
@@ -433,9 +438,41 @@ class ilMatterhornSendfile
             }
             $episode['search-results']["result"]["dcCreator"] = $creators;
         }
+        if($segments){
+            $episode['search-results']["result"]["segments"] =  $this->convertSegment($segments);
+        }
         echo json_encode($episode);
 	}
 	
+	private function convertSegment($catalog)
+	{
+        global $ilLog;
+        $urlsplit = explode('/',(string)$catalog->url);
+        end($urlsplit);
+        $segmentsxml = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/'.prev($urlsplit).'/'.end($urlsplit),NULL, TRUE);
+
+        $segments = array("segment"=>array());
+        $currentidx = 0;
+        $currenttime = 0;
+        foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml){
+            $regmatches = array();
+            preg_match("/PT(\d+M)?(\d+S)0N1000F/", (string)$segmentxml->MediaTime->MediaDuration, $regmatches);
+            $sec = substr($regmatches[2],0,-1);
+            $min = 0;
+            if(0 != strcmp('',$regmatches[1])){
+                $min = substr($regmatches[1],0,-1);
+            }
+            $segment = array();
+            $segment['index'] = $currentidx;
+            $segment['time'] = $currenttime;
+            $segment['duration'] = ($min * 60 + $sec) * 1000;
+            $currentidx++;
+            $currenttime = $currenttime + $segment['duration'];
+            array_push($segments['segment'],$segment);
+        }
+        return $segments;
+	}
+
 	/**
 	* Send the requested file as if directly delivered from the web server
 	* @access	public
