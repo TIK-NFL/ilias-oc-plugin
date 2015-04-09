@@ -105,3 +105,19 @@ $ilDB->addIndex("rep_robj_xmh_rel_ep", array("series_id"),'ser');
           'default' => 0
 ));
 ?>
+<#9>
+<?php
+
+  $ilDB->modifyTableColumn('rep_robj_xmh_data', 'manualrelease', array(
+          'type' => 'integer',
+          'length' => 1,
+          'notnull' => true,
+          'default' => 0
+));
+  $ilDB->modifyTableColumn('rep_robj_xmh_data', 'fsinodupdate', array(
+          'type' => 'integer',
+          'length' => 8,
+          'notnull' => true,
+          'default' => 0
+));
+?>

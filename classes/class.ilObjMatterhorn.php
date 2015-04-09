@@ -114,14 +114,15 @@ class ilObjMatterhorn extends ilObjectPlugin
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);				
 		
 		$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
-				"(id, is_online, series, mhretval, lectureid,viewmode,manualrelease) VALUES (".
+				"(id, is_online, series, mhretval, lectureid,viewmode,manualrelease,fsinodupdate) VALUES (".
 				$ilDB->quote($this->getId(), "integer").",".
 				$ilDB->quote(0, "integer").",".
 				$ilDB->quote($result, "text").",".
 				$ilDB->quote($httpCode, "text").",".
 				$ilDB->quote($this->getLectureID(), "text").",".
 				$ilDB->quote(0, "integer").",".
-				$ilDB->quote($this->getManualRelease(), "integer").
+				$ilDB->quote(1, "integer").",".
+				$ilDB->quote(0, "integer").
 				")");
 	}
 	
@@ -143,7 +144,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			$this->setLectureID($rec["lectureid"]);
 			$this->setViewMode($rec["viewmode"]);
 			$this->setManualRelease($rec["manualrelease"]);
-			$this->setLastFSInodeUpdate($rec["fsinodeupdate"]);
+			$this->setLastFSInodeUpdate($rec["fsinodupdate"]);
 		}
 		
 	}
