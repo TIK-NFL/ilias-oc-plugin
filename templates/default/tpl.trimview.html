@@ -1,0 +1,24 @@
+<H2>{TXT_ILIAS_TRIM_EDITOR}</H2>
+<div>
+<a href="{DOWNLOAD_PREVIEW_URL}" download>{TXT_DOWNLOAD_PREVIEW}</a>
+</div>
+<div>
+{TXT_SELECTED_TRACKS}
+<form action="{CMD_TRIM}" method="post">
+<table>
+<tr><td>{TXT_TRACK_TITLE}</td><td><input name="tracktitle" value="{TRACKTITLE}" checked></td></tr>
+<tr><td>{TXT_LEFT_TRACK}</td><td><input type="checkbox" name="lefttrack" value="{LEFTTRACKID}" checked></td><td>
+  <select id="leftrackflavor">
+    <option selected>presenter/trimmed</option><option>presentation/trimmed</option>
+  </select></td>
+</tr>
+<tr><td>{TXT_RIGHT_TRACK}</td><td><input type="checkbox" name="righttrack" value="{RIGHTTRACKID}" checked></td><td>
+  <select id="rightrackflavor">
+    <option>presenter/trimmed</option><option selected>presentation/trimmed</option>
+  </select></td>
+</tr>
+<tr><td>{TXT_STARTTIME}</td><td><input name="starttime" value="0:00:00" checked></td></tr>
+<tr><td>{TXT_ENDTIME}</td><td><input name="endtime" value="{TRACKLENGTH}" checked></td></tr>
+</table>
+<input type="submit" value="{TXT_CONTINUE}">
+</from>
