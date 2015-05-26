@@ -81,11 +81,11 @@ class ilMatterhornSendfile
 	var $file;	
 
 	/**
-	 * Stores if this is a request for an episode.
-	 * @var boolean
+	 * Stores the request type.
+	 * @var string
 	 * @access private
 	 */
-	var $episodeRequest;
+	var $requestType;
 	
 	
 	/**
@@ -131,7 +131,7 @@ class ilMatterhornSendfile
 		$this->lng =& $lng;
 		$this->ilAccess =& $ilAccess;
 		$this->params = array();
-		$this->episodeRequest = false;
+		$this->requestType = "none";
 		
 		// get the requested file and its type
 		$uri = parse_url($_SERVER["REQUEST_URI"]);
@@ -141,7 +141,7 @@ class ilMatterhornSendfile
 		// check if it is a request for an episode
 		if(0 == strcmp(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json", $uri["path"])){
             $ilLog->write("EpisodeRequest for: ".print_r($this->params,true));
-			$this->episodeRequest = true;
+			$this->requestType = "episode";
 			if (!preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
 				$this->errorcode = 404;
 				$this->errortext = $this->lng->txt("no_such_episode");
@@ -149,24 +149,45 @@ class ilMatterhornSendfile
 			}
 
 			list($this->obj_id,$this->episode_id) = explode('/', $this->params['id']);
-		} else {
-            $this->episodeRequest = false;
-			$client_start = strpos($_SERVER['PHP_SELF'], $basename."/") + strlen($basename)+1;
-			$pattern = substr($_SERVER['REQUEST_URI'], $client_start+strlen(CLIENT_ID));
-			$this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern)+1));
-			$this->file = realpath(ILIAS_ABSOLUTE_PATH . "/". $this->subpath);
-		
-			// build url path for virtual function
-			$this->virtual_path = str_replace($pattern, "virtual-" . $pattern, $uri["path"]);
-			$this->obj_id = substr($this->subpath,0,strpos($this->subpath,'/'));
+			
+		} else  { 
+            $client_start = strpos($_SERVER['PHP_SELF'], $basename."/") + strlen($basename)+1;
+            $pattern = substr($_SERVER['REQUEST_URI'], $client_start+strlen(CLIENT_ID));
+            $this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern)+1));
+            $this->obj_id = substr($this->subpath,0,strpos($this->subpath,'/'));
             if (!preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
                 $this->errorcode = 404;
                 $this->errortext = $this->lng->txt("no_such_episode");
                 return false;
             }
+            if(preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview.mkv/', $this->subpath)){
+                $ilLog->write("PreviewRequest for: ".$this->subpath);
+                $this->requestType = "preview";
+                if (!preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview.mkv/', $this->subpath)) {
+                    $this->errorcode = 404;
+                    $this->errortext = $this->lng->txt("no_such_episode");
+                    return false;               
+                }
+                list($this->obj_id,$this->episode_id) = explode('/', $this->subpath);
+            } else {
+                $this->requestType = "file";
+                $client_start = strpos($_SERVER['PHP_SELF'], $basename."/") + strlen($basename)+1;
+                $pattern = substr($_SERVER['REQUEST_URI'], $client_start+strlen(CLIENT_ID));
+                $this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern)+1));
+                $this->file = realpath(ILIAS_ABSOLUTE_PATH . "/". $this->subpath);
+            
+                // build url path for virtual function
+                $this->virtual_path = str_replace($pattern, "virtual-" . $pattern, $uri["path"]);
+                $this->obj_id = substr($this->subpath,0,strpos($this->subpath,'/'));
+                if (!preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
+                    $this->errorcode = 404;
+                    $this->errortext = $this->lng->txt("no_such_episode");
+                    return false;
+                }
 
 
-		}
+            }
+        }
 		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
 		$this->configObject = new ilMatterhornConfig(); 
 		// debugging
@@ -207,11 +228,11 @@ class ilMatterhornSendfile
 	}
 
 	/** 
-	 * Check if request is for episode.
+	 * Returns the type of request
 	 * @access public
 	 */
-	public function isEpisodeRequest(){
-		return $this->episodeRequest;
+	public function getRequestType(){
+		return $this->requestType;
 	}
 	
 	/**
@@ -263,6 +284,11 @@ class ilMatterhornSendfile
 		return false;
 	}
 	
+	
+	public function checkPreviewAccess()
+	{
+        return $this->checkFileAccess();
+    }
 	
 	/**
 	* Check access rights of the requested file
@@ -542,6 +568,16 @@ class ilMatterhornSendfile
 		fclose($fp);
 	}
 	
+
+	public function sendPreview()
+	{
+	global $ilLog;
+	$ilLog->write(print_r($_SESSION,true));
+#	include_once("./Services/Authentication/classes/class.ilSession.php");
+#                ilSession::_destroyByUserId($this->getId());
+
+	
+	}
 	
 	
 	/**

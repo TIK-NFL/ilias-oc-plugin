@@ -597,18 +597,27 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     function showTrimEditor()
     {        
-        global $tpl, $ilTabs, $ilCtrl,$ilLog;
+        global $tpl, $ilTabs, $ilCtrl,$ilLog, $ilUser;
         $this->checkPermission("write");
         //$theodulbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
 
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
             $workflow = $this->object->getWorkflow($_GET["id"]);
             $mediapackage = $workflow["workflow"]["mediapackage"];
-            $series = simplexml_load_string($this->object->getSeries());
+//             $series = simplexml_load_string($this->object->getSeries());
             if (!strpos($this->object->getSeries(),$mediapackage["series"])) {
                 $ilCtrl->redirect($this, "editEpisodes");
             }
-            $ilLog->write(print_r($mediapackage,true));
+            $previewtrack;
+            foreach($mediapackage['media']['track'] as $key => $track){
+                if("composite/iliaspreview" === $track['type']){
+                    $previewtrack = $track;
+                }
+            }       
+            $_SESSION["mhpreviewurl".$_GET["id"]] = $track['url'];
+
+            $ilLog->write(print_r($previewtrack ,true));
+
             $trimview = new ilTemplate("tpl.trimview.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
             $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
@@ -621,9 +630,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $_GET["id"]);
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "trimEpisode"));
             $trimview->setVariable("TRACKTITLE",$mediapackage["title"]);
-            $trimview->setVariable("DOWNLOAD_PREVIEW_URL", "http://somewhere.else");          
-            $trimview->setVariable("LEFTTRACKID", "leftrack1");
+            $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".$mediapackage["series"]."/".$_GET["id"]."/preview.mkv";
+            $trimview->setVariable("DOWNLOAD_PREVIEW_URL", $downloadurl);
             $trimview->setVariable("RIGHTTRACKID", "righttrack");
+            $trimview->setVariable("LEFTTRACKID", "leftrack1");
+            
             $duration = (int)$mediapackage["duration"];
             $ilLog->write(print_r($duration,true));
             $hours = floor($duration/3600000);
