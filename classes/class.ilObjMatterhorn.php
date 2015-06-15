@@ -563,9 +563,9 @@ class ilObjMatterhorn extends ilObjectPlugin
                 
         global $ilLog;
                 
-        $url = $this->configObject->getMatterhornServer()."/workflow/instance/".$workflowid.".json";
+        $url = $this->configObject->getMatterhornServer()."/workflow/instance/".$workflowid.".xml";
         
-        $ilLog->write("mh query".$url);
+        $ilLog->write("workflow-query: ".$url);
         //open connection
         $ch = curl_init();
         
@@ -576,10 +576,94 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
         $curlret = curl_exec($ch);        
-        $workflow = json_decode($curlret,true);
-
+//        $ilLog->write("workflow-query-return: ".$curlret);
+        $workflow = simplexml_load_string($curlret);
+        if ($workflow === false){
+          $ilLog->write("XXXX error loading workflow: ".$workflowid);
+          foreach(libxml_get_errors() as $error) {
+            $ilLog->write("error : ". $error->message);
+          }
+        }
+  //      $ilLog->write("workflow: ".print_r($workflow,true));
         return $workflow;
     }
 
+    /**
+     * Trims the tracks of a workflow
+     *
+     * @param   Integer     workflowid the workflow id
+     * @param   Array       array containing the information about the tracks
+     * @param   String      removetrack the id of the track to be removed
+     * @param   Float       trimin the start time of the new tracks
+     * @param   Float       trimout the endtime of the video
+     */
+    function trim($workflowid, $mediapackage, $removetrack, $trimin, $trimout){
+                
+        global $ilLog;
+        $mp = $mediapackage;
+        if(isset($removetrack)){
+            $url = $this->configObject->getMatterhornServer()."/mediapackage/removeTrack";
+        
+            $ilLog->write("removetrack-query: ".$url);
+            $fields = array();
+            $fields['mediapackage'] = urlencode(trim($mp));
+            $fields['trackId'] =  $removetrack;
+            //url-ify the data for the POST
+            foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+            rtrim($fields_string,'&');
+        
+            //open connection
+            $ch = curl_init();
+        
+            //set the url, number of POST vars, POST data
+            curl_setopt($ch, CURLOPT_URL,$url);
+            curl_setopt($ch, CURLOPT_POST,count($fields));
+            curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);            
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+            curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+            $mp = curl_exec($ch);        
+            $ilLog->write("workflow-query-return: ".$mp);
+        }
+        
+        $url = $this->configObject->getMatterhornServer()."/workflow/replaceAndresume";
+    
+        $ilLog->write("resume-query: ".$url);
+        $ilLog->write("workflowid: ".$workflowid);
+        $fields = array();
+        $fields['mediapackage'] = urlencode(trim($mp));
+        $fields['id'] =  $workflowid;
+        $fields['properties'] = "trimin=".(1000*$trimin)."\nnewduration=".(1000*($trimout-$trimin));
+        //url-ify the data for the POST
+        foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+        rtrim($fields_string,'&');
+    
+        //open connection
+        $ch = curl_init();
+    
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_POST,count($fields));
+        curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);            
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $mp = curl_exec($ch);        
+        if(!curl_errno($ch))
+        {
+          $info = curl_getinfo($ch);
+
+          $ilLog->write('Es wurden ' . $info['total_time'] . ' Sekunden benötigt für einen Request an ' . $info['url']);
+        }
+
+        $ilLog->write("resume-return: ".$mp);
+
+        //        $workflow = $this->getWorkflow($workflowid);
+//        $mediapackage = $workflow["workflow"]["mediapackage"];
+
+    }
+    
 }
 ?>

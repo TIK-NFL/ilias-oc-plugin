@@ -1,24 +1,52 @@
+<!-- BEGIN formstart -->  
+<script data-main="{INITJS}/trim" src="{INITJS}/trim.js"></script>
+<link href="{INITJS}/video-js/video-js.css" rel="stylesheet">
+<script src="{INITJS}/video-js/video.js"></script>
+<script>
+  videojs.options.flash.swf = "{INITJS}/video-js/video-js.swf"
+</script>
 <H2>{TXT_ILIAS_TRIM_EDITOR}</H2>
+<div>
+<video id="mhpreviewvideo" class="video-js vjs-default-skin"
+  controls preload="auto" width="640" height="264"
+  data-setup='{"example_option":true}'>
+ <source src="{DOWNLOAD_PREVIEW_URL}" type='video/mp4' />
+ <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+</video>
+</div>
 <div>
 <a href="{DOWNLOAD_PREVIEW_URL}" download>{TXT_DOWNLOAD_PREVIEW}</a>
 </div>
 <div>
 {TXT_SELECTED_TRACKS}
 <form action="{CMD_TRIM}" method="post">
+<input type="hidden" name="wfid" value="{WFID}" />
 <table>
 <tr><td>{TXT_TRACK_TITLE}</td><td><input name="tracktitle" value="{TRACKTITLE}" checked></td></tr>
+<!-- END formstart -->  
+<!-- BEGIN dualstream -->  
 <tr><td>{TXT_LEFT_TRACK}</td><td><input type="checkbox" name="lefttrack" value="{LEFTTRACKID}" checked></td><td>
-  <select id="leftrackflavor">
-    <option selected>presenter/trimmed</option><option>presentation/trimmed</option>
-  </select></td>
+  <select id="lefttrackflavor" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
+    <option>unset</option><option>presenter/work</option><option>presentation/work</option>
+  </select></td>  
 </tr>
 <tr><td>{TXT_RIGHT_TRACK}</td><td><input type="checkbox" name="righttrack" value="{RIGHTTRACKID}" checked></td><td>
-  <select id="rightrackflavor">
-    <option>presenter/trimmed</option><option selected>presentation/trimmed</option>
+  <select id="righttrackflavor" name="righttrackflavor" data-preset="{RIGHTTRACKTYPE}">
+    <option>unset</option><option>presenter/work</option><option>presentation/work</option>
   </select></td>
 </tr>
-<tr><td>{TXT_STARTTIME}</td><td><input name="starttime" value="0:00:00" checked></td></tr>
-<tr><td>{TXT_ENDTIME}</td><td><input name="endtime" value="{TRACKLENGTH}" checked></td></tr>
+<!-- END dualstream -->  
+<!-- BEGIN singlestream -->  
+<tr><td>{TXT_LEFT_TRACK_SINGLE}</td><td><input type="hidden" name="lefttrack" value="{LEFTTRACKID}" checked>
+  <select name="lefttrackflavor" id="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
+    <option>unset</option><option>presenter/work</option><option>presentation/work</option>
+  </select></td>
+</tr>
+<!-- END singlestream -->  
+<!-- BEGIN formend -->  
+<tr><td>{TXT_TRIMIN}</td><td><input name="trimin" value="0:00:00" id="trimin"></td><td><input type="button" value="play from in point"><input id="settrimin" type="button" value="set to current time"></td></tr>
+<tr><td>{TXT_TRIMOUT}</td><td><input name="trimout" value="{TRACKLENGTH}" id="trimout" ></td><td><input type="button" value="play to out point"><input type="button" id="settrimout" value="set to current time"></td></tr>
 </table>
 <input type="submit" value="{TXT_CONTINUE}">
 </from>
+<!-- END formend -->  

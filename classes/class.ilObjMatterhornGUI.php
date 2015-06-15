@@ -155,7 +155,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		
 		$ilTabs->activateTab("properties");
 		$this->initPropertiesForm();
-		$this->getPropertiesValues();
+	$this->getPropertiesValues();
 		$tpl->setContent($this->form->getHTML());
 	}
 	
@@ -599,50 +599,86 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {        
         global $tpl, $ilTabs, $ilCtrl,$ilLog, $ilUser;
         $this->checkPermission("write");
-        //$theodulbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
+        $trimbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/trim";
 
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
             $workflow = $this->object->getWorkflow($_GET["id"]);
-            $mediapackage = $workflow["workflow"]["mediapackage"];
+
+//            $ilLog->write("workflow:".print_r($workflow->workflow,true));
+            $namespaces = $workflow->getNamespaces(true);
+            $ilLog->write("namespaces: ". print_r($namespaces,true));
+            $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage; 
+  //          $ilLog->write("mediapackage: ". print_r($mediapackage,true));
 //             $series = simplexml_load_string($this->object->getSeries());
-            if (!strpos($this->object->getSeries(),$mediapackage["series"])) {
-                $ilCtrl->redirect($this, "editEpisodes");
+            if (!strpos($this->object->getSeries(),trim($mediapackage->series))) {
+              $ilLog->write("series: ".$mediapackage->series);
+              $ilCtrl->redirect($this, "editEpisodes");
             }
             $previewtrack;
-            foreach($mediapackage['media']['track'] as $key => $track){
-                if("composite/iliaspreview" === $track['type']){
+            $worktracks = array();            
+            foreach($mediapackage->media->track as $track){
+//                $ilLog->write("mediapackage: ". print_r($track,true));
+//                foreach($track->attributes() as $a => $b) {
+//                    $ilLog->write("attributes: ". $a."=".$track[$a]);
+//                }
+                if("composite/iliaspreview" === (string)$track->attributes()->{'type'}){
                     $previewtrack = $track;
                 }
+                if(false !== strpos($track->attributes()->{'type'},"preview")){
+                   if (!isset($previewtrack)){
+                      $previewtrack = $track;
+                   }
+                }
+                if(false !== strpos($track->attributes()->{'type'},"work")){
+                    array_push($worktracks,$track);                    
+                }
             }       
-            $_SESSION["mhpreviewurl".$_GET["id"]] = $track['url'];
-
-            $ilLog->write(print_r($previewtrack ,true));
-
-            $trimview = new ilTemplate("tpl.trimview.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+            //$ilLog->write("mediapackage: ". print_r($track,true ));
+            $_SESSION["mhpreviewurl".$_GET["id"]] = (string)$previewtrack->url;
+            
+            $trimview = new ilTemplate("tpl.trimview.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+            $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
-            $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
-            $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
-            $trimview->setVariable("TXT_STARTTIME", $this->getText("starttime"));
-            $trimview->setVariable("TXT_ENDTIME", $this->getText("endtime"));          
-            $trimview->setVariable("TXT_CONTINUE", $this->getText("continue"));          
-            $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $_GET["id"]);
-            $trimview->setVariable("CMD_TRIM", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "trimEpisode"));
-            $trimview->setVariable("TRACKTITLE",$mediapackage["title"]);
-            $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".$mediapackage["series"]."/".$_GET["id"]."/preview.mkv";
+//            $ilCtrl->setParameter($this, "id", $_GET["id"]);
+            $trimview->setVariable("WFID",$_GET["id"]);
+            $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
+            $trimview->setVariable("TRACKTITLE",$mediapackage->title);
+            $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/preview.mp4";
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL", $downloadurl);
-            $trimview->setVariable("RIGHTTRACKID", "righttrack");
-            $trimview->setVariable("LEFTTRACKID", "leftrack1");
+            $trimview->setVariable("INITJS",$trimbase );
+            $trimview->parseCurrentBlock();            
+            if(2 == count($worktracks)){
+                $trimview->setCurrentBlock("dualstream");
+                $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
+                $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
+                $trimview->setVariable("LEFTTRACKID", $worktracks[0]->attributes()->{'id'});
+                $trimview->setVariable("LEFTTRACKTYPE", $worktracks[0]->attributes()->{'type'});
+                $trimview->setVariable("RIGHTTRACKID", $worktracks[1]->attributes()->{'id'});
+                $trimview->setVariable("RIGHTTRACKTYPE", $worktracks[1]->attributes()->{'type'});
+                $trimview->parseCurrentBlock();
+            } else {
+                $trimview->setCurrentBlock("singlestream");
+                $trimview->setVariable("TXT_LEFT_TRACK_SINGLE", $this->getText("left_side_single"));
+                $trimview->setVariable("LEFTTRACKID", $worktracks[0]->attributes()->{'id'});
+                $trimview->setVariable("LEFTTRACKTYPE", $worktracks[0]->attributes()->{'type'});
+                $trimview->parseCurrentBlock();
+            }
             
-            $duration = (int)$mediapackage["duration"];
-            $ilLog->write(print_r($duration,true));
+            $trimview->setCurrentBlock("formend");
+            $duration = (int)$mediapackage->attributes()->{'duration'};
+            $ilLog->write(print_r($mediapackage->duration,true));
             $hours = floor($duration/3600000);
             $duration = $duration%3600000;
             $min = floor($duration/60000);
             $duration = $duration%60000;
-            $sec = floor($duration/1000);
+            $sec = floor($duration/1000);            
+            $trimview->setVariable("TXT_TRIMIN", $this->getText("trimin"));
+            $trimview->setVariable("TXT_TRIMOUT", $this->getText("trimout"));          
+            $trimview->setVariable("TXT_CONTINUE", $this->getText("continue"));                
             $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d",$hours,$min,$sec));
+            $trimview->parseCurrentBlock();
             $tpl->setContent($trimview->get());
             $ilTabs->activateTab("manage");
         } else {
@@ -654,13 +690,69 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $tpl, $lng, $ilCtrl, $ilLog;
-        $ilLog->write("ID:".$_GET["id"]);
-        if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {            
-            $this->object->publish($_GET["id"]);
-            ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
+        $ilLog->write("ID:".$_POST["wfid"]);
+        if (preg_match('/^[0-9a-f\-]+/', $_POST["wfid"])) {
+        
+            $workflow = $this->object->getWorkflow($_POST["wfid"]);
+            $namespaces = $workflow->getNamespaces(true);
+            $ilLog->write("namespaces: ". print_r($namespaces,true));
+            $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage; 
+            if (!strpos($this->object->getSeries(),trim($mediapackage->series))) {
+                $ilCtrl->redirect($this, "editEpisodes");
+            }
+            $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
+            $mediapackage["title"] = $mediapackagetitle;
+            $tracks = array();
+            if(isset($_POST["lefttrack"])){
+                $track = array();
+                $track['id'] = ilUtil::stripScriptHTML($_POST["lefttrack"]);
+                $track['flavor'] = ilUtil::stripScriptHTML($_POST["lefttrackflavor"]);
+                array_push($tracks,$track);
+                
+            }
+            if(isset($_POST["righttrack"])){
+                $track = array();
+                $track['id'] = ilUtil::stripScriptHTML($_POST["righttrack"]);
+                $track['flavor'] = ilUtil::stripScriptHTML($_POST["righttrackflavor"]);
+                array_push($tracks,$track);
+            }
+            $ilLog->write("tracks: ". print_r($tracks,true));
+            $removetrack;
+            foreach($mediapackage->media->track as $track){
+//                $ilLog->write("mediapackage: ". print_r($track,true));
+//                foreach($track->attributes() as $a => $b) {
+//                    $ilLog->write("attributes: ". $a."=".$track[$a]);
+//                }
+                if(false !== strpos($track->attributes()->{'type'},"work")){
+                    $keeptrack = false;
+                    foreach($tracks as $guitrack){
+                    $ilLog->write("id1: ". $guitrack['id']);
+                    $ilLog->write("id2: ". $track->attributes()->{'id'});
+                        if($guitrack['id'] === (string)$track->attributes()->{'id'}){
+                            $keeptrack = true;
+                        }
+                    }
+                    if(!$keeptrack){
+                      $removetrack = $track->attributes()->{'id'};
+                    }
+                }
+            }
+            $dom_sxe = dom_import_simplexml($mediapackage);
+
+            $dom = new DOMDocument('1.0');
+            $dom_sxe = $dom->importNode($dom_sxe, true);
+            $dom_sxe = $dom->appendChild($dom_sxe);
+
+            $ilLog->write("newmedia: ".$dom->saveXML());
+            $trimin = ilUtil::stripScriptHTML($_POST["trimin"]);            
+            $trimout = ilUtil::stripScriptHTML($_POST["trimout"]);
+
+            $this->object->trim($_POST["wfid"], $dom->saveXML(), $removetrack, $trimin, $trimout);
+            
+            ilUtil::sendSuccess($this->txt("msg_episode_trimmed"), true);
         } else {
-            $ilLog->write("ID does not match in publish episode:".$_GET["id"]);
-        }
+            $ilLog->write("ID does not match an episode:".$_POST["wfid"]);
+        }                
         $ilCtrl->redirect($this, "editEpisodes");
     }
 

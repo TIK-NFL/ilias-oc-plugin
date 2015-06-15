@@ -53,6 +53,17 @@ class ilMatterhornConfig
 		$this->setValue("mh_digest_password",$a_password);
 	}
 	
+    public function getMatterhornFilesDirectory(){
+        $retVal = $this->getValue("mh_files_directory");
+        if(!$retVal){
+            return "/dev/null";
+        }
+        return $retVal;
+    }
+    
+    public function setMatterhornFilesDirectory($a_filesdir){
+        $this->setValue("mh_files_directory",$a_filesdir);
+    }
 	
 	public function getXSendfileBasedir(){
 		$retVal = $this->getValue("xsendfile_basedir");

@@ -39,6 +39,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		$values['mh_server_engage'] = $this->configObject->getMatterhornEngageServer();
 		$values['mh_digest_user'] = $this->configObject->getMatterhornUser();
 		$values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
+        $values['mh_files_directory'] = $this->configObject->getMatterhornFilesDirectory();
 		$values['xsendfile_basedir'] = $this->configObject->getXSendfileBasedir();
 		$values['matterhorn_version'] = $this->configObject->getMatterhornVersion();
 		$form->setValuesByArray($values);
@@ -91,6 +92,14 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		$mh_digest_password->setSize(100);
 		$form->addItem($mh_digest_password);
 
+        // mh files directory
+        $mh_digest_password = new ilTextInputGUI($pl->txt("mh_files_directory"), "mh_files_directory");
+        $mh_digest_password->setRequired(true);
+        $mh_digest_password->setMaxLength(100);
+        $mh_digest_password->setSize(100);
+        $form->addItem($mh_digest_password);
+
+		
 		// xsendfile basedir
 		$xsendfile_basedir = new ilTextInputGUI($pl->txt("xsendfile_basedir"), "xsendfile_basedir");
 		$xsendfile_basedir->setRequired(true);
@@ -126,13 +135,16 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 			$mh_server_engage = $form->getInput("mh_server_engage");
 			$mh_digest_user = $form->getInput("mh_digest_user");
 			$mh_digest_password = $form->getInput("mh_digest_password");
+            $mh_files_directory = $form->getInput("mh_files_directory");
 			$xsendfile_basedir = $form->getInput("xsendfile_basedir");
 			$matterhorn_version = $form->getInput("matterhorn_version");
+			
 			
 			$this->configObject->setMatterhornServer($mh_server);
 			$this->configObject->setMatterhornEngageServer($mh_server_engage);			
 			$this->configObject->setMatterhornUser($mh_digest_user);
 			$this->configObject->setMatterhornPassword($mh_digest_password);
+			$this->configObject->setMatterhornFilesDirectory($mh_files_directory);
 			$this->configObject->setXSendfileBasedir($xsendfile_basedir);
 			$this->configObject->setMatterhornVersion($matterhorn_version);
 			
