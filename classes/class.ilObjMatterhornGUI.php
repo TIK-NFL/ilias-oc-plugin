@@ -676,8 +676,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $sec = floor($duration/1000);            
             $trimview->setVariable("TXT_TRIMIN", $this->getText("trimin"));
             $trimview->setVariable("TXT_TRIMOUT", $this->getText("trimout"));          
-            $trimview->setVariable("TXT_CONTINUE", $this->getText("continue"));                
-            $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d",$hours,$min,$sec));
+            $trimview->setVariable("TXT_CONTINUE", $this->getText("continue"));              
+            $trimview->setVariable("TRACKLENGTH", $duration/1000);
+            #$trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d",$hours,$min,$sec));
             $trimview->parseCurrentBlock();
             $tpl->setContent($trimview->get());
             $ilTabs->activateTab("manage");

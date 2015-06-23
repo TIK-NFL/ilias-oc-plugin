@@ -199,9 +199,9 @@ class ilObjMatterhorn extends ilObjectPlugin
 	{
 		global $ilDB;
 	
-                $ilDB->manipulate("DELETE FROM  rep_robj_xmh_released_episodes ".
-                        " WHERE seriesid = ".$ilDB->quote($this->getId(), "text")
-                        );
+        $ilDB->manipulate("DELETE FROM  rep_robj_xmh_rel_ep ".
+                " WHERE seriesid = ".$ilDB->quote($this->getId(), "text")
+                );
            
 		$ilDB->manipulate("DELETE FROM rep_robj_xmh_data WHERE ".
 			" id = ".$ilDB->quote($this->getId(), "integer")
@@ -624,21 +624,21 @@ class ilObjMatterhorn extends ilObjectPlugin
             curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
             curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
             $mp = curl_exec($ch);        
-            $ilLog->write("workflow-query-return: ".$mp);
+            //$ilLog->write("workflow-removetrack-return: ".$mp);
         }
         
-        $url = $this->configObject->getMatterhornServer()."/workflow/replaceAndresume";
-    
+        $url = $this->configObject->getMatterhornServer()."/workflow/replaceAndresume/";
+        $ilLog->write("replacemediapackage: ".$mp);
         $ilLog->write("resume-query: ".$url);
         $ilLog->write("workflowid: ".$workflowid);
         $fields = array();
-        $fields['mediapackage'] = urlencode(trim($mp));
+        $fields['mediapackage'] = urlencode($mp);
         $fields['id'] =  $workflowid;
         $fields['properties'] = "trimin=".(1000*$trimin)."\nnewduration=".(1000*($trimout-$trimin));
         //url-ify the data for the POST
         foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
         rtrim($fields_string,'&');
-    
+        sleep(2);
         //open connection
         $ch = curl_init();
     
