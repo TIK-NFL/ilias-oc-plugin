@@ -470,6 +470,7 @@ class ilMatterhornSendfile
         if($segments){
             $episode['search-results']["result"]["segments"] =  $this->convertSegment($segments);
         }
+        header("Content-Type: application/json");
         echo json_encode($episode);
 	}
 	
