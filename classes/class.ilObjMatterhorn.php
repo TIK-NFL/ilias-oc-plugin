@@ -199,7 +199,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	{
 		global $ilDB;
 	
-        $ilDB->manipulate("DELETE FROM  rep_robj_xmh_rel_ep ".
+        $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep ".
                 " WHERE seriesid = ".$ilDB->quote($this->getId(), "text")
                 );
            
