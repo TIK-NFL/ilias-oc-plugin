@@ -25,7 +25,7 @@
 include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 
 /**
-* User Interface class for Matterhorn repository object.
+* User Interface class for Opencast repository object.
 *
 * User interface classes process GET and POST parameter and call
 * application classes to fulfill certain tasks.
@@ -630,7 +630,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                    }
                 }
                 if(false !== strpos($track->attributes()->{'type'},"work")){
-                    array_push($worktracks,$track);                    
+                    if((string)$track->attributes()->{'type'} === "presentation/work"){
+                        $worktracks[1] = $track;
+                    } else {
+                        $worktracks[0] = $track;
+                    }
                 }
             }       
             //$ilLog->write("mediapackage: ". print_r($track,true ));
@@ -727,9 +731,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 if(false !== strpos($track->attributes()->{'type'},"work")){
                     $keeptrack = false;
                     foreach($tracks as $guitrack){
-                    $ilLog->write("id1: ". $guitrack['id']);
-                    $ilLog->write("id2: ". $track->attributes()->{'id'});
                         if($guitrack['id'] === (string)$track->attributes()->{'id'}){
+                            $track->attributes()->{'type'} = $guitrack['flavor'];
                             $keeptrack = true;
                         }
                     }

@@ -601,10 +601,21 @@ class ilObjMatterhorn extends ilObjectPlugin
                 
         global $ilLog;
         $mp = $mediapackage;
+        //open connection
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true",
+                                                   'Content-Type: application/x-www-form-urlencoded', 
+                                                   'charset=UTF-8',
+                                                   'Connection: Keep-Alive'
+                                                   ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+
         if(isset($removetrack)){
             $url = $this->configObject->getMatterhornServer()."/mediapackage/removeTrack";
         
-            $ilLog->write("removetrack-query: ".$url);
+//            $ilLog->write("removetrack-query: ".$url);
             $fields = array();
             $fields['mediapackage'] = urlencode(trim($mp));
             $fields['trackId'] =  $removetrack;
@@ -612,50 +623,35 @@ class ilObjMatterhorn extends ilObjectPlugin
             foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
             rtrim($fields_string,'&');
         
-            //open connection
-            $ch = curl_init();
-        
             //set the url, number of POST vars, POST data
             curl_setopt($ch, CURLOPT_URL,$url);
             curl_setopt($ch, CURLOPT_POST,count($fields));
             curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);            
-            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-            curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
             $mp = curl_exec($ch);        
             //$ilLog->write("workflow-removetrack-return: ".$mp);
         }
         
         $url = $this->configObject->getMatterhornServer()."/workflow/replaceAndresume/";
-        $ilLog->write("replacemediapackage: ".$mp);
-        $ilLog->write("resume-query: ".$url);
-        $ilLog->write("workflowid: ".$workflowid);
+#        $ilLog->write("replacemediapackage: ".$mp);
+#        $ilLog->write("resume-query: ".$url);
+#        $ilLog->write("workflowid: ".$workflowid);
         $fields = array();
-        $fields['mediapackage'] = urlencode($mp);
         $fields['id'] =  $workflowid;
+        $fields['mediapackage'] = urlencode($mp);  
+        $fields_string = "";
         $fields['properties'] = "trimin=".(1000*$trimin)."\nnewduration=".(1000*($trimout-$trimin));
         //url-ify the data for the POST
         foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
         rtrim($fields_string,'&');
-        sleep(2);
-        //open connection
-        $ch = curl_init();
-    
         //set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL,$url);
         curl_setopt($ch, CURLOPT_POST,count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);            
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
         $mp = curl_exec($ch);        
         if(!curl_errno($ch))
         {
           $info = curl_getinfo($ch);
-
-          $ilLog->write('Es wurden ' . $info['total_time'] . ' Sekunden benötigt für einen Request an ' . $info['url']);
+          $ilLog->write('Successful request to '.$info['url'].' in '. $info['total_time']);
         }
 
         $ilLog->write("resume-return: ".$mp);
