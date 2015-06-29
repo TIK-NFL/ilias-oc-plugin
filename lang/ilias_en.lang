@@ -1,23 +1,23 @@
 // 
-// English Language File for Matterhorn Object Plugin
+// English Language File for Opencast Object Plugin
 //
 
 <!-- language file start -->
-obj_xmh#:#Matterhorn Object
-objs_xmh#:#Matterhorn Objects
+obj_xmh#:#Opencast Object
+objs_xmh#:#Opencast Objects
 obj_xmh_duplicate#:#Copy
-objs_xmh_duplicate#:#Copy Matterhorn Object
-obj_xmh_select#:#Select Matterhorn Object
-xmh_add#:#Add Matterhorn Object
-xmh_new#:#New Matterhorn Object
-xmh_read#:#Read access to Matterhorn Object
-xmh_write#:#Edit Matterhorn Object
-xmh_delete#:#Delete Matterhorn Object
-xmh_visible#:#Matterhorn Object is visible
+objs_xmh_duplicate#:#Copy Opencast Object
+obj_xmh_select#:#Select Opencast Object
+xmh_add#:#Add Opencast Object
+xmh_new#:#New Opencast Object
+xmh_read#:#Read access to Opencast Object
+xmh_write#:#Edit Opencast Object
+xmh_delete#:#Delete Opencast Object
+xmh_visible#:#Opencast Object is visible
 xmh_edit_permission#:#Change permission settings
-grp_create_xmh#:#Create Matterhorn Object
-crs_create_xmh#:#Create Matterhorn Object
-fold_create_xmh#:#Create Matterhorn Object
+grp_create_xmh#:#Create Opencast Object
+crs_create_xmh#:#Create Opencast Object
+fold_create_xmh#:#Create Opencast Object
 content#:#Content
 manage#:#Manage Episodes
 viewmode#:#Use compact episode overview
@@ -36,13 +36,13 @@ cancel#:#Cancel
 edit#:#Edit
 status#:#Status
 offline#:#Offline
-matterhorn_plugin_configuration#:#Matterhorn Plugin Configuration
-mh_server#:#Base URL of the Matterhorn Server
-mh_server_engage#:#Base URL of the Matterhorn Engage Server
-mh_digest_user#:#Username of the Matterhorn Digest User
-mh_digest_password#:#Password of the Matterhorn Digest User
+opencast_plugin_configuration#:#Opencast Plugin Configuration
+mh_server#:#Base URL of the Opencast Server
+mh_server_engage#:#Base URL of the Opencast Engage Server
+mh_digest_user#:#Username of the Opencast Digest User
+mh_digest_password#:#Password of the Opencast Digest User
 xsendfile_basedir#:#Base directory for XSendfile
-matterhorn_version#:#Matterhorn Version (Don't Change 1.4)
+opencast_version#:#Opencast Version (Don't Change 1.4)
 saving_invoked#:#Save procedure has been executed
 
 finished_recordings#:#Finished Recordings
@@ -66,3 +66,5 @@ continue#:#Continue
 download_preview#:#Download preview
 onhold_recordings#:#Recording waiting for trimming
 recorddate#:#Date of recording
+none_onhold#:#There are no recordings waiting for trimming
+msg_episode_trimmed#:#The episode has successfully been trimmed

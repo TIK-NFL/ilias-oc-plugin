@@ -41,7 +41,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		$values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
         $values['mh_files_directory'] = $this->configObject->getMatterhornFilesDirectory();
 		$values['xsendfile_basedir'] = $this->configObject->getXSendfileBasedir();
-		$values['matterhorn_version'] = $this->configObject->getMatterhornVersion();
+		$values['opencast_version'] = $this->configObject->getMatterhornVersion();
 		$form->setValuesByArray($values);
 		$tpl->setContent($form->getHTML());
 	}
@@ -117,7 +117,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		
 		$form->addCommandButton("save", $lng->txt("save"));
 	                
-		$form->setTitle($pl->txt("matterhorn_plugin_configuration"));
+		$form->setTitle($pl->txt("opencast_plugin_configuration"));
 		$form->setFormAction($ilCtrl->getFormAction($this));
 		
 		return $form;
