@@ -121,3 +121,12 @@ $ilDB->addIndex("rep_robj_xmh_rel_ep", array("series_id"),'ser');
           'default' => 0
 ));
 ?>
+<#10>
+<?php
+  $ilDB->addTableColumn('rep_robj_xmh_data', 'download', array(
+          'type' => 'integer',
+          'length' => 8,
+          'notnull' => false,
+          'default' => 0
+));
+?>

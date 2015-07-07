@@ -59,7 +59,12 @@ class ilObjMatterhorn extends ilObjectPlugin
     var $manualrelease;
 
     /**
-      * Stores the manual release
+      * Stores the download status
+      */
+    var $download;
+    
+    /**
+      * Stores the last time the fs was checked for new updates
       */
     var $lastfsInodeUpdate;
 
@@ -114,7 +119,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);				
 		
 		$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
-				"(id, is_online, series, mhretval, lectureid,viewmode,manualrelease,fsinodupdate) VALUES (".
+				"(id, is_online, series, mhretval, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (".
 				$ilDB->quote($this->getId(), "integer").",".
 				$ilDB->quote(0, "integer").",".
 				$ilDB->quote($result, "text").",".
@@ -122,6 +127,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 				$ilDB->quote($this->getLectureID(), "text").",".
 				$ilDB->quote(0, "integer").",".
 				$ilDB->quote(1, "integer").",".
+				$ilDB->quote(0, "integer").",".
 				$ilDB->quote(0, "integer").
 				")");
 	}
@@ -144,6 +150,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			$this->setLectureID($rec["lectureid"]);
 			$this->setViewMode($rec["viewmode"]);
 			$this->setManualRelease($rec["manualrelease"]);
+			$this->setDownload($rec["download"]);
 			$this->setLastFSInodeUpdate($rec["fsinodupdate"]);
 		}
 		
@@ -186,6 +193,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 			" lectureid = ".$ilDB->quote($this->getLectureID(), "text").",".
 			" viewmode = ".$ilDB->quote($this->getViewMode(), "integer").",".
             " manualrelease = ".$ilDB->quote($this->getManualRelease(), "integer").",".
+            " download = ".$ilDB->quote($this->getDownload(), "integer").",".
 			" mhretval = ".$ilDB->quote($this->getMhRetVal(), "text")." ".
 			" WHERE id = ".$ilDB->quote($this->getId(), "text")
 			);
@@ -397,6 +405,27 @@ class ilObjMatterhorn extends ilObjectPlugin
             return $this->manualrelease;
     }
 
+    /**
+    * Set enable download
+    *
+    * @param        boolean         enable download
+    */
+    function setDownload($a_val)
+    {
+            $this->download = $a_val;
+    }
+
+    /**
+    * Get download enabled
+    *
+    * @return boolean         download enabled
+    */
+    function getDownload()
+    {
+            return $this->download;
+    }
+
+    
     /**
     * Set fsinodeupdate
     *

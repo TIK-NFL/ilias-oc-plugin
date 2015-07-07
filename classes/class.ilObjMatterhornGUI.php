@@ -190,6 +190,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $mr = new ilCheckboxInputGUI($this->txt("manualRelease"), "manualRelease");
         $this->form->addItem($mr);
 
+        // download
+        $download = new ilCheckboxInputGUI($this->txt("download"), "download");
+        $this->form->addItem($download);
+
+        
 		// online
 		$cb = new ilCheckboxInputGUI($this->lng->txt("online"), "online");
 		$this->form->addItem($cb);
@@ -213,6 +218,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		$values["online"] = $this->object->getOnline();
 		$values["viewMode"] = $this->object->getViewMode();
         $values["manualRelease"] = $this->object->getManualRelease();
+        $values["download"] = $this->object->getDownload();
 		$this->form->setValuesByArray($values);
 	}
 	
@@ -232,6 +238,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			$this->object->setOnline($this->form->getInput("online"));
 			$this->object->setViewMode($this->form->getInput("viewMode"));
 			$this->object->setManualRelease($this->form->getInput("manualRelease"));
+			$this->object->setDownload($this->form->getInput("download"));
 			$this->object->update();
 			ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
 			$ilCtrl->redirect($this, "editProperties");
@@ -297,10 +304,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog, $ilCtrl;
 		
 		$this->checkPermission("read");
-		
-	
-		$this->plugin->includeClass("class.ilObjMatterhornTableSeriesGUI.php");
-		
 
 		$med_items = array();
 		$temptotals = $this->object->getSearchResult();
@@ -323,40 +326,77 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     $previewurl = $attachment->url;
                 }
             }
+            $downloadurl = "unset";
+            foreach ($value->media->track as $track){
+                $ilLog->write("Track: ".print_r($track,true));
+                if ('composite/sbs' ==  $track['type']) {
+                    $ilLog->write("Setting download url: ". $track->url);
+                    $downloadurl = $track->url;
+                    break;
+                }
+                if('presentation/delivery' ==  $track['type'] && 'video/mp4' == $track->mimetype){
+                    $ilLog->write("Setting download url: ". $track->url);
+                    $downloadurl = $track->url;
+                }
+            }
+
             $ilLog->write("adding item result list:".$value['id']);
             $med_items[(string)$value['id']] = array(
                 "title" => (string)$value->title,
                 "date" => (string)$value['start'],
                 "nr" => $key+1,
                 "mhid" => $this->obj_id."/".(string)$value['id'],
-                "previewurl" => $previewurl
+                "previewurl" => $previewurl,
+                "downloadurl" => $downloadurl
             );
         }
 		#$ilLog->write("Total:".print_r($med_items,true));
 		uasort($med_items,array($this, 'sortbydate'));
 		if ( ! $this->object->getViewMode() ) {
-            $table_gui = new ilObjMatterhornTableSeriesGUI($this, "listItems");
-			$table_gui->setDefaultOrderField("nr");
-			$table_gui->setDefaultOrderDirection("asc");
-			$table_gui->setData($med_items);
-			$table_gui->setExternalSorting(true);
-			$tpl->setContent($table_gui->getHTML());
-		} else {		
+            $seriestpl = new ilTemplate("tpl.series.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+            $seriestpl->setCurrentBlock($this->object->getDownload()?"headerdownload":"header");
+            $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
+            $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
+            $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
+            $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
+            if($this->object->getDownload()){
+                $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+          }
+            $seriestpl->parseCurrentBlock();
+            foreach($med_items as $key => $item)
+            {
+                $seriestpl->setCurrentBlock($this->object->getDownload()?"episodedownload":"episode");
+                $ilLog->write("Adding: ".$item["title"]);
+                    
+                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+                $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+                $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
+                $seriestpl->setVariable("TXT_TITLE", $item["title"]);
+                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
+                $seriestpl->setVariable("TXT_NR", $date["nr"]);
+                if($this->object->getDownload()){
+                    $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
+                    $seriestpl->setVariable("TXT_DOWNLOAD", $this->getText("download"));
+                }
+                $seriestpl->parseCurrentBlock();
+            }
+            $seriestpl->touchblock("footer");
+            $html = $seriestpl->get();
+            $tpl->setContent($html);
+          } else {		
 			$tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
 			$seriestpl = new ilTemplate("tpl.series.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
             foreach($med_items as $key => $item)
             {
-                $ilLog->write("Adding: ".$item["title"]);
-                    
-					$ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
-			                $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
-					$seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
-			                $seriestpl->setVariable("TXT_TITLE", $item["title"]);
-			                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
-			                $seriestpl->setVariable("TXT_NR", $date["nr"]);
-                                        $seriestpl->parseCurrentBlock();
-                                }
-
+                $seriestpl->setCurrentBlock("videodiv");             
+                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+                $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+                $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
+                $seriestpl->setVariable("TXT_TITLE", $item["title"]);
+                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
+                $seriestpl->setVariable("TXT_NR", $date["nr"]);
+                $seriestpl->parseCurrentBlock();
+            }
 			$html = $seriestpl->get();
 			$tpl->setContent($html);
 		}
