@@ -6,7 +6,16 @@
 <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_PREVIEW}</th><th class="std">{TXT_DATE}</th><th class="std">{TXT_ACTION}</th></tr>
 </thead>
 <tbody>
-<!-- END headerfinished -->       
+<!-- END headerfinished -->
+<!-- BEGIN headerfinishednoaction -->
+<H2>{TXT_FINISHED_RECORDINGS}</H2>
+<div class="ilTableOuter">
+<table class="fullwidth">
+<thead>
+<tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_PREVIEW}</th><th class="std">{TXT_DATE}</th></tr>
+</thead>
+<tbody>
+<!-- END headerfinishednoaction -->
 <!-- BEGIN finished -->     
 
 <tr>
@@ -14,7 +23,15 @@
     <td class="std"><a href="{CMD_DOWNLOAD}"><img src="{PREVIEWURL}" /></a></td>
     <td class="std">{TXT_EPISODE_DATE}</td><td><a href="{CMD_PUBLISH}">{TXT_PUBLISH}</a></td>   
 </tr>
-<!-- END finished -->       
+<!-- END finished -->
+<!-- BEGIN finishednoaction -->     
+
+<tr>
+    <td class="std"><a href="{CMD_DOWNLOAD}">{TXT_EPISODE_TITLE}</a></td>
+    <td class="std"><a href="{CMD_DOWNLOAD}"><img src="{PREVIEWURL}" /></a></td>
+    <td class="std">{TXT_EPISODE_DATE}</td>   
+</tr>
+<!-- END finishednoaction -->
 
 <!-- BEGIN nonefinished -->     
 <tr class="tblrow1">
@@ -22,7 +39,12 @@
 </td>
 </tr>
 <!-- END nonefinished -->       
-
+<!-- BEGIN nonefinishednoaction -->     
+<tr class="tblrow1">
+    <td class="std" style="text-align:center;" colspan="3">{TXT_NONE_FINISHED}
+</td>
+</tr>
+<!-- END nonefinishednoaction -->    
 <!-- BEGIN footerfinished -->     
 </tbody>
 </table>

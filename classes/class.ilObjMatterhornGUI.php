@@ -467,31 +467,36 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         uasort($scheduled_items,array($this, 'sortbydate'));
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
         $seriestpl = new ilTemplate("tpl.series.edit.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
-        $seriestpl->setCurrentBlock("headerfinished");
+        $seriestpl->setCurrentBlock($this->object->getManualRelease()?"headerfinished":"headerfinishednoaction");
         $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
         $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
         $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
         $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
-        $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
-        $seriestpl->parseCurrentBlock();
+        if ($this->object->getManualRelease()){
+            $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+        }
+        $seriestpl->parseCurrentBlock();        
+
         if(count($med_items) > 0 ){
             foreach($med_items as $key => $item)
             {
                 $ilLog->write("Adding: ".$item["title"]);
-                $seriestpl->setCurrentBlock("finished");
+                $seriestpl->setCurrentBlock($this->object->getManualRelease()?"finished":"finishednoaction");
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
                 $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_EPISODE_TITLE", $item["title"]);            
                 $seriestpl->setVariable("TXT_EPISODE_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"],IL_CAL_DATETIME)));
                 $seriestpl->setVariable("TXT_NR", $date["nr"]);
-                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $key);
-                $seriestpl->setVariable("CMD_PUBLISH", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $item["published"]?"retract":"publish"));
-                $seriestpl->setVariable("TXT_PUBLISH",$this->getText($item["published"]?"retract":"publish"));
-                $seriestpl->parseCurrentBlock();
+                if ($this->object->getManualRelease()){                
+                    $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $key);
+                    $seriestpl->setVariable("CMD_PUBLISH", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $item["published"]?"retract":"publish"));
+                    $seriestpl->setVariable("TXT_PUBLISH",$this->getText($item["published"]?"retract":"publish"));
+                }
+                $seriestpl->parseCurrentBlock();                
             }
         } else {
-            $seriestpl->setCurrentBlock("nonefinished");
+            $seriestpl->setCurrentBlock($this->object->getManualRelease()?"nonefinished":"nonefinishednoaction");
             $seriestpl->setVariable("TXT_NONE_FINISHED", $this->getText("none_finished"));
             $seriestpl->parseCurrentBlock();
         }
