@@ -498,55 +498,197 @@ class ilObjMatterhorn extends ilObjectPlugin
         return $results;
     }
 
-	/**
-         * Returns a list of the Episodes that have been made public available by the lecturer
-         *
-         * @return array containing the ids of the episodes that have been made public available.
-         */
-        function getReleasedEpisodes(){
-                global $ilDB,$ilLog;
+    /**
+     * Returns a list of the Episodes that have been made public available by the lecturer
+     *
+     * @return array containing the ids of the episodes that have been made public available.
+     */
+    function getReleasedEpisodes(){
+        global $ilDB,$ilLog;
+        
+        $set = $ilDB->query("SELECT episode_id FROM rep_robj_xmh_rel_ep ".
+                " WHERE series_id = ".$ilDB->quote($this->getId(), "integer")
+                );
+        $released = array();
+        while ($rec = $ilDB->fetchAssoc($set))
+        {
+                array_push($released,($rec["episode_id"]));
+        }
+        return $released;
+    }
+
+    /**
+      * The scheduled information for this series returned by matterhorn
+      * 
+      * @return array the scheduled episodes for this series returned by matterhorn
+      */
+    function getScheduledEpisodes(){
                 
-                $set = $ilDB->query("SELECT episode_id FROM rep_robj_xmh_rel_ep ".
-                        " WHERE series_id = ".$ilDB->quote($this->getId(), "integer")
-                        );
-                $released = array();
-                while ($rec = $ilDB->fetchAssoc($set))
-                {
-                        array_push($released,($rec["episode_id"]));
-                }
-                return $released;
+        global $ilLog;
+                
+        $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
+
+        /* $_GET Parameters to Send */
+        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','op'=>'schedule');
+        
+        /* Update URL to container Query String of Paramaters */
+        $url .= '?' . http_build_query($params);
+        $ilLog->write("mh query".$url);
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $curlret = curl_exec($ch);        
+        $searchResult = json_decode($curlret,true);
+
+        return $searchResult;
+    }
+        
+        
+    /**
+     * Get the episodes which are on hold for this series
+     * 
+     * @return array the episodes which are on hold for this series returned by matterhorn
+     */
+    function getOnHoldEpisodes(){
+                
+        global $ilLog;
+                
+        $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
+        /* $_GET Parameters to Send */
+        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','state' => 'paused','op'=>'-schedule','op'=>'-capture','op'=>'-ingest');
+        
+        /* Update URL to container Query String of Paramaters */
+        $url .= '?' . http_build_query($params);
+        $ilLog->write("mh query".$url);
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $curlret = curl_exec($ch);        
+        $searchResult = json_decode($curlret,true);
+
+        return $searchResult;
+    }
+
+    /**
+     * Get workflow
+     *
+     * @param   Integer     workflowid the workflow id
+     * 
+     * @return the workflow as decode json object
+     */
+    function getWorkflow($workflowid){
+                
+        global $ilLog;
+                
+        $url = $this->configObject->getMatterhornServer()."/workflow/instance/".$workflowid.".xml";
+        
+        $ilLog->write("workflow-query: ".$url);
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $curlret = curl_exec($ch);        
+//        $ilLog->write("workflow-query-return: ".$curlret);
+        $workflow = simplexml_load_string($curlret);
+        if ($workflow === false){
+          $ilLog->write("XXXX error loading workflow: ".$workflowid);
+          foreach(libxml_get_errors() as $error) {
+            $ilLog->write("error : ". $error->message);
+          }
+        }
+  //      $ilLog->write("workflow: ".print_r($workflow,true));
+        return $workflow;
+    }
+
+    /**
+     * Trims the tracks of a workflow
+     *
+     * @param   Integer     workflowid the workflow id
+     * @param   Array       array containing the information about the tracks
+     * @param   String      removetrack the id of the track to be removed
+     * @param   Float       trimin the start time of the new tracks
+     * @param   Float       trimout the endtime of the video
+     */
+    function trim($workflowid, $mediapackage, $removetrack, $trimin, $trimout){
+                
+        global $ilLog;
+        $mp = $mediapackage;
+        //open connection
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true",
+                                                   'Content-Type: application/x-www-form-urlencoded', 
+                                                   'charset=UTF-8',
+                                                   'Connection: Keep-Alive'
+                                                   ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+
+        if(isset($removetrack)){
+            $url = $this->configObject->getMatterhornServer()."/mediapackage/removeTrack";
+        
+//            $ilLog->write("removetrack-query: ".$url);
+            $fields = array();
+            $fields['mediapackage'] = urlencode(trim($mp));
+            $fields['trackId'] =  $removetrack;
+            //url-ify the data for the POST
+            foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+            rtrim($fields_string,'&');
+        
+            //set the url, number of POST vars, POST data
+            curl_setopt($ch, CURLOPT_URL,$url);
+            curl_setopt($ch, CURLOPT_POST,count($fields));
+            curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);            
+            $mp = curl_exec($ch);        
+            //$ilLog->write("workflow-removetrack-return: ".$mp);
         }
         
-        /**
-         * The scheduled information for this series returned by matterhorn
-         * 
-         * @return array the scheduled episodes for this series returned by matterhorn
-         */
-        function getScheduledEpisodes(){
-                        
-                global $ilLog;
-                        
-                $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
-
-                /* $_GET Parameters to Send */
-                $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','op'=>'schedule');
-                
-                /* Update URL to container Query String of Paramaters */
-                $url .= '?' . http_build_query($params);
-                $ilLog->write("mh query".$url);
-                //open connection
-                $ch = curl_init();
-                
-                //set the url, number of POST vars, POST data
-                curl_setopt($ch, CURLOPT_URL,$url);
-                curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-                curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
-                $curlret = curl_exec($ch);        
-                $searchResult = json_decode($curlret,true);
-
-                return $searchResult;
+        $url = $this->configObject->getMatterhornServer()."/workflow/replaceAndresume/";
+#        $ilLog->write("replacemediapackage: ".$mp);
+#        $ilLog->write("resume-query: ".$url);
+#        $ilLog->write("workflowid: ".$workflowid);
+        $fields = array();
+        $fields['id'] =  $workflowid;
+        $fields['mediapackage'] = urlencode($mp);  
+        $fields_string = "";
+        $fields['properties'] = "trimin=".(1000*$trimin)."\nnewduration=".(1000*($trimout-$trimin));
+        //url-ify the data for the POST
+        foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+        rtrim($fields_string,'&');
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_POST,count($fields));
+        curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);            
+        $mp = curl_exec($ch);        
+        if(!curl_errno($ch))
+        {
+          $info = curl_getinfo($ch);
+          $ilLog->write('Successful request to '.$info['url'].' in '. $info['total_time']);
         }
+
+        $ilLog->write("resume-return: ".$mp);
+
+        //        $workflow = $this->getWorkflow($workflowid);
+//        $mediapackage = $workflow["workflow"]["mediapackage"];
+
+    }
+    
 }
 ?>
