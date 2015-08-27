@@ -156,7 +156,7 @@ class ilMatterhornSendPlayer
 		if (preg_match("/\.js$|\.css$|\.html/i", $this->subpath.$this->file)) {
 			$file = file_get_contents($this->subpath.$this->file);
 			if($this->iliasPrefix != ""){
-				$file = str_replace('%iliasbasedir%', $this->iliasPrefix, $file);
+				$file = str_replace('%iliasbasedir%/', $this->iliasPrefix, $file);
 			} else {
 				$file = str_replace('%iliasbasedir%/', '', $file);
 			}
