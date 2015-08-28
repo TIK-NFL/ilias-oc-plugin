@@ -1,89 +1,19 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="288.5"
-   height="205"
-   id="svg2"
-   version="1.1"
-   inkscape:version="0.48.5 r10040"
-   sodipodi:docname="icon_xmh.svg">
-  <defs
-     id="defs4" />
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="0.70710678"
-     inkscape:cx="64.540034"
-     inkscape:cy="38.592027"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer1"
-     showgrid="true"
-     inkscape:window-width="2880"
-     inkscape:window-height="1572"
-     inkscape:window-x="-3"
-     inkscape:window-y="25"
-     inkscape:window-maximized="1"
-     inkscape:snap-global="true"
-     fit-margin-top="0"
-     fit-margin-left="0"
-     fit-margin-right="0"
-     fit-margin-bottom="0">
-    <inkscape:grid
-       type="xygrid"
-       id="grid3104"
-       empspacing="5"
-       visible="true"
-       enabled="true"
-       snapvisiblegridlinesonly="true"
-       originx="-266.5px"
-       originy="-585px" />
-  </sodipodi:namedview>
-  <metadata
-     id="metadata7">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(-266.5,-262.36218)">
-    <path
-       style="fill:#47b07b;fill-opacity:1;stroke:none"
-       d="m 370,262.36218 105,105 -105,100 0,-45 55,-55 -55,-60 z"
-       id="path3066"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccccc" />
-    <path
-       style="fill:#24435d;fill-opacity:1;stroke:none"
-       d="m 370,467.36218 -103.5,-100.5 103.5,-104.5 0,45 -50.5,60.5 50.5,54.5 z"
-       id="path3066-8"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccccc" />
-    <path
-       style="fill:#47b07b;fill-opacity:1;stroke:none"
-       d="m 450,262.36218 105,105 -105,100 0,-45 55,-55 -55,-60 z"
-       id="path3066-6"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="ccccccc" />
-  </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.1.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Ebene_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="104px" height="76px" viewBox="0 0 104 76" enable-background="new 0 0 104 76" xml:space="preserve">
+<g id="Ebene_1_1_">
+	<polygon fill="none" points="38,56.645 38,19.355 19.355,38 	"/>
+	<polygon fill="#24435D" points="19.355,38 38,19.355 38,2 2,38 38,74 38,56.645 	"/>
+	<polygon fill="#46B17B" points="56.645,38 38,56.645 38,74 74,38 38,2 38,19.355 	"/>
+	<g>
+		<polygon fill="#46B17B" points="84.645,38 66,56.645 66,74 102,38 66,2 66,19.355 		"/>
+		<path fill="#FFFFFF" d="M65.5,75.207v-18.77L83.938,38L65.5,19.563V0.793L102.707,38L65.5,75.207z M66.5,56.852v15.941L101.293,38
+			L66.5,3.207v15.941L85.352,38L66.5,56.852z"/>
+	</g>
+	<path fill="#FFFFFF" d="M38,74.707L1.293,38L38,1.293L74.707,38L38,74.707z M2.707,38L38,73.293L73.293,38L38,2.707L2.707,38z"/>
+	<path fill="#FFFFFF" d="M38,57.352L18.648,38L38,18.648L57.352,38L38,57.352z M20.063,38L38,55.938L55.938,38L38,20.063L20.063,38z
+		"/>
+</g>
 </svg>
