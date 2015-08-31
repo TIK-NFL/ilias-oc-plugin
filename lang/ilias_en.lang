@@ -56,6 +56,7 @@ startdate#:#Start date
 enddate#:#End date
 location#:#Location
 none_scheduled#:#There are no scheduled recordings for this series
+
 download#:#Download
 keep_left_side#:#Left side flavor
 keep_right_side#:#Right side flavor
@@ -64,7 +65,7 @@ trimin#:#Trim in
 trimout#:#Trim out
 continue#:#Continue
 download_preview#:#Download preview
-onhold_recordings#:#Recording waiting for trimming
+onhold_recordings#:#Recordings waiting for trimming
 recorddate#:#Date of recording
 none_onhold#:#There are no recordings waiting for trimming
 msg_episode_trimmed#:#The episode has successfully been trimmed
