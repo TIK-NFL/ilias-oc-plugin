@@ -136,13 +136,13 @@ class ilMatterhornSendfile
 		// get the requested file and its type
 		$uri = parse_url($_SERVER["REQUEST_URI"]);
 		parse_str($uri["query"], $this->params);		
-        $ilLog->write("EpisodeRequest for:".md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json"));
-        $ilLog->write("EpisodeRequest for:".md5($uri["path"]));
-        $ilLog->write("EpisodeRequest for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
+        #$ilLog->write("Request for:".substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json");
+        #$ilLog->write("Request for:".$uri["path"]);
+        #$ilLog->write("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
         
 		global $basename;				
 		// check if it is a request for an episode
-		if(0 == strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json"), md5($uri["path"]))){
+		if(0 == strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"]))){
             $ilLog->write("EpisodeRequest for: ".print_r($this->params,true));
 			$this->requestType = "episode";
 			if (!preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
@@ -218,7 +218,6 @@ class ilMatterhornSendfile
 
 		#		echo phpinfo();
 		exit;
-		
 	*/
 		/*
 		if (!file_exists($this->file))
