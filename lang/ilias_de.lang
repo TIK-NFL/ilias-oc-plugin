@@ -59,8 +59,8 @@ none_scheduled#:#Es sind keine Aufzeichnungen geplant
 
 
 download#:#Download
-keep_left_side#:#Videotyp linkes Video
-keep_right_side#:#Videotyp rechts Video
+keep_left_side#:#Links Video behalten
+keep_right_side#:#Rechtes Video behalten
 ilias_trim_editor#:#Videoeditor
 trimin#:#Startzeitpunkt
 trimout#:#Endzeitpunkt
@@ -70,3 +70,7 @@ onhold_recordings#:#Aufzeichungen, die geschnitten werden können
 recorddate#:#Datum der Aufnahme
 none_onhold#:#Es gibt keine Aufnahmen, die geschnitten werden können
 msg_episode_trimmed#:#Die Aufnahme wurde erfolgreich geschnitten
+track_title#:#Title der Aufzeichnung
+flavor_unset#:#Typ unbekannt
+flavor_presenter#:#Dozent
+flavor_presentation#:#Präsentation

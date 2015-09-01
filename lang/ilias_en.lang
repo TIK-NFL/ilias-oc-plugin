@@ -58,8 +58,8 @@ location#:#Location
 none_scheduled#:#There are no scheduled recordings for this series
 
 download#:#Download
-keep_left_side#:#Left side flavor
-keep_right_side#:#Right side flavor
+keep_left_side#:#Keep left track
+keep_right_side#:#Keep right track
 ilias_trim_editor#:#Trim editor
 trimin#:#Trim in
 trimout#:#Trim out
@@ -69,3 +69,7 @@ onhold_recordings#:#Recordings waiting for trimming
 recorddate#:#Date of recording
 none_onhold#:#There are no recordings waiting for trimming
 msg_episode_trimmed#:#The episode has successfully been trimmed
+track_title#:#Title of recording
+flavor_unset#:#No flavor selected
+flavor_presenter#:#Presenter
+flavor_presentation#:#Presentation

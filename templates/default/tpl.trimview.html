@@ -9,7 +9,7 @@
 <div>
 <video id="mhpreviewvideo" class="video-js vjs-default-skin"
   controls preload="auto" width="640" height="264"
-  data-setup='{"example_option":true}'>
+  data-setup='{"inactivityTimeout": 0 }'>
  <source src="{DOWNLOAD_PREVIEW_URL}" type='video/mp4' />
  <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
 </video>
@@ -25,21 +25,21 @@
 <tr><td>{TXT_TRACK_TITLE}</td><td><input name="tracktitle" value="{TRACKTITLE}" checked></td></tr>
 <!-- END formstart -->  
 <!-- BEGIN dualstream -->  
-<tr><td>{TXT_LEFT_TRACK}</td><td><input type="checkbox" name="lefttrack" value="{LEFTTRACKID}" checked></td><td>
+<tr><td>{TXT_LEFT_TRACK}</td><td><input type="checkbox" id="lefttrack" name="lefttrack" value="{LEFTTRACKID}" checked></td><td>
   <select id="lefttrackflavor" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
-    <option>unset</option><option>presenter/work</option><option>presentation/work</option>
+    <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
   </select></td>  
 </tr>
-<tr><td>{TXT_RIGHT_TRACK}</td><td><input type="checkbox" name="righttrack" value="{RIGHTTRACKID}" checked></td><td>
+<tr><td>{TXT_RIGHT_TRACK}</td><td><input type="checkbox" id="righttrack" name="righttrack" value="{RIGHTTRACKID}" checked></td><td>
   <select id="righttrackflavor" name="righttrackflavor" data-preset="{RIGHTTRACKTYPE}">
-    <option>unset</option><option>presenter/work</option><option>presentation/work</option>
+    <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
   </select></td>
 </tr>
 <!-- END dualstream -->  
 <!-- BEGIN singlestream -->  
 <tr><td>{TXT_LEFT_TRACK_SINGLE}</td><td><input type="hidden" name="lefttrack" value="{LEFTTRACKID}" checked>
   <select name="lefttrackflavor" id="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
-    <option>unset</option><option>presenter/work</option><option>presentation/work</option>
+    <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
   </select></td>
 </tr>
 <!-- END singlestream -->  
