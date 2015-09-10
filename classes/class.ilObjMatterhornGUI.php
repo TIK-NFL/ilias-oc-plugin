@@ -524,7 +524,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $onhold_items[$workflowid] = $temparray;
             }else {
                 foreach($tempEpisodes['workflow'] as $workflow) {
-                    $ilLog->write("adding scheduled episodes to list:".$workflow['id']);         
+                    $ilLog->write("adding onhold episodes to list:".$workflow['id']);
                     $workflowid = $workflow['id'];
                     $temparray = array( 
                         'title' => $workflow["mediapackage"]['title'],
@@ -688,16 +688,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview = new ilTemplate("tpl.trimview.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
             $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
-            $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
 //            $ilCtrl->setParameter($this, "id", $_GET["id"]);
-            $trimview->setVariable("WFID",$_GET["id"]);
-            $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
             $trimview->setVariable("TRACKTITLE",$mediapackage->title);
-            $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/preview.mp4";
-            $trimview->setVariable("DOWNLOAD_PREVIEW_URL", $downloadurl);
             $trimview->setVariable("INITJS",$trimbase );
-            $trimview->parseCurrentBlock();            
+            $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
+            $trimview->setVariable("WFID",$_GET["id"]);
+            $trimview->parseCurrentBlock();
             if(2 == count($worktracks)){
                 $trimview->setCurrentBlock("dualstream");
                 $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
@@ -717,7 +714,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $trimview->setVariable("LEFTTRACKTYPE", $worktracks[0]->attributes()->{'type'});
                 $trimview->parseCurrentBlock();
             }
-            
+            $trimview->setCurrentBlock("video");
+            $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
+            $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/preview.mp4";
+            $trimview->setVariable("DOWNLOAD_PREVIEW_URL", $downloadurl);
+            $duration = (int)$mediapackage->attributes()->{'duration'};
+            $trimview->setVariable("TRACKLENGTH", $duration/1000);
+            $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
             $duration = (int)$mediapackage->attributes()->{'duration'};
             $ilLog->write(print_r($mediapackage->duration,true));

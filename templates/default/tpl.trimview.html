@@ -1,52 +1,79 @@
 <!-- BEGIN formstart -->  
 <script data-main="{INITJS}/trim" src="{INITJS}/trim.js"></script>
 <link href="{INITJS}/video-js/video-js.css" rel="stylesheet">
+<link href="{INITJS}/jquery-ui/jquery-ui.css" rel="stylesheet">
+<script data-main="{INITJS}/trim" src="{INITJS}/jquery-ui/jquery-ui.min.js"></script>
 <script src="{INITJS}/video-js/video.js"></script>
+
 <script>
   videojs.options.flash.swf = "{INITJS}/video-js/video-js.swf"
 </script>
 <H2>{TXT_ILIAS_TRIM_EDITOR}</H2>
-<div>
-<video id="mhpreviewvideo" class="video-js vjs-default-skin"
-  controls preload="auto" width="640" height="264"
-  data-setup='{"inactivityTimeout": 0 }'>
- <source src="{DOWNLOAD_PREVIEW_URL}" type='video/mp4' />
- <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
-</video>
-</div>
-<div>
-<a href="{DOWNLOAD_PREVIEW_URL}" download>{TXT_DOWNLOAD_PREVIEW}</a>
-</div>
-<div>
-{TXT_SELECTED_TRACKS}
 <form action="{CMD_TRIM}" method="post">
 <input type="hidden" name="wfid" value="{WFID}" />
-<table>
-<tr><td>{TXT_TRACK_TITLE}</td><td><input name="tracktitle" value="{TRACKTITLE}" checked></td></tr>
+<div class="container">
+  <div class="row">
+    <div class="input-group">
+      <span class="input-group-addon" id="basic-addon1">{TXT_TRACK_TITLE}</span>
+      <input type="text" class="form-control" aria-describedby="basic-addon1" name="tracktitle" value="{TRACKTITLE}">
+    </div>
+  </div>
 <!-- END formstart -->  
 <!-- BEGIN dualstream -->  
-<tr><td>{TXT_LEFT_TRACK}</td><td><input type="checkbox" id="lefttrack" name="lefttrack" value="{LEFTTRACKID}" checked></td><td>
-  <select id="lefttrackflavor" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
-    <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
-  </select></td>  
-</tr>
-<tr><td>{TXT_RIGHT_TRACK}</td><td><input type="checkbox" id="righttrack" name="righttrack" value="{RIGHTTRACKID}" checked></td><td>
-  <select id="righttrackflavor" name="righttrackflavor" data-preset="{RIGHTTRACKTYPE}">
-    <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
-  </select></td>
-</tr>
+  <div class="row">
+    <div class="col-md-6">{TXT_LEFT_TRACK}<input type="checkbox" id="lefttrack" name="lefttrack" value="{LEFTTRACKID}" checked></div>
+    <div class="col-md-6"><span class="pull-right">{TXT_RIGHT_TRACK}<input type="checkbox" id="righttrack" name="righttrack" value="{RIGHTTRACKID}" checked></span></div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">    
+      <select id="lefttrackflavor" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
+        <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
+      </select>  
+    </div>
+    <div class="col-md-6"><span class="pull-right">    
+      <select id="righttrackflavor" name="righttrackflavor" data-preset="{RIGHTTRACKTYPE}">
+        <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
+      </select>
+    </span></div>
+  </div>
 <!-- END dualstream -->  
 <!-- BEGIN singlestream -->  
-<tr><td>{TXT_LEFT_TRACK_SINGLE}</td><td><input type="hidden" name="lefttrack" value="{LEFTTRACKID}" checked>
-  <select name="lefttrackflavor" id="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
-    <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
-  </select></td>
-</tr>
+  <div class="row">
+    <div class="col-md-6">    
+      <input type="hidden" name="lefttrack" value="{LEFTTRACKID}">
+      <select id="lefttrackflavor" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
+        <option value="unset">{FLAVORUNSET}</option><option value="presenter/work">{FLAVORPRESENTER}</option><option value="presentation/work">{FLAVORPRESENTATION}</option>
+      </select>  
+    </div>
+  </div>
 <!-- END singlestream -->  
+<!-- BEGIN video -->  
+  <div class="row">
+    <video id="mhpreviewvideo" class="center-block video-js vjs-default-skin"
+      controls preload="auto" width="640" height="264"
+      data-setup='{"inactivityTimeout": 0 }'>
+      <source src="{DOWNLOAD_PREVIEW_URL}" type='video/mp4' />
+      <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+    </video>
+  </div>
+  <div class="row">
+    <div class="col-md-6">    
+      <a href="{DOWNLOAD_PREVIEW_URL}" download>{TXT_DOWNLOAD_PREVIEW}</a>
+    </div>
+  </div>
+  <div class="row"><div class="col-md-12">    <div id="slider-range" data-time="{TRACKLENGTH}"></div></div></div>
+<!-- END video -->  
 <!-- BEGIN formend -->  
-<tr><td>{TXT_TRIMIN}</td><td><input name="trimin" value="0:00:00" id="trimin"></td><td><input type="button" value="play from in point"><input id="settrimin" type="button" value="set to current time"></td></tr>
-<tr><td>{TXT_TRIMOUT}</td><td><input name="trimout" value="{TRACKLENGTH}" id="trimout" ></td><td><input type="button" value="play to out point"><input type="button" id="settrimout" value="set to current time"></td></tr>
-</table>
+  <div class="row">
+    <div class="col-md-6"><input name="trimin" value="0:00:00" id="trimin"><input id="settrimin" type="button" value="set to current time"></div>
+    <div class="col-md-6"><span class="pull-right"><input name="trimout" value="{TRACKLENGTH}" id="trimout" ><input type="button" id="settrimout" value="set to current time"></span></div>
+  </div>
+  <div class="row">
+    <div class="col-md-6"><input type="button" value="play from in point">    
+    </div>
+    <div class="col-md-6"><span class="pull-right"> <input type="button" value="play to out point">   
+    </span></div>
+  </div>
 <input type="submit" value="{TXT_CONTINUE}">
 </from>
 <!-- END formend -->  

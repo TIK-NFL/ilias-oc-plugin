@@ -533,7 +533,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
-        $ilLog->write("mh query".$url);
+        $ilLog->write("MH QUERY SCHEDULEURL: ".$url);
         //open connection
         $ch = curl_init();
         
@@ -565,7 +565,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=',http_build_query($params, null, '&'));
-        $ilLog->write("mh query:".$url);
+        $ilLog->write("MH QUERY ONHOLDURL: ".$url);
         //open connection
         $ch = curl_init();
         
@@ -594,7 +594,7 @@ class ilObjMatterhorn extends ilObjectPlugin
                 
         $url = $this->configObject->getMatterhornServer()."/workflow/instance/".$workflowid.".xml";
         
-        $ilLog->write("workflow-query: ".$url);
+        $ilLog->write("MH WORKFLOW URL: ".$url);
         //open connection
         $ch = curl_init();
         
