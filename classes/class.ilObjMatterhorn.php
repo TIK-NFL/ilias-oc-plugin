@@ -561,11 +561,11 @@ class ilObjMatterhorn extends ilObjectPlugin
                 
         $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
         /* $_GET Parameters to Send */
-        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','state' => 'paused','op'=>'-schedule','op'=>'-capture','op'=>'-ingest');
+        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => array('-stopped','paused'),'op'=>['-schedule','-capture','-ingest']);
         
         /* Update URL to container Query String of Paramaters */
-        $url .= '?' . http_build_query($params);
-        $ilLog->write("mh query".$url);
+        $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=',http_build_query($params, null, '&'));
+        $ilLog->write("mh query:".$url);
         //open connection
         $ch = curl_init();
         
