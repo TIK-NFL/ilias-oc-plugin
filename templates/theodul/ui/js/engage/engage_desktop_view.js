@@ -44,7 +44,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "en
     var initDesktopView = function() {
         // load bootstrap css
         var link = $("<link>");
-        link.attr({
+/*        link.attr({
             type: "text/css",
             rel: "stylesheet",
             href: "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/css/bootstrap/css/bootstrap.css"
@@ -56,7 +56,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "en
             rel: "stylesheet",
             href: "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/css/bootstrap/css/bootstrap-responsive.css"
         });
-        $("head").append(link);
+        $("head").append(link);*/
         // build timeline plugins
         $("#" + id_engage_timeline_expand_btn).click(function() {
             $("#" + id_engage_timeline_plugin).slideToggle("fast");
