@@ -538,7 +538,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         
         uasort($onhold_items,array($this, 'sortbydate'));
 
-        $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
+        
         $seriestpl = new ilTemplate("tpl.series.edit.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
         $seriestpl->setCurrentBlock($this->object->getManualRelease()?"headerfinished":"headerfinishednoaction");
         $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
@@ -631,7 +631,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
         $html = $seriestpl->get();
         $tpl->setContent($html);
-        
+        $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
         $ilTabs->activateTab("manage");
 	}
@@ -659,7 +659,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
               $ilLog->write("series: ".$mediapackage->series);
               $ilCtrl->redirect($this, "editEpisodes");
             }
-            $previewtrack;
+            $previewtracks = array();
             $worktracks = array();            
             foreach($mediapackage->media->track as $track){
 //                $ilLog->write("mediapackage: ". print_r($track,true));
@@ -667,13 +667,20 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 //                    $ilLog->write("attributes: ". $a."=".$track[$a]);
 //                }
                 if("composite/iliaspreview" === (string)$track->attributes()->{'type'}){
-                    $previewtrack = $track;
+                    $previewtracks['sbs'] = $track;
+                    $_SESSION["mhpreviewurlsbs".$_GET["id"]] = (string)$track->url;
                 }
-                if(false !== strpos($track->attributes()->{'type'},"preview")){
-                   if (!isset($previewtrack)){
-                      $previewtrack = $track;
-                   }
+
+                if("presentation/preview" === (string)$track->attributes()->{'type'}){
+                    $previewtracks['presentation'] = $track;
+                    $_SESSION["mhpreviewurlpresentation".$_GET["id"]] = (string)$track->url;
                 }
+
+                if("presenter/preview" === (string)$track->attributes()->{'type'}){
+                    $previewtracks['presenter'] = $track;
+                    $_SESSION["mhpreviewurlpresenter".$_GET["id"]] = (string)$track->url;
+                }
+
                 if(false !== strpos($track->attributes()->{'type'},"work")){
                     if((string)$track->attributes()->{'type'} === "presentation/work"){
                         $worktracks[1] = $track;
@@ -683,8 +690,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }       
             //$ilLog->write("mediapackage: ". print_r($track,true ));
-            $_SESSION["mhpreviewurl".$_GET["id"]] = (string)$previewtrack->url;
-            
             $trimview = new ilTemplate("tpl.trimview.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
             $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
@@ -712,11 +717,24 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $trimview->setVariable("TXT_LEFT_TRACK_SINGLE", $this->getText("left_side_single"));
                 $trimview->setVariable("LEFTTRACKID", $worktracks[0]->attributes()->{'id'});
                 $trimview->setVariable("LEFTTRACKTYPE", $worktracks[0]->attributes()->{'type'});
+                $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
+                $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
+                $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));    
                 $trimview->parseCurrentBlock();
             }
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
-            $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/preview.mp4";
+            $trimview->setVariable("PREVIEWTRACKS",implode(',',array_keys($previewtrack)));
+            // if there are two tracks, there is also a sbs track. Otherwise use the only track present.
+            if (array_key_exists('sbs', $previewtracks)) {
+                $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewsbs.mp4";
+            } else {
+                if (array_key_exists('presentation', $previewtracks)){
+                    $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewpresentation.mp4";
+                } else {
+                    $downloadurl = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewpresenter.mp4";
+                }
+            }
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL", $downloadurl);
             $duration = (int)$mediapackage->attributes()->{'duration'};
             $trimview->setVariable("TRACKLENGTH", $duration/1000);
@@ -732,6 +750,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_TRIMIN", $this->getText("trimin"));
             $trimview->setVariable("TXT_TRIMOUT", $this->getText("trimout"));          
             $trimview->setVariable("TXT_CONTINUE", $this->getText("continue"));                          
+            $trimview->setVariable("TXT_SET_TO_CURRENT_TIME", $this->getText("set_to_current_time"));
+            $trimview->setVariable("TXT_PREVIEW_INPOINT", $this->getText("preview_inpoint"));
+            $trimview->setVariable("TXT_PREVIEW_OUTPOINT", $this->getText("preview_outpoint"));                        
+            $trimview->setVariable("TXT_INPOINT", $this->getText("inpoint"));
+            $trimview->setVariable("TXT_OUTPOINT", $this->getText("outpoint"));                        
             $trimview->setVariable("TRACKLENGTH", gmdate("G:i:s",$duration/1000));
             #$trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d",$hours,$min,$sec));
             $trimview->parseCurrentBlock();
@@ -799,12 +822,17 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $dom_sxe = $dom->appendChild($dom_sxe);
 
             $ilLog->write("newmedia: ".$dom->saveXML());
-            $trimin = ilUtil::stripScriptHTML($_POST["trimin"]);            
-            $trimout = ilUtil::stripScriptHTML($_POST["trimout"]);
+            $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimin"]));
+            sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
+            $trimin = $hours * 3600 + $minutes * 60 + $seconds;
+
+            $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimout"]));
+            sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
+            $trimout = $hours * 3600 + $minutes * 60 + $seconds;
 
             $this->object->trim($_POST["wfid"], $dom->saveXML(), $removetrack, $trimin, $trimout);
             
-            ilUtil::sendSuccess($this->txt("msg_episode_trimmed"), true);
+            ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {
             $ilLog->write("ID does not match an episode:".$_POST["wfid"]);
         }                
@@ -816,5 +844,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         return $this->txt($a_text);
     }
 
+    
+    
 }
 ?>

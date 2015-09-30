@@ -2,6 +2,7 @@
 <script data-main="{INITJS}/trim" src="{INITJS}/trim.js"></script>
 <link href="{INITJS}/video-js/video-js.css" rel="stylesheet">
 <link href="{INITJS}/jquery-ui/jquery-ui.css" rel="stylesheet">
+<link href="{INITJS}/../css/xmh.css" rel="stylesheet">
 <script data-main="{INITJS}/trim" src="{INITJS}/jquery-ui/jquery-ui.min.js"></script>
 <script src="{INITJS}/video-js/video.js"></script>
 
@@ -61,19 +62,23 @@
       <a href="{DOWNLOAD_PREVIEW_URL}" download>{TXT_DOWNLOAD_PREVIEW}</a>
     </div>
   </div>
-  <div class="row"><div class="col-md-12">    <div id="slider-range" data-time="{TRACKLENGTH}"></div></div></div>
+  <div class="row top5"><div class="col-md-12">    <div id="slider-range" data-time="{TRACKLENGTH}"></div></div></div>
 <!-- END video -->  
 <!-- BEGIN formend -->  
-  <div class="row">
-    <div class="col-md-6"><input name="trimin" value="0:00:00" id="trimin"><input id="settrimin" type="button" value="set to current time"></div>
-    <div class="col-md-6"><span class="pull-right"><input name="trimout" value="{TRACKLENGTH}" id="trimout" ><input type="button" id="settrimout" value="set to current time"></span></div>
+  <div class="row top5">
+    <div class="col-md-6">{TXT_INPOINT}</div>
+    <div class="col-md-6"><span class="pull-right">{TXT_OUTPOINT}</div>
   </div>
-  <div class="row">
-    <div class="col-md-6"><input type="button" value="play from in point">    
+  <div class="row top5">
+    <div class="col-md-6"><input name="trimin" value="0:00:00" id="trimin"><button id="settrimin" type="button" class="btn btn-default"><span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}</button></div>
+    <div class="col-md-6"><span class="pull-right"><input name="trimout" value="{TRACKLENGTH}" id="trimout" ><button id="settrimout" type="button" class="btn btn-default"><span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}</button></div>
+  </div>
+  <div class="row top5">
+    <div class="col-md-6"><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_INPOINT}</button>
     </div>
-    <div class="col-md-6"><span class="pull-right"> <input type="button" value="play to out point">   
+    <div class="col-md-6"><span class="pull-right"> <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_OUTPOINT}</button>   
     </span></div>
   </div>
-<input type="submit" value="{TXT_CONTINUE}">
+  <div class="row top5"><button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-ok"></span> {TXT_CONTINUE}</button></div>
 </from>
 <!-- END formend -->  

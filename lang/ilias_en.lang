@@ -68,8 +68,13 @@ download_preview#:#Download preview
 onhold_recordings#:#Recordings waiting for trimming
 recorddate#:#Date of recording
 none_onhold#:#There are no recordings waiting for trimming
-msg_episode_trimmed#:#The episode has successfully been trimmed
+msg_episode_send_to_triming#:#The episode has successfully been send to triming
 track_title#:#Title of recording
 flavor_unset#:#No flavor selected
 flavor_presenter#:#Presenter
 flavor_presentation#:#Presentation
+set_to_current_time#:#Set to current time
+inpoint#:#Inpoint
+outpoint#:#outpoint
+preview_inpoint#:#Play track from inpoint
+preview_outpoint#:#Play track to out outpoint

@@ -69,8 +69,13 @@ download_preview#:#Vorschau herrunterladen
 onhold_recordings#:#Aufzeichungen, die geschnitten werden können
 recorddate#:#Datum der Aufnahme
 none_onhold#:#Es gibt keine Aufnahmen, die geschnitten werden können
-msg_episode_trimmed#:#Die Aufnahme wurde erfolgreich geschnitten
+msg_episode_send_to_triming#:#Die Aufnahme wurde erfolgreich zum Weiterverarbeitung geschickt
 track_title#:#Title der Aufzeichnung
 flavor_unset#:#Typ unbekannt
 flavor_presenter#:#Dozent
 flavor_presentation#:#Präsentation
+set_to_current_time#:#Jetzt setzen
+inpoint#:#Startpunkt
+outpoint#:#Endpunkt
+preview_inpoint#:#Abspiel ab Schnittmarke
+preview_outpoint#:#Abspielen bis Schnittmarke

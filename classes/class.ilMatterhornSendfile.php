@@ -163,14 +163,15 @@ class ilMatterhornSendfile
                 $this->errortext = $this->lng->txt("no_such_episode");
                 return false;
             }
-            if(preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview.mp4$/', $this->subpath)){
+            if(preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).mp4$/', $this->subpath)){
                 $ilLog->write("PreviewRequest for: ".$this->subpath);
                 $this->requestType = "preview";
-                if (!preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview.mp4/', $this->subpath)) {
+                if (!preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).mp4/', $this->subpath)) {
                     $this->errorcode = 404;
                     $this->errortext = $this->lng->txt("no_such_episode");
                     return false;               
                 }
+                
                 list($this->obj_id,$this->episode_id) = explode('/', $this->subpath);
             } else {
                 $this->requestType = "file";
@@ -214,6 +215,9 @@ class ilMatterhornSendfile
 		echo "disposition:         ". $this->disposition. "\n";
 		echo "ckeck_ip:            ". $this->check_ip. "\n";
 		echo "send_mimetype:       ". $this->send_mimetype. "\n";
+		echo "requesttype:         ". $this->requestType. "\n";
+		echo "errorcode:           ". $this->errorcode. "\n";
+		echo "errortext:           ". $this->errortype. "\n";
 		echo "</pre>";
 
 		#		echo phpinfo();
@@ -322,6 +326,7 @@ class ilMatterhornSendfile
 		{
 			$this->errorcode = 404;
 			$this->errortext = $this->lng->txt("obj_not_found");
+			$ilLog->write("MHSendfile: obj_not_found");
 			return false;
 		}
 		if ($this->checkAccessObject($iliasid))
@@ -583,7 +588,9 @@ class ilMatterhornSendfile
       global $ilLog;
       $ilLog->write(print_r($_SESSION,true));
       $urlsplit = explode('/',$this->subpath);
-      $realfile = str_replace($this->configObject->getMatterhornServer().'/files',$this->configObject->getMatterhornFilesDirectory(),$_SESSION['mhpreviewurl'.$urlsplit[1]]);
+      $ilLog->write(print_r($urlsplit[1],true));
+      $ilLog->write(print_r($urlsplit[2],true));
+      $realfile = str_replace($this->configObject->getMatterhornServer().'/files',$this->configObject->getMatterhornFilesDirectory(),$_SESSION['mhpreviewurl'.substr($urlsplit[2],7,-4).$urlsplit[1]]);
       $ilLog->write("Real preview file: ".$realfile);
 //    header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
       include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
