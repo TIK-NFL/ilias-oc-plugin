@@ -1,35 +1,43 @@
 /**
- * Copyright 2009-2011 The Regents of the University of California Licensed
- * under the Educational Community License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- * http://www.osedu.org/licenses/ECL-2.0
+ *
+ * The Apereo Foundation licenses this file to you under the Educational
+ * Community License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License
+ * at:
+ *
+ *   http://opensource.org/licenses/ecl2.txt
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "moment"], function(require, $, _, Backbone, Engage, Moment) {
+define(["jquery", "underscore", "backbone", "engage/core", "moment"], function($, _, Backbone, Engage, Moment) {
     "use strict";
+
+    var insertIntoDOM = true;
     var PLUGIN_NAME = "Description";
     var PLUGIN_TYPE = "engage_tab";
     var PLUGIN_VERSION = "1.0";
-    var PLUGIN_TEMPLATE = "template.html";
-    var PLUGIN_TEMPLATE_MOBILE = "template_mobile.html";
-    var PLUGIN_TEMPLATE_EMBED = "template_embed.html";
-    var PLUGIN_STYLES = [
-        "style.css"
-    ];
-    var PLUGIN_STYLES_MOBILE = [
-        "style_mobile.css"
+    var PLUGIN_TEMPLATE_DESKTOP = "templates/desktop.html";
+    var PLUGIN_TEMPLATE_MOBILE = "templates/mobile.html";
+    var PLUGIN_TEMPLATE_EMBED = "templates/embed.html";
+    var PLUGIN_STYLES_DESKTOP = [
+        "styles/desktop.css"
     ];
     var PLUGIN_STYLES_EMBED = [
-        "style_embed.css"
+        "styles/embed.css"
+    ];
+    var PLUGIN_STYLES_MOBILE = [
+        "styles/mobile.css"
     ];
 
     var plugin;
@@ -44,19 +52,9 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
 
     // desktop, embed and mobile logic
     switch (Engage.model.get("mode")) {
-        case "mobile":
-            plugin = {
-                name: PLUGIN_NAME,
-                type: PLUGIN_TYPE,
-                version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES_MOBILE,
-                template: PLUGIN_TEMPLATE_MOBILE,
-                events: events
-            };
-            isMobileMode = true;
-            break;
         case "embed":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
@@ -66,14 +64,27 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
             };
             isEmbedMode = true;
             break;
-        case "desktop":
-        default:
+        case "mobile":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES,
-                template: PLUGIN_TEMPLATE,
+                styles: PLUGIN_STYLES_MOBILE,
+                template: PLUGIN_TEMPLATE_MOBILE,
+                events: events
+            };
+            isMobileMode = true;
+            break;
+        case "desktop":
+        default:
+            plugin = {
+                insertIntoDOM: insertIntoDOM,
+                name: PLUGIN_NAME,
+                type: PLUGIN_TYPE,
+                version: PLUGIN_VERSION,
+                styles: PLUGIN_STYLES_DESKTOP,
+                template: PLUGIN_TEMPLATE_DESKTOP,
                 events: events
             };
             isDesktopMode = true;
@@ -83,15 +94,54 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
     /* change these variables */
     var class_tabGroupItem = "tab-group-item";
 
-    /* don"t change these variables */
+    /* don't change these variables */
     var viewsModelChange = "change:views";
     var mediapackageChange = "change:mediaPackage";
-    var initCount = 3;
+    var initCount = 4;
     var mediapackageError = false;
+    var translations = new Array();
+    var locale = "en";
+    var dateFormat = "MMMM Do YYYY, h:mm:ss a";
+    var Utils;
+
+    function initTranslate(language, funcSuccess, funcError) {
+        var path = Engage.getPluginPath("EngagePluginTabDescription").replace(/(\.\.\/)/g, "");
+        //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
+        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" +path;
+
+        Engage.log("Controls: selecting language " + language);
+        jsonstr += "language/" + language + ".json";
+        $.ajax({
+            url: jsonstr,
+            dataType: "json",
+            success: function(data) {
+                if (data) {
+                    data.value_locale = language;
+                    translations = data;
+                    if (funcSuccess) {
+                        funcSuccess(translations);
+                    }
+                } else {
+                    if (funcError) {
+                        funcError();
+                    }
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                if (funcError) {
+                    funcError();
+                }
+            }
+        });
+    }
+
+    function translate(str, strIfNotFound) {
+        return (translations[str] != undefined) ? translations[str] : strIfNotFound;
+    }
 
     var DescriptionTabView = Backbone.View.extend({
         initialize: function(mediaPackageModel, template) {
-            this.setElement($(plugin.container)); // every plugin view has it"s own container associated with it
+            this.setElement($(plugin.container)); // every plugin view has it's own container associated with it
             this.model = mediaPackageModel;
             this.template = template;
             // bind the render function always to the view
@@ -108,11 +158,23 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
                     series: this.model.get("series"),
                     contributor: this.model.get("contributor"),
                     date: this.model.get("date"),
-                    views: Engage.model.get("views").get("stats").views
+                    views: Engage.model.get("views") ? Engage.model.get("views").get("stats").views : "",
+                    str_title: translate("title", "Title"),
+                    str_noTitle: translate("noTitle", "No title"),
+                    str_creator: translate("creator", "Creator"),
+                    str_contributor: translate("presenter", "Contributor"),
+                    str_views: translate("views", "Views"),
+                    str_series: translate("series", "Series"),
+                    str_recordingDate: translate("recordingDate", "Recording date"),
+                    str_description: translate("description", "Description"),
+                    str_noDescriptionAvailable: translate("noDescriptionAvailable", "No description available.")
                 };
                 // try to format the date
+                Moment.locale(locale, {
+                    // customizations
+                });
                 if (Moment(tempVars.date) != null) {
-                    tempVars.date = Moment(tempVars.date).format("MMMM Do YYYY, h:mm:ss a");
+                    tempVars.date = Moment(tempVars.date).format(dateFormat);
                 }
                 if (!tempVars.creator) {
                     tempVars.creator = "";
@@ -137,13 +199,14 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
                 }
                 // compile template and load into the html
                 this.$el.html(_.template(this.template, tempVars));
-         /*
-	      $(".description-item").mouseover(function() {
-	      $(this).removeClass("description-itemColor").addClass("description-itemColor-hover");
-	      }).mouseout(function() {
-	      $(this).removeClass("description-itemColor-hover").addClass("description-itemColor");
-	      });
-	    */
+                $("#engage_tab_" + plugin.name.replace(/\s/g,"_")).text(tempVars.str_description);
+                /*
+        	    $(".description-item").mouseover(function() {
+        	        $(this).removeClass("description-itemColor").addClass("description-itemColor-hover");
+        	    }).mouseout(function() {
+        	        $(this).removeClass("description-itemColor-hover").addClass("description-itemColor");
+        	    });
+        	*/
             }
         }
     });
@@ -151,10 +214,6 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
     function initPlugin() {
         // only init if plugin template was inserted into the DOM
         if (isDesktopMode && plugin.inserted) {
-            Moment.locale("en", {
-                // customizations
-            });
-
             // create a new view with the media package model and the template
             var descriptionTabView = new DescriptionTabView(Engage.model.get("mediaPackage"), plugin.template);
             Engage.on(plugin.events.mediaPackageModelError.getName(), function(msg) {
@@ -163,6 +222,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
             Engage.model.get("views").on("change", function() {
                 descriptionTabView.render();
             });
+            descriptionTabView.render();
         }
     }
 
@@ -170,6 +230,27 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
         // init event
         Engage.log("Tab:Description: Init");
         var relative_plugin_path = Engage.getPluginPath("EngagePluginTabDescription");
+
+        // load utils class
+        require([relative_plugin_path + "utils"], function(utils) {
+            Engage.log("Tab:Description: Utils class loaded");
+            Utils = new utils();
+            initTranslate(Utils.detectLanguage(), function() {
+                Engage.log("Tab:Description: Successfully translated.");
+                locale = translate("value_locale", locale);
+                dateFormat = translate("value_dateFormatFull", dateFormat);
+                initCount -= 1;
+                if (initCount <= 0) {
+                    initPlugin();
+                }
+            }, function() {
+                Engage.log("Tab:Description: Error translating...");
+                initCount -= 1;
+                if (initCount <= 0) {
+                    initPlugin();
+                }
+            });
+        });
 
         Engage.model.on(viewsModelChange, function() {
             initCount -= 1;

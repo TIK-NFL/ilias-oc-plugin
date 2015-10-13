@@ -1,36 +1,44 @@
 /**
- * Copyright 2009-2011 The Regents of the University of California Licensed
- * under the Educational Community License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- * http://www.osedu.org/licenses/ECL-2.0
+ *
+ * The Apereo Foundation licenses this file to you under the Educational
+ * Community License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License
+ * at:
+ *
+ *   http://opensource.org/licenses/ecl2.txt
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "moment"], function(require, $, _, Backbone, Engage, Moment) {
+define(["require", "jquery", "backbone", "engage/core"], function(require, $, Backbone, Engage) {
     "use strict";
+
+    var insertIntoDOM = true;
     var PLUGIN_NAME = "Engage Custom Notifications";
     var PLUGIN_TYPE = "engage_custom";
     var PLUGIN_VERSION = "1.0";
-    var PLUGIN_TEMPLATE = "none";
+    var PLUGIN_TEMPLATE_DESKTOP = "none";
     var PLUGIN_TEMPLATE_MOBILE = "none";
     var PLUGIN_TEMPLATE_EMBED = "none";
-    var PLUGIN_STYLES = [
-        "lib/alertify/alertify.css",
-        "lib/alertify/alertify-bootstrap-3.css"
-    ];
-    var PLUGIN_STYLES_MOBILE = [
+    var PLUGIN_STYLES_DESKTOP = [
         "lib/alertify/alertify.css",
         "lib/alertify/alertify-bootstrap-3.css"
     ];
     var PLUGIN_STYLES_EMBED = [
+        "lib/alertify/alertify.css",
+        "lib/alertify/alertify-bootstrap-3.css"
+    ];
+    var PLUGIN_STYLES_MOBILE = [
         "lib/alertify/alertify.css",
         "lib/alertify/alertify-bootstrap-3.css"
     ];
@@ -57,19 +65,9 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
 
     // desktop, embed and mobile logic
     switch (Engage.model.get("mode")) {
-        case "mobile":
-            plugin = {
-                name: PLUGIN_NAME,
-                type: PLUGIN_TYPE,
-                version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES_MOBILE,
-                template: PLUGIN_TEMPLATE_MOBILE,
-                events: events
-            };
-            isMobileMode = true;
-            break;
         case "embed":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
@@ -79,14 +77,27 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
             };
             isEmbedMode = true;
             break;
-        case "desktop":
-        default:
+        case "mobile":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES,
-                template: PLUGIN_TEMPLATE,
+                styles: PLUGIN_STYLES_MOBILE,
+                template: PLUGIN_TEMPLATE_MOBILE,
+                events: events
+            };
+            isMobileMode = true;
+            break;
+        case "desktop":
+        default:
+            plugin = {
+                insertIntoDOM: insertIntoDOM,
+                name: PLUGIN_NAME,
+                type: PLUGIN_TYPE,
+                version: PLUGIN_VERSION,
+                styles: PLUGIN_STYLES_DESKTOP,
+                template: PLUGIN_TEMPLATE_DESKTOP,
                 events: events
             };
             isDesktopMode = true;
@@ -99,29 +110,53 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
     var alertifyDisplayDatetime = false;
     var alertifyPath = "lib/alertify/alertify";
 
-    /* don"t change these variables */
+    /* don't change these variables */
+    var Utils;
     var isAudioOnly = false;
     var alertify;
     var mediapackageError = false;
     var codecError = false;
-    var initCount = 2;
+    var initCount = 3;
     var videoLoaded = false;
     var videoLoadMsgDisplayed = false;
     var videoBuffering = false;
+    var translations = new Array();
+    var locale = "en";
+    var dateFormat = "MMMM Do YYYY, h:mm:ss a";
 
-    /**
-     * Format the current date and time
-     *
-     * @return a formatted current date and time string
-     */
-    function getCurrentDateTime() {
-        var date = new Date();
+    function initTranslate(language, funcSuccess, funcError) {
+        var path = Engage.getPluginPath("EngagePluginCustomNotifications").replace(/(\.\.\/)/g, "");
+        //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
+        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" +path;
 
-        // try to format the date
-        if (Moment(date) != null) {
-            date = Moment(new Date()).format("MMMM Do YYYY, h:mm:ss a");
-        }
-        return date;
+        Engage.log("Controls: selecting language " + language);
+        jsonstr += "language/" + language + ".json";
+        $.ajax({
+            url: jsonstr,
+            dataType: "json",
+            success: function(data) {
+                if (data) {
+                    data.value_locale = language;
+                    translations = data;
+                    if (funcSuccess) {
+                        funcSuccess(translations);
+                    }
+                } else {
+                    if (funcError) {
+                        funcError();
+                    }
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                if (funcError) {
+                    funcError();
+                }
+            }
+        });
+    }
+
+    function translate(str, strIfNotFound) {
+        return (translations[str] != undefined) ? translations[str] : strIfNotFound;
     }
 
     /**
@@ -131,17 +166,13 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
      * @return the formatted message
      */
     function getAlertifyMessage(msg) {
-        return (alertifyDisplayDatetime ? (getCurrentDateTime() + ": ") : "") + msg;
+        return (alertifyDisplayDatetime ? (Utils.getCurrentDateTime(locale) + ": ") : "") + msg;
     }
 
     /**
      * Initialize the plugin
      */
     function initPlugin() {
-        Moment.locale("en", {
-            // customizations
-        });
-
         alertify.init();
         alertify.set({
             delay: alertifyMessageDelay
@@ -151,22 +182,21 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
             if (!videoLoaded && !mediapackageError && !codecError) {
                 videoLoadMsgDisplayed = true;
                 if (!isAudioOnly) {
-                    alertify.error(getAlertifyMessage("The video is loading. Please wait a moment."));
+                    alertify.error(getAlertifyMessage(translate("error_videoLoading", "The video is loading. Please wait a moment.")));
                 } else {
-                    alertify.error(getAlertifyMessage("The audio is loading. Please wait a moment."));
+                    alertify.error(getAlertifyMessage(translate("error_audioLoading", "The audio is loading. Please wait a moment.")));
                 }
             }
         }, alertifyVideoLoadMessageThreshold);
-
         Engage.on(plugin.events.isAudioOnly.getName(), function(audio) {
             isAudioOnly = audio;
         });
         Engage.on(plugin.events.ready.getName(), function() {
             if (!videoLoaded && videoLoadMsgDisplayed && !mediapackageError && !codecError) {
                 if (!isAudioOnly) {
-                    alertify.success(getAlertifyMessage("The video has been loaded successfully."));
+                    alertify.success(getAlertifyMessage(translate("msg_videoLoadedSuccessfully", "The video has been loaded successfully.")));
                 } else {
-                    alertify.success(getAlertifyMessage("The audio has been loaded successfully."));
+                    alertify.success(getAlertifyMessage(translate("msg_audioLoadedSuccessfully", "The audio has been loaded successfully.")));
                 }
             }
             videoLoaded = true;
@@ -174,19 +204,19 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
         Engage.on(plugin.events.buffering.getName(), function() {
             if (!videoBuffering && !mediapackageError && !codecError) {
                 videoBuffering = true;
-                alertify.success(getAlertifyMessage("The video is currently buffering. Please wait a moment."));
+                alertify.success(getAlertifyMessage(translate("msg_videoBuffering", "The video is currently buffering. Please wait a moment.")));
             }
         });
         Engage.on(plugin.events.bufferedAndAutoplaying.getName(), function() {
             if (videoBuffering && !mediapackageError && !codecError) {
                 videoBuffering = false;
-                alertify.success(getAlertifyMessage("The video has been buffered successfully and is now autoplaying."));
+                alertify.success(getAlertifyMessage(translate("msg_videoBufferedSuccessfullyAndAutoplaying", "The video has been buffered successfully and is now autoplaying.")));
             }
         });
         Engage.on(plugin.events.bufferedButNotAutoplaying.getName(), function() {
             if (videoBuffering && !mediapackageError && !codecError) {
                 videoBuffering = false;
-                alertify.success(getAlertifyMessage("The video has been buffered successfully."));
+                alertify.success(getAlertifyMessage(translate("msg_videoBufferedSuccessfully", "The video has been buffered successfully.")));
             }
         });
         Engage.on(plugin.events.customNotification.getName(), function(msg) {
@@ -203,11 +233,11 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
         });
         Engage.on(plugin.events.mediaPackageModelError.getName(), function(msg) {
             mediapackageError = true;
-            alertify.error(getAlertifyMessage("Error: " + msg));
+            alertify.error(getAlertifyMessage(translate("error", "Error") + ": " + msg));
         });
         Engage.on(plugin.events.audioCodecNotSupported.getName(), function() {
             codecError = true;
-            alertify.error(getAlertifyMessage("Error: The audio codec is not supported by this browser"));
+            alertify.error(getAlertifyMessage(translate("error_AudioCodecNotSupported", "Error: The audio codec is not supported by this browser")));
         });
     }
 
@@ -215,19 +245,40 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core", "mo
     Engage.log("Notifications: Init");
     var relative_plugin_path = Engage.getPluginPath("EngagePluginCustomNotifications");
 
-    // load alertify lib
-    require([relative_plugin_path + alertifyPath], function(_alertify) {
-        Engage.log("Notifications: Lib alertify loaded");
-        alertify = _alertify;
+    // all plugins loaded
+    Engage.on(plugin.events.plugin_load_done.getName(), function() {
+        Engage.log("Notifications: Plugin load done");
         initCount -= 1;
         if (initCount <= 0) {
             initPlugin();
         }
     });
 
-    // all plugins loaded
-    Engage.on(plugin.events.plugin_load_done.getName(), function() {
-        Engage.log("Notifications: Plugin load done");
+    // load utils class
+    require([relative_plugin_path + "utils"], function(utils) {
+        Engage.log("Notifications: Utils class loaded");
+        Utils = new utils();
+        initTranslate(Utils.detectLanguage(), function() {
+            Engage.log("Notifications: Successfully translated.");
+            locale = translate("value_locale", locale);
+            dateFormat = translate("value_dateFormatFull", dateFormat);
+            initCount -= 1;
+            if (initCount <= 0) {
+                initPlugin();
+            }
+        }, function() {
+            Engage.log("Notifications: Error translating...");
+            initCount -= 1;
+            if (initCount <= 0) {
+                initPlugin();
+            }
+        });
+    });
+
+    // load alertify lib
+    require([relative_plugin_path + alertifyPath], function(_alertify) {
+        Engage.log("Notifications: Lib alertify loaded");
+        alertify = _alertify;
         initCount -= 1;
         if (initCount <= 0) {
             initPlugin();

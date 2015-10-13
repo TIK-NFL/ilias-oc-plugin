@@ -1,34 +1,42 @@
 /**
- * Copyright 2009-2011 The Regents of the University of California Licensed
- * under the Educational Community License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- * http://www.osedu.org/licenses/ECL-2.0
+ *
+ * The Apereo Foundation licenses this file to you under the Educational
+ * Community License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License
+ * at:
+ *
+ *   http://opensource.org/licenses/ecl2.txt
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], function(require, $, _, Backbone, Engage) {
+define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
     "use strict";
+
+    var insertIntoDOM = false;
     var PLUGIN_NAME = "Engage Plugin Custom Usertracking";
     var PLUGIN_TYPE = "engage_custom";
     var PLUGIN_VERSION = "1.0";
-    var PLUGIN_TEMPLATE = "none";
+    var PLUGIN_TEMPLATE_DESKTOP = "none";
     var PLUGIN_TEMPLATE_MOBILE = "none";
     var PLUGIN_TEMPLATE_EMBED = "none";
-    var PLUGIN_STYLES = [
-        ""
-    ];
-    var PLUGIN_STYLES_MOBILE = [
+    var PLUGIN_STYLES_DESKTOP = [
         ""
     ];
     var PLUGIN_STYLES_EMBED = [
+        ""
+    ];
+    var PLUGIN_STYLES_MOBILE = [
         ""
     ];
 
@@ -45,19 +53,9 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
 
     // desktop, embed and mobile logic
     switch (Engage.model.get("mode")) {
-        case "mobile":
-            plugin = {
-                name: PLUGIN_NAME,
-                type: PLUGIN_TYPE,
-                version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES_MOBILE,
-                template: PLUGIN_TEMPLATE_MOBILE,
-                events: events
-            };
-            isMobileMode = true;
-            break;
         case "embed":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
@@ -67,30 +65,42 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
             };
             isEmbedMode = true;
             break;
-        case "desktop":
-        default:
+        case "mobile":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES,
-                template: PLUGIN_TEMPLATE,
+                styles: PLUGIN_STYLES_MOBILE,
+                template: PLUGIN_TEMPLATE_MOBILE,
+                events: events
+            };
+            isMobileMode = true;
+            break;
+        case "desktop":
+        default:
+            plugin = {
+                insertIntoDOM: insertIntoDOM,
+                name: PLUGIN_NAME,
+                type: PLUGIN_TYPE,
+                version: PLUGIN_VERSION,
+                styles: PLUGIN_STYLES_DESKTOP,
+                template: PLUGIN_TEMPLATE_DESKTOP,
                 events: events
             };
             isDesktopMode = true;
             break;
     }
 
-    /* change these variables */
-    var USERTRACKING_ENDPOINT = "/usertracking";
+    /* don't change these variables */
     var mediapackageChange = "change:mediaPackage";
     var footprintsChange = "change:footprints";
-
-    /* don"t change these variables */
     var initCount = 3;
     var lastFootprint = undefined;
     var mediapackageID;
     var mediapackageError = false;
+
+    /* TODO: Wait for the new usertracking service...
 
     function initPlugin() {
         mediapackageID = Engage.model.get("urlParameters").id;
@@ -105,7 +115,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
 
         Engage.on(plugin.events.timeupdate.getName(), function(currentTime) {
             if (!mediapackageError) {
-                // add footprint each rounded timeupdate
+                // add footprint each timeupdate
                 var cTime = Math.round(currentTime);
                 if (lastFootprint != undefined) {
                     if (lastFootprint != cTime) {
@@ -147,6 +157,8 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
             initPlugin();
         }
     });
+
+    */
 
     return plugin;
 });

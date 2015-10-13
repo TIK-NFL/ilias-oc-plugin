@@ -683,9 +683,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
                 if(false !== strpos($track->attributes()->{'type'},"work")){
                     if((string)$track->attributes()->{'type'} === "presentation/work"){
-                        $worktracks[1] = $track;
+                        $worktracks['presentation'] = $track;
                     } else {
-                        $worktracks[0] = $track;
+                        $worktracks['presenter'] = $track;
                     }
                 }
             }       
@@ -704,19 +704,20 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $trimview->setCurrentBlock("dualstream");
                 $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
                 $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
-                $trimview->setVariable("LEFTTRACKID", $worktracks[0]->attributes()->{'id'});
-                $trimview->setVariable("LEFTTRACKTYPE", $worktracks[0]->attributes()->{'type'});
-                $trimview->setVariable("RIGHTTRACKID", $worktracks[1]->attributes()->{'id'});
-                $trimview->setVariable("RIGHTTRACKTYPE", $worktracks[1]->attributes()->{'type'});
+                $trimview->setVariable("LEFTTRACKID", $worktracks['presenter']->attributes()->{'id'});
+                $trimview->setVariable("LEFTTRACKTYPE", $worktracks['presenter']->attributes()->{'type'});
+                $trimview->setVariable("RIGHTTRACKID", $worktracks['presentation']->attributes()->{'id'});
+                $trimview->setVariable("RIGHTTRACKTYPE", $worktracks['presentation']->attributes()->{'type'});
                 $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
                 $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
                 $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));
                 $trimview->parseCurrentBlock();
             } else {
-                $trimview->setCurrentBlock("singlestream");
+                $trackkey = array_keys($worktracks)[0];
+                $trimview->setCurrentBlock("singlestream");                
                 $trimview->setVariable("TXT_LEFT_TRACK_SINGLE", $this->getText("left_side_single"));
-                $trimview->setVariable("LEFTTRACKID", $worktracks[0]->attributes()->{'id'});
-                $trimview->setVariable("LEFTTRACKTYPE", $worktracks[0]->attributes()->{'type'});
+                $trimview->setVariable("LEFTTRACKID", $worktracks[$trackkey]->attributes()->{'id'});
+                $trimview->setVariable("LEFTTRACKTYPE", $worktracks[$trackkey]->attributes()->{'type'});
                 $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
                 $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
                 $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));    
@@ -755,8 +756,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_PREVIEW_OUTPOINT", $this->getText("preview_outpoint"));                        
             $trimview->setVariable("TXT_INPOINT", $this->getText("inpoint"));
             $trimview->setVariable("TXT_OUTPOINT", $this->getText("outpoint"));                        
-            $trimview->setVariable("TRACKLENGTH", gmdate("G:i:s",$duration/1000));
-            #$trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d",$hours,$min,$sec));
+            //$trimview->setVariable("TRACKLENGTH", gmdate("G:i:s",$duration/1000));
+            $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d",$hours,$min,$sec));
             $trimview->parseCurrentBlock();
             $tpl->setContent($trimview->get());
             $ilTabs->activateTab("manage");

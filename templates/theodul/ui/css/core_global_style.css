@@ -24,7 +24,7 @@
 /* loading animation container */
 .loading {
     display: none;
-    position: relative;
+    position: absolute;
     top: 10%;
     left: 10%;
     width: 50%;
@@ -85,6 +85,12 @@
     margin: 20px 0px 0px 20px;
     display: none;
     width: 350px;
+}
+
+.alertify-log>ul, #customError_str>ul {
+    margin-left: 40px;
+    margin-right: 5px;
+    margin-top: 10px;
 }
 
 #customError_btn-container {

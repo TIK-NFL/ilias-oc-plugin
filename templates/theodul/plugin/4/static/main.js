@@ -1,35 +1,43 @@
 /**
- * Copyright 2009-2011 The Regents of the University of California Licensed
- * under the Educational Community License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- * http://www.osedu.org/licenses/ECL-2.0
+ *
+ * The Apereo Foundation licenses this file to you under the Educational
+ * Community License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License
+ * at:
+ *
+ *   http://opensource.org/licenses/ecl2.txt
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], function(require, $, _, Backbone, Engage) {
+define(["require", "jquery", "underscore", "backbone", "engage/core"], function(require, $, _, Backbone, Engage) {
     "use strict";
+
+    var insertIntoDOM = true;
     var PLUGIN_NAME = "Slide text";
     var PLUGIN_TYPE = "engage_tab";
     var PLUGIN_VERSION = "1.0";
-    var PLUGIN_TEMPLATE = "template.html";
-    var PLUGIN_TEMPLATE_MOBILE = "template_mobile.html";
-    var PLUGIN_TEMPLATE_EMBED = "template_embed.html";
-    var PLUGIN_STYLES = [
-        "style.css"
-    ];
-    var PLUGIN_STYLES_MOBILE = [
-        "style_mobile.css"
+    var PLUGIN_TEMPLATE_DESKTOP = "templates/desktop.html";
+    var PLUGIN_TEMPLATE_MOBILE = "templates/mobile.html";
+    var PLUGIN_TEMPLATE_EMBED = "templates/embed.html";
+    var PLUGIN_STYLES_DESKTOP = [
+        "styles/desktop.css"
     ];
     var PLUGIN_STYLES_EMBED = [
-        "style_embed.css"
+        "styles/embed.css"
+    ];
+    var PLUGIN_STYLES_MOBILE = [
+        "styles/mobile.css"
     ];
 
     var plugin;
@@ -47,108 +55,94 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
 
     // desktop, embed and mobile logic
     switch (Engage.model.get("mode")) {
-        case "mobile":
-            plugin = {
-                name: PLUGIN_NAME,
-                type: PLUGIN_TYPE,
-                version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES_MOBILE,
-                template: PLUGIN_TEMPLATE_MOBILE,
-                events: events,
-                timeStrToSeconds: timeStrToSeconds
-            };
-            isMobileMode = true;
-            break;
         case "embed":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
                 styles: PLUGIN_STYLES_EMBED,
                 template: PLUGIN_TEMPLATE_EMBED,
-                events: events,
-                timeStrToSeconds: timeStrToSeconds
+                events: events
             };
             isEmbedMode = true;
+            break;
+        case "mobile":
+            plugin = {
+                insertIntoDOM: insertIntoDOM,
+                name: PLUGIN_NAME,
+                type: PLUGIN_TYPE,
+                version: PLUGIN_VERSION,
+                styles: PLUGIN_STYLES_MOBILE,
+                template: PLUGIN_TEMPLATE_MOBILE,
+                events: events
+            };
+            isMobileMode = true;
             break;
         case "desktop":
         default:
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES,
-                template: PLUGIN_TEMPLATE,
-                events: events,
-                timeStrToSeconds: timeStrToSeconds
+                styles: PLUGIN_STYLES_DESKTOP,
+                template: PLUGIN_TEMPLATE_DESKTOP,
+                events: events
             };
             isDesktopMode = true;
             break;
     }
 
-    /* change these variables */
-
-    /* don"t change these variables */
+    /* don't change these variables */
+    var Utils;
     var TEMPLATE_TAB_CONTENT_ID = "engage_slidetext_tab_content";
     var html_snippet_id = "engage_slidetext_tab_content";
     var id_segmentNo = "tab_slidetext_segment_";
     var mediapackageChange = "change:mediaPackage";
-    var initCount = 2;
+    var initCount = 4;
     var mediapackageError = false;
+    var translations = new Array();
+    var Segment;
 
-    /**
-     * Segment
-     *
-     * @param time
-     * @param image_url
-     */
-    var Segment = function(time, image_url, text) {
-        this.time = time;
-        this.image_url = image_url;
-        this.text = text;
-    };
+    function initTranslate(language, funcSuccess, funcError) {
+        var path = Engage.getPluginPath("EngagePluginTabSlidetext").replace(/(\.\.\/)/g, "");
+        //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
+        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" +path;
 
-    /**
-     * Returns the input time in milliseconds
-     *
-     * @param data data in the format ab:cd:ef
-     * @return time from the data in milliseconds
-     */
-    function getTimeInMilliseconds(data) {
-        if ((data !== undefined) && (data !== null) && (data != 0) && (data.length) && (data.indexOf(":") != -1)) {
-            var values = data.split(":");
-            // when the format is correct
-            if (values.length == 3) {
-                // try to convert to numbers
-                var val0 = values[0] * 1;
-                var val1 = values[1] * 1;
-                var val2 = values[2] * 1;
-                // check and parse the seconds
-                if (!isNaN(val0) && !isNaN(val1) && !isNaN(val2)) {
-                    // convert hours, minutes and seconds to milliseconds
-                    val0 *= 60 * 60 * 1000; // 1 hour = 60 minutes = 60 * 60 Seconds = 60 * 60 * 1000 milliseconds
-                    val1 *= 60 * 1000; // 1 minute = 60 seconds = 60 * 1000 milliseconds
-                    val2 *= 1000; // 1 second = 1000 milliseconds
-                    return val0 + val1 + val2;
+        Engage.log("Controls: selecting language " + language);
+        jsonstr += "language/" + language + ".json";
+        $.ajax({
+            url: jsonstr,
+            dataType: "json",
+            success: function(data) {
+                if (data) {
+                    data.value_locale = language;
+                    translations = data;
+                    if (funcSuccess) {
+                        funcSuccess(translations);
+                    }
+                } else {
+                    if (funcError) {
+                        funcError();
+                    }
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                if (funcError) {
+                    funcError();
                 }
             }
-        }
-        return 0;
+        });
     }
 
-    /**
-     * timeStrToSeconds
-     *
-     * @param timeStr
-     */
-    function timeStrToSeconds(timeStr) {
-        var elements = timeStr.match(/([0-9]{2})/g);
-        return parseInt(elements[0], 10) * 3600 + parseInt(elements[1], 10) * 60 + parseInt(elements[2], 10);
+    function translate(str, strIfNotFound) {
+        return (translations[str] != undefined) ? translations[str] : strIfNotFound;
     }
 
     var SlidetextTabView = Backbone.View.extend({
         initialize: function(mediaPackageModel, template) {
-            this.setElement($(plugin.container)); // every plugin view has it"s own container associated with it
+            this.setElement($(plugin.container));
             this.model = mediaPackageModel;
             this.template = template;
             // bind the render function always to the view
@@ -171,7 +165,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
                             if (time.length > 0) {
                                 var si = "No slide text available.";
                                 for (var i = 0; i < segmentInformation.length; ++i) {
-                                    if (getTimeInMilliseconds(time[0]) == parseInt(segmentInformation[i].time)) {
+                                    if (Utils.getTimeInMilliseconds(time[0]) == parseInt(segmentInformation[i].time)) {
                                         si = segmentInformation[i].text;
                                         break;
                                     }
@@ -190,16 +184,20 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
                     }
                 }
                 var tempVars = {
-                    segments: segments
+                    segments: segments,
+                    str_segment: translate("segment", "Segment"),
+                    str_noSlidesAvailable: translate("noSlidesAvailable", "No slides available."),
+                    str_slide_text: translate("slide_text", "Slide text")
                 };
                 // compile template and load into the html
                 this.$el.html(_.template(this.template, tempVars));
+                $("#engage_tab_" + plugin.name.replace(/\s/g,"_")).text(tempVars.str_slide_text);
                 if (segments && (segments.length > 0)) {
                     Engage.log("Tab:Slidetext: " + segments.length + " segments are available.");
                     $.each(segments, function(i, v) {
                         $("#" + id_segmentNo + i).click(function(e) {
                             e.preventDefault();
-                            var time = parseInt(timeStrToSeconds(v.time));
+                            var time = parseInt(Utils.timeStrToSeconds(v.time));
                             if (!isNaN(time)) {
                                 Engage.trigger(plugin.events.seek.getName(), time);
                             }
@@ -225,35 +223,66 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
 
     function initPlugin() {
         // only init if plugin template was inserted into the DOM
-        if (plugin.inserted) {
-            // create a new view with the media package model and the template
-            new SlidetextTabView(Engage.model.get("mediaPackage"), plugin.template);
+        if (isDesktopMode && plugin.inserted) {
+            var slidetextTabView = new SlidetextTabView(Engage.model.get("mediaPackage"), plugin.template);
             Engage.on(plugin.events.mediaPackageModelError.getName(), function(msg) {
                 mediapackageError = true;
             });
         }
     }
 
-    // init event
-    Engage.log("Tab:Slidetext: Init");
-    var relative_plugin_path = Engage.getPluginPath("EngagePluginTabSlidetext");
+    if (isDesktopMode) {
+        // init event
+        Engage.log("Tab:Slidetext: Init");
+        var relative_plugin_path = Engage.getPluginPath("EngagePluginTabSlidetext");
 
-    // listen on a change/set of the mediaPackage model
-    Engage.model.on(mediapackageChange, function() {
-        initCount -= 1;
-        if (initCount <= 0) {
-            initPlugin();
-        }
-    });
+        // listen on a change/set of the mediaPackage model
+        Engage.model.on(mediapackageChange, function() {
+            initCount -= 1;
+            if (initCount <= 0) {
+                initPlugin();
+            }
+        });
 
-    // all plugins loaded
-    Engage.on(plugin.events.plugin_load_done.getName(), function() {
-        Engage.log("Tab:Slidetext: Plugin load done");
-        initCount -= 1;
-        if (initCount <= 0) {
-            initPlugin();
-        }
-    });
+        // all plugins loaded
+        Engage.on(plugin.events.plugin_load_done.getName(), function() {
+            Engage.log("Tab:Slidetext: Plugin load done");
+            initCount -= 1;
+            if (initCount <= 0) {
+                initPlugin();
+            }
+        });
+
+        // load segment class
+        require([relative_plugin_path + "segment"], function(segment) {
+            Engage.log("Tab:Slidetext: Segment class loaded");
+            Segment = segment;
+            initCount -= 1;
+            if (initCount <= 0) {
+                initPlugin();
+            }
+        });
+
+        // load utils class
+        require([relative_plugin_path + "utils"], function(utils) {
+            Engage.log("Tab:Slidetext: Utils class loaded");
+            Utils = new utils();
+            plugin.timeStrToSeconds = Utils.timeStrToSeconds;
+            initTranslate(Utils.detectLanguage(), function() {
+                Engage.log("Tab:Slidetext: Successfully translated.");
+                initCount -= 1;
+                if (initCount <= 0) {
+                    initPlugin();
+                }
+            }, function() {
+                Engage.log("Tab:Slidetext: Error translating...");
+                initCount -= 1;
+                if (initCount <= 0) {
+                    initPlugin();
+                }
+            });
+        });
+    }
 
     return plugin;
 });
