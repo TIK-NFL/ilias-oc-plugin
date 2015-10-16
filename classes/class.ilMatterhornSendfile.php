@@ -423,6 +423,10 @@ class ilMatterhornSendfile
                 $ilLog->write("setting catalog to ".(string)$catalog['type']);
                 $segments = $catalog;
             }
+            if (isset($catalog['type']) && 0 == strcmp((string)$catalog['type'],'mpeg-7/text')) {
+                $ilLog->write("setting catalog to ".(string)$catalog['type']);
+                $segments = $catalog;
+            }
             array_push($metadata['catalog'],$cat);
         }
         $episode['search-results']["result"]["mediapackage"]['metadata'] = $metadata;
@@ -499,6 +503,12 @@ class ilMatterhornSendfile
             $segment = array();
             $segment['index'] = $currentidx;
             $segment['time'] = $currenttime;
+            $text = "";
+            foreach ($segmentxml->SpatioTemporalDecomposition->VideoText as $textxml){
+              $text = $text." ".(string)$textxml->Text;
+            }
+            $segment['text'] = $text;
+
             $segment['duration'] = ($min * 60 + $sec) * 1000;
             $currentidx++;
             $currenttime = $currenttime + $segment['duration'];
