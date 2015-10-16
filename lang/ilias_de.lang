@@ -1,23 +1,23 @@
 // 
-// German Language File for Matterhorn Object Plugin
+// German Language File for Opencast Object Plugin
 //
 
 <!-- language file start -->
-obj_xmh#:#Matterhorn Objekt
-objs_xmh#:#Matterhorn Objekte
+obj_xmh#:#Opencast Objekt
+objs_xmh#:#Opencast Objekte
 obj_xmh_duplicate#:#Kopieren
-objs_xmh_duplicate#:#Matterhorn Objekt kopieren
-obj_xmh_select#:#Matterhorn Objekt ausw&auml;hlen
-xmh_add#:#Matterhorn Objekt hinzuf&uuml;gen
-xmh_new#:#Neues Matterhorn Objekt anlegen
-xmh_read#:#Matterhorn Objekt lesen
-xmh_write#:#Matterhorn Objekt bearbeiten
-xmh_delete#:#Matterhorn Objekt l&ouml;schen
-xmh_visible#:#Matterhorn Objekt ist schichtbar
+objs_xmh_duplicate#:#Opencast Objekt kopieren
+obj_xmh_select#:#Opencast Objekt ausw&auml;hlen
+xmh_add#:#Opencast Objekt hinzuf&uuml;gen
+xmh_new#:#Neues Opencast Objekt anlegen
+xmh_read#:#Opencast Objekt lesen
+xmh_write#:#Opencast Objekt bearbeiten
+xmh_delete#:#Opencast Objekt l&ouml;schen
+xmh_visible#:#Opencast Objekt ist schichtbar
 xmh_edit_permission#:#Rechteverwaltung
-grp_create_xmh#:#Matterhorn Objekt anlegen
-crs_create_xmh#:#Matterhorn Objekt anlegen
-fold_create_xmh#:#Matterhorn Objekt anlegen
+grp_create_xmh#:#Opencast Objekt anlegen
+crs_create_xmh#:#Opencast Objekt anlegen
+fold_create_xmh#:#Opencast Objekt anlegen
 content#:#Inhalt
 manage#:#Aufzeichnungen verwalten
 viewmode#:#Kompakte Übersichtsseite verwenden
@@ -36,13 +36,13 @@ cancel#:#Abbrechen
 edit#:#Bearbeiten
 status#:#Status
 offline#:#Offline
-matterhorn_plugin_configuration#:#Matterhorn Plugin Konfiguration
-mh_server#:#Basis URL des Matterhorn Server
-mh_server_engage#:#Basis URL des Matterhorn Engage Server
-mh_digest_user#:#Benutzername des Matterhorn Digest User
-mh_digest_password#:#Passwort des Matterhorn Digest User
+matterhorn_plugin_configuration#:#Opencast Plugin Konfiguration
+mh_server#:#Basis URL des Opencast Server
+mh_server_engage#:#Basis URL des Opencast Engage Server
+mh_digest_user#:#Benutzername des Opencast Digest User
+mh_digest_password#:#Passwort des Opencast Digest User
 xsendfile_basedir#:#Basisverzeichnis f&uuml;r XSendfile
-matterhorn_version#:#Matterhorn Version (1.4 nicht verändern)
+matterhorn_version#:#Opencast Version (1.6 nicht verändern)
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert
 
 finished_recordings#:#Fertige Aufzeichnungen
