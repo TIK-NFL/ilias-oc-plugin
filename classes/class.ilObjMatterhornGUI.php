@@ -713,7 +713,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));
                 $trimview->parseCurrentBlock();
             } else {
-                $trackkey = array_keys($worktracks)[0];
+                $trackkeys = array_keys($worktracks);
+                $trackkey = $trackkeys[0];
                 $trimview->setCurrentBlock("singlestream");                
                 $trimview->setVariable("TXT_LEFT_TRACK_SINGLE", $this->getText("left_side_single"));
                 $trimview->setVariable("LEFTTRACKID", $worktracks[$trackkey]->attributes()->{'id'});
