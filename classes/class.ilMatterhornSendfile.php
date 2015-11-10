@@ -504,8 +504,10 @@ class ilMatterhornSendfile
             $segment['index'] = $currentidx;
             $segment['time'] = $currenttime;
             $text = "";
-            foreach ($segmentxml->SpatioTemporalDecomposition->VideoText as $textxml){
-              $text = $text." ".(string)$textxml->Text;
+            if ($segmentxml->SpatioTemporalDecomposition) {
+                foreach ($segmentxml->SpatioTemporalDecomposition->VideoText as $textxml){
+                  $text = $text." ".(string)$textxml->Text;
+                }
             }
             $segment['text'] = $text;
 
