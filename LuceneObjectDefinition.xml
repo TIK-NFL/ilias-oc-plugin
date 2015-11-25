@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ObjectDefinition xmlns:xi="http://www.w3.org/2001/XInclude" type="xmh">
+    <Document type="default">
+        <xi:include href="../../../../../../../Services/Object/LuceneDataSource.xml" />
+        <xi:include href="../../../../../../../Services/Tagging/LuceneDataSource.xml" />
+        <xi:include href="../../../../../../../Services/MetaData/LuceneDataSource.xml" />
+    </Document>
+    <Document type="subItem">
+        <DataSource type="JDBC" action="append">
+            <Query>
+                SELECT series_id, episode_id, slidetime, slidetext
+                FROM rep_robj_xmh_slidetext
+                WHERE series_id IN (?)
+            </Query>
+            <Param format="list" type="int" value="objId" />
+            <Field global="YES" store="YES" index="NOT_ANALYZED" column="slidetime" type="text" name="propertyLow" />
+            <Field global="YES" store="YES" index="ANALYZED" column="slidetext" type="text" name="propertyHigh" />
+            <Field global="YES" store="YES" index="NOT_ANALYZED" column="episode_id" type="text" name="subItem" />
+            <Field global="NO" store="YES" index="NOT_ANALYZED" column="series_id" type="integer" name="objId"  />          
+        </DataSource>
+        
+    </Document>
+    
+</ObjectDefinition>

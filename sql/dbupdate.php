@@ -130,3 +130,40 @@ $ilDB->addIndex("rep_robj_xmh_rel_ep", array("series_id"),'ser');
           'default' => 0
 ));
 ?>
+<#11>
+<?php
+$ilDB->renameTableColumn('rep_robj_xmh_data', 'id', 'obj_id');
+?>
+<#12>
+<#13>
+<?php
+$fields = array(
+                'episode_id' => array(
+                                'type' => 'text',
+                                'length' => 50,
+                                'fixed' => false,
+                                'notnull' => true
+                ),
+				'series_id' => array(
+						'type' => 'integer',
+						'length' => 10,
+						'fixed' => false,
+						'notnull' => true
+				),
+				'slidetime' => array(
+						'type' => 'text',
+						'length' => 100,
+						'fixed' => false,
+						'notnull' => true
+				),
+                'slidetext' => array(
+                                'type' => 'text',
+                                'length' => 4000,
+                                'fixed' => false,
+                                'notnull' => true
+                )
+);
+
+$ilDB->createTable("rep_robj_xmh_slidetext", $fields);
+$ilDB->addPrimaryKey("rep_robj_xmh_slidetext",array("episode_id","slidetime"));
+?>

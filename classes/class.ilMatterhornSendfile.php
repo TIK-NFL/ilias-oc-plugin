@@ -270,9 +270,6 @@ class ilMatterhornSendfile
 	 */
 	public function checkEpisodeAccess()
 	{
-
-        global $ilLog;
-
 		// an error already occurred at class initialisation
 		if ($this->errorcode)
 		{
@@ -302,38 +299,32 @@ class ilMatterhornSendfile
 	*/
 	public function checkFileAccess()
 	{
-        global $ilLog;
-        $ilLog->write("MHSendfile: check access for ". $this->obj_id);
-            // an error already occurred at class initialisation
-            if ($this->errorcode)
-            {
-                $ilLog->write("MHSendfile: check access already has error code for ". $this->obj_id);
-              return false;
+        #global $ilLog;
+        #$ilLog->write("MHSendfile: check access for ". $this->obj_id);
+        // an error already occurred at class initialisation
+        if ($this->errorcode)
+        {
+            #$ilLog->write("MHSendfile: check access already has error code for ". $this->obj_id);
+        	return false;
 	    }
 
 	    // do this here because ip based checking may be set after construction
 	    $this->determineUser();
-
-#	echo $this->obj_id;
-#	    if (is_numeric($this->obj_id)) {
-#	    	echo "is integer\n";
-#	    } else {
-#	    	echo "is not an integer\n";
-#	    }
+	    
 		$type = 'xmh';
         $iliasid = substr($this->obj_id,10);
 		if (!$iliasid || $type == 'none')
 		{
 			$this->errorcode = 404;
 			$this->errortext = $this->lng->txt("obj_not_found");
-			$ilLog->write("MHSendfile: obj_not_found");
+			#$ilLog->write("MHSendfile: obj_not_found");
 			return false;
 		}
 		if ($this->checkAccessObject($iliasid))
 		{
 			return true;
 		}
-		$ilLog->write("MHSendfile: no access found");
+		#$ilLog->write("MHSendfile: no access found");
 		// none of the checks above gives access
 		$this->errorcode = 403;
 		$this->errortext = $this->lng->txt('msg_no_perm_read');
@@ -377,9 +368,10 @@ class ilMatterhornSendfile
 	 * @access public
 	 */
 	public function sendEpisode(){
-		global $basename,$ilLog;
+		global $basename;
+		#global $ilLog;
 		
-        $ilLog->write("Manifestbasedir: ".$this->configObject->getXSendfileBasedir().$this->obj_id.'/'.$this->episode_id);
+        #$ilLog->write("Manifestbasedir: ".$this->configObject->getXSendfileBasedir().$this->obj_id.'/'.$this->episode_id);
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/manifest.xml',NULL, TRUE);
 
         $episode = array();
@@ -420,11 +412,11 @@ class ilMatterhornSendfile
                 }
             }
             if (isset($catalog['type']) && 0 == strcmp((string)$catalog['type'],'mpeg-7/segments')) {
-                $ilLog->write("setting catalog to ".(string)$catalog['type']);
+                #$ilLog->write("setting catalog to ".(string)$catalog['type']);
                 $segments = $catalog;
             }
             if (isset($catalog['type']) && 0 == strcmp((string)$catalog['type'],'mpeg-7/text')) {
-                $ilLog->write("setting catalog to ".(string)$catalog['type']);
+                #$ilLog->write("setting catalog to ".(string)$catalog['type']);
                 $segments = $catalog;
             }
             array_push($metadata['catalog'],$cat);
@@ -526,10 +518,10 @@ class ilMatterhornSendfile
 	public function sendFile()
 	{
 
-        global $ilLog;
+        #global $ilLog;
 //		header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
 		include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-		$ilLog->write("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$this->subpath);
+		#$ilLog->write("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$this->subpath);
 		$mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir().$this->subpath);
 		header("Content-Type: ".$mime);
 #		if (isset($_SERVER['HTTP_RANGE'])) {

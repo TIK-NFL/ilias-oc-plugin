@@ -324,7 +324,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             foreach ($value->attachments->attachment as $attachment){
                 $ilLog->write("Attachment: ".print_r($attachment,true));
                 if ('presentation/search+preview' ==  $attachment['type'] || 'presenter/search+preview' ==  $attachment['type'] ){
-                    $ilLog->write("Setting preview url: ". $attachment->url);
+                    #$ilLog->write("Setting preview url: ". $attachment->url);
                     $previewurl = $attachment->url;
                 }
             }
@@ -332,12 +332,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             foreach ($value->media->track as $track){
                 $ilLog->write("Track: ".print_r($track,true));
                 if ('composite/sbs' ==  $track['type']) {
-                    $ilLog->write("Setting download url: ". $track->url);
+                    #$ilLog->write("Setting download url: ". $track->url);
                     $downloadurl = $track->url;
                     break;
                 }
                 if('presentation/delivery' ==  $track['type'] && 'video/mp4' == $track->mimetype){
-                    $ilLog->write("Setting download url: ". $track->url);
+                    #$ilLog->write("Setting download url: ". $track->url);
                     $downloadurl = $track->url;
                 }
             }
@@ -437,11 +437,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             foreach ($value->attachments->attachment as $attachment){
           #      $ilLog->write("Attachment: ".print_r($attachment,true));
                 if ('presentation/search+preview' ==  $attachment['type'] || 'presenter/search+preview' ==  $attachment['type'] ){
-                    $ilLog->write("Setting preview url: ". $attachment->url);
+                    #$ilLog->write("Setting preview url: ". $attachment->url);
                     $previewurl = $attachment->url;
                 }
             }
-            $ilLog->write("adding item to edit list:".$value['id']);         
+            #$ilLog->write("adding item to edit list:".$value['id']);         
             $med_items[(string)$value['id']] = array(
                 "title" => (string)$value->title,
                 "date" => (string)$value['start'],
@@ -481,7 +481,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }else {
                 foreach($tempEpisodes['workflow'] as $workflow) {
-                    $ilLog->write("adding scheduled episodes to list:".$workflow['id']);         
+                    #$ilLog->write("adding scheduled episodes to list:".$workflow['id']);         
                     $workflowid = $workflow['id'];
                     $temparray = array( 
                         'title' => $workflow["mediapackage"]['title'],
@@ -524,7 +524,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $onhold_items[$workflowid] = $temparray;
             }else {
                 foreach($tempEpisodes['workflow'] as $workflow) {
-                    $ilLog->write("adding onhold episodes to list:".$workflow['id']);
+                    #$ilLog->write("adding onhold episodes to list:".$workflow['id']);
                     $workflowid = $workflow['id'];
                     $temparray = array( 
                         'title' => $workflow["mediapackage"]['title'],
@@ -553,7 +553,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         if(count($med_items) > 0 ){
             foreach($med_items as $key => $item)
             {
-                $ilLog->write("Adding: ".$item["title"]);
+                #$ilLog->write("Adding: ".$item["title"]);
                 $seriestpl->setCurrentBlock($this->object->getManualRelease()?"finished":"finishednoaction");
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
                 $seriestpl->setVariable("CMD_DOWNLOAD", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
@@ -584,7 +584,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             
             foreach($onhold_items as $key => $item)
             {
-                $ilLog->write("Adding: ".$item["title"]);
+                #$ilLog->write("Adding: ".$item["title"]);
                 $seriestpl->setCurrentBlock("onhold");
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
                 $seriestpl->setVariable("CMD_TRIM", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showTrimEditor"));
@@ -612,7 +612,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             
             foreach($scheduled_items as $key => $item)
             {
-                $ilLog->write("Adding: ".$item["title"]);
+                #$ilLog->write("Adding: ".$item["title"]);
                 $seriestpl->setCurrentBlock("scheduled");
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
                 $seriestpl->setVariable("TXT_EPISODE_TITLE", $item["title"]);
@@ -656,7 +656,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
   //          $ilLog->write("mediapackage: ". print_r($mediapackage,true));
 //             $series = simplexml_load_string($this->object->getSeries());
             if (!strpos($this->object->getSeries(),trim($mediapackage->series))) {
-              $ilLog->write("series: ".$mediapackage->series);
+#              $ilLog->write("series: ".$mediapackage->series);
               $ilCtrl->redirect($this, "editEpisodes");
             }
             $previewtracks = array();

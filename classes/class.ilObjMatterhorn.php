@@ -21,7 +21,10 @@
 	+-----------------------------------------------------------------------------+
 */
 
-include_once("./Services/Repository/classes/class.ilObjectPlugin.php");
+require_once 'Services/Repository/classes/class.ilObjectPlugin.php';
+require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')
+->getDirectory() . '/classes/class.ilMatterhornConfig.php';
+
 
 /**
 * Application class for matterhorn repository object.
@@ -76,8 +79,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function __construct($a_ref_id = 0)
 	{
-		parent::__construct($a_ref_id);
-        include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
+		parent::__construct($a_ref_id);       
         $this->configObject = new ilMatterhornConfig();
 
 	}	
@@ -119,7 +121,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);				
 		
 		$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
-				"(id, is_online, series, mhretval, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (".
+				"(obj_id, is_online, series, mhretval, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (".
 				$ilDB->quote($this->getId(), "integer").",".
 				$ilDB->quote(0, "integer").",".
 				$ilDB->quote($result, "text").",".
@@ -130,6 +132,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 				$ilDB->quote(0, "integer").",".
 				$ilDB->quote(0, "integer").
 				")");
+        $this->createMetaData();
 	}
 	
 	/**
@@ -140,7 +143,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		global $ilDB;
 		
 		$set = $ilDB->query("SELECT * FROM rep_robj_xmh_data ".
-			" WHERE id = ".$ilDB->quote($this->getId(), "integer")
+			" WHERE obj_id = ".$ilDB->quote($this->getId(), "integer")
 			);
 		while ($rec = $ilDB->fetchAssoc($set))
 		{
@@ -195,12 +198,13 @@ class ilObjMatterhorn extends ilObjectPlugin
             " manualrelease = ".$ilDB->quote($this->getManualRelease(), "integer").",".
             " download = ".$ilDB->quote($this->getDownload(), "integer").",".
 			" mhretval = ".$ilDB->quote($this->getMhRetVal(), "text")." ".
-			" WHERE id = ".$ilDB->quote($this->getId(), "text")
+			" WHERE obj_id = ".$ilDB->quote($this->getId(), "text")
 			);
+		$this->updateMetaData();
 	}
 	
 	
-	/**^
+	/**
 	* Delete data from db
 	*/
 	function doDelete()
@@ -212,7 +216,7 @@ class ilObjMatterhorn extends ilObjectPlugin
                 );
            
 		$ilDB->manipulate("DELETE FROM rep_robj_xmh_data WHERE ".
-			" id = ".$ilDB->quote($this->getId(), "integer")
+			" obj_id = ".$ilDB->quote($this->getId(), "integer")
 			);
 	
 	
@@ -279,7 +283,88 @@ class ilObjMatterhorn extends ilObjectPlugin
 		);
 		return $fields;
 	}
+
+	function updateSearchRecords() {
+		global  $ilLog;
+		$ilLog->write("updating search for ".$this->getId());
+		$manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/manifest.xml',NULL, TRUE);
+		
+	}
 	
+	
+	function addTextToDB($episodeId){
+		global $ilDB;
+		global $ilLog;
+		$ilLog->write($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml');
+		$manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml',NULL, TRUE);
+		$textcatalog = null;
+		foreach ($manifest->metadata->catalog as $catalog){
+			$cat = array();
+			if (isset($catalog['id'])) $cat['id'] = (string)$catalog['id'];
+			if (isset($catalog['type'])) $cat['type'] = (string)$catalog['type'];
+			if (isset($catalog['ref'])) $cat['ref'] = (string)$catalog['ref'];
+			if (isset($catalog->mimetype)) $cat['mimetype'] = (string)$catalog->mimetype;
+			if (isset($catalog->url)) $cat['url'] = (string)$catalog->url;
+			if (isset($catalog->tags)){
+				$cat['tags'] = array('tag'=>array());
+				foreach ($catalog->tags->tag as $tag){
+					array_push($cat['tags']['tag'], (string)$tag);
+				}
+			}
+			if (isset($catalog['type']) && 0 == strcmp((string)$catalog['type'],'mpeg-7/text')) {		
+				$textcatalog = $cat;
+			}
+		}
+		if($textcatalog){		
+			$segments = array_slice(explode("/",$textcatalog["url"]),-2);				
+			$segmentsxml = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/'.$segments[0].'/'.$segments[1],NULL, TRUE);
+			$segments = array("segment"=>array());
+			$currentidx = 0;
+			$currenttime = 0;
+			foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml){
+					
+					$regmatches = array();
+					preg_match("/PT(\d+M)?(\d+S)0N1000F/", (string)$segmentxml->MediaTime->MediaDuration, $regmatches);
+					$sec = substr($regmatches[2],0,-1);
+					$min = 0;
+					if(0 != strcmp('',$regmatches[1])){
+						$min = substr($regmatches[1],0,-1);
+					}
+					$duration = ($min * 60 + $sec) * 1000;
+					$text = "";
+					if ($segmentxml->SpatioTemporalDecomposition) {							
+						foreach ($segmentxml->SpatioTemporalDecomposition->VideoText as $textxml){
+							$text = $text." ".(string)$textxml->Text;
+						}
+						if ($text != ""){
+							$ilDB->manipulate("INSERT INTO rep_robj_xmh_slidetext ".
+									"(episode_id, series_id, slidetext, slidetime) VALUES (".
+									$ilDB->quote($episodeId, "text").",".
+									$ilDB->quote($this->getId(), "integer").",".
+									$ilDB->quote($text, "text").",".
+									$ilDB->quote($currenttime, "text").
+									")");
+						}
+					}						
+					$currentidx++;
+					$currenttime = $currenttime + $duration;
+
+				}
+				
+			}
+			return $segments;
+				
+	}
+	
+	function removeTextFromDB($episodeId){
+		global $ilDB;
+		
+		$ilDB->manipulate("DELETE FROM rep_robj_xmh_slidetext ".
+				" WHERE episode_id = ".$ilDB->quote($episodeId, "text").
+				" and series_id  = ".$ilDB->quote($this->getId(), "integer")
+		);
+		
+	}
 //
 // Set/Get Methods for the properties
 //
@@ -455,7 +540,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             $ilDB->quote($this->getId(), "integer").") ".
             "on duplicate key update  episode_id = episode_id"
             );
-
+		$this->addTextToDB($episodeId);
     }
 
       function retract($episodeId){    
@@ -464,7 +549,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             "episode_id=".$ilDB->quote($episodeId, "text")." AND series_id=".
             $ilDB->quote($this->getId(), "integer")
             );
-
+        $this->removeTextFromDB($episodeId);
     }
 
 	/**
@@ -473,7 +558,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 	 * @return array the episodes by matterhorn for the given seris
 	 */
     function getSearchResult(){
-        #$this->fsinodeupdate
 	    global $ilLog;
 
 	    $basedir = $this->configObject->getXSendfileBasedir()."ilias_xmh_".$this->getId();

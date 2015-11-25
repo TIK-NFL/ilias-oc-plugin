@@ -81,7 +81,7 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
 		global $ilDB;
 		
 		$set = $ilDB->query("SELECT is_online FROM rep_robj_xmh_data ".
-			" WHERE id = ".$ilDB->quote($a_id, "integer")
+			" WHERE obj_id = ".$ilDB->quote($a_id, "integer")
 			);
 		$rec  = $ilDB->fetchAssoc($set);
 		return (boolean) $rec["is_online"];
