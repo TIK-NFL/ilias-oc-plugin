@@ -665,6 +665,39 @@ class ilObjMatterhorn extends ilObjectPlugin
         return $searchResult;
     }
 
+        /**
+     * Get the episodes which are on hold for this series
+     * 
+     * @return array the episodes which are on hold for this series returned by matterhorn
+     */
+    function getProcessingEpisodes(){
+                
+        global $ilLog;
+                
+        $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
+        /* $_GET Parameters to Send */
+        #http://matterhorn.localdomain/workflow/instances.json?compact=false&state=-stopped&state=running&op=-schedule&op=-capture&sort=DATE_CREATED_DESC&count=10&startPage=0&_=1449664693513
+        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => array('-stopped','running'),'op'=>array('-schedule','-capture'));
+        
+        /* Update URL to container Query String of Paramaters */
+        $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=',http_build_query($params, null, '&'));
+        //$ilLog->write("MH QUERY PROCESSING: ".$url);
+        //open connection
+        $ch = curl_init();
+        
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL,$url);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $curlret = curl_exec($ch);        
+        $searchResult = json_decode($curlret,true);
+
+        return $searchResult;
+    }
+
+    
     /**
      * Get workflow
      *

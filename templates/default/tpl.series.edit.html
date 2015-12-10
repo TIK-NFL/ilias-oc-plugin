@@ -1,4 +1,10 @@
+<!-- BEGIN containerstart -->
+<div class="container">
+<!-- END containerstart  -->
+
 <!-- BEGIN headerfinished -->     
+<div class="row">
+<div class="col-md-12">
 <H2>{TXT_FINISHED_RECORDINGS}</H2>
 <div class="ilTableOuter">
 <table class="fullwidth">
@@ -8,6 +14,8 @@
 <tbody>
 <!-- END headerfinished -->
 <!-- BEGIN headerfinishednoaction -->
+<div class="row">
+<div class="col-md-12">
 <H2>{TXT_FINISHED_RECORDINGS}</H2>
 <div class="ilTableOuter">
 <table class="fullwidth">
@@ -49,10 +57,30 @@
 </tbody>
 </table>
 </div>
+</div></div>
 <!-- END footerfinished -->       
 
 
+<!-- BEGIN processing -->
+<div class="row">
+<div class="col-md-12">
+<H2>{TXT_PROCESSING}</H2>
+<div class="ilTableOuter">
+<table class="fullwidth">
+<thead>
+<tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_RECORDDATE}</th></tr>
+</thead>
+<tbody id="processingtable">
+</tbody>
+</table>
+</div>
+</div></div>
+<!-- END processing -->
+
 <!-- BEGIN headeronhold -->     
+<div class="row">
+<div class="col-md-12">
+
 <H2>{TXT_ONHOLD_RECORDING}</H2>
 <div class="ilTableOuter">
 <table class="fullwidth">
@@ -77,10 +105,63 @@
 </tbody>
 </table>
 </div>
+</div></div>
 <!-- END footeronhold -->      
 
+<!-- BEGIN uploadsection -->
+<div class="row">
+  <div class=" col-md-12">
+    <H2>{TXT_ADD_NEW_EPISODE}</H2>
+  </div>
+</div>
+<div class="row">
+<div class=" col-md-12 form-group">
+    <span class="form-label" id="basic-addon0">{TXT_TRACK_TITLE}</span>
+    <input type="text" class="form-control" aria-describedby="basic-addon0" id="tracktitle" name="tracktitle" value="">
+  </div>
+</div>
+<div class="row">
+<div class=" col-md-12 form-group">
+    <span class="form-label" id="basic-addon1">{TXT_TRACK_PRESENTER}</span>
+    <input type="text" class="form-control" aria-describedby="basic-addon1" id="trackpresenter" name="trackpresenter" value="">
+  </div>
+</div>
+<div>
+<div class="row input-group">
+  <div class="col-md-6">
+    <span class="form-label" id="basic-addon2">{TXT_TRACK_DATE}</span>
+    <input type="text" class="form-control" aria-describedby="basic-addon2" id="trackdate" name="trackdate" value="">
+  </div>
+  <div class="col-md-6">
+    <span class="form-label" id="basic-addon3">{TXT_TRACK_TIME}</span>
+    <input type="text" class="form-control" aria-describedby="basic-addon3" id="tracktime" name="tracktime" value="">
+  </div>
+</div>
+
+<div class="row top10">
+    <div class="col-md-12">
+        <div class="alert-box alert" data-nothingToUpload>{TXT_NO_FILES}</div>
+        <div id="results" class="panel"></div>Status:
+        <div class="alert-box secondary"></div>
+        <button class="btn btn-default" id="browseButton">+ {TXT_ADD_FILE}</button>
+        <button class="btn btn-primary" id="uploadFiles">{TXT_UPLOAD_FILE}</button>
+    </div>
+</div>
+<script>
+var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHUpload",
+    seriesid = "{SERIES_ID}",
+    processingcmd = "{CMD_PROCESSING}";
+    txt_none_processing = "{TXT_NONE_PROCESSING}";
+</script>
+<script src="{INITJS}/resumable.js"></script>
+<script src="{INITJS}/mustache.js"></script>
+<script src="{INITJS}/bootstrap-datepicker.js"></script>
+<script src="{INITJS}/edit.js"></script>
+<!-- END uploadsection -->
 
 <!-- BEGIN headerscheduled -->     
+<div class="row">
+<div class="col-md-12">
 <H2>{TXT_SCHEDULED_RECORDING}</H2>
 <div class="ilTableOuter">
 <table class="fullwidth">
@@ -99,10 +180,14 @@
     <td class="std" style="text-align:center;" colspan="4">{TXT_NONE_SCHEDULED}
 </td>
 </tr>
-
 <!-- END nonescheduled -->       
 <!-- BEGIN footerscheduled -->     
 </tbody>
 </table>
+</div></div>
+<!-- END footerscheduled -->
+
+
+<!-- BEGIN containerend -->
 </div>
-<!-- END footerscheduled -->      
+<!-- END containerend  -->

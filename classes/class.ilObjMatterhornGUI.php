@@ -78,6 +78,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			case "showTrimEditor":
 			case "publish":
 			case "retract":
+			case "getProcessing":
 				$this->checkPermission("write");
 				$this->$cmd();
 				break;
@@ -222,6 +223,47 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $values["manualRelease"] = $this->object->getManualRelease();
         $values["download"] = $this->object->getDownload();
 		$this->form->setValuesByArray($values);
+	}
+	
+	public function getProcessing() {
+        include_once("./Services/JSON/classes/class.ilJsonUtil.php");
+        $processingEpisodes = $this->object->getProcessingEpisodes();
+        $tempEpisodes = $processingEpisodes['workflows'];
+        $progress_items = array();
+        if(is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']){
+            if(1 == $tempEpisodes['totalCount']){
+                $workflow = $tempEpisodes['workflow'];
+                $workflowid = $workflow['id'];
+                $temparray = array( 
+                    'title' => $workflow["mediapackage"]['title'],
+                    'mhid' => $workflow['id'],
+                    'recorddate' => ilDatePresentation::formatDate(new ilDateTime($workflow["mediapackage"]['start'],IL_CAL_DATETIME))
+                    );
+                //$ilLog->write(print_r($workflow["mediapackage"],true));                
+                $progress_items[$workflowid] = $temparray;
+            }else {
+                foreach($tempEpisodes['workflow'] as $workflow) {
+                    #$ilLog->write("adding onhold episodes to list:".$workflow['id']);
+                    $workflowid = $workflow['id'];
+                    $temparray = array( 
+                        'title' => $workflow["mediapackage"]['title'],
+                        'mhid' => $workflow['id'],
+                        'recorddate' => ilDatePresentation::formatDate(new ilDateTime($workflow["mediapackage"]['start'],IL_CAL_DATETIME))
+                        );                    
+                    $progress_items[$workflowid] = $temparray;
+                }
+            }
+        }
+        
+        uasort($progress_items,array($this, 'sortbydate'));
+
+        // send response object (don't use 'application/json' as IE wants to download it!)
+        header('Vary: Accept');
+        header('Content-type: application/json');
+        echo ilJsonUtil::encode($progress_items);
+
+        // no further processing!
+        exit;
 	}
 	
 	/**
@@ -424,7 +466,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	
 	function editEpisodes(){
         global $tpl, $lng, $ilAccess, $ilTabs, $ilToolbar,$ilLog, $ilCtrl;
-
+        $editbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/edit";
         $this->checkPermission("write");
 
         $released  = $this->object->getReleasedEpisodes();
@@ -540,6 +582,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
         
         $seriestpl = new ilTemplate("tpl.series.edit.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+        $seriestpl->touchblock("containerstart");
         $seriestpl->setCurrentBlock($this->object->getManualRelease()?"headerfinished":"headerfinishednoaction");
         $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
         $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
@@ -627,7 +670,31 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $seriestpl->parseCurrentBlock();
         }
         $seriestpl->touchblock("footerscheduled");
+
+        $seriestpl->setCurrentBlock("uploadesction");
+        $seriestpl->setVariable("TXT_ADD_NEW_EPISODE", $this->getText("add_new_episode"));
+        $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
+        $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
+        $seriestpl->setVariable("TXT_TRACK_DATE", $this->getText("track_date"));
+        $seriestpl->setVariable("TXT_TRACK_TIME", $this->getText("track_time"));
+        $seriestpl->setVariable("TXT_ADD_FILE", $this->getText("add_file"));
+        $seriestpl->setVariable("TXT_UPLOAD_FILE", $this->getText("upload_file"));
+        $seriestpl->setVariable("TXT_NO_FILES", $this->getText("no_files"));
+        $seriestpl->setVariable("TXT_NONE_PROCESSING", $this->getText("no_processing"));
+        $seriestpl->setVariable("INITJS",$editbase );
+        $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getProcessing", "", true));
+        $seriestpl->setVariable("SERIES_ID",$this->object->getId());
+        $seriestpl->parseCurrentBlock();
+
+        $seriestpl->setCurrentBlock("processing");
+        $seriestpl->setVariable("TXT_PROCESSING", $this->getText("processing"));
+        $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
+        $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
+        $seriestpl->parseCurrentBlock();
+
         
+        $seriestpl->touchblock("containerend");
+
 
         $html = $seriestpl->get();
         $tpl->setContent($html);
