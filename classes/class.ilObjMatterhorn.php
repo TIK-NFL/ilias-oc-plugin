@@ -212,7 +212,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		global $ilDB;
 	
         $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep ".
-                " WHERE seriesid = ".$ilDB->quote($this->getId(), "text")
+                " WHERE series_id = ".$ilDB->quote($this->getId(), "text")
                 );
            
 		$ilDB->manipulate("DELETE FROM rep_robj_xmh_data WHERE ".
