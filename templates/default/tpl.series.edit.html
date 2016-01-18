@@ -1,65 +1,38 @@
-<!-- BEGIN containerstart -->
+<!-- BEGIN pagestart -->
 <div class="container">
-<!-- END containerstart  -->
+<script>
+var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHUpload",
+    seriesid = "{SERIES_ID}",
+    processingcmd = "{CMD_PROCESSING}";
+    txt_none_processing = "{TXT_NONE_PROCESSING}";
+    txt_none_finished = "{TXT_NONE_FINISHED}";
+    txt_none_scheduled = "{TXT_NONE_SCHEDULED}";
+    txt_none_onhold = "{TXT_NONE_ONHOLD}";
+    cols_finished = {COLS_FINISHED};
+</script>
 
-<!-- BEGIN headerfinished -->     
 <div class="row">
 <div class="col-md-12">
 <H2>{TXT_FINISHED_RECORDINGS}</H2>
 <div class="ilTableOuter">
 <table class="fullwidth">
 <thead>
+<!-- END pagestart  -->
+
+<!-- BEGIN headerfinished -->
 <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_PREVIEW}</th><th class="std">{TXT_DATE}</th><th class="std">{TXT_ACTION}</th></tr>
-</thead>
-<tbody>
 <!-- END headerfinished -->
 <!-- BEGIN headerfinishednoaction -->
-<div class="row">
-<div class="col-md-12">
-<H2>{TXT_FINISHED_RECORDINGS}</H2>
-<div class="ilTableOuter">
-<table class="fullwidth">
-<thead>
 <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_PREVIEW}</th><th class="std">{TXT_DATE}</th></tr>
-</thead>
-<tbody>
 <!-- END headerfinishednoaction -->
-<!-- BEGIN finished -->     
-
-<tr>
-    <td class="std"><a href="{CMD_DOWNLOAD}">{TXT_EPISODE_TITLE}</a></td>
-    <td class="std"><a href="{CMD_DOWNLOAD}"><img src="{PREVIEWURL}" /></a></td>
-    <td class="std">{TXT_EPISODE_DATE}</td><td><a href="{CMD_PUBLISH}">{TXT_PUBLISH}</a></td>   
-</tr>
-<!-- END finished -->
-<!-- BEGIN finishednoaction -->     
-
-<tr>
-    <td class="std"><a href="{CMD_DOWNLOAD}">{TXT_EPISODE_TITLE}</a></td>
-    <td class="std"><a href="{CMD_DOWNLOAD}"><img src="{PREVIEWURL}" /></a></td>
-    <td class="std">{TXT_EPISODE_DATE}</td>   
-</tr>
-<!-- END finishednoaction -->
-
-<!-- BEGIN nonefinished -->     
-<tr class="tblrow1">
-    <td class="std" style="text-align:center;" colspan="4">{TXT_NONE_FINISHED}
-</td>
-</tr>
-<!-- END nonefinished -->       
-<!-- BEGIN nonefinishednoaction -->     
-<tr class="tblrow1">
-    <td class="std" style="text-align:center;" colspan="3">{TXT_NONE_FINISHED}
-</td>
-</tr>
-<!-- END nonefinishednoaction -->    
 <!-- BEGIN footerfinished -->     
+</thead>
+<tbody id="finishedtable" data-lastupdate="-1">
 </tbody>
 </table>
 </div>
 </div></div>
 <!-- END footerfinished -->       
-
 
 <!-- BEGIN processing -->
 <div class="row">
@@ -77,7 +50,7 @@
 </div></div>
 <!-- END processing -->
 
-<!-- BEGIN headeronhold -->     
+<!-- BEGIN onhold -->     
 <div class="row">
 <div class="col-md-12">
 
@@ -87,26 +60,12 @@
 <thead>
 <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_RECORDDATE}</th></tr>
 </thead>
-<tbody>
-<!-- END headeronhold -->       
-<!-- BEGIN onhold -->     
-<tr>
-   <td class="std"><a href="{CMD_TRIM}">{TXT_EPISODE_TITLE}</a></td> <td class="std">{TXT_EPISODE_RECORDDATE}</td>
-</tr>
-<!-- END onhold -->       
-<!-- BEGIN noneonhold -->     
-<tr class="tblrow1">
-    <td class="std" style="text-align:center;" colspan="4">{TXT_NONE_ONHOLD}
-</td>
-</tr>
-
-<!-- END noneonhold -->       
-<!-- BEGIN footeronhold -->     
+<tbody id="onholdtable"> 
 </tbody>
 </table>
 </div>
 </div></div>
-<!-- END footeronhold -->      
+<!-- END onhold -->       
 
 <!-- BEGIN uploadsection -->
 <div class="row">
@@ -147,19 +106,13 @@
         <button class="btn btn-primary" id="uploadFiles">{TXT_UPLOAD_FILE}</button>
     </div>
 </div>
-<script>
-var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHUpload",
-    seriesid = "{SERIES_ID}",
-    processingcmd = "{CMD_PROCESSING}";
-    txt_none_processing = "{TXT_NONE_PROCESSING}";
-</script>
 <script src="{INITJS}/resumable.js"></script>
 <script src="{INITJS}/mustache.js"></script>
 <script src="{INITJS}/bootstrap-datepicker.js"></script>
 <script src="{INITJS}/edit.js"></script>
 <!-- END uploadsection -->
 
-<!-- BEGIN headerscheduled -->     
+<!-- BEGIN pageend -->     
 <div class="row">
 <div class="col-md-12">
 <H2>{TXT_SCHEDULED_RECORDING}</H2>
@@ -168,26 +121,9 @@ var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObj
 <thead>
 <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_STARTDATE}</th><th class="std">{TXT_ENDDATE}</th><th  class="std">{TXT_LOCATION}</th></tr>
 </thead>
-<tbody>
-<!-- END headerscheduled -->       
-<!-- BEGIN scheduled -->     
-<tr>
-   <td class="std">{TXT_EPISODE_TITLE}</td> <td class="std">{TXT_EPISODE_STARTDATE} </td> <td class="std"> {TXT_EPISODE_STOPDATE} </td> <td class="std"> {TXT_EPISODE_LOCATION} </td>
-</tr>
-<!-- END scheduled -->       
-<!-- BEGIN nonescheduled -->     
-<tr class="tblrow1">
-    <td class="std" style="text-align:center;" colspan="4">{TXT_NONE_SCHEDULED}
-</td>
-</tr>
-<!-- END nonescheduled -->       
-<!-- BEGIN footerscheduled -->     
+<tbody id="scheduledtable">
 </tbody>
 </table>
 </div></div>
-<!-- END footerscheduled -->
-
-
-<!-- BEGIN containerend -->
 </div>
-<!-- END containerend  -->
+<!-- END pageend  -->

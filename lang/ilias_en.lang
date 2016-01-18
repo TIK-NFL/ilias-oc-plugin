@@ -81,7 +81,7 @@ preview_inpoint#:#Play track from inpoint
 preview_outpoint#:#Play track to out outpoint
 
 processing#:#Processing on Server
-no_processing#:#There are no recordings processing on the server
+none_processing#:#There are no recordings processing on the server
 add_new_episode#:#Upload a new recording
 track_presenter#:#Name of the presenter
 track_date#:#Date of the recording

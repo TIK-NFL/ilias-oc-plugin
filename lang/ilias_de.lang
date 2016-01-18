@@ -82,7 +82,7 @@ preview_inpoint#:#Abspiel ab Schnittmarke
 preview_outpoint#:#Abspielen bis Schnittmarke
 
 processing#:#Aufzeichnungen, welche vom Server verarbeitet werden
-no_processing#:#Es gibt keine Aufnahmen, die aktuell vom Server verarbeitet werden
+none_processing#:#Es gibt keine Aufnahmen, die aktuell vom Server verarbeitet werden
 add_new_episode#:#Aufzeichnung hochladen
 track_presenter#:#Name des Vortragenden
 track_date#:#Datum der Aufzeichnung

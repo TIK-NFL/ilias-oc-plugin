@@ -528,7 +528,11 @@ class ilObjMatterhorn extends ilObjectPlugin
     */
     function getLastFSInodeUpdate()
     {
-            return $this->fsinodeupdate;
+    	$filename = $this->configObject->getXSendfileBasedir()."ilias_xmh_".$this->getId();
+    	if (file_exists($filename)) {
+    		return filemtime($filename);
+    	}    		
+        return -1;
     }
 
     
@@ -665,7 +669,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         return $searchResult;
     }
 
-        /**
+    /**
      * Get the episodes which are on hold for this series
      * 
      * @return array the episodes which are on hold for this series returned by matterhorn
