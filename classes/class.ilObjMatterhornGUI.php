@@ -133,7 +133,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		// a "properties" tab
 		if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
 		{
-                        $ilTabs->addTab("manage", $this->txt("manage"), $ilCtrl->getLinkTarget($this, "editEpisodes"));
+			$ilTabs->addTab("manage", $this->txt("manage"), $ilCtrl->getLinkTarget($this, "editEpisodes"));
 			$ilTabs->addTab("properties", $this->txt("properties"), $ilCtrl->getLinkTarget($this, "editProperties"));
 		}
 
@@ -156,7 +156,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		
 		$ilTabs->activateTab("properties");
 		$this->initPropertiesForm();
-	$this->getPropertiesValues();
+		$this->getPropertiesValues();
 		$tpl->setContent($this->form->getHTML());
 	}
 	
@@ -193,7 +193,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $mr = new ilCheckboxInputGUI($this->txt("manualRelease"), "manualRelease");
         $this->form->addItem($mr);
 
-        // download
+       	// download
         $download = new ilCheckboxInputGUI($this->txt("download"), "download");
         $this->form->addItem($download);
 
@@ -213,7 +213,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	*/
 	function getPropertiesValues()
 	{
-        global $ilLog;
 		$values = array();
 		$values["title"] = $this->object->getTitle();
 		$values["desc"] = $this->object->getDescription();
@@ -227,24 +226,24 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	
 	public function getEpisodes() {
 		global $ilCtrl, $ilLog;
-        $finishedEpisodes =$this->object->getSearchResult();
         $processingEpisodes = $this->object->getProcessingEpisodes();
-        $tempEpisodes = $processingEpisodes['workflows'];
+        $tempEpisodes = $processingEpisodes['workflows'];        
         $process_items = array();
+        
         if(is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']){
             if(1 == $tempEpisodes['totalCount']){
+
                 $workflow = $tempEpisodes['workflow'];
                 $workflowid = $workflow['id'];
+                
                 $temparray = array( 
                     'title' => $workflow["mediapackage"]['title'],
                     'mhid' => $workflow['id'],
-                    'recorddate' => ilDatePresentation::formatDate(new ilDateTime($workflow["mediapackage"]['start'],IL_CAL_DATETIME))
+                    'date' => $workflow["mediapackage"]['start']
                     );
-                //$ilLog->write(print_r($workflow["mediapackage"],true));                
                 $process_items[$workflowid] = $temparray;
             }else {
                 foreach($tempEpisodes['workflow'] as $workflow) {
-                    #$ilLog->write("adding onhold episodes to list:".$workflow['id']);
                     $workflowid = $workflow['id'];
                     $temparray = array( 
                         'title' => $workflow["mediapackage"]['title'],
@@ -255,11 +254,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
         }
-        
-        uasort($process_items,array($this, 'sortbydate'));
 
-        foreach ($process_items as &$value){
-        	$value["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"],IL_CAL_DATETIME));
+        uasort($process_items,array($this, 'sortbydate'));
+        
+        foreach ($process_items as $key=>$value){
+        	$process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"],IL_CAL_DATETIME));
         }
         
         $released  = $this->object->getReleasedEpisodes();
@@ -267,8 +266,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $med_items = array();
         $temptotals = $this->object->getSearchResult();
         $totals = $temptotals['total'];
-        foreach($this->object->getSearchResult()->mediapackage as $value) {
+        
+        foreach($temptotals->mediapackage as $value) {
 	        $previewurl = "unset";
+	        
 	        foreach ($value->attachments->attachment as $attachment){
 		        #      $ilLog->write("Attachment: ".print_r($attachment,true));
 		        if ('presentation/search+preview' ==  $attachment['type'] || 'presenter/search+preview' ==  $attachment['type'] ){
@@ -276,7 +277,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			        $previewurl = (string)$attachment->url;
 		        }
 	        }
-	        #$ilLog->write("adding item to edit list:".$value['id']);
 	        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $this->obj_id."/".(string)$value['id']);	
 	        $published = in_array($value['id'],$released);         
 	        $med_items[(string)$value['id']] = array(
@@ -292,14 +292,15 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	        	$med_items[(string)$value['id']]["publishurl"] = $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $published?"retract":"publish");
 	        	$med_items[(string)$value['id']]["txt_publish"] = $this->getText($published?"retract":"publish");
 	        }
+	        
         }
         uasort($med_items,array($this, 'sortbydate'));
-        foreach ($med_items as &$value){
-        	$value["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"],IL_CAL_DATETIME));
+        foreach ($med_items as $key=>$value){
+        	$med_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"],IL_CAL_DATETIME));
         }
         
+        
         $scheduled_items = array();
-        #$ilLog->write(print_r($this->object->getUpcommingEpisodes(),true));
         $scheduledEpisodes = $this->object->getScheduledEpisodes();
         $tempEpisodes = $scheduledEpisodes['workflows'];
         if(is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']){
@@ -353,15 +354,15 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         	}
         }
         uasort($scheduled_items,array($this, 'sortbystartdate'));
-        foreach ($scheduled_items as &$value){
-        	$value["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"],IL_CAL_UNIX));
-        	$value["stopdate"] = ilDatePresentation::formatDate(new ilDateTime($value["stopdate"],IL_CAL_UNIX));
+        foreach ($scheduled_items as $key=>$value){
+        	$scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"],IL_CAL_UNIX));
+        	$scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate(new ilDateTime($value["stopdate"],IL_CAL_UNIX));
         }
         
         
         $onhold_items = array();
-        #$ilLog->write(print_r($this->object->getUpcommingEpisodes(),true));
         $onHoldEpisodes = $this->object->getOnHoldEpisodes();
+        //$ilLog->write(print_r($onHoldEpisodes,true));
         $tempEpisodes = $onHoldEpisodes['workflows'];
         if(is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']){
         	if(1 == $tempEpisodes['totalCount']){
@@ -379,9 +380,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         		foreach($tempEpisodes['workflow'] as $workflow) {
         			#$ilLog->write("adding onhold episodes to list:".$workflow['id']);
         			$workflowid = $workflow['id'];
+        			$ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $workflow['id']);        			 
         			$temparray = array(
         					'title' => $workflow["mediapackage"]['title'],
-        					'mhid' => $workflow['id'],
+        					'trimurl' => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showTrimEditor"),
         					'date' => $workflow["mediapackage"]['start'],
         			);
         			$onhold_items[$workflowid] = $temparray;
@@ -390,11 +392,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         
         uasort($onhold_items,array($this, 'sortbydate'));
-        foreach ($onhold_items as &$value){
-        	$value["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"],IL_CAL_DATETIME));
+        foreach ($onhold_items as $key=>$value){
+        	$onhold_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"],IL_CAL_DATETIME));
         }
-        
-        
+                
         $data = array();
         $data['lastupdate'] = $this->object->getLastFSInodeUpdate();
         $data['finished'] = $med_items;
@@ -508,7 +509,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
             $previewurl = "unset";
             foreach ($value->attachments->attachment as $attachment){
-                $ilLog->write("Attachment: ".print_r($attachment,true));
+                //$ilLog->write("Attachment: ".print_r($attachment,true));
                 if ('presentation/search+preview' ==  $attachment['type'] || 'presenter/search+preview' ==  $attachment['type'] ){
                     #$ilLog->write("Setting preview url: ". $attachment->url);
                     $previewurl = $attachment->url;
@@ -516,7 +517,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
             $downloadurl = "unset";
             foreach ($value->media->track as $track){
-                $ilLog->write("Track: ".print_r($track,true));
+                //$ilLog->write("Track: ".print_r($track,true));
                 if ('composite/sbs' ==  $track['type']) {
                     #$ilLog->write("Setting download url: ". $track->url);
                     $downloadurl = $track->url;
@@ -528,7 +529,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
 
-            $ilLog->write("adding item result list:".$value['id']);
+            //$ilLog->write("adding item result list:".$value['id']);
             $med_items[(string)$value['id']] = array(
                 "title" => (string)$value->title,
                 "date" => (string)$value['start'],
@@ -554,7 +555,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             foreach($med_items as $key => $item)
             {
                 $seriestpl->setCurrentBlock($this->object->getDownload()?"episodedownload":"episode");
-                $ilLog->write("Adding: ".$item["title"]);
+                //$ilLog->write("Adding: ".$item["title"]);
                     
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
                 $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
@@ -696,7 +697,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
 //            $ilLog->write("workflow:".print_r($workflow->workflow,true));
             $namespaces = $workflow->getNamespaces(true);
-            $ilLog->write("namespaces: ". print_r($namespaces,true));
+            //$ilLog->write("namespaces: ". print_r($namespaces,true));
             $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage; 
   //          $ilLog->write("mediapackage: ". print_r($mediapackage,true));
 //             $series = simplexml_load_string($this->object->getSeries());
@@ -788,7 +789,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
             $duration = (int)$mediapackage->attributes()->{'duration'};
-            $ilLog->write(print_r($mediapackage->duration,true));
+            //$ilLog->write(print_r($mediapackage->duration,true));
             $hours = floor($duration/3600000);
             $duration = $duration%3600000;
             $min = floor($duration/60000);
@@ -816,12 +817,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $tpl, $lng, $ilCtrl, $ilLog;
-        $ilLog->write("ID:".$_POST["wfid"]);
+        //$ilLog->write("ID:".$_POST["wfid"]);
         if (preg_match('/^[0-9a-f\-]+/', $_POST["wfid"])) {
         
             $workflow = $this->object->getWorkflow($_POST["wfid"]);
             $namespaces = $workflow->getNamespaces(true);
-            $ilLog->write("namespaces: ". print_r($namespaces,true));
+            //$ilLog->write("namespaces: ". print_r($namespaces,true));
             $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage; 
             if (!strpos($this->object->getSeries(),trim($mediapackage->series))) {
                 $ilCtrl->redirect($this, "editEpisodes");
@@ -842,7 +843,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $track['flavor'] = ilUtil::stripScriptHTML($_POST["righttrackflavor"]);
                 array_push($tracks,$track);
             }
-            $ilLog->write("tracks: ". print_r($tracks,true));
+            //$ilLog->write("tracks: ". print_r($tracks,true));
             $removetrack;
             foreach($mediapackage->media->track as $track){
 //                $ilLog->write("mediapackage: ". print_r($track,true));
@@ -868,7 +869,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $dom_sxe = $dom->importNode($dom_sxe, true);
             $dom_sxe = $dom->appendChild($dom_sxe);
 
-            $ilLog->write("newmedia: ".$dom->saveXML());
+            //$ilLog->write("newmedia: ".$dom->saveXML());
             $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimin"]));
             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
             $trimin = $hours * 3600 + $minutes * 60 + $seconds;

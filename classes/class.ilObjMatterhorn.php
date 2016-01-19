@@ -99,7 +99,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	{
 		global $ilDB, $ilLog;
 		$url = $this->configObject->getMatterhornServer()."/series/";
-		$ilLog->write("MHObj MHServer:".$url);
+		//$ilLog->write("MHObj MHServer:".$url);
 				
 		$fields = $this->createPostFields();
 		//url-ify the data for the POST
@@ -167,7 +167,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		global $ilDB,$ilLog;
 
 		$url = $this->configObject->getMatterhornServer()."/series/";
-		$ilLog->write("MHObj MHServer:".$url);
+		//$ilLog->write("MHObj MHServer:".$url);
 		$fields = $this->createPostFields();
 		
 		
@@ -241,7 +241,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		if (null != $ilUser->getExternalAccount) {
 			$userid = $ilUser->getExternalAccount();
 		}
-		$ilLog->write("Current User: ".$userid);
+		//$ilLog->write("Current User: ".$userid);
 		$acl = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security">
 								<ace><role>'.$userid.'</role><action>read</action><allow>true</allow></ace>
 								<ace><role>'.$userid.'</role><action>write</action><allow>true</allow></ace>
@@ -285,8 +285,8 @@ class ilObjMatterhorn extends ilObjectPlugin
 	}
 
 	function updateSearchRecords() {
-		global  $ilLog;
-		$ilLog->write("updating search for ".$this->getId());
+		//global  $ilLog;
+		//$ilLog->write("updating search for ".$this->getId());
 		$manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/manifest.xml',NULL, TRUE);
 		
 	}
@@ -294,8 +294,8 @@ class ilObjMatterhorn extends ilObjectPlugin
 	
 	function addTextToDB($episodeId){
 		global $ilDB;
-		global $ilLog;
-		$ilLog->write($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml');
+		//global $ilLog;
+		//$ilLog->write($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml');
 		$manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml',NULL, TRUE);
 		$textcatalog = null;
 		foreach ($manifest->metadata->catalog as $catalog){
@@ -562,10 +562,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	 * @return array the episodes by matterhorn for the given seris
 	 */
     function getSearchResult(){
-	    global $ilLog;
-
-	    $basedir = $this->configObject->getXSendfileBasedir()."ilias_xmh_".$this->getId();
-        $ilLog->write("MHBasedir: " . $basedir);
+	    $basedir = $this->configObject->getXSendfileBasedir()."ilias_xmh_".$this->getId();        
         $xmlstr = "<?xml version='1.0' standalone='yes'?>\n<results />";
         $resultcount = 0;
         $results = new SimpleXMLElement($xmlstr);
@@ -592,7 +589,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      * @return array containing the ids of the episodes that have been made public available.
      */
     function getReleasedEpisodes(){
-        global $ilDB,$ilLog;
+        global $ilDB;
         
         $set = $ilDB->query("SELECT episode_id FROM rep_robj_xmh_rel_ep ".
                 " WHERE series_id = ".$ilDB->quote($this->getId(), "integer")
@@ -611,17 +608,13 @@ class ilObjMatterhorn extends ilObjectPlugin
       * @return array the scheduled episodes for this series returned by matterhorn
       */
     function getScheduledEpisodes(){
-                
-        global $ilLog;
-                
         $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
 
         /* $_GET Parameters to Send */
         $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','op'=>'schedule');
         
         /* Update URL to container Query String of Paramaters */
-        $url .= '?' . http_build_query($params);
-        $ilLog->write("MH QUERY SCHEDULEURL: ".$url);
+        $url .= '?' . http_build_query($params);       
         //open connection
         $ch = curl_init();
         
@@ -644,16 +637,12 @@ class ilObjMatterhorn extends ilObjectPlugin
      * @return array the episodes which are on hold for this series returned by matterhorn
      */
     function getOnHoldEpisodes(){
-                
-        global $ilLog;
-                
         $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
         /* $_GET Parameters to Send */
         $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => array('-stopped','paused'),'op'=>array('-schedule','-capture','-ingest'));
         
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=',http_build_query($params, null, '&'));
-        $ilLog->write("MH QUERY ONHOLDURL: ".$url);
         //open connection
         $ch = curl_init();
         
@@ -675,9 +664,6 @@ class ilObjMatterhorn extends ilObjectPlugin
      * @return array the episodes which are on hold for this series returned by matterhorn
      */
     function getProcessingEpisodes(){
-                
-        global $ilLog;
-                
         $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
         /* $_GET Parameters to Send */
         #http://matterhorn.localdomain/workflow/instances.json?compact=false&state=-stopped&state=running&op=-schedule&op=-capture&sort=DATE_CREATED_DESC&count=10&startPage=0&_=1449664693513
@@ -685,7 +671,6 @@ class ilObjMatterhorn extends ilObjectPlugin
         
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=',http_build_query($params, null, '&'));
-        //$ilLog->write("MH QUERY PROCESSING: ".$url);
         //open connection
         $ch = curl_init();
         
@@ -714,11 +699,8 @@ class ilObjMatterhorn extends ilObjectPlugin
         global $ilLog;
                 
         $url = $this->configObject->getMatterhornServer()."/workflow/instance/".$workflowid.".xml";
-        
-        $ilLog->write("MH WORKFLOW URL: ".$url);
         //open connection
         $ch = curl_init();
-        
         //set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL,$url);
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
@@ -726,15 +708,13 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
         $curlret = curl_exec($ch);        
-//        $ilLog->write("workflow-query-return: ".$curlret);
         $workflow = simplexml_load_string($curlret);
         if ($workflow === false){
-          $ilLog->write("XXXX error loading workflow: ".$workflowid);
+          $ilLog->write("error loading workflow: ".$workflowid);
           foreach(libxml_get_errors() as $error) {
             $ilLog->write("error : ". $error->message);
           }
         }
-  //      $ilLog->write("workflow: ".print_r($workflow,true));
         return $workflow;
     }
 
@@ -764,8 +744,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 
         if(isset($removetrack)){
             $url = $this->configObject->getMatterhornServer()."/mediapackage/removeTrack";
-        
-//            $ilLog->write("removetrack-query: ".$url);
             $fields = array();
             $fields['mediapackage'] = urlencode(trim($mp));
             $fields['trackId'] =  $removetrack;
@@ -778,13 +756,9 @@ class ilObjMatterhorn extends ilObjectPlugin
             curl_setopt($ch, CURLOPT_POST,count($fields));
             curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);            
             $mp = curl_exec($ch);        
-            //$ilLog->write("workflow-removetrack-return: ".$mp);
         }
         
         $url = $this->configObject->getMatterhornServer()."/workflow/replaceAndresume/";
-#        $ilLog->write("replacemediapackage: ".$mp);
-#        $ilLog->write("resume-query: ".$url);
-#        $ilLog->write("workflowid: ".$workflowid);
         $fields = array();
         $fields['id'] =  $workflowid;
         $fields['mediapackage'] = urlencode($mp);  
@@ -803,11 +777,6 @@ class ilObjMatterhorn extends ilObjectPlugin
           $info = curl_getinfo($ch);
           $ilLog->write('Successful request to '.$info['url'].' in '. $info['total_time']);
         }
-
-        $ilLog->write("resume-return: ".$mp);
-
-        //        $workflow = $this->getWorkflow($workflowid);
-//        $mediapackage = $workflow["workflow"]["mediapackage"];
 
     }
     

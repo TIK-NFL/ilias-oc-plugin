@@ -143,7 +143,7 @@ class ilMatterhornSendfile
 		global $basename;				
 		// check if it is a request for an episode
 		if(0 == strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"]))){
-            $ilLog->write("EpisodeRequest for: ".print_r($this->params,true));
+            //$ilLog->write("EpisodeRequest for: ".print_r($this->params,true));
 			$this->requestType = "episode";
 			if (!preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
 				$this->errorcode = 404;
