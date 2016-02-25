@@ -108,15 +108,12 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 		$form->addItem($xsendfile_basedir);
 
 		// matterhorn version
-		$matterhorn_version = new ilTextInputGUI($pl->txt("matterhorn_version"), "matterhorn_version");
+        $matterhorn_version = new ilSelectInputGUI($pl->txt("matterhorn_version"), "opencast_version");
 		$matterhorn_version->setRequired(true);
-		$matterhorn_version->setMaxLength(10);
-		$matterhorn_version->setSize(10);
+        $matterhorn_version->setOptions(["1.6","2.1"]);
+
 		$form->addItem($matterhorn_version);
-		
-		
 		$form->addCommandButton("save", $lng->txt("save"));
-	                
 		$form->setTitle($pl->txt("opencast_plugin_configuration"));
 		$form->setFormAction($ilCtrl->getFormAction($this));
 		
@@ -137,7 +134,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 			$mh_digest_password = $form->getInput("mh_digest_password");
             $mh_files_directory = $form->getInput("mh_files_directory");
 			$xsendfile_basedir = $form->getInput("xsendfile_basedir");
-			$matterhorn_version = $form->getInput("matterhorn_version");
+			$opencast_version = $form->getInput("opencast_version");
 			
 			
 			$this->configObject->setMatterhornServer($mh_server);
@@ -146,7 +143,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 			$this->configObject->setMatterhornPassword($mh_digest_password);
 			$this->configObject->setMatterhornFilesDirectory($mh_files_directory);
 			$this->configObject->setXSendfileBasedir($xsendfile_basedir);
-			$this->configObject->setMatterhornVersion($matterhorn_version);
+			$this->configObject->setMatterhornVersion($opencast_version);
 			
 			ilUtil::sendSuccess($pl->txt("saving_invoked"), true);
 			$ilCtrl->redirect($this, "configure");
