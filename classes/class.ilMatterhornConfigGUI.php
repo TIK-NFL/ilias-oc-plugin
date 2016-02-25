@@ -109,7 +109,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 
 		// matterhorn version
 		$matterhorn_version = new ilTextInputGUI($pl->txt("matterhorn_version"), "matterhorn_version");
-		$matterhorn_version->setRequired(true);
+		$matterhorn_version->setRequired(false);
 		$matterhorn_version->setMaxLength(10);
 		$matterhorn_version->setSize(10);
 		$form->addItem($matterhorn_version);
