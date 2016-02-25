@@ -70,6 +70,11 @@ function refreshTimes() {
     var values = $( "#slider-range" ).slider( "values" );   
     $('#trimin').val(convertSecToTime(values[0]));    
     $('#trimout').val(convertSecToTime(values[1]));
+    if(values[1]-values[0] == 0){
+        $('#octrimbutton').addClass("disabled")
+    } else {
+        $('#octrimbutton').removeClass("disabled")
+    }
   }
 
 function convertSecToTime(totalSec){

@@ -43,7 +43,7 @@ mh_digest_user#:#Username of the Opencast Digest User
 mh_digest_password#:#Password of the Opencast Digest User
 xsendfile_basedir#:#Base directory for XSendfile
 mh_files_directory#:#Base directory for Opencast files
-opencast_version#:#Opencast Version (Don't Change 1.4)
+opencast_version#:#Opencast Version
 saving_invoked#:#Save procedure has been executed
 
 finished_recordings#:#Finished Recordings
@@ -80,7 +80,9 @@ outpoint#:#outpoint
 preview_inpoint#:#Play track from inpoint
 preview_outpoint#:#Play track to out outpoint
 
+progress#:#Processing progress
 processing#:#Processing on Server
+running#:#Job Name
 none_processing#:#There are no recordings processing on the server
 add_new_episode#:#Upload a new recording
 track_presenter#:#Name of the presenter

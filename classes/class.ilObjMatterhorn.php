@@ -25,7 +25,6 @@ require_once 'Services/Repository/classes/class.ilObjectPlugin.php';
 require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')
 ->getDirectory() . '/classes/class.ilMatterhornConfig.php';
 
-
 /**
 * Application class for matterhorn repository object.
 *
@@ -98,9 +97,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	function doCreate($a_clone_mode)
 	{
 		global $ilDB, $ilLog;
-		$url = $this->configObject->getMatterhornServer()."/series/";
-		//$ilLog->write("MHObj MHServer:".$url);
-				
+		$url = $this->configObject->getMatterhornServer()."/series/";				
 		$fields = $this->createPostFields();
 		//url-ify the data for the POST
 		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
@@ -119,7 +116,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
 		$result = curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);				
-		
+		$ilLog->write("Created new opencast object on server: "+ $httpCode);
 		$ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
 				"(obj_id, is_online, series, mhretval, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (".
 				$ilDB->quote($this->getId(), "integer").",".
@@ -164,12 +161,10 @@ class ilObjMatterhorn extends ilObjectPlugin
 	*/
 	function doUpdate()
 	{
-		global $ilDB,$ilLog;
+		global $ilDB, $ilLog;
 
 		$url = $this->configObject->getMatterhornServer()."/series/";
-		//$ilLog->write("MHObj MHServer:".$url);
-		$fields = $this->createPostFields();
-		
+		$fields = $this->createPostFields();		
 		
 		//url-ify the data for the POST
 		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
@@ -189,15 +184,16 @@ class ilObjMatterhorn extends ilObjectPlugin
 		$result = curl_exec($ch);
 		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		
-		
-		$ilDB->manipulate($up = "UPDATE rep_robj_xmh_data SET ".
+		$ilLog->write("Updated opencast object on server: "+ $httpCode);
+		$ilLog->write($result);
+		$ilDB->manipulate("UPDATE rep_robj_xmh_data SET ".
 			" is_online = ".$ilDB->quote($this->getOnline(), "integer").",".
 			" series = ".$ilDB->quote($this->getSeries(), "text").",".
 			" lectureid = ".$ilDB->quote($this->getLectureID(), "text").",".
 			" viewmode = ".$ilDB->quote($this->getViewMode(), "integer").",".
             " manualrelease = ".$ilDB->quote($this->getManualRelease(), "integer").",".
             " download = ".$ilDB->quote($this->getDownload(), "integer").",".
-			" mhretval = ".$ilDB->quote($this->getMhRetVal(), "text")." ".
+			" mhretval = ".$ilDB->quote($httpCode, "text")." ".
 			" WHERE obj_id = ".$ilDB->quote($this->getId(), "text")
 			);
 		$this->updateMetaData();
@@ -235,13 +231,12 @@ class ilObjMatterhorn extends ilObjectPlugin
 	
 	private function createPostFields() {
 		
-		global  $ilUser, $ilLog;
+		global  $ilUser;
 		
 		$userid = $ilUser->getLogin();
 		if (null != $ilUser->getExternalAccount) {
 			$userid = $ilUser->getExternalAccount();
 		}
-		//$ilLog->write("Current User: ".$userid);
 		$acl = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security">
 								<ace><role>'.$userid.'</role><action>read</action><allow>true</allow></ace>
 								<ace><role>'.$userid.'</role><action>write</action><allow>true</allow></ace>

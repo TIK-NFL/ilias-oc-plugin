@@ -142,7 +142,9 @@ var updateprocessing = function() {
     var templates = {
         "noprocessing" : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="4">'
             + txt_none_processing + '</td></tr>',
-        "processing" : '<tr><td class="std">{{title}}</td> <td class="std">{{date}}</td></tr>',
+        "processing" : '<tr><td class="std">{{title}}</td> <td class="std">{{date}}</td>'
+            + '<td><div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:{{processdone}}%">{{processcount}}</div></td><td>{{running}}</td>'
+            + '</tr>',
         "nofinished" : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="'
             + cols_finished + '">' + txt_none_finished + '</td></tr>',
         "finished" : '<tr>'

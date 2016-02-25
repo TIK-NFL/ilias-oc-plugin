@@ -81,8 +81,6 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
 	*/
 	function getProperties()
 	{
-		global $lng, $ilUser;
-
 		$props = array();
 		
 		$this->plugin->includeClass("class.ilObjMatterhornAccess.php");

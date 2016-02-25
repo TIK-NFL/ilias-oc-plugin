@@ -43,7 +43,7 @@ mh_digest_user#:#Benutzername des Opencast Digest User
 mh_digest_password#:#Passwort des Opencast Digest User
 mh_files_directory#:#Basisverzeichnis f&uuml;r Opencast Dateien
 xsendfile_basedir#:#Basisverzeichnis f&uuml;r XSendfile
-matterhorn_version#:#Opencast Version (1.6 nicht verändern)
+matterhorn_version#:#Opencast Version
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert
 
 finished_recordings#:#Fertige Aufzeichnungen
@@ -81,7 +81,9 @@ outpoint#:#Endpunkt
 preview_inpoint#:#Abspiel ab Schnittmarke
 preview_outpoint#:#Abspielen bis Schnittmarke
 
+progress#:#Verarbeitungsfortschritt
 processing#:#Aufzeichnungen, welche vom Server verarbeitet werden
+running#:#Job Name
 none_processing#:#Es gibt keine Aufnahmen, die aktuell vom Server verarbeitet werden
 add_new_episode#:#Aufzeichnung hochladen
 track_presenter#:#Name des Vortragenden

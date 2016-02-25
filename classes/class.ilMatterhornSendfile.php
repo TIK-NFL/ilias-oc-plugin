@@ -163,10 +163,10 @@ class ilMatterhornSendfile
                 $this->errortext = $this->lng->txt("no_such_episode");
                 return false;
             }
-            if(preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).mp4$/', $this->subpath)){
+            if(preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)){
                 $ilLog->write("PreviewRequest for: ".$this->subpath);
                 $this->requestType = "preview";
-                if (!preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).mp4/', $this->subpath)) {
+                if (!preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
                     $this->errorcode = 404;
                     $this->errortext = $this->lng->txt("no_such_episode");
                     return false;               
@@ -590,11 +590,12 @@ class ilMatterhornSendfile
 	public function sendPreview()
 	{
       global $ilLog;
-      $ilLog->write(print_r($_SESSION,true));
       $urlsplit = explode('/',$this->subpath);
-      $ilLog->write(print_r($urlsplit[1],true));
-      $ilLog->write(print_r($urlsplit[2],true));
-      $realfile = str_replace($this->configObject->getMatterhornServer().'/files',$this->configObject->getMatterhornFilesDirectory(),$_SESSION['mhpreviewurl'.substr($urlsplit[2],7,-4).$urlsplit[1]]);
+      $typesplit = explode('.',$urlsplit[2]);
+      $ilLog->write(print_r($typesplit,true));
+      $ilLog->write('mhpreviewurl'.$typesplit[0].$typesplit[1].$urlsplit[1]);
+      $realfile = str_replace($this->configObject->getMatterhornServer().'/files',$this->configObject
+      ->getMatterhornFilesDirectory(),$_SESSION['mhpreviewurl'.$typesplit[0].$typesplit[1].$urlsplit[1]]);
       $ilLog->write("Real preview file: ".$realfile);
 //    header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
       include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
