@@ -146,8 +146,7 @@ $fields = array(
                 ),
 				'series_id' => array(
 						'type' => 'integer',
-						'length' => 10,
-						'fixed' => false,
+						'length' => 8,
 						'notnull' => true
 				),
 				'slidetime' => array(

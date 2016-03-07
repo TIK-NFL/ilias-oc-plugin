@@ -44,8 +44,10 @@ div[data-nothingToUpload] {
     font-weight: bold;
     cursor:pointer;
 }
-.meter {
-    color:#fff;
-    line-height:18px;
-    font-size:12px;
+
+div.progress {  
+    padding-left: 0px;
+    padding-right: 0px;
+    margin-bottom: 0px;
+
 }

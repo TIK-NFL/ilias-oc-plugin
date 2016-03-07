@@ -30,11 +30,11 @@ $(document)
 
             r.on('fileAdded', function(file, event) {
                 var template = '<div data-uniqueid="' + file.uniqueIdentifier
-                    + '">' + '<div class="fileName">' + file.fileName + ' ('
-                    + file.file.type + ')' + '</div>'
-                    + '<div class="large-6 right deleteFile">X</div>'
-                    + '<div class="progress large-6">'
-                    + '<span class="meter" style="width:0%;"></span>'
+                    + '">' + '<div class="left fileName">' + file.fileName + ' ('
+                    + file.file.type + ')'
+                    + '<span class="deleteFile">X</span></div>'
+                    + '<div class="progress">'
+                    + '<div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;">0%</span>'
                     + '</div>' + '</div>';
 
                 results.append(template);
@@ -93,9 +93,9 @@ $(document)
             r.on('fileProgress', function(file) {
                 var progress = Math.floor(file.progress() * 100);
                 $('[data-uniqueId=' + file.uniqueIdentifier + ']').find(
-                    '.meter').css('width', progress + '%');
+                    '.progress-bar').css('width', progress + '%');
                 $('[data-uniqueId=' + file.uniqueIdentifier + ']').find(
-                    '.meter').html('&nbsp;' + progress + '%');
+                    '.progress-bar').html('&nbsp;' + progress + '%');
             });
 
             r
