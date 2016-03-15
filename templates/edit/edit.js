@@ -38,6 +38,7 @@ $(document)
                     + '</div>' + '</div>';
 
                 results.append(template);
+                uploadFile.toggleClass("disabled");
             });
 
             uploadFile.on('click', function() {
