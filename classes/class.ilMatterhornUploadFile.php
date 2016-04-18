@@ -551,7 +551,7 @@ class ilMatterhornUploadFile
         foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
         rtrim($fields_string,'&');
         $ch = curl_init();        
-        $url = $this->configObject->getMatterhornServer()."/ingest/ingest/ilias";
+        $url = $this->configObject->getMatterhornServer()."/ingest/ingest/".$this->configObject->getUploadWorkflow();
         //set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL,$url);
         curl_setopt($ch, CURLOPT_POST,count($fields));

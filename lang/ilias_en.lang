@@ -44,6 +44,7 @@ mh_digest_password#:#Password of the Opencast Digest User
 xsendfile_basedir#:#Base directory for XSendfile
 mh_files_directory#:#Base directory for Opencast files
 opencast_version#:#Opencast Version
+upload_workflow#:#Workflow for processing uploaded files
 saving_invoked#:#Save procedure has been executed
 
 finished_recordings#:#Finished Recordings
