@@ -104,7 +104,7 @@ class ilMatterhornConfig
     {
         $retVal = $this->getValue('matterhorn_version');
         if (!$retVal) {
-            return '1.4';
+            return '1.6';
         }
 
         return $retVal;

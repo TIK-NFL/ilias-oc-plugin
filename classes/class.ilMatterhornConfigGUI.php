@@ -108,7 +108,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         // matterhorn version
         $matterhorn_version = new ilSelectInputGUI($pl->txt('opencast_version'), 'opencast_version');
         $matterhorn_version->setRequired(true);
-        $matterhorn_version->setOptions(['1.6', '2.1']);
+        $matterhorn_version->setOptions(array('1.6', '2.1'));
 
         // upload workflow
         $uploadworkflow = new ilTextInputGUI($pl->txt('upload_workflow'), 'uploadworkflow');
