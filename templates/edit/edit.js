@@ -3,7 +3,10 @@ $(document)
         function() {
             $('#trackdate').datepicker({
                 format : "yyyy-mm-dd",
-                autoclose : true
+                autoclose : true,
+                setDate : new Date(),
+                todayHighlight : true,
+                todayBtn : "linked",
             });
             var chunksize = 1 * 1024 * 1024;
             var r = new Resumable({
