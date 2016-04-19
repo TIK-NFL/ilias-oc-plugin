@@ -423,11 +423,11 @@ class ilMatterhornUploadFile
     
     public function createNewJob(){
         global $ilLog;
-        $fields = array("flavor" => urlencode("presentation/source"),
-                        "mediaPackage" => urlencode($_POST["mediapackage"]), 
-                        "filename" => urlencode($_POST["filename"]),
+        $fields = array("filename" => urlencode($_POST["filename"]),
                         "filesize" => urlencode($_POST["filesize"]),
-                        "chunksize" => urlencode($_POST["chunksize"])
+                        "chunksize" => urlencode($_POST["chunksize"]),
+                        "flavor" => urlencode("presentation/source"),
+                        "mediapackage" => $_POST["mediaPackage"] 
                         );
         foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
         rtrim($fields_string,'&');
