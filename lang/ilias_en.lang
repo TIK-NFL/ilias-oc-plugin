@@ -89,6 +89,6 @@ add_new_episode#:#Upload a new recording
 track_presenter#:#Name of the presenter
 track_date#:#Date of the recording
 track_time#:#Time of the recording
-add_file#:#Add file
+select_file#:#Select file
 upload_file#:#Upload file
 no_files#:#Please select a file to upload

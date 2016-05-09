@@ -637,7 +637,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
         $seriestpl->setVariable("TXT_TRACK_DATE", $this->getText("track_date"));
         $seriestpl->setVariable("TXT_TRACK_TIME", $this->getText("track_time"));
-        $seriestpl->setVariable("TXT_ADD_FILE", $this->getText("add_file"));
+        $seriestpl->setVariable("TXT_SELECT_FILE", $this->getText("select_file"));
         $seriestpl->parseCurrentBlock();
 
 
@@ -651,6 +651,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         
         $html = $seriestpl->get();
         $tpl->setContent($html);
+        $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
         $ilTabs->activateTab("manage");

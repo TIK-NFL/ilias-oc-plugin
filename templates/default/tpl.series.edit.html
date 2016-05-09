@@ -1,14 +1,26 @@
 <!-- BEGIN pagestart -->
 <div class="container">
 <script>
-var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHUpload",
-    seriesid = "{SERIES_ID}",
-    processingcmd = "{CMD_PROCESSING}";
-    txt_none_processing = "{TXT_NONE_PROCESSING}";
-    txt_none_finished = "{TXT_NONE_FINISHED}";
-    txt_none_scheduled = "{TXT_NONE_SCHEDULED}";
-    txt_none_onhold = "{TXT_NONE_ONHOLD}";
-    cols_finished = {COLS_FINISHED};
+var iliasopencast = iliasopencast ||  {};
+
+(function(){
+iliasopencast.settings = iliasopencast.settings || {}
+var settings = {
+  uploadtarget : "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHUpload",
+  seriesid : "{SERIES_ID}",
+  processingcmd : "{CMD_PROCESSING}",
+  cols_finished : {COLS_FINISHED}
+}
+$.extend(true,iliasopencast.settings, settings);
+
+iliasopencast.translation = {
+    txt_none_processing : "{TXT_NONE_PROCESSING}",
+    txt_none_finished : "{TXT_NONE_FINISHED}",
+    txt_none_scheduled : "{TXT_NONE_SCHEDULED}",
+    txt_none_onhold : "{TXT_NONE_ONHOLD}",
+}
+
+})();
 </script>
 
 <div class="row">
@@ -27,7 +39,7 @@ var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObj
 <!-- END headerfinishednoaction -->
 <!-- BEGIN footerfinished -->     
 </thead>
-<tbody id="finishedtable" data-lastupdate="-1">
+<tbody id="iliasopencast_finishedtable" data-lastupdate="-1">
 </tbody>
 </table>
 </div>
@@ -43,7 +55,7 @@ var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObj
 <thead>
 <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_RECORDDATE}</th><th class="std">{TXT_PROGRESS}</th><th>{TXT_RUNNING}</th></tr>
 </thead>
-<tbody id="processingtable">
+<tbody id="iliasopencast_processingtable">
 </tbody>
 </table>
 </div>
@@ -60,7 +72,7 @@ var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObj
 <thead>
 <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_RECORDDATE}</th></tr>
 </thead>
-<tbody id="onholdtable"> 
+<tbody id="iliasopencast_onholdtable"> 
 </tbody>
 </table>
 </div>
@@ -75,41 +87,37 @@ var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObj
 </div>
 <div class="row">
 <div class=" col-md-12 form-group">
-    <span class="form-label" id="basic-addon0">{TXT_TRACK_TITLE}</span>
-    <input type="text" class="form-control" aria-describedby="basic-addon0" id="tracktitle" name="tracktitle" value="">
+    <span class="form-label" id="basic-addon0">{TXT_TRACK_TITLE}<span class="asterisk">*</span></span>
+    <input type="text" class="form-control" required="true" aria-describedby="basic-addon0" id="iliasopencast_tracktitle" name="tracktitle" value="">
   </div>
 </div>
 <div class="row">
 <div class=" col-md-12 form-group">
     <span class="form-label" id="basic-addon1">{TXT_TRACK_PRESENTER}</span>
-    <input type="text" class="form-control" aria-describedby="basic-addon1" id="trackpresenter" name="trackpresenter" value="">
+    <input type="text" class="form-control" required="true" aria-describedby="basic-addon1" id="iliasopencast_trackpresenter" name="trackpresenter" value="">
   </div>
 </div>
 <div>
 <div class="row input-group">
   <div class="col-md-6">
-    <span class="form-label" id="basic-addon2">{TXT_TRACK_DATE}</span>
-    <input type="text" class="form-control" aria-describedby="basic-addon2" id="trackdate" name="trackdate" value="">
+    <span class="form-label" id="basic-addon2">{TXT_TRACK_DATE}<span class="asterisk">*</span></span>
+    <input type="text" class="form-control" required="true" aria-describedby="basic-addon2" id="iliasopencast_trackdate" name="trackdate" value="">
   </div>
   <div class="col-md-6">
-    <span class="form-label" id="basic-addon3">{TXT_TRACK_TIME}</span>
-    <input type="text" class="form-control" aria-describedby="basic-addon3" id="tracktime" name="tracktime" value="">
+    <span class="form-label" id="basic-addon3">{TXT_TRACK_TIME}<span class="asterisk">*</span></span>
+    <input type="text" class="form-control" required="true" aria-describedby="basic-addon3" id="iliasopencast_tracktime" name="tracktime" value="">
   </div>
 </div>
 
 <div class="row top10">
     <div class="col-md-12">
-        <div class="alert-box alert" data-nothingToUpload>{TXT_NO_FILES}</div>
-        <div id="results" class="panel"></div>Status:
+        <div data-iliasopencast_nothingToUpload>{TXT_NO_FILES}</div>
+        <div id="iliasopencast_results" class="panel"></div>{TXT_FILE}
         <div class="alert-box secondary"></div>
-        <button class="btn btn-default" id="browseButton">+ {TXT_ADD_FILE}</button>
-        <button class="btn btn-primary disabled" id="uploadFiles">{TXT_UPLOAD_FILE}</button>
+        <button class="btn btn-default" id="iliasopencast_browseButton">{TXT_SELECT_FILE}</button>
+        <button class="btn btn-primary disabled" id="iliasopencast_uploadFiles">{TXT_UPLOAD_FILE}</button>
     </div>
 </div>
-<script src="{INITJS}/resumable.js"></script>
-<script src="{INITJS}/mustache.js"></script>
-<script src="{INITJS}/bootstrap-datepicker.js"></script>
-<script src="{INITJS}/edit.js"></script>
 <!-- END uploadsection -->
 
 <!-- BEGIN pageend -->     
@@ -121,9 +129,14 @@ var uploadtarget = "Customizing/global/plugins/Services/Repository/RepositoryObj
 <thead>
 <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_STARTDATE}</th><th class="std">{TXT_ENDDATE}</th><th  class="std">{TXT_LOCATION}</th></tr>
 </thead>
-<tbody id="scheduledtable">
+<tbody id="iliasopencast_scheduledtable">
 </tbody>
 </table>
 </div></div>
+<script src="{INITJS}/resumable.js"></script>
+<script src="{INITJS}/mustache.js"></script>
+<script src="{INITJS}/bootstrap-datepicker.js"></script>
+<script src="{INITJS}/bootstrap-timepicker.min.js"></script>
+<script src="{INITJS}/edit.js"></script>
 </div>
 <!-- END pageend  -->
