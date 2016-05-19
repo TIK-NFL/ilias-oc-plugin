@@ -126,11 +126,11 @@ $(document)
                     });
 
             r.on('uploadStart', function() {
-                $('.alert-box').text('Uploading....');
+                $('.alert-box').text('Uploading...');
             });
 
             r.on('complete', function() {
-                $('.alert-box').text('Done Uploading');
+                $('.alert-box').text('Done uploading');
             });
 
             updateprocessing();
