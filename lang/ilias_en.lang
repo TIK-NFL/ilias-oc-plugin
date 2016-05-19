@@ -70,25 +70,25 @@ download_preview#:#Download preview
 onhold_recordings#:#Recordings waiting for trimming
 recorddate#:#Date of recording
 none_onhold#:#There are no recordings waiting for trimming
-msg_episode_send_to_triming#:#The episode has successfully been send to triming
+msg_episode_send_to_triming#:#The episode has successfully been send to trimming
 track_title#:#Title of recording
 flavor_unset#:#No flavor selected
 flavor_presenter#:#Presenter
 flavor_presentation#:#Presentation
 set_to_current_time#:#Set to current time
 inpoint#:#Inpoint
-outpoint#:#outpoint
+outpoint#:#Outpoint
 preview_inpoint#:#Play track from inpoint
-preview_outpoint#:#Play track to out outpoint
+preview_outpoint#:#Play track to outpoint
 
 progress#:#Processing progress
-processing#:#Processing on Server
-running#:#Job Name
-none_processing#:#There are no recordings processing on the server
+processing#:#Processing on server
+running#:#Processing step
+none_processing#:#There are no recordings being processed on the server
 add_new_episode#:#Upload a new recording
-track_presenter#:#Name of the presenter
-track_date#:#Date of the recording
-track_time#:#Time of the recording
+track_presenter#:#Presenter name
+track_date#:#Date of recording
+track_time#:#Time of recording
 add_file#:#Add file
 upload_file#:#Upload file
 no_files#:#Please select a file to upload
