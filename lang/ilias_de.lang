@@ -3,21 +3,21 @@
 //
 
 <!-- language file start -->
-obj_xmh#:#Opencast Objekt
-objs_xmh#:#Opencast Objekte
+obj_xmh#:#Opencast-Objekt
+objs_xmh#:#Opencast-Objekte
 obj_xmh_duplicate#:#Kopieren
-objs_xmh_duplicate#:#Opencast Objekt kopieren
-obj_xmh_select#:#Opencast Objekt ausw&auml;hlen
-xmh_add#:#Opencast Objekt hinzuf&uuml;gen
-xmh_new#:#Neues Opencast Objekt anlegen
-xmh_read#:#Opencast Objekt lesen
-xmh_write#:#Opencast Objekt bearbeiten
-xmh_delete#:#Opencast Objekt l&ouml;schen
-xmh_visible#:#Opencast Objekt ist schichtbar
+objs_xmh_duplicate#:#Opencast-Objekt kopieren
+obj_xmh_select#:#Opencast-Objekt ausw&auml;hlen
+xmh_add#:#Opencast-Objekt hinzuf&uuml;gen
+xmh_new#:#Neues Opencast-Objekt anlegen
+xmh_read#:#Opencast-Objekt lesen
+xmh_write#:#Opencast-Objekt bearbeiten
+xmh_delete#:#Opencast-Objekt l&ouml;schen
+xmh_visible#:#Opencast-Objekt ist schichtbar
 xmh_edit_permission#:#Rechteverwaltung
-grp_create_xmh#:#Opencast Objekt anlegen
-crs_create_xmh#:#Opencast Objekt anlegen
-fold_create_xmh#:#Opencast Objekt anlegen
+grp_create_xmh#:#Opencast-Objekt anlegen
+crs_create_xmh#:#Opencast-Objekt anlegen
+fold_create_xmh#:#Opencast-Objekt anlegen
 content#:#Inhalt
 manage#:#Aufzeichnungen verwalten
 viewmode#:#Kompakte Übersichtsseite verwenden
@@ -26,7 +26,7 @@ edit_properties#:#Eigenschaften bearbeiten
 title#:#Titel
 description#:#Beschreibung
 lectureID#:#Vorlesungsnummer
-manualRelease#:#Aufzeichnung einzeln freigeben
+manualRelease#:#Aufzeichnungen einzeln freigeben
 publish#:#Veröffentlichen
 retract#:#Zurückziehen
 msg_episode_published#:#Die Aufzeichnung wurde veröffentlicht.
@@ -36,14 +36,14 @@ cancel#:#Abbrechen
 edit#:#Bearbeiten
 status#:#Status
 offline#:#Offline
-opencast_plugin_configuration#:#Opencast Plugin Konfiguration
-mh_server#:#Basis URL des Opencast Server
-mh_server_engage#:#Basis URL des Opencast Engage Server
+opencast_plugin_configuration#:#Opencast-Plugin-Konfiguration
+mh_server#:#Basis-URL des Opencast Server
+mh_server_engage#:#Basis-URL des Opencast Engage Server
 mh_digest_user#:#Benutzername des Opencast Digest User
 mh_digest_password#:#Passwort des Opencast Digest User
 mh_files_directory#:#Basisverzeichnis f&uuml;r Opencast Dateien
 xsendfile_basedir#:#Basisverzeichnis f&uuml;r XSendfile
-opencast_version#:#Opencast Version
+opencast_version#:#Opencast-Version
 upload_workflow#:#Workflow zum Verarbeiten von Uploads
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert
 
@@ -56,40 +56,40 @@ none_finished#:#Es sind keine fertigen Aufzeichnungen vorhanden
 scheduled_recordings#:#Geplante Aufzeichnungen
 startdate#:#Startzeit
 enddate#:#Endzeit
-location#:#Aufzeichungsort
+location#:#Aufzeichnungsort
 none_scheduled#:#Es sind keine Aufzeichnungen geplant
 
 
 download#:#Download
-keep_left_side#:#Links Video behalten
+keep_left_side#:#Linkes Video behalten
 keep_right_side#:#Rechtes Video behalten
-ilias_trim_editor#:#Videoeditor
+ilias_trim_editor#:#Video-Editor
 trimin#:#Startzeitpunkt
 trimout#:#Endzeitpunkt
 continue#:#Weiter
-download_preview#:#Vorschau herrunterladen
-onhold_recordings#:#Aufzeichungen, die geschnitten werden können
+download_preview#:#Vorschau herunterladen
+onhold_recordings#:#Aufzeichnungen, die geschnitten werden können
 recorddate#:#Datum der Aufnahme
 none_onhold#:#Es gibt keine Aufnahmen, die geschnitten werden können
 msg_episode_send_to_triming#:#Die Aufnahme wurde erfolgreich zum Weiterverarbeitung geschickt
-track_title#:#Title der Aufzeichnung
+track_title#:#Titel der Aufzeichnung
 flavor_unset#:#Typ unbekannt
 flavor_presenter#:#Dozent
 flavor_presentation#:#Präsentation
 set_to_current_time#:#Jetzt setzen
 inpoint#:#Startpunkt
 outpoint#:#Endpunkt
-preview_inpoint#:#Abspiel ab Schnittmarke
+preview_inpoint#:#Abspielen ab Schnittmarke
 preview_outpoint#:#Abspielen bis Schnittmarke
 
 progress#:#Verarbeitungsfortschritt
-processing#:#Aufzeichnungen, welche vom Server verarbeitet werden
-running#:#Job Name
+processing#:#Aufzeichnungen, die vom Server verarbeitet werden
+running#:#Verarbeitungsschritt
 none_processing#:#Es gibt keine Aufnahmen, die aktuell vom Server verarbeitet werden
 add_new_episode#:#Aufzeichnung hochladen
 track_presenter#:#Name des Vortragenden
 track_date#:#Datum der Aufzeichnung
-track_time#:#Uhrzeit der Aufzeichung
+track_time#:#Uhrzeit der Aufzeichnung
 add_file#:#Datei auswählen
 upload_file#:#Datei hochladen
 no_files#:#Bitte Datei zum Hochladen auswählen

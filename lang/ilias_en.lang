@@ -1,23 +1,23 @@
 // 
-// English Language File for Opencast Object Plugin
+// English Language File for Opencast object Plugin
 //
 
 <!-- language file start -->
-obj_xmh#:#Opencast Object
-objs_xmh#:#Opencast Objects
+obj_xmh#:#Opencast object
+objs_xmh#:#Opencast objects
 obj_xmh_duplicate#:#Copy
-objs_xmh_duplicate#:#Copy Opencast Object
-obj_xmh_select#:#Select Opencast Object
-xmh_add#:#Add Opencast Object
-xmh_new#:#New Opencast Object
-xmh_read#:#Read access to Opencast Object
-xmh_write#:#Edit Opencast Object
-xmh_delete#:#Delete Opencast Object
-xmh_visible#:#Opencast Object is visible
+objs_xmh_duplicate#:#Copy Opencast object
+obj_xmh_select#:#Select Opencast object
+xmh_add#:#Add Opencast object
+xmh_new#:#New Opencast object
+xmh_read#:#Read access to Opencast object
+xmh_write#:#Edit Opencast object
+xmh_delete#:#Delete Opencast object
+xmh_visible#:#Opencast object is visible
 xmh_edit_permission#:#Change permission settings
-grp_create_xmh#:#Create Opencast Object
-crs_create_xmh#:#Create Opencast Object
-fold_create_xmh#:#Create Opencast Object
+grp_create_xmh#:#Create Opencast object
+crs_create_xmh#:#Create Opencast object
+fold_create_xmh#:#Create Opencast object
 content#:#Content
 manage#:#Manage Episodes
 viewmode#:#Use compact episode overview
@@ -26,7 +26,7 @@ edit_properties#:#Edit Properties
 title#:#Title
 description#:#Description
 lectureID#:#Lecture ID
-manualRelease#:#Release recordings individually
+manualRelease#:#Publish recordings individually
 publish#:#Publish
 retract#:#Retract
 msg_episode_published#:#The episode has been published.
@@ -36,7 +36,7 @@ cancel#:#Cancel
 edit#:#Edit
 status#:#Status
 offline#:#Offline
-opencast_plugin_configuration#:#Opencast Plugin Configuration
+opencast_plugin_configuration#:#Opencast plugin configuration
 mh_server#:#Base URL of the Opencast Server
 mh_server_engage#:#Base URL of the Opencast Engage Server
 mh_digest_user#:#Username of the Opencast Digest User
@@ -70,25 +70,25 @@ download_preview#:#Download preview
 onhold_recordings#:#Recordings waiting for trimming
 recorddate#:#Date of recording
 none_onhold#:#There are no recordings waiting for trimming
-msg_episode_send_to_triming#:#The episode has successfully been send to triming
+msg_episode_send_to_triming#:#The episode has been successfully sent to trimming
 track_title#:#Title of recording
 flavor_unset#:#No flavor selected
 flavor_presenter#:#Presenter
 flavor_presentation#:#Presentation
 set_to_current_time#:#Set to current time
 inpoint#:#Inpoint
-outpoint#:#outpoint
+outpoint#:#Outpoint
 preview_inpoint#:#Play track from inpoint
-preview_outpoint#:#Play track to out outpoint
+preview_outpoint#:#Play track to outpoint
 
 progress#:#Processing progress
-processing#:#Processing on Server
-running#:#Job Name
-none_processing#:#There are no recordings processing on the server
+processing#:#Processing on server
+running#:#Processing step
+none_processing#:#There are no recordings being processed on the server
 add_new_episode#:#Upload a new recording
-track_presenter#:#Name of the presenter
-track_date#:#Date of the recording
-track_time#:#Time of the recording
+track_presenter#:#Presenter name
+track_date#:#Date of recording
+track_time#:#Time of recording
 add_file#:#Add file
 upload_file#:#Upload file
 no_files#:#Please select a file to upload
