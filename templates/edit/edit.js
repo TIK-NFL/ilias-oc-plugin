@@ -148,13 +148,12 @@ iliasopencast.upload = {
                         });
                     });
 
-            upload.r.on('uploadStart', function() {
-                $('.alert-box').text('Uploading....');
-                upload.uploadFile.addClass("disabled");
+            r.on('uploadStart', function() {
+                $('.alert-box').text('Uploading...');
             });
 
-            upload.r.on('complete', function() {
-                $('.alert-box').text('Done Uploading');
+            r.on('complete', function() {
+                $('.alert-box').text('Done uploading');
             });
             $('#iliasopencast_tracktitle').on('blur',function () {
                 upload.checkfieldscomplete();
