@@ -115,7 +115,7 @@ iliasopencast.upload = {
             });
 
             upload.r.on('fileProgress', function(file) {
-                var progress = Math.floor(file.progress() * 100);
+                var progress = Math.floor(file.progress() * 1000)/10;
                 $('[data-uniqueId=' + file.uniqueIdentifier + ']').find(
                     '.progress-bar').css('width', progress + '%');
                 $('[data-uniqueId=' + file.uniqueIdentifier + ']').find(
