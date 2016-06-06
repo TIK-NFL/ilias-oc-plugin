@@ -51,6 +51,7 @@ finished_recordings#:#Fertige Aufzeichnungen
 preview#:#Vorschau
 date#:#Datum
 action#:#Aktion
+delete#:#Löschen
 none_finished#:#Es sind keine fertigen Aufzeichnungen vorhanden
 
 scheduled_recordings#:#Geplante Aufzeichnungen

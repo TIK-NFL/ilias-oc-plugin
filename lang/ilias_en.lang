@@ -51,6 +51,7 @@ finished_recordings#:#Finished Recordings
 preview#:#Preview
 date#:#Date
 action#:#Action
+delete#:#Delete
 none_finished#:#There are no finished recordings yet
 
 scheduled_recordings#:#Scheduled Recordings

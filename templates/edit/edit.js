@@ -148,11 +148,12 @@ iliasopencast.upload = {
                         });
                     });
 
-            r.on('uploadStart', function() {
+            upload.r.on('uploadStart', function() {
                 $('.alert-box').text('Uploading...');
+                upload.uploadFile.addClass("disabled");
             });
 
-            r.on('complete', function() {
+            upload.r.on('complete', function() {
                 $('.alert-box').text('Done uploading');
             });
             $('#iliasopencast_tracktitle').on('blur',function () {
@@ -215,10 +216,10 @@ iliasopencast.updateprocessing = function() {
         'noonhold' : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="4">'
             + txt.txt_none_onhold + '</td></tr>',
         'onhold' : '<tr><td class="std"><a href="{{#convertAmpersand}}{{trimurl}}{{/convertAmpersand}}">{{title}}</a></td> <td class="std">{{date}}</td></tr>',
-        'noscheduled' : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="4">'
+        'noscheduled' : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="5">'
             + txt.txt_none_scheduled + '</td></tr>',
         'scheduled' : '<tr>'
-            + '<td class="std">{{title}}</td> <td class="std">{{startdate}} </td> <td class="std"> {{stopdate}} </td> <td class="std">{{location}} </td>'
+            + '<td class="std">{{title}}</td> <td class="std">{{startdate}} </td> <td class="std"> {{stopdate}} </td> <td class="std">{{location}} </td><td class="std"><a href="{{#convertAmpersand}}{{deletescheduledurl}}{{/convertAmpersand}}">'+txt.txt_delete+'</a></td>'
             + '</tr>'
 
     };

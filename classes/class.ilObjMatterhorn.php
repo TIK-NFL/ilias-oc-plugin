@@ -551,6 +551,25 @@ class ilObjMatterhorn extends ilObjectPlugin
         $this->removeTextFromDB($episodeId);
     }
 
+    public function deleteschedule($workflowid)
+    {
+        global $ilLog;
+        $url = $this->configObject->getMatterhornServer().'/recordings/'.$workflowid;
+
+        //open connection
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curlret = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $ilLog->write("delete code: ".$httpCode);
+        return $httpCode;
+    }
 	/**
 	 * The series information returned by matterhorn
 	 * 

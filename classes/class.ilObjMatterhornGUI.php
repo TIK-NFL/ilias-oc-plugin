@@ -78,6 +78,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 			case "showTrimEditor":
 			case "publish":
 			case "retract":
+			case "deletescheduled":
 			case "getEpisodes":
 				$this->checkPermission("write");
 				$this->$cmd();
@@ -277,6 +278,20 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $ilCtrl->redirect($this, "editEpisodes");
     }
 
+    public function deletescheduled()
+    {
+        global $ilCtrl, $ilLog;
+        $ilLog->write("deleteing message");
+        $ilLog->write("ID:".$_GET["id"]);
+        if (preg_match('/^[0-9]+/', $_GET["id"])) {
+            $this->object->deleteschedule($_GET["id"]);
+            ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
+        } else {
+            $ilLog->write("ID does not match in deleteschedule:".$_GET["id"]);
+        }
+        $ilCtrl->redirect($this, "editEpisodes");
+    }
+
 	
 //
 // Show content
@@ -460,9 +475,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     }
 	
     private function extractScheduledEpisode($workflow){
+        global $ilCtrl;
+        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", (string)$workflow['id']);
         $scheduled_episode = array(
             'title' => $workflow["mediapackage"]['title'],
             'mhid' => $workflow['id'],
+            'deletescheduledurl' => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "deletescheduled")
         );
         $workflowconfig = $workflow['configurations']['configuration'];
         foreach($workflowconfig as $configuration){
@@ -594,6 +612,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_NONE_PROCESSING", $this->getText("none_processing"));                                
         $seriestpl->setVariable("TXT_NONE_ONHOLD", $this->getText("none_onhold"));
         $seriestpl->setVariable("TXT_NONE_SCHEDULED", $this->getText("none_scheduled"));
+        $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));
         $seriestpl->setVariable("INITJS",$editbase );
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID",$this->object->getId());
@@ -647,6 +666,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_STARTDATE", $this->getText("startdate"));
         $seriestpl->setVariable("TXT_ENDDATE", $this->getText("enddate"));
         $seriestpl->setVariable("TXT_LOCATION", $this->getText("location"));
+        $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
         $seriestpl->parseCurrentBlock();
         
         $html = $seriestpl->get();
