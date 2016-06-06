@@ -1,19 +1,20 @@
 /*Core desktop css rules*/
 
-body {
+/*body {
     min-width: 840px;
     font-family: Arial, sans-serif;
 }
-
+*/
 #btn_fullscreenCancel {
     z-index: 999;
     float: right;
 }
 
-h1, h2, h3 {
+/*h1, h2, h3 {
     font-weight: normal;
     line-height: 22px;
 }
+*/
 
 #engage_tab_content {
     padding: 5px 0px 10px 20px;
