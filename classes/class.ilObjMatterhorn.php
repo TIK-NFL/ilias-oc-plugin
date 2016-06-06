@@ -583,7 +583,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $domresults = dom_import_simplexml($results);
         if (file_exists($basedir) && $handle = opendir($basedir)) {
             while (false !== ($entry = readdir($handle))) {
-                if ($entry != "." && $entry != "..") {
+                if ($entry != "." && $entry != ".."  && file_exists($basedir.'/'.$entry.'/manifest.xml')) {
                     $manifest = new SimpleXMLElement($basedir.'/'.$entry.'/manifest.xml',NULL, TRUE);
                     $dommanifest  = dom_import_simplexml($manifest);
                     $dommanifest  = $domresults->ownerDocument->importNode($dommanifest, TRUE);
