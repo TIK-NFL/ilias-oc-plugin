@@ -60,6 +60,8 @@ enddate#:#End date
 location#:#Location
 none_scheduled#:#There are no scheduled recordings for this series
 
+processtrim#:#Edit Recordings
+
 download#:#Download
 keep_left_side#:#Keep left track
 keep_right_side#:#Keep right track

@@ -51,9 +51,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	*/
 	protected function afterConstructor()
 	{
-		
+		global $ilTabs;
 		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
 		$this->configObject = new ilMatterhornConfig();
+		$this->tabs = $ilTabs;
 	}
 
     /**
@@ -69,21 +70,29 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	*/
 	function performCommand($cmd)
 	{
+
 		switch ($cmd)
 		{
 			case "editProperties":		// list all commands that need write permission here
 			case "updateProperties":
-			case "editEpisodes":
 			case "trimEpisode":
 			case "showTrimEditor":
 			case "publish":
 			case "retract":
 			case "deletescheduled":
 			case "getEpisodes":
-				$this->checkPermission("write");
+                                $this->checkPermission("write");
 				$this->$cmd();
 				break;
-			
+                        case "editFinishedEpisodes":
+                        case "editTrimProcess":
+                        case "editUpload":
+                        case "editSchedule":
+                                $this->checkPermission("write");
+                                $this->setSubTabs('manage');
+				$this->$cmd();
+				break;
+
 			case "showSeries":			// list all commands that need read permission here
 			case "showEpisode":
 				$this->checkPermission("read");
@@ -134,7 +143,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		// a "properties" tab
 		if ($ilAccess->checkAccess("write", "", $this->object->getRefId()))
 		{
-			$ilTabs->addTab("manage", $this->txt("manage"), $ilCtrl->getLinkTarget($this, "editEpisodes"));
+			$ilTabs->addTab("manage", $this->txt("manage"), $ilCtrl->getLinkTarget($this, "editFinishedEpisodes"));
 			$ilTabs->addTab("properties", $this->txt("properties"), $ilCtrl->getLinkTarget($this, "editProperties"));
 		}
 
@@ -143,7 +152,29 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	}
 	
 
+    /**
+     * Set the sub tabs
+     * 
+     * @param string    main tab identifier
+     */
+    function setSubTabs($a_tab)
+    {
+        global $ilTabs, $ilCtrl, $lng, $ilLog;
+        
+        switch ($a_tab)
+        {
+                case "manage":
+                        $ilLog->write("setting subtabs");
+                        $ilTabs->addSubTab("finishedepisodes", $this->txt('finished_recordings'), $ilCtrl->getLinkTarget($this, 'editFinishedEpisodes'));
+                        $ilTabs->addSubTab("processtrim", $this->txt('processtrim'), $ilCtrl->getLinkTarget($this, 'editTrimProcess'));
+                        $ilTabs->addSubTab("upload", $this->txt('add_new_episode'), $ilCtrl->getLinkTarget($this, 'editUpload'));
+                        $ilTabs->addSubTab("schedule", $this->txt('scheduled_recordings'), $ilCtrl->getLinkTarget($this, 'editSchedule'));
+                        break;
+        }
+    }
 
+	
+	
 //
 // Edit properties form
 //
@@ -380,11 +411,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $totalops = 0.0;
         $finished = 0;
         $running = "Waiting";
-        
+
         foreach ($workflow["operations"]["operation"] as $operation){
             //search for trim. If it will run, count only up to here if it is not finished yet, otherwise count from here
-            if($operation["id"] == "trim"){
-                if($operation["if"] == "true"){
+            $ilLog->write($operation["id"]);
+            $state = (string)$operation["state"];
+            if($operation["id"] === "trim"){
+                if($operation["if"] === "true"){
                     if($state === "SUCCEEDED"){
                         $totalops = 0.0;
                         $finished = 0;
@@ -394,12 +427,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
             $totalops += 1.0;
-            $state = (string)$operation["state"];
             if($state == "SKIPPED" || $state === "SUCCEEDED"){
-            $ilLog->write($state);    
                 $finished += 1.0;
             }
-            
+
             if((string)$state == "RUNNING"){
                 $running = $operation["description"];
             }
@@ -510,6 +541,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         return $onhold_episode;
         
     }
+
     
     public function getEpisodes() {
 	        $processingEpisodes = $this->object->getProcessingEpisodes();
@@ -598,86 +630,128 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 	        return $this->sortbydate($a,$b,"startdate");
     }
 
-	
-	function editEpisodes(){
+
+    public function editFinishedEpisodes(){
+    
+        $this->editEpisodes('finished');
+    }
+    
+    public function editTrimProcess(){
+        $this->editEpisodes('trimprocess');
+    }
+    
+    public function editUpload(){
+        $this->editEpisodes('upload');
+    }
+
+    public function editSchedule(){
+        $this->editEpisodes('scheduled');
+    }
+    
+    private function editEpisodes($section){
+    
         global $tpl, $ilTabs, $ilCtrl;
+        global $ilLog;
+        $ilTabs->activateTab("manage");
         $editbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/edit";
         $this->checkPermission("write");
 
         $seriestpl = new ilTemplate("tpl.series.edit.html", true, true,  "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
         $seriestpl->setCurrentBlock("pagestart");
-        $seriestpl->setVariable("TXT_UPLOAD_FILE", $this->getText("upload_file"));
-        $seriestpl->setVariable("TXT_NO_FILES", $this->getText("no_files"));
+        
+
         $seriestpl->setVariable("TXT_NONE_FINISHED", $this->getText("none_finished"));
         $seriestpl->setVariable("TXT_NONE_PROCESSING", $this->getText("none_processing"));                                
         $seriestpl->setVariable("TXT_NONE_ONHOLD", $this->getText("none_onhold"));
         $seriestpl->setVariable("TXT_NONE_SCHEDULED", $this->getText("none_scheduled"));
-        $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));
-        $seriestpl->setVariable("INITJS",$editbase );
+        $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));        
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID",$this->object->getId());
         if ($this->object->getManualRelease()){
-        	$seriestpl->setVariable("COLS_FINISHED", "4");
+                $seriestpl->setVariable("COLS_FINISHED", "4");
         } else {
-        	$seriestpl->setVariable("COLS_FINISHED", "3");
-        }
-        
-        $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
+                $seriestpl->setVariable("COLS_FINISHED", "3");
+        }        
+
         $seriestpl->parseCurrentBlock();      
-        $seriestpl->setCurrentBlock($this->object->getManualRelease()?"headerfinished":"headerfinishednoaction");
-        $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-        $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
-        $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
-        if ($this->object->getManualRelease()){
-            $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+
+        switch($section){
+            case 'finished':
+                $ilLog->write($section);
+                $this->tabs->activateSubTab('finishedepisodes');
+                $seriestpl->setCurrentBlock('finishedstart');
+                $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
+                $seriestpl->parseCurrentBlock();      
+                $seriestpl->setCurrentBlock($this->object->getManualRelease()?"headerfinished":"headerfinishednoaction");
+                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
+                $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
+                $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
+                if ($this->object->getManualRelease()){
+                    $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+                }
+                $seriestpl->parseCurrentBlock();        
+                $seriestpl->touchblock("footerfinished");
+                break;
+            case 'trimprocess':
+                $ilLog->write($section);
+                $this->tabs->activateSubTab('processtrim');
+                $seriestpl->setCurrentBlock("processing");
+                $seriestpl->setVariable("TXT_PROCESSING", $this->getText("processing"));
+                $seriestpl->setVariable("TXT_RUNNING", $this->getText("running"));
+                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
+                $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
+                $seriestpl->setVariable("TXT_PROGRESS", $this->getText("progress"));
+                $seriestpl->parseCurrentBlock();
+
+                $seriestpl->setCurrentBlock("onhold");
+                $seriestpl->setVariable("TXT_ONHOLD_RECORDING", $this->getText("onhold_recordings"));
+                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
+                $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
+                $seriestpl->parseCurrentBlock();
+                break;
+            case 'upload':
+                $ilLog->write($section);
+                $this->tabs->activateSubTab('upload');
+                $seriestpl->setCurrentBlock("upload");
+                $seriestpl->setVariable("TXT_ADD_NEW_EPISODE", $this->getText("add_new_episode"));
+                $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
+                $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
+                $seriestpl->setVariable("TXT_TRACK_DATE", $this->getText("track_date"));
+                $seriestpl->setVariable("TXT_TRACK_TIME", $this->getText("track_time"));
+                $seriestpl->setVariable("TXT_SELECT_FILE", $this->getText("select_file"));
+                $seriestpl->setVariable("TXT_NO_FILES", $this->getText("no_files"));
+                $seriestpl->setVariable("TXT_UPLOAD_FILE", $this->getText("upload_file"));
+                $seriestpl->parseCurrentBlock();
+                break;
+            case 'scheduled':
+            $ilLog->write($section);
+                $this->tabs->activateSubTab('schedule');
+                $seriestpl->setCurrentBlock("scheduled");
+                $seriestpl->setVariable("TXT_SCHEDULED_RECORDING", $this->getText("scheduled_recordings"));
+                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
+                $seriestpl->setVariable("TXT_STARTDATE", $this->getText("startdate"));
+                $seriestpl->setVariable("TXT_ENDDATE", $this->getText("enddate"));
+                $seriestpl->setVariable("TXT_LOCATION", $this->getText("location"));
+                $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+                $seriestpl->parseCurrentBlock();
+                break;
         }
-        $seriestpl->parseCurrentBlock();        
-        $seriestpl->touchblock("footerfinished");
-
-        $seriestpl->setCurrentBlock("processing");
-        $seriestpl->setVariable("TXT_PROCESSING", $this->getText("processing"));
-        $seriestpl->setVariable("TXT_RUNNING", $this->getText("running"));
-        $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-        $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
-        $seriestpl->setVariable("TXT_PROGRESS", $this->getText("progress"));
-        $seriestpl->parseCurrentBlock();
         
-        $seriestpl->setCurrentBlock("onhold");
-        $seriestpl->setVariable("TXT_ONHOLD_RECORDING", $this->getText("onhold_recordings"));
-        $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-        $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
-        $seriestpl->parseCurrentBlock();
-
-        
-
-        $seriestpl->setCurrentBlock("uploadesction");
-        $seriestpl->setVariable("TXT_ADD_NEW_EPISODE", $this->getText("add_new_episode"));
-        $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
-        $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
-        $seriestpl->setVariable("TXT_TRACK_DATE", $this->getText("track_date"));
-        $seriestpl->setVariable("TXT_TRACK_TIME", $this->getText("track_time"));
-        $seriestpl->setVariable("TXT_SELECT_FILE", $this->getText("select_file"));
-        $seriestpl->parseCurrentBlock();
-
-
         $seriestpl->setCurrentBlock("pageend");
-        $seriestpl->setVariable("TXT_SCHEDULED_RECORDING", $this->getText("scheduled_recordings"));
-        $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-        $seriestpl->setVariable("TXT_STARTDATE", $this->getText("startdate"));
-        $seriestpl->setVariable("TXT_ENDDATE", $this->getText("enddate"));
-        $seriestpl->setVariable("TXT_LOCATION", $this->getText("location"));
-        $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+        $seriestpl->setVariable("INITJS",$editbase );
         $seriestpl->parseCurrentBlock();
         
+
         $html = $seriestpl->get();
         $tpl->setContent($html);
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
-        $ilTabs->activateTab("manage");
-	}
-	
+        
     
+
+    }
+
     /**$trimview->setVariable("TXT_LEFT_TRACK", $this->getText("startdate"));
      * Show the trim episode Page
      */

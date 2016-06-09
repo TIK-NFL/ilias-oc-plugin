@@ -60,6 +60,7 @@ enddate#:#Endzeit
 location#:#Aufzeichnungsort
 none_scheduled#:#Es sind keine Aufzeichnungen geplant
 
+processtrim#:#Aufzeichnungen bearbeiten
 
 download#:#Download
 keep_left_side#:#Linkes Video behalten
