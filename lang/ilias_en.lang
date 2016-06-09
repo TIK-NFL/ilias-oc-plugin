@@ -62,7 +62,7 @@ none_scheduled#:#There are no scheduled recordings for this series
 
 processtrim#:#Edit Recordings
 
-download#:#Download
+enable_download#:#Enable download links
 keep_left_side#:#Keep left track
 keep_right_side#:#Keep right track
 ilias_trim_editor#:#Trim editor

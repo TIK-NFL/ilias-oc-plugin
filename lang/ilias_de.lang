@@ -62,7 +62,7 @@ none_scheduled#:#Es sind keine Aufzeichnungen geplant
 
 processtrim#:#Aufzeichnungen bearbeiten
 
-download#:#Download
+enable_download#:#Download-Links anzeigen
 keep_left_side#:#Linkes Video behalten
 keep_right_side#:#Rechtes Video behalten
 ilias_trim_editor#:#Video-Editor

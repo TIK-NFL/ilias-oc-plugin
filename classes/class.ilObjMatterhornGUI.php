@@ -226,7 +226,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $this->form->addItem($mr);
 
        	// download
-        $download = new ilCheckboxInputGUI($this->txt("download"), "download");
+        $download = new ilCheckboxInputGUI($this->txt("enable_download"), "download");
         $this->form->addItem($download);
 
         
