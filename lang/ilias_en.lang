@@ -94,4 +94,5 @@ track_date#:#Date of recording
 track_time#:#Time of recording
 add_file#:#Add file
 upload_file#:#Upload file
+usetrimeditor#:#Trim video
 no_files#:#Please select a file to upload

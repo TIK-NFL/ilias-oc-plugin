@@ -336,7 +336,6 @@ class ilMatterhornUploadFile
         $episodetime = urldecode($_POST['episodetime']);
         $creator = urldecode($_POST['presenter']);
         $datestring = $episodedate.'T'.$episodetime.'Z';
-
         if (!$episodename) {
             header('HTTP/1.0 400 Bad Request');
             echo 'Missing parameter episodename';
@@ -547,6 +546,7 @@ class ilMatterhornUploadFile
         $realmp = $_SESSION['iliasupload_mpid_'.$_POST['mpid']];
         unset($_SESSION['iliasupload_mpid_'.$_POST['mpid']]);
         unset($_SESSION['iliasupload_jobid_'.$_POST['jobid']]);
+        $trimeditor =  isset($_POST['trimeditor']) && $_POST['trimeditor'] === "true";
 
         $jobxml = new SimpleXMLElement($realjob);
         $ilLog->write($jobxml->payload[0]->url);
@@ -568,7 +568,7 @@ class ilMatterhornUploadFile
         $ilLog->write($httpCode);
         $fields_string = '';
         $fields = array('mediaPackage' => urlencode($mediapackage),
-                        'trimHold' => 'true',
+                        'trimHold' => $trimeditor?"true":"false",
                         'archiveOp' => 'true',
                         'distribution' => urlencode('Matterhorn Media Module'),
                         );

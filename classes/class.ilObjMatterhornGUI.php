@@ -721,6 +721,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("TXT_SELECT_FILE", $this->getText("select_file"));
                 $seriestpl->setVariable("TXT_NO_FILES", $this->getText("no_files"));
                 $seriestpl->setVariable("TXT_UPLOAD_FILE", $this->getText("upload_file"));
+                $seriestpl->setVariable("TXT_TRIMEDITOR", $this->getText("usetrimeditor"));
                 $seriestpl->parseCurrentBlock();
                 break;
             case 'scheduled':

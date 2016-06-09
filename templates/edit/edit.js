@@ -131,6 +131,7 @@ iliasopencast.upload = {
                         $.post(ils.uploadtarget + "/finishUpload", {
                             seriesid : ils.seriesid,
                             mpid : file.mpid,
+                            trimeditor : $("#iliasopencast_trimeditor").is(':checked'),
                             jobid : message
                         }).done(function() {
                             for (var i = 0; i < upload.r.files.length; i++) {
@@ -140,6 +141,7 @@ iliasopencast.upload = {
                             $('#iliasopencast_tracktitle').val("");
                             $('#iliasopencast_trackpresenter').val("");
                             $('#iliasopencast_trackdate').val(today.yyyymmdd());
+                            $("#iliasopencast_trimeditor").attr('checked', false);
                             $('#iliasopencast_tracktime').timepicker({
                               showMeridian: false,
                               minuteStep: 1
