@@ -96,3 +96,5 @@ add_file#:#Add file
 upload_file#:#Upload file
 usetrimeditor#:#Trim video
 no_files#:#Please select a file to upload
+uploading#:#Uploading...
+done_uploading#:#Done uploading

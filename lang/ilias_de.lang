@@ -96,3 +96,5 @@ add_file#:#Datei auswählen
 upload_file#:#Datei hochladen
 usetrimeditor#:#Video schneiden
 no_files#:#Bitte Datei zum Hochladen auswählen
+uploading#:#Hochladen...
+done_uploading#:#Hochladen erfolgreich

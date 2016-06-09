@@ -664,7 +664,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_NONE_PROCESSING", $this->getText("none_processing"));                                
         $seriestpl->setVariable("TXT_NONE_ONHOLD", $this->getText("none_onhold"));
         $seriestpl->setVariable("TXT_NONE_SCHEDULED", $this->getText("none_scheduled"));
-        $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));        
+        $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));
+        $seriestpl->setVariable("TXT_UPLOADING", $this->getText("uploading"));
+        $seriestpl->setVariable("TXT_DONE_UPLOADING", $this->getText("done_uploading"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID",$this->object->getId());
         if ($this->object->getManualRelease()){
