@@ -98,3 +98,5 @@ usetrimeditor#:#Trim video
 no_files#:#Please select a file to upload
 uploading#:#Uploading...
 done_uploading#:#Done uploading
+upload_canceled#:#Upload canceled
+cancel_upload#:#Cancel upload

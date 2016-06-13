@@ -27,6 +27,7 @@ iliasopencast.upload = {
     draggable : $('#iliasopencast_dragHere'),
     uploadFile : $('#iliasopencast_uploadFiles'),
     browseButton : $('#iliasopencast_browseButton'),
+    cancelButton : $('#iliasopencast_cancelUpload'),
     nothingToUpload : $('[data-iliasopencast_nothingToUpload]'),
     mediapackage : "",
     uniqueid : "",
@@ -62,6 +63,7 @@ iliasopencast.upload = {
                     + '<div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;">0%</span>'
                     + '</div>' + '</div>';
                 upload.results.append(template);
+                upload.browseButton.addClass("disabled");
                 $('#iliasopencast_results .deleteFile').on(
                     'click',
                     function() {
@@ -71,14 +73,22 @@ iliasopencast.upload = {
                             .data('uniqueid'), file = upload.r
                             .getFromUniqueIdentifier(identifier);
 
+                        if(upload.r.isUploading()){
+                            upload.r.cancel();
+                        }
                         upload.r.removeFile(file);
                         parent.remove();
                         upload.checkfieldscomplete();
                         upload.nothingToUpload.show();
+                        upload.browseButton.removeClass("disabled");
                     });
 
                 upload.nothingToUpload.hide();
                 upload.checkfieldscomplete();
+            });
+
+            upload.cancelButton.on('click', function() {
+                $('#iliasopencast_results .deleteFile').click();
             });
 
             upload.uploadFile.on('click', function() {
@@ -148,17 +158,33 @@ iliasopencast.upload = {
                             });
                             upload.checkfieldscomplete();
                             upload.nothingToUpload.show();
+                            $('.alert-box').text(iliasopencast.translation.txt_done_uploading);
                         });
                     });
 
             upload.r.on('uploadStart', function() {
                 $('.alert-box').text(iliasopencast.translation.txt_uploading);
                 upload.uploadFile.addClass("disabled");
+                upload.browseButton.addClass("disabled");
+                upload.cancelButton.removeClass("disabled");
             });
 
-            upload.r.on('complete', function() {
-                $('.alert-box').text(iliasopencast.translation.txt_done_uploading);
+            upload.r.on('fileError', function(file, message) {
+                console.log(message);
+
             });
+            upload.r.on('cancel', function() {
+                upload.nothingToUpload.show();
+                $('.alert-box').text(iliasopencast.translation.txt_upload_canceled);
+                upload.cancelButton.addClass("disabled");
+                console.log("Upload cancel");
+
+            });
+            upload.r.on('complete', function(file, message) {
+                //console.log("Completed");
+                upload.cancelButton.addClass("disabled");
+            });
+
             $('#iliasopencast_tracktitle').on('blur',function () {
                 upload.checkfieldscomplete();
             });

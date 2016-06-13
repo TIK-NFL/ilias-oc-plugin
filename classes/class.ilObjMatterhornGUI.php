@@ -667,6 +667,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));
         $seriestpl->setVariable("TXT_UPLOADING", $this->getText("uploading"));
         $seriestpl->setVariable("TXT_DONE_UPLOADING", $this->getText("done_uploading"));
+        $seriestpl->setVariable("TXT_UPLOAD_CANCELED", $this->getText("upload_canceled"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID",$this->object->getId());
         if ($this->object->getManualRelease()){
@@ -723,6 +724,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("TXT_SELECT_FILE", $this->getText("select_file"));
                 $seriestpl->setVariable("TXT_NO_FILES", $this->getText("no_files"));
                 $seriestpl->setVariable("TXT_UPLOAD_FILE", $this->getText("upload_file"));
+                $seriestpl->setVariable("TXT_CANCEL_UPLOAD", $this->getText("cancel_upload"));
                 $seriestpl->setVariable("TXT_TRIMEDITOR", $this->getText("usetrimeditor"));
                 $seriestpl->parseCurrentBlock();
                 break;

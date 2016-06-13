@@ -98,3 +98,5 @@ usetrimeditor#:#Video schneiden
 no_files#:#Bitte Datei zum Hochladen auswählen
 uploading#:#Hochladen...
 done_uploading#:#Hochladen erfolgreich
+upload_canceled#:#Hochladen abgebrochen
+cancel_upload#:#Hochladen abbrechen
