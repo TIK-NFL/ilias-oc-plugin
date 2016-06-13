@@ -88,7 +88,7 @@ progress#:#Processing progress
 processing#:#Processing on server
 running#:#Processing step
 none_processing#:#There are no recordings being processed on the server
-add_new_episode#:#Upload a new recording
+add_new_episode#:#Upload own recording
 track_presenter#:#Presenter name
 track_date#:#Date of recording
 track_time#:#Time of recording
