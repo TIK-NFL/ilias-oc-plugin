@@ -51,3 +51,21 @@ div.progress {
     margin-bottom: 0px;
 
 }
+
+.datepicker-days th.datepicker-switch {
+    text-align: center;
+    font-weight: bold;
+}
+.datepicker-days td {
+    text-align: center;
+}
+.datepicker-days .today {
+    font-weight: bold;
+}
+.datepicker-days .dow {
+    font-weight: bold;
+}
+
+.datepicker-days th.today {
+    text-align: center;
+}

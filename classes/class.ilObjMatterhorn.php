@@ -551,6 +551,25 @@ class ilObjMatterhorn extends ilObjectPlugin
         $this->removeTextFromDB($episodeId);
     }
 
+    public function deleteschedule($workflowid)
+    {
+        global $ilLog;
+        $url = $this->configObject->getMatterhornServer().'/recordings/'.$workflowid;
+
+        //open connection
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('X-Requested-Auth: Digest', 'X-Opencast-Matterhorn-Authorization: true'));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curlret = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $ilLog->write("delete code: ".$httpCode);
+        return $httpCode;
+    }
 	/**
 	 * The series information returned by matterhorn
 	 * 
@@ -564,7 +583,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $domresults = dom_import_simplexml($results);
         if (file_exists($basedir) && $handle = opendir($basedir)) {
             while (false !== ($entry = readdir($handle))) {
-                if ($entry != "." && $entry != "..") {
+                if ($entry != "." && $entry != ".."  && file_exists($basedir.'/'.$entry.'/manifest.xml')) {
                     $manifest = new SimpleXMLElement($basedir.'/'.$entry.'/manifest.xml',NULL, TRUE);
                     $dommanifest  = dom_import_simplexml($manifest);
                     $dommanifest  = $domresults->ownerDocument->importNode($dommanifest, TRUE);

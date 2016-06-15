@@ -51,6 +51,7 @@ finished_recordings#:#Finished Recordings
 preview#:#Preview
 date#:#Date
 action#:#Action
+delete#:#Delete
 none_finished#:#There are no finished recordings yet
 
 scheduled_recordings#:#Scheduled Recordings
@@ -59,7 +60,9 @@ enddate#:#End date
 location#:#Location
 none_scheduled#:#There are no scheduled recordings for this series
 
-download#:#Download
+processtrim#:#Edit Recordings
+
+enable_download#:#Enable download links
 keep_left_side#:#Keep left track
 keep_right_side#:#Keep right track
 ilias_trim_editor#:#Trim editor
@@ -85,10 +88,15 @@ progress#:#Processing progress
 processing#:#Processing on server
 running#:#Processing step
 none_processing#:#There are no recordings being processed on the server
-add_new_episode#:#Upload a new recording
+add_new_episode#:#Upload own recording
 track_presenter#:#Presenter name
 track_date#:#Date of recording
 track_time#:#Time of recording
 add_file#:#Add file
 upload_file#:#Upload file
+usetrimeditor#:#Trim video
 no_files#:#Please select a file to upload
+uploading#:#Uploading...
+done_uploading#:#Done uploading
+upload_canceled#:#Upload canceled
+cancel_upload#:#Cancel upload
