@@ -342,7 +342,7 @@ class ilMatterhornUploadFile
 
             return false;
         }
-        if (!(preg_match('/(\d{4})-(\d{2})-(\d{2})/', $episodedate, $matches) && checkdate($matches[2], $matches[3], $matches[1]))) {
+        if (!(preg_match('/(\d{4})-(\d{1,2})-(\d{1,2})/', $episodedate, $matches) && checkdate($matches[2], $matches[3], $matches[1]))) {
             $ilLog->write('episodedate:'.$matches[2].'s');
             header('HTTP/1.0 400 Bad Request');
             echo 'Missing or bad parameter episodedate';
@@ -350,7 +350,7 @@ class ilMatterhornUploadFile
             return false;
         }
 
-        if (!(preg_match('/\d{2}:\d{2}/', $episodetime, $matches)
+        if (!(preg_match('/\d{1,2}:\d{1,2}/', $episodetime, $matches)
             && 0 <= $matches[1] && $matches[2] <= 23
             && 0 <= $matches[2] && $matches[2] <= 59)) {
             header('HTTP/1.0 400 Bad Request');
