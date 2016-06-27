@@ -73,7 +73,7 @@ download_preview#:#Vorschau herunterladen
 onhold_recordings#:#Aufzeichnungen, die geschnitten werden können
 recorddate#:#Datum der Aufnahme
 none_onhold#:#Es gibt keine Aufnahmen, die geschnitten werden können
-msg_episode_send_to_triming#:#Die Aufnahme wurde erfolgreich zum Weiterverarbeitung geschickt
+msg_episode_send_to_triming#:#Die Aufnahme wurde erfolgreich zur Weiterverarbeitung geschickt
 track_title#:#Titel der Aufzeichnung
 flavor_unset#:#Typ unbekannt
 flavor_presenter#:#Dozent
