@@ -177,12 +177,16 @@ iliasopencast.upload = {
                 upload.nothingToUpload.show();
                 $('.alert-box').text(iliasopencast.translation.txt_upload_canceled);
                 upload.cancelButton.addClass("disabled");
+                upload.browseButton.removeClass("disabled");
                 console.log("Upload cancel");
+                upload.checkfieldscomplete();
 
             });
             upload.r.on('complete', function(file, message) {
                 //console.log("Completed");
                 upload.cancelButton.addClass("disabled");
+                upload.browseButton.removeClass("disabled");
+                upload.checkfieldscomplete();
             });
 
             $('#iliasopencast_tracktitle').on('blur',function () {
@@ -211,9 +215,13 @@ iliasopencast.upload = {
                 setDate : new Date(),
                 todayHighlight : true,
                 todayBtn : "linked",
+                immediateUpdates : true,
+            }).on('hide', function(e) {
+                upload.checkfieldscomplete();
             });
             var today = new Date();
             $('#iliasopencast_trackdate').val(today.yyyymmdd());
+            $('#iliasopencast_trackdate').datepicker('update',today);
             $('#iliasopencast_tracktime').timepicker({
               showMeridian: false,
               minuteStep: 1
