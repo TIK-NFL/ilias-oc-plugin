@@ -74,6 +74,7 @@ onhold_recordings#:#Recordings waiting for trimming
 recorddate#:#Date of recording
 none_onhold#:#There are no recordings waiting for trimming
 msg_episode_send_to_triming#:#The episode has been successfully sent to trimming
+msg_scheduling_deleted#:#The scheduling has been successfully removed
 track_title#:#Title of recording
 flavor_unset#:#No flavor selected
 flavor_presenter#:#Presenter
