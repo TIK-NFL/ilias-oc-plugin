@@ -126,8 +126,8 @@ define(["require", "jquery", "backbone", "engage/core"], function(require, $, Ba
 
     function initTranslate(language, funcSuccess, funcError) {
         var path = Engage.getPluginPath("EngagePluginCustomNotifications").replace(/(\.\.\/)/g, "");
-        //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
-        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" +path;
+        // var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
+        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" + path;
 
         Engage.log("Controls: selecting language " + language);
         jsonstr += "language/" + language + ".json";
@@ -258,7 +258,7 @@ define(["require", "jquery", "backbone", "engage/core"], function(require, $, Ba
     require([relative_plugin_path + "utils"], function(utils) {
         Engage.log("Notifications: Utils class loaded");
         Utils = new utils();
-        initTranslate(Utils.detectLanguage(), function() {
+        initTranslate(Engage.model.get("language"), function() {
             Engage.log("Notifications: Successfully translated.");
             locale = translate("value_locale", locale);
             dateFormat = translate("value_dateFormatFull", dateFormat);

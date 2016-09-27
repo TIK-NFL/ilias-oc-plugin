@@ -27,17 +27,26 @@ define(["jquery"], function($) {
         // nothing to see here
     }
 
-    Utils.prototype.detectLanguage = function() {
-        var language = navigator.language || navigator.userLanguage || navigator.browserLanguage || navigator.systemLanguage || "en";
-        return language.replace(/\-.*/,'');
-    }
-
     Utils.prototype.extractFlavorMainType = function(flavor) {
         var types = flavor.split("/");
         if (types.length > 0) {
             return types[0];
         }
         return "presenter" // fallback value, should never be returned, but does no harm 
+    };
+
+    Utils.prototype.getFlavorForVideoDisplay = function(videoDisplay) {
+        if (videoDisplay === undefined) {
+            return;
+        }
+        var data = $(videoDisplay).data("videodisplay");
+        if (data === undefined) {
+            return;
+        }
+        var values = data.split("_");
+        if (values.length === 3) {
+            return (values[2]);
+        }        
     }
 
     /**
@@ -70,14 +79,14 @@ define(["jquery"], function($) {
             result = result.substring(0, result.lastIndexOf(".")); // get rid of the .ms
         }
         return result;
-    }
+    };
 
     Utils.prototype.parseVideoResolution = function(resolution) {
         var res = resolution.match(/(\d+)x(\d+)/);
         res[1] = parseInt(res[1]);
         res[2] = parseInt(res[2]);
         return res;
-    }
+    };
 
     // parameter from Basil.get("preferredFormat")
     Utils.prototype.preferredFormat = function(preferredFormat) {
@@ -100,16 +109,15 @@ define(["jquery"], function($) {
             default:
                 return null;
         }
-        return null;
-    }
+    };
 
     Utils.prototype.escapeRegExp = function(string) {
         return string.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
-    }
+    };
 
     Utils.prototype.replaceAll = function(string, find, replace) {
         return string.replace(new RegExp(this.escapeRegExp(find), "g"), replace);
-    }
+    };
 
 
 
@@ -132,7 +140,7 @@ define(["jquery"], function($) {
             }
         }
         return -1;
-    }
+    };
 
     /**
      * @description parses seconds
@@ -198,7 +206,7 @@ define(["jquery"], function($) {
             }
         }
         return 0;
-    }
+    };
 
     return Utils;
 });

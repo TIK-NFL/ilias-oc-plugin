@@ -23,7 +23,7 @@
 define(["jquery", "backbone", "engage/core", "../models/footprint"], function($, Backbone, Engage, FootprintModel) {
     "use strict";
 
-    //var USERTRACKING_ENDPOINT = "/usertracking"; ILPATCH
+    // var USERTRACKING_ENDPOINT = "/usertracking"; ILPATCH
     var USERTRACKING_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/usertracking";
     var USERTRACKING_ENDPOINT_FOOTPRINTS = "/footprint.json";
 

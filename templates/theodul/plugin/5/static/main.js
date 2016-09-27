@@ -91,8 +91,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/core", "moment"],
     }
 
     /* don't change these variables */
-    var Utils;
-    var initCount = 3;
+    var initCount = 2;
     var id_engage_description = "engage_description";
     var mediapackageChange = "change:mediaPackage";
     var mediapackageError = false;
@@ -100,10 +99,10 @@ define(["require", "jquery", "underscore", "backbone", "engage/core", "moment"],
     var locale = "en";
     var dateFormat = "MMMM Do YYYY";
 
-    function initTranslate(language, funcSuccess, funcError) {
+    function initTranslate(language) {
         var path = Engage.getPluginPath("EngagePluginDescription").replace(/(\.\.\/)/g, "");
-        //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
-        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" +path;
+        // var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
+        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" + path;
 
         Engage.log("Controls: selecting language " + language);
         jsonstr += "language/" + language + ".json";
@@ -114,18 +113,8 @@ define(["require", "jquery", "underscore", "backbone", "engage/core", "moment"],
                 if (data) {
                     data.value_locale = language;
                     translations = data;
-                    if (funcSuccess) {
-                        funcSuccess(translations);
-                    }
-                } else {
-                    if (funcError) {
-                        funcError();
-                    }
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                if (funcError) {
-                    funcError();
+                    locale = translate("value_locale", locale);
+                    dateFormat = translate("value_dateFormatFull", dateFormat);
                 }
             }
         });
@@ -161,8 +150,11 @@ define(["require", "jquery", "underscore", "backbone", "engage/core", "moment"],
                 if (Moment(tempVars.date) != null) {
                     tempVars.date = Moment(tempVars.date).format(dateFormat);
                 }
+
                 // compile template and load into the html
-                this.$el.html(_.template(this.template, tempVars));
+                var template = _.template(this.template);
+                this.$el.html(template(tempVars));
+
                 if (tempVars.title) {
                     document.title = tempVars.title;
                 }
@@ -172,6 +164,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/core", "moment"],
 
     function initPlugin() {
         if (isDesktopMode && plugin.inserted) {
+            initTranslate(Engage.model.get("language"));
             var descriptionView = new DescriptionView(Engage.model.get("mediaPackage"), plugin.template);
             Engage.on(plugin.events.mediaPackageModelError.getName(), function(msg) {
                 mediapackageError = true;
@@ -199,26 +192,6 @@ define(["require", "jquery", "underscore", "backbone", "engage/core", "moment"],
             }
         });
 
-        // load utils class
-        require([relative_plugin_path + "utils"], function(utils) {
-            Engage.log("Description: Utils class loaded");
-            Utils = new utils();
-            initTranslate(Utils.detectLanguage(), function() {
-                Engage.log("Description: Successfully translated.");
-                locale = translate("value_locale", locale);
-                dateFormat = translate("value_dateFormatFull", dateFormat);
-                initCount -= 1;
-                if (initCount <= 0) {
-                    initPlugin();
-                }
-            }, function() {
-                Engage.log("Description: Error translating...");
-                initCount -= 1;
-                if (initCount <= 0) {
-                    initPlugin();
-                }
-            });
-        });
     }
 
     return plugin;

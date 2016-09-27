@@ -34,7 +34,8 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
     var PLUGIN_TEMPLATE_MOBILE = "templates/mobile.html";
     var PLUGIN_STYLES_DESKTOP = [
         Engage.controls_top ? "styles/desktop_top.css" : "styles/desktop_bottom.css",
-        "lib/jqueryui/themes/base/jquery-ui.css"
+        "lib/bootstrap/css/bootstrap.min.css",
+        "lib/jqueryui/jquery-ui.min.css"
     ];
     var PLUGIN_STYLES_EMBED = [
         "styles/embed.css"
@@ -67,6 +68,10 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
         sliderMouseout: new Engage.Event("Slider:mouseOut", "the mouse is off the slider", "trigger"),
         sliderMousemove: new Engage.Event("Slider:mouseMoved", "the mouse is moving over the slider", "trigger"),
         seek: new Engage.Event("Video:seek", "seek video to a given position in seconds", "trigger"),
+        seekLeft: new Engage.Event("Video:seekLeft", "", "trigger"),
+        seekRight: new Engage.Event("Video:seekRight", "", "trigger"),
+        nextChapter: new Engage.Event("Video:nextChapter", "", "trigger"),
+        previousChapter: new Engage.Event("Video:previousChapter", "", "trigger"),
         customOKMessage: new Engage.Event("Notification:customOKMessage", "a custom message with an OK button", "trigger"),
         customSuccess: new Engage.Event("Notification:customSuccess", "a custom success message", "trigger"),
         customError: new Engage.Event("Notification:customError", "an error occurred", "trigger"),
@@ -82,13 +87,21 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
         mediaPackageModelError: new Engage.Event("MhConnection:mediaPackageModelError", "", "handler"),
         aspectRatioSet: new Engage.Event("Video:aspectRatioSet", "the aspect ratio has been calculated", "handler"),
         isAudioOnly: new Engage.Event("Video:isAudioOnly", "whether it's audio only or not", "handler"),
-        videoFormatsFound: new Engage.Event("Video:videoFormatsFound", "", "handler")
+        videoFormatsFound: new Engage.Event("Video:videoFormatsFound", "", "handler"),
+        numberOfVideodisplaysSet: new Engage.Event("Video:numberOfVideodisplaysSet", "the number of videodisplays has been set", "trigger"),
+        focusVideo: new Engage.Event("Video:focusVideo", "increases the size of one video", "handler"),
+        resetLayout: new Engage.Event("Video:resetLayout", "resets the layout of the videodisplays", "handler"),
+        movePiP: new Engage.Event("Video:movePiP", "moves the smaller picture over the larger to the different corners", "handler"),
+        togglePiP: new Engage.Event("Video:togglePiP", "switches between PiP and next to each other layout", "handler"),
+        setZoomLevel: new Engage.Event("Video:setZoomLevel", "sets the zoom level", "trigger"),
+        zoomReset: new Engage.Event("Video:resetZoom", "resets position and zoom level", "trigger"),
+        zoomChange: new Engage.Event("Video:zoomChange", "zoom level has changed", "handler")
     };
 
     var isDesktopMode = false;
     var isEmbedMode = false;
     var isMobileMode = false;
-    
+
     var $headerLogo = "#headerLogo";
     var $mediaModuleLink = "#mediamodulelink";
 
@@ -142,7 +155,7 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
     var embedHeightFive = 720;
     var min_segment_duration = 5000;
     var logoLink = false;
-    //var logo = plugin_path + "images/logo.png";
+    //var logo = plugin_path + "images/logo.png"; ILPATCH
     var logo = "/%iliasbasedir%/templates/default/images/HeaderIcon.svg";
     var showEmbed = true;
 
@@ -152,19 +165,34 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
     var storage_volume = "volume";
     var storage_lastvolume = "lastvolume";
     var storage_muted = "muted";
+    var storage_pip = "pictureinpicture";
+    var storage_pip_pos = "pictureinpictureposition";
+    var storage_focus_video = "focusvideo";
     var bootstrapPath = "lib/bootstrap/js/bootstrap";
     var jQueryUIPath = "lib/jqueryui/jquery-ui";
+    var storage_zoomLevel = "zoomLevels";
+    var id_zoomLevelIndicator = "zoomLevelIndicator";
+    var id_zoomReset = "resetZoom";
+    var id_zoomLevel1 = "zoomLevel1";
+    var id_zoomLevel2 = "zoomLevel2";
+    var id_zoomLevel3 = "zoomLevel3";
     var id_engage_controls = "engage_controls";
     var id_engage_controls_topIfBottom = "engage_controls_second";
     var id_slider = "slider";
     var id_volume = "volume";
     var id_volumeIcon = "volumeIcon";
     var id_dropdownMenuPlaybackRate = "dropdownMenuPlaybackRate";
-    var id_playbackRate050 = "playback050";
     var id_playbackRate075 = "playback075";
     var id_playbackRate100 = "playback100";
     var id_playbackRate125 = "playback125";
     var id_playbackRate150 = "playback150";
+    var id_playbackRate200 = "playback200";
+    var id_playbackRate300 = "playback300";
+    var id_pipIndicator = "pipIndicator";
+    var id_pipLeft = "pipLeft";
+    var id_pipRight = "pipRight";
+    var id_pipBeside = "pipBeside";
+    var id_pipOff = "pipOff";
     var id_qualityLow = "qualityLow";
     var id_qualityMedium = "qualityMedium";
     var id_qualityHigh = "qualityHigh";
@@ -187,11 +215,12 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
     var id_embed3 = "embed3";
     var id_embed4 = "embed4";
     var id_playbackRateIndicator = "playbackRateIndicator";
-    var id_playbackRemTime050 = "playbackRemTime050";
     var id_playbackRemTime075 = "playbackRemTime075";
     var id_playbackRemTime100 = "playbackRemTime100";
     var id_playbackRemTime125 = "playbackRemTime125";
     var id_playbackRemTime150 = "playbackRemTime150";
+    var id_playbackRemTime200 = "playbackRemTime200";
+    var id_playbackRemTime300 = "playbackRemTime300";
     var id_loggedInNotLoggedIn = "loggedInNotLoggedIn";
     var id_loginlogout = "loginlogout";
     var id_str_loginlogout = "str_loginlogout";
@@ -205,6 +234,7 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
     var mediapackageChange = "change:mediaPackage";
     var event_slidestart = "slidestart";
     var event_slidestop = "slidestop";
+    var event_slide = "slide";
     var plugin_path = "";
     var plugin_path_topIfBottom = "";
     var initCount = 7;
@@ -234,15 +264,20 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
     var controlsViewTopIfBottom = undefined;
     var controlsView = undefined;
     var resolutions = undefined;
+    var pipPos = "left";
+    var pipStatus = true;
+    var numberVideos = 1;
+    var currentFocusFlavor = "focus.none";
+    var videosInitialReadyness = true;
 
     function initTranslate(language, funcSuccess, funcError) {
         var path = Engage.getPluginPath("EngagePluginControls").replace(/(\.\.\/)/g, "");
-        //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
-        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" +path;
-        Engage.log("Controls: selecting language " + language);
+        // var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
+        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" + path;
 
+        Engage.log("Controls: selecting language " + language);
         jsonstr += "language/" + language + ".json";
-        
+
         $.ajax({
             url: jsonstr,
             dataType: "json",
@@ -344,11 +379,9 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
         $.ajax({
             type: "GET",
             url: springSecurityLogoutURL,
-        }).done(function(msg) {
+        }).complete(function(msg) {
             location.reload();
             Engage.trigger(events.customSuccess.getName(), translate("logoutSuccessful", "Successfully logged out. Please reload the page if the page does not reload automatically."));
-        }).fail(function(msg) {
-            Engage.trigger(events.customSuccess.getName(), translate("logoutFailed", "Failed to log out."));
         });
     }
 
@@ -388,9 +421,14 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
             if (!mediapackageError) {
                 duration = parseInt(this.model.get("duration"));
                 segments = Engage.model.get("mediaPackage").get("segments");
-                
+
+                var pipPosition = pipPos;
+		if (!pipStatus) {
+                    pipPosition = "beside";
+                }
+
                 segments = Utils.repairSegmentLength(segments, duration, min_segment_duration);
-                
+
                 if (Engage.model.get("meInfo")) {
                     if (Engage.model.get("meInfo").get("logo_player")) {
                         logo = Engage.model.get("meInfo").get("logo_player");
@@ -398,14 +436,14 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                     if (Engage.model.get("meInfo").get("link_mediamodule")) {
                         logoLink = window.location.protocol + "//" + window.location.host + "/engage/ui/index.html"; // link to the media module
                     }
-                    if (! Engage.model.get("meInfo").get("show_embed_links")) {
+                    if (!Engage.model.get("meInfo").get("show_embed_links")) {
                         showEmbed = false;
-                    }               
+                    }
                 }
-                var translatedQualites = new Array();
+                var translatedQualities = new Array();
                 if (resolutions) {
                     for (var i = 0; i < resolutions.length; i++) {
-                        translatedQualites[resolutions[i]] = translate(resolutions[i], resolutions[i]);
+                        translatedQualities[resolutions[i]] = translate(resolutions[i], resolutions[i]);
                     }
                 }
 
@@ -437,16 +475,28 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                     str_fullscreen: translate("fullscreen", "Fullscreen"),
                     str_qualityButton: translate("quality", "Quality"),
                     str_quality: translate("quality", "Quality"),
+                    str_layoutButton: translate("layout", "Layout"),
+                    str_pictureInPicture: translate("pictureInPicture", "Picture in Picture"),
+                    str_left: translate("left", "left"),
+                    str_right: translate("right", "right"),
+                    str_beside: translate("beside", "beside"),
+                    str_off: translate("off", "off"),
                     qualities: resolutions,
-                    translatedqualities: translatedQualites,
+                    pip_position: translate(pipPosition, pipPosition),
+                    translatedqualities: translatedQualities,
                     hasqualities: resolutions !== undefined,
+                    hasmultiplevideos: numberVideos > 1,
                     controlsTop: Engage.controls_top,
                     logo: logo,
-                    show_embed: showEmbed
+                    show_embed: showEmbed,
+                    str_zoomlevel: "100%",
+                    flash: usingFlash
                 };
 
-                // compile template and load it
-                this.$el.html(_.template(this.template, tempVars));
+                // compile template and load into the html
+                var template = _.template(this.template);
+                this.$el.html(template(tempVars));
+
                 if (isDesktopMode) {
                     initControlsEvents();
                     if (aspectRatioTriggered) {
@@ -455,6 +505,9 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                     }
                     if (tempVars.hasqualities) {
                         addQualityChangeEvents();
+                    }
+                    if (tempVars.hasmultiplevideos) {
+                        addLayoutEvents();
                     }
                     ready();
                     playPause();
@@ -492,10 +545,10 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                     if (Engage.model.get("meInfo").get("link_mediamodule")) {
                         logoLink = window.location.protocol + "//" + window.location.host + "/engage/ui/index.html"; // link to the media module
                     }
-                    if (! Engage.model.get("meInfo").get("show_embed_links")) {
+                    if (!Engage.model.get("meInfo").get("show_embed_links")) {
                         showEmbed = false;
-                    }               
-                }                
+                    }
+                }
                 var tempVars = {
                     plugin_path: this.pluginPath,
                     logoLink: logoLink,
@@ -510,7 +563,8 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                 };
 
                 // compile template and load into the html
-                this.$el.html(_.template(this.template, tempVars));
+                var template = _.template(this.template);
+                this.$el.html(template(tempVars));
             }
         }
     });
@@ -518,11 +572,6 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
     function addNonFlashEvents() {
         if (!mediapackageError && !usingFlash && !isAudioOnly) {
             // setup listeners for the playback rate
-            $("#" + id_playbackRate050).click(function(e) {
-                e.preventDefault();
-                $("#" + id_playbackRateIndicator).html(Utils.getFormattedPlaybackRate(0.5));
-                Engage.trigger(plugin.events.playbackRateChanged.getName(), 0.5);
-            });
             $("#" + id_playbackRate075).click(function(e) {
                 e.preventDefault();
                 $("#" + id_playbackRateIndicator).html(Utils.getFormattedPlaybackRate(0.75));
@@ -543,6 +592,16 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                 $("#" + id_playbackRateIndicator).html(Utils.getFormattedPlaybackRate(1.5));
                 Engage.trigger(plugin.events.playbackRateChanged.getName(), 1.5);
             });
+            $("#" + id_playbackRate200).click(function(e) {
+                e.preventDefault();
+                $("#" + id_playbackRateIndicator).html(Utils.getFormattedPlaybackRate(2.0));
+                Engage.trigger(plugin.events.playbackRateChanged.getName(), 2.0);
+            });
+            $("#" + id_playbackRate300).click(function(e) {
+                e.preventDefault();
+                $("#" + id_playbackRateIndicator).html(Utils.getFormattedPlaybackRate(3.0));
+                Engage.trigger(plugin.events.playbackRateChanged.getName(), 3.0);
+            });
         }
     }
 
@@ -556,13 +615,75 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
             $("#" + id_qualityIndicator).html(q.charAt(0).toUpperCase() + q.substring(1));
         }
     }
-    
+
     function addQualityListener(quality) {
         $("#quality" + quality).click(function(element) {
-                    element.preventDefault();
-                    $("#" + id_qualityIndicator).html(translate(quality, quality));
-                    Engage.trigger(plugin.events.qualitySet.getName(), quality);
+            element.preventDefault();
+            $("#" + id_qualityIndicator).html(translate(quality, quality));
+            Engage.trigger(plugin.events.qualitySet.getName(), quality);
         });
+    }
+
+    function addLayoutEvents() {
+        $("#" + id_pipLeft).click(function(e) {
+            e.preventDefault();
+            $(".videoDisplay").trigger("click");
+            $("#" + id_pipIndicator).html(translate("left", "left"));
+            Engage.trigger(plugin.events.movePiP.getName(), "left");
+            Engage.trigger(plugin.events.togglePiP.getName(), true);
+        });
+        $("#" + id_pipRight).click(function(e) {
+            e.preventDefault();
+            $(".videoDisplay").trigger("click");
+            $("#" + id_pipIndicator).html(translate("right", "right"));
+            Engage.trigger(plugin.events.movePiP.getName(), "right");
+            Engage.trigger(plugin.events.togglePiP.getName(), true);
+        });
+        $("#" + id_pipBeside).click(function(e) {
+            e.preventDefault();
+            $(".videoDisplay").trigger("click");
+            $("#" + id_pipIndicator).html(translate("beside", "beside"));
+            Engage.trigger(plugin.events.togglePiP.getName(), false);
+        });
+        $("#" + id_pipOff).click(function(e) {
+            e.preventDefault();
+            $(".videoDisplay").trigger("click");
+            $("#" + id_pipIndicator).html(translate("off", "off"));
+            Engage.trigger(plugin.events.resetLayout.getName());
+        });
+    }
+
+    function addZoomEvents() {
+        if(!usingFlash) {
+            $("#" + id_zoomLevelIndicator).html("100%");
+
+            /* Events for Button */
+            $("#" + id_zoomLevel1).click(function(event) {
+                event.preventDefault();
+                Engage.trigger(plugin.events.setZoomLevel.getName(), [1.5, true]);
+            });
+
+            $("#" + id_zoomLevel2).click(function(event) {
+                event.preventDefault();
+                Engage.trigger(plugin.events.setZoomLevel.getName(), [2.0, true]);
+            });
+
+            $("#" + id_zoomLevel3).click(function(event) {
+                event.preventDefault();
+                Engage.trigger(plugin.events.setZoomLevel.getName(), [2.5, true]);
+            });
+
+            $("#" + id_zoomReset).click(function(event) {
+                event.preventDefault();
+                Engage.trigger(plugin.events.zoomReset.getName(), true);
+            });
+
+            Engage.on(plugin.events.zoomChange.getName(), function(level) {
+                level = Number(level).toFixed(2);
+                level = (level * 100).toFixed(0);
+                $("#" + id_zoomLevelIndicator).html(String(level) + "%");
+            });
+        }
     }
 
     function triggerEmbedMessage(ratioWidth, ratioHeight) {
@@ -616,6 +737,37 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
         } else {
             Engage.trigger(plugin.events.unmute.getName());
         }
+
+        if (Basil.get(storage_pip_pos) !== undefined && Basil.get(storage_pip_pos) !== null) {
+            var pipPos = Basil.get(storage_pip_pos);
+            Engage.trigger(plugin.events.movePiP.getName(), pipPos);
+        } else {
+            if (Engage.model.get("meInfo").get("layout") !== "off") {
+                var pipPos = Engage.model.get("meInfo").get("layout");
+                Engage.trigger(plugin.events.movePiP.getName(), pipPos);
+            }
+        }
+        if (Basil.get(storage_pip) !== undefined && Basil.get(storage_pip) !== null) {
+            var pip = Basil.get(storage_pip);
+            if (pip === false) {
+                Engage.trigger(plugin.events.togglePiP.getName(), pip);
+            }
+        } else {
+            if (Engage.model.get("meInfo").get("layout") === "off" ||
+                Engage.model.get("meInfo").get("layout") === "beside") {
+                Engage.trigger(plugin.events.togglePiP.getName(), false);
+            } else {
+                Engage.trigger(plugin.events.togglePiP.getName(), true);
+            }
+        }
+        if (Basil.get(storage_focus_video) !== undefined && Basil.get(storage_focus_video) !== null) {
+            var focusVideo = Basil.get(storage_focus_video);
+            currentFocusFlavor = focusVideo;
+        } else {
+            if (Engage.model.get("meInfo").get("layout") !== "off") {
+                currentFocusFlavor = Engage.model.get("meInfo").get("focusedflavor");
+            }
+        }
     }
 
     function initControlsEvents() {
@@ -653,7 +805,7 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
 
             $("#" + id_volume).slider({
                 range: "min",
-                min: 1,
+                min: 0,
                 max: 100,
                 value: 100,
                 change: function(event, ui) {}
@@ -675,6 +827,22 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                     Engage.trigger(plugin.events.pause.getName(), false);
                 } else {
                     Engage.trigger(plugin.events.play.getName(), false);
+                }
+            });
+            
+            $("#" + id_forward_button).click(function() {
+                if (segments && (segments.length > 0)) {
+                    Engage.trigger(plugin.events.nextChapter.getName());
+                } else {
+                    Engage.trigger(plugin.events.seekRight.getName());
+                }
+            });
+
+            $("#" + id_backward_button).click(function() {
+                if (segments && (segments.length > 0)) {
+                    Engage.trigger(plugin.events.previousChapter.getName());
+                } else {
+                    Engage.trigger(plugin.events.seekLeft.getName());
                 }
             });
 
@@ -711,8 +879,13 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                 Engage.trigger(plugin.events.sliderMousemove.getName(), currPos * dur);
             });
             // volume event
-            $("#" + id_volume).on(event_slidestop, function(event, ui) {
+            $("#" + id_volume).on(event_slide, function(event, ui) {
                 Engage.trigger(plugin.events.volumeSet.getName(), ui.value / 100);
+                if (ui.value === 0) {
+                    showMuteButton();
+                } else {
+                    showUnmuteButton();
+                }
             });
             // check segments
             if (segments && (segments.length > 0)) {
@@ -778,9 +951,20 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
         if (videosReady) {
             Utils.greyIn(id_play_button);
             Utils.enable(id_play_button);
+            Utils.greyIn(id_forward_button);
+            Utils.enable(id_forward_button);
+            Utils.greyIn(id_backward_button);
+            Utils.enable(id_backward_button);
             if (!isAudioOnly) {
                 enableFullscreenButton = true;
                 $("#" + id_fullscreen_button).removeClass("disabled");
+            }
+            $("#" + id_pipIndicator).html(translate("off", "off"));
+            Engage.trigger(plugin.events.movePiP.getName(), pipPos);
+            Engage.trigger(plugin.events.togglePiP.getName(), pipStatus);
+            if (videosInitialReadyness) {
+                Engage.trigger(plugin.events.focusVideo.getName(), currentFocusFlavor);
+                videosInitialReadyness = false;
             }
         }
     }
@@ -799,20 +983,28 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
     }
 
     function mute() {
-        $("#" + id_unmute_button).hide();
-        $("#" + id_mute_button).show();
+        showMuteButton();
         Engage.trigger(plugin.events.volumeSet.getName(), 0);
     }
 
     function unmute() {
-        $("#" + id_unmute_button).show();
-        $("#" + id_mute_button).hide();
+        showUnmuteButton();
         var vol = Basil.get(storage_lastvolume);
         if (vol) {
             Engage.trigger(plugin.events.volumeSet.getName(), vol / 100);
         } else {
             Engage.trigger(plugin.events.volumeSet.getName(), 1);
         }
+    }
+    
+    function showUnmuteButton () {
+        $("#" + id_unmute_button).show();
+        $("#" + id_mute_button).hide();
+    }
+    
+    function showMuteButton () {
+        $("#" + id_unmute_button).hide();
+        $("#" + id_mute_button).show();
     }
 
     function timeUpdate() {
@@ -828,11 +1020,12 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
             }
             var val = Math.round((duration / 1000) - currentTime);
             val = ((val >= 0) && (val <= (duration / 1000))) ? val : "-";
-            $("#" + id_playbackRemTime050).html(Utils.formatSeconds(!isNaN(val) ? (val / 0.5) : val));
             $("#" + id_playbackRemTime075).html(Utils.formatSeconds(!isNaN(val) ? (val / 0.75) : val));
             $("#" + id_playbackRemTime100).html(Utils.formatSeconds(!isNaN(val) ? (val) : val));
             $("#" + id_playbackRemTime125).html(Utils.formatSeconds(!isNaN(val) ? (val / 1.25) : val));
             $("#" + id_playbackRemTime150).html(Utils.formatSeconds(!isNaN(val) ? (val / 1.5) : val));
+            $("#" + id_playbackRemTime200).html(Utils.formatSeconds(!isNaN(val) ? (val / 2.0) : val));
+            $("#" + id_playbackRemTime300).html(Utils.formatSeconds(!isNaN(val) ? (val / 3.0) : val));
         } else {
             $("#" + id_slider).slider("option", "value", 0);
         }
@@ -857,6 +1050,21 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                     if (controlsView) {
                         controlsView.render();
                     }
+                    addQualityChangeEvents();
+                }
+            });
+
+            Engage.on(plugin.events.numberOfVideodisplaysSet.getName(), function(number) {
+                numberVideos = number;
+
+                if (number > 1) {
+                    if (controlsViewTopIfBottom) {
+                        controlsViewTopIfBottom.render();
+                    }
+                    if (controlsView) {
+                        controlsView.render();
+                    }
+                    addLayoutEvents();
                 }
             });
             Engage.on(plugin.events.aspectRatioSet.getName(), function(as) {
@@ -882,9 +1090,7 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                 isAudioOnly = audio;
             });
             Engage.on(plugin.events.playbackRateChanged.getName(), function(pbr) {
-                if ((pbr > 0) && (pbr < 2)) {
-                    $("#" + id_playbackRateIndicator).html(Utils.getFormattedPlaybackRate(pbr));
-                }
+                $("#" + id_playbackRateIndicator).html(Utils.getFormattedPlaybackRate(pbr));
             });
             Engage.on(plugin.events.volumeSet.getName(), function(volume) {
                 $("#" + id_volume).slider("value", volume * 100);
@@ -917,6 +1123,7 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                 }
             });
             Engage.on(plugin.events.ready.getName(), function() {
+                addZoomEvents();
                 if (!mediapackageError) {
                     videosReady = true;
                     ready();
@@ -982,6 +1189,78 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
                     $("#" + id_segmentNo + no).removeClass("segmentHover");
                 }
             });
+            Engage.on(plugin.events.togglePiP.getName(), function(pip) {
+                if (pip !== undefined) {
+                    Basil.set(storage_pip, pip);
+                    pipStatus = pip;
+                    if (currentFocusFlavor !== "focus.none") {
+                        if (! pip) {
+                            $("#" + id_pipIndicator).html(translate("beside", "beside"));
+                        } else {
+                            if (pipPos === "left") {
+                                $("#" + id_pipIndicator).html(translate("left", "left"));
+                            } else {
+                                $("#" + id_pipIndicator).html(translate("right", "right"));
+                            }
+                        }
+                    }                    
+                }
+            });
+            Engage.on(plugin.events.focusVideo.getName(), function(flavor) {
+                if (flavor !== undefined && flavor !== null && flavor.indexOf("focus.") < 1) {
+                    Basil.set(storage_focus_video, flavor);
+                    var pip = Basil.get(storage_pip);
+                    currentFocusFlavor = flavor;
+                    if (pip === undefined || ! pip) {
+                        $("#" + id_pipIndicator).html(translate("beside", "beside"));
+                    } else {
+                        if (pipPos === "left") {
+                            $("#" + id_pipIndicator).html(translate("left", "left"));
+                        } else {
+                            $("#" + id_pipIndicator).html(translate("right", "right"));
+                        }
+                    }
+                }
+            });
+            Engage.on(plugin.events.resetLayout.getName(), function() {
+                Basil.set(storage_focus_video, "focus.none");
+                currentFocusFlavor = "focus.none";
+                $("#" + id_pipIndicator).html(translate("off", "off"));
+            });
+
+
+            Engage.on(plugin.events.movePiP.getName(), function(pos) {
+                if (pos !== undefined) {
+                    Basil.set(storage_pip_pos, pos);
+                    pipPos = pos;
+                    if (currentFocusFlavor !== "focus.none") {
+                        if (pos === "left") {
+                            $("#" + id_pipIndicator).html(translate("left", "left"));
+                        } else {
+                            $("#" + id_pipIndicator).html(translate("right", "right"));
+                        }
+                    }
+                }
+            });
+
+            Engage.on(plugin.events.nextChapter.getName(), function () {
+                if (segments && (segments.length > 0)) {
+                    var seekTime = Utils.nextSegmentStart(segments, currentTime);
+                    if (!isNaN(seekTime)) {
+                        Engage.trigger(plugin.events.seek.getName(), seekTime / 1000);
+                    }
+                }
+            });
+
+            Engage.on(plugin.events.previousChapter.getName(), function () {
+                if (segments && (segments.length > 0)) {
+                    var seekTime = Utils.previousSegmentStart(segments, currentTime);
+                    if (!isNaN(seekTime)) {
+                        Engage.trigger(plugin.events.seek.getName(), seekTime / 1000);
+                    }
+                }
+            });
+
             loadStoredInitialValues();
         }
     }
@@ -1046,7 +1325,7 @@ define(["require", "jquery", "underscore", "backbone", "basil", "bootbox", "enga
         require([relative_plugin_path + "utils"], function(utils) {
             Engage.log("Controls: Utils class loaded");
             Utils = new utils();
-            initTranslate(Utils.detectLanguage(), function() {
+            initTranslate(Engage.model.get("language"), function() {
                 Engage.log("Controls: Successfully translated.");
                 initCount -= 1;
                 if (initCount <= 0) {

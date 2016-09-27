@@ -1,35 +1,43 @@
 /**
- * Copyright 2009-2011 The Regents of the University of California Licensed
- * under the Educational Community License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License. You may obtain a
- * copy of the License at
+ * Licensed to The Apereo Foundation under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
  *
- * http://www.osedu.org/licenses/ECL-2.0
+ *
+ * The Apereo Foundation licenses this file to you under the Educational
+ * Community License, Version 2.0 (the "License"); you may not use this file
+ * except in compliance with the License. You may obtain a copy of the License
+ * at:
+ *
+ *   http://opensource.org/licenses/ecl2.txt
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 /*jslint browser: true, nomen: true*/
 /*global define*/
-define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], function(require, $, _, Backbone, Engage) {
+define(["require", "jquery", "underscore", "backbone", "engage/core"], function(require, $, _, Backbone, Engage) {
     "use strict";
+
+    var insertIntoDOM = false;
     var PLUGIN_NAME = "Timeline Usertracking Statistics";
     var PLUGIN_TYPE = "engage_timeline";
     var PLUGIN_VERSION = "1.0";
-    var PLUGIN_TEMPLATE = "template.html";
-    var PLUGIN_TEMPLATE_MOBILE = "template_mobile.html";
-    var PLUGIN_TEMPLATE_EMBED = "template_embed.html";
-    var PLUGIN_STYLES = [
-        "style.css"
-    ];
-    var PLUGIN_STYLES_MOBILE = [
-        "style_mobile.css"
+    var PLUGIN_TEMPLATE_DESKTOP = "templates/desktop.html";
+    var PLUGIN_TEMPLATE_MOBILE = "templates/mobile.html";
+    var PLUGIN_TEMPLATE_EMBED = "templates/embed.html";
+    var PLUGIN_STYLES_DESKTOP = [
+        "styles/desktop.css"
     ];
     var PLUGIN_STYLES_EMBED = [
-        "style_embed.css"
+        "styles/embed.css"
+    ];
+    var PLUGIN_STYLES_MOBILE = [
+        "styles/mobile.css"
     ];
 
     var plugin;
@@ -44,19 +52,9 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
 
     // desktop, embed and mobile logic
     switch (Engage.model.get("mode")) {
-        case "mobile":
-            plugin = {
-                name: PLUGIN_NAME,
-                type: PLUGIN_TYPE,
-                version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES_MOBILE,
-                template: PLUGIN_TEMPLATE_MOBILE,
-                events: events
-            };
-            isMobileMode = true;
-            break;
         case "embed":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
@@ -66,14 +64,27 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
             };
             isEmbedMode = true;
             break;
-        case "desktop":
-        default:
+        case "mobile":
             plugin = {
+                insertIntoDOM: insertIntoDOM,
                 name: PLUGIN_NAME,
                 type: PLUGIN_TYPE,
                 version: PLUGIN_VERSION,
-                styles: PLUGIN_STYLES,
-                template: PLUGIN_TEMPLATE,
+                styles: PLUGIN_STYLES_MOBILE,
+                template: PLUGIN_TEMPLATE_MOBILE,
+                events: events
+            };
+            isMobileMode = true;
+            break;
+        case "desktop":
+        default:
+            plugin = {
+                insertIntoDOM: insertIntoDOM,
+                name: PLUGIN_NAME,
+                type: PLUGIN_TYPE,
+                version: PLUGIN_VERSION,
+                styles: PLUGIN_STYLES_DESKTOP,
+                template: PLUGIN_TEMPLATE_DESKTOP,
                 events: events
             };
             isDesktopMode = true;
@@ -84,6 +95,10 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
     var renderEveryTimes = 10;
     var chartPath = "lib/Chart";
     var timelineplugin_opened = "Engage:timelineplugin_opened";
+    
+    // TODO: Wait for the new usertracking service...
+    
+    /*
     var chartOptions = {
         // Boolean - Whether to animate the chart
         animation: false,
@@ -193,8 +208,10 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
         // Boolean - Whether to fill the dataset with a colour
         datasetFill: true,
     }
+    */
 
-    /* don"t change these variables */
+    /* don't change these variables */
+    /*
     var mediapackageChange = "change:mediaPackage";
     var footprintChange = "change:footprints";
     var videoDataModelChange = "change:videoDataModel";
@@ -284,8 +301,11 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
                     width: $(window).width() - 40,
                     height: "60"
                 };
+
                 // compile template and load into the html
-                this.$el.html(_.template(this.template, tempVars));
+                var template = _.template(this.template);
+                this.$el.html(template(tempVars));
+
                 rerender();
                 if (this.chart && this.chart.update) {
                     this.chart.update();
@@ -337,15 +357,6 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
             }
         });
 
-        // load highchart lib
-        require([relative_plugin_path + chartPath], function(videojs) {
-            Engage.log("Timeline:Statistics: Lib chart loaded");
-            initCount -= 1;
-            if (initCount == 0) {
-                initPlugin();
-            }
-        });
-
         // all plugins loaded
         Engage.on(plugin.events.plugin_load_done.getName(), function() {
             Engage.log("Timeline:Statistics: Plugin load done");
@@ -354,7 +365,17 @@ define(["require", "jquery", "underscore", "backbone", "engage/engage_core"], fu
                 initPlugin();
             }
         });
+
+        // load highchart lib
+        require([relative_plugin_path + chartPath], function(videojs) {
+            Engage.log("Timeline:Statistics: Lib chart loaded");
+            initCount -= 1;
+            if (initCount == 0) {
+                initPlugin();
+            }
+        });
     }
+    */
 
     return plugin;
 });

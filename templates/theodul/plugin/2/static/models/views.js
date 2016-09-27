@@ -34,8 +34,8 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
         }
     });
 
-    //var USERTRACKING_ENDPOINT = "/usertracking"; ILPATCH
-    var USERTRACKING_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/usertracking";
+    // var USERTRACKING_ENDPOINT = "/usertracking"; ILPATCH
+    var USERTRACKING_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/usertracking/stats.json";
     var USERTRACKING_ENDPOINT_STATS = "/stats.json";
 
     var mediaPackageID = Engage.model.get("urlParameters").id;
@@ -52,7 +52,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
         put: function() {
             Engage.log("MhConnection: Adding user to viewers");
             var thisModel = this;
-        /*    $.ajax({
+            $.ajax({
                 type: "PUT",
                 url: USERTRACKING_ENDPOINT,
                 data: {
@@ -64,7 +64,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
                 success: function(result) {
                     thisModel.update();
                 }
-            }); */
+            });
         },
         update: function() {
             // request model data

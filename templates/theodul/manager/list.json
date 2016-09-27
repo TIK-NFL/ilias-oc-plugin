@@ -8,7 +8,8 @@
 {"name":"EngagePluginTabSlidetext","id":"4","description":"Simple implementation of a tab with the text of the slides","static-path":"4\/static"},
 {"name":"EngagePluginCustomUsertracking","id":"9","description":"Custom plugin to process usertracking footprints","static-path":"9\/static"},
 {"name":"EngagePluginVideoVideoJS","id":"6","description":"Videodisplay plugin which uses videoJS","static-path":"6\/static"},
-{"name":"EngagePluginCustomMhConnection","id":"2","description":"Handles Matterhorns Endpoints","static-path":"2\/static"}
+{"name":"EngagePluginCustomMhConnection","id":"2","description":"Handles Matterhorns Endpoints","static-path":"2\/static"},
+{"name":"EngagePluginTabShortcuts","id":"10","description":"Simple implementation of a tab with the shortcuts","static-path":"10\/static"}
 ]
 }
 }

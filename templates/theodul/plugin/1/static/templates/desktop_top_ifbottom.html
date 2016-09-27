@@ -6,11 +6,11 @@
    && (typeof str_fullscreen !== "undefined")) { %>
 <div id="navigation_wrapper_top">
     <div id="navigation_logo">
-        <% if(typeof logoLink !== "undefined") { %>
+        <% if(logoLink !== false) { %>
         <a id="mediamodulelink" href="<%= logoLink %>" role="link" aria-label="<%= str_openMediaModule %>">
         <% } %>
         <img id="headerLogo" src="<%= logo %>" />
-        <% if(typeof logoLink !== "undefined") { %>
+        <% if(logoLink !== false) { %>
         </a>
         <% } %>
     </div>
@@ -30,6 +30,31 @@
         </ul>
       </div>
       <% } %>
+<!--
+      <% if((typeof loggedIn !== "undefined")
+      && (typeof str_checkingStatus !== "undefined")
+      && (typeof str_loginLogout !== "undefined")) { %>
+        <div class="btn-group">
+            <button id="dropdownMenuLoginInfo" class="btn btn-default dropdown-toggle disabled" type="button" data-toggle="dropdown" role="button" aria-label="<%= str_loginLogout %>">
+	        <span class="glyphicon glyphicon-user"></span>
+		<span id="loggedInNotLoggedIn"><%= str_checkingStatus %></span>
+		<span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li role="presentation">
+		    <a id="loginlogout" role="menuitem" tabindex="-1" href="#">
+		        <% if((typeof loggedIn !== "undefined") && !loggedIn) { %>
+                        <span class="glyphicon glyphicon-log-in"></span>
+			<% } else { %>
+                        <span class="glyphicon glyphicon-log-out"></span>
+			<% } %>
+		        <span id="str_loginlogout"></span>
+		    </a>
+		</li>
+            </ul>
+	</div>
+        <% } %>
+-->
     </div>
 </div>
 <% } %>

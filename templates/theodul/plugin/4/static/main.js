@@ -107,8 +107,8 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
 
     function initTranslate(language, funcSuccess, funcError) {
         var path = Engage.getPluginPath("EngagePluginTabSlidetext").replace(/(\.\.\/)/g, "");
-        //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
-        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" +path;
+        // var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
+        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" + path;
 
         Engage.log("Controls: selecting language " + language);
         jsonstr += "language/" + language + ".json";
@@ -154,34 +154,32 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
             if (!mediapackageError) {
                 var segments = [];
                 var segmentInformation = this.model.get("segments");
-                var attachments = this.model.get("attachments");
-                if (segmentInformation && attachments && (segmentInformation.length > 0) && (attachments.length > 0)) {
-                    // extract segments which type is "segment+preview" out of the model
-                    $(attachments).each(function(index, attachment) {
-                        if (attachment.mimetype && attachment.type && attachment.type.match(/presentation\/segment\+preview/g) && attachment.mimetype.match(/image/g)) {
-                            // pull time string out of the ref property
-                            // (e.g. "ref": "track:4ea9108d-c1df-4d8e-b729-e7c75c87519e;time=T00:00:00:0F1000")
-                            var time = attachment.ref.match(/([0-9]{2}:[0-9]{2}:[0-9]{2})/g);
-                            if (time.length > 0) {
-                                var si = "No slide text available.";
-                                for (var i = 0; i < segmentInformation.length; ++i) {
-                                    if (Utils.getTimeInMilliseconds(time[0]) == parseInt(segmentInformation[i].time)) {
-                                        si = segmentInformation[i].text;
-                                        break;
-                                    }
-                                }
-                                segments.push(new Segment(time[0], attachment.url, si));
-                            } else {
-                                Engage.log("Tab:Slidetext: Error on time evaluation for segment with url: " + attachment.url);
-                            }
-                        }
+                if (segmentInformation !== undefined) {
+                    $(segmentInformation).each(function(index, element) {
+                      if (Engage.model.get("videoDataModel") && Engage.model.get("videoDataModel").get("duration") && 
+                              element.time <= parseInt(Engage.model.get("videoDataModel").get("duration"))) {
+                        var segmentText = "No slide text available.";
+
+                        if (element.text)
+                            segmentText = element.text;
+                        
+                        var segmentPreview = undefined;
+                          if (element !== undefined && element.previews !== undefined &&
+                                element.previews.preview !== undefined && element.previews.preview.$ !== undefined) {
+                            segmentPreview = element.previews.preview.$;
+                          }  
+                        segments.push(new Segment((element.time / 1000), segmentPreview, segmentText));
+                      } else {
+                        Engage.log("Tab:Slidetext: Detected Segment with start time " + element.time / 1000 + 
+                                " that exceeds the duration of the video ");
+                      }
                     });
                     if (segments.length > 0) {
                         // sort segments ascending by time
                         segments.sort(function(a, b) {
-                            return new Date("1970/1/1 " + a.time) - new Date("1970/1/1 " + b.time);
+                            return a.time - b.time;
                         });
-                    }
+                    } 
                 }
                 var tempVars = {
                     segments: segments,
@@ -189,17 +187,19 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
                     str_noSlidesAvailable: translate("noSlidesAvailable", "No slides available."),
                     str_slide_text: translate("slide_text", "Slide text")
                 };
+                
                 // compile template and load into the html
-                this.$el.html(_.template(this.template, tempVars));
+                var template = _.template(this.template);
+                this.$el.html(template(tempVars));
+
                 $("#engage_tab_" + plugin.name.replace(/\s/g,"_")).text(tempVars.str_slide_text);
                 if (segments && (segments.length > 0)) {
                     Engage.log("Tab:Slidetext: " + segments.length + " segments are available.");
                     $.each(segments, function(i, v) {
                         $("#" + id_segmentNo + i).click(function(e) {
                             e.preventDefault();
-                            var time = parseInt(Utils.timeStrToSeconds(v.time));
-                            if (!isNaN(time)) {
-                                Engage.trigger(plugin.events.seek.getName(), time);
+                            if (!isNaN(v.time)) {
+                                Engage.trigger(plugin.events.seek.getName(), v.time);
                             }
                         });
                         $("#" + id_segmentNo + i).mouseover(function(e) {
@@ -268,7 +268,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
             Engage.log("Tab:Slidetext: Utils class loaded");
             Utils = new utils();
             plugin.timeStrToSeconds = Utils.timeStrToSeconds;
-            initTranslate(Utils.detectLanguage(), function() {
+            initTranslate(Engage.model.get("language"), function() {
                 Engage.log("Tab:Slidetext: Successfully translated.");
                 initCount -= 1;
                 if (initCount <= 0) {
