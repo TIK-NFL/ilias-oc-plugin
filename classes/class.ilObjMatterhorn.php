@@ -625,7 +625,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
 
         /* $_GET Parameters to Send */
-        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','op'=>'schedule');
+        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','op'=>'schedule','count'=>'50');
         
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);       
