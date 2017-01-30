@@ -917,15 +917,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         //$ilLog->write("ID:".$_POST["wfid"]);
         if (preg_match('/^[0-9a-f\-]+/', $_POST["wfid"])) {
         
-            $workflow = $this->object->getWorkflow($_POST["wfid"]);
+            $workflow = $this->object->getWorkflow($_POST["wfid"]);            
             $namespaces = $workflow->getNamespaces(true);
-            //$ilLog->write("namespaces: ". print_r($namespaces,true));
+            $ilLog->write("namespaces: ". print_r($namespaces,true));
             $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage; 
             if (!strpos($this->object->getSeries(),trim($mediapackage->series))) {
                 $ilCtrl->redirect($this, "editEpisodes");
             }
             $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
-            $mediapackage["title"] = $mediapackagetitle;
             $tracks = array();
             if(isset($_POST["lefttrack"])){
                 $track = array();
@@ -956,8 +955,23 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     }
                 }
             }
+            foreach($mediapackage->metadata->catalog as $catalog){
+                $catalogattribs = $catalag->attributes();
+                if($catalogattribs['type'] === 'dublincore/episode'){
+                    $dublincoreurl = $catalog->url;
+                }
+            }
+            $dublincore = $this->object->getDublincore($dublincoreurl);
+            $dublincore->title = $mediapackagetitle;
+            $dom_dublincore = dom_import_simplexml($mediapackage);
+
+            $dom = new DOMDocument('1.0');
+            $dom_dublincore = $dom->importNode($dom_dublincore, true);
+            $dom_dublincore = $dom->appendChild($dom_dublincore);
+            $dublincore = $this->object->setDublincore($dublincoreurl,$dom_dublincore-saveXML());
+
             $dom_sxe = dom_import_simplexml($mediapackage);
-            
+
             $dom = new DOMDocument('1.0');
             $dom_sxe = $dom->importNode($dom_sxe, true);
             $dom_sxe = $dom->appendChild($dom_sxe);

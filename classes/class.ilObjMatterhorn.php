@@ -539,7 +539,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             $ilDB->quote($this->getId(), "integer").") ".
             "on duplicate key update  episode_id = episode_id"
             );
-		$this->addTextToDB($episodeId);
+        $this->addTextToDB($episodeId);
     }
 
       function retract($episodeId){    
@@ -733,6 +733,64 @@ class ilObjMatterhorn extends ilObjectPlugin
     }
 
     /**
+     * Get workflow
+     *
+     * @param   Integer     workflowid the workflow id
+     * 
+     * @return the workflow as decode json object
+     */
+    function getDublinCore($dublincoreurl){
+                
+        global $ilLog;
+                
+        //open connection
+        $ch = curl_init();
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL,$dublincoreurl);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $curlret = curl_exec($ch);        
+        $dublincore= simplexml_load_string($curlret);
+        if ($dublincore === false){
+          $ilLog->write("error loading dublincore: ".$dublincoreurl);
+          foreach(libxml_get_errors() as $error) {
+            $ilLog->write("error : ". $error->message);
+          }
+        }
+        return $dublincore;
+    }
+    
+        /**
+     * Get workflow
+     *
+     * @param   Integer     workflowid the workflow id
+     * 
+     * @return the workflow as decode json object
+     */
+    function setDublinCore($dublincoreurl){
+        global $ilLog;
+        //open connection
+        $ch = curl_init();
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL,$dublincoreurl);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,true);
+        $curlret = curl_exec($ch);        
+        $dublincore= simplexml_load_string($curlret);
+        if ($dublincore === false){
+          $ilLog->write("error loading dublincore: ".$dublincoreurl);
+          foreach(libxml_get_errors() as $error) {
+            $ilLog->write("error : ". $error->message);
+          }
+        }
+        return $dublincore;
+    }
+
+    /**
      * Trims the tracks of a workflow
      *
      * @param   Integer     workflowid the workflow id
@@ -741,7 +799,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      * @param   Float       trimin the start time of the new tracks
      * @param   Float       trimout the endtime of the video
      */
-    function trim($workflowid, $mediapackage, $removetrack, $trimin, $trimout){
+    function trim($workflowid, $mediapackage, $removetrack, $mediapackagetitle, $trimin, $trimout){
                 
         global $ilLog;
         $mp = $mediapackage;
@@ -771,7 +829,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             curl_setopt($ch, CURLOPT_POSTFIELDS,$fields_string);            
             $mp = curl_exec($ch);        
         }
-        
+        $ilLog->write($mp);
         $url = $this->configObject->getMatterhornServer()."/workflow/replaceAndresume/";
         $fields = array();
         $fields['id'] =  $workflowid;
@@ -791,7 +849,7 @@ class ilObjMatterhorn extends ilObjectPlugin
           $info = curl_getinfo($ch);
           $ilLog->write('Successful request to '.$info['url'].' in '. $info['total_time']);
         }
-
+        $ilLog->write($mp);
     }
     
 }
