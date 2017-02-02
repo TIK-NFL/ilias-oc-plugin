@@ -25,7 +25,7 @@ $GLOBALS['COOKIE_PATH'] = substr($_SERVER['PHP_SELF'], 0,
 $GLOBALS['WEB_ACCESS_WITHOUT_SESSION'] = (session_id() == "");
 
 include_once "Services/Context/classes/class.ilContext.php";
-ilContext::init(ilContext::CONTEXT_WEB_ACCESS_CHECK);
+ilContext::init(ilContext::CONTEXT_WAC);
 
 // Now the ILIAS header can be included
 require_once "./include/inc.header.php";
@@ -195,7 +195,7 @@ class ilMatterhornSendfile
 		include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
 		$this->configObject = new ilMatterhornConfig(); 
 		// debugging
-/*		echo "<pre>";
+	/*	echo "<pre>";
 		var_dump($uri);
 		echo "REQUEST_URI:         ". $_SERVER["REQUEST_URI"]. "\n";
 		echo "Parsed URI:          ". $uri["path"]. "\n";
@@ -219,9 +219,9 @@ class ilMatterhornSendfile
 		echo "errorcode:           ". $this->errorcode. "\n";
 		echo "errortext:           ". $this->errortype. "\n";
 		echo "</pre>";
-
+                var_dump($_SESSION);
 		#		echo phpinfo();
-		exit;
+                exit;
 	*/
 		/*
 		if (!file_exists($this->file))
@@ -331,9 +331,7 @@ class ilMatterhornSendfile
 		return false;
 	}
 	
-	
-	
-	
+
 	/**
 	* Check access rights for an object by its object id
 	*
@@ -342,23 +340,18 @@ class ilMatterhornSendfile
 	*/
 	private function checkAccessObject($obj_id, $obj_type = '')
 	{
-	    global $ilAccess;
-
+	    global $ilAccess, $ilUser;
 		if (!$obj_type)
 		{
 			$obj_type = ilObject::_lookupType($obj_id);
 		}	
 		$ref_ids  = ilObject::_getAllReferences($obj_id);
-
 		foreach($ref_ids as $ref_id)
 		{
-			foreach ($this->check_users as $user_id)
-			{				
-				if ($ilAccess->checkAccessOfUser($user_id, "read", "view", $ref_id, $obj_type, $obj_id))
-				{
-					return true;
-				}
-			}
+                        if ($ilAccess->checkAccessOfUser($ilUser->getId(), "read", "view", $ref_id, $obj_type, $obj_id))
+                        {
+                                return true;
+                        }
 		}
 		return false;
 	}

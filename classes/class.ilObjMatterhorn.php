@@ -94,7 +94,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	/**
 	* Create object
 	*/
-	function doCreate($a_clone_mode)
+	function doCreate()
 	{
 		global $ilDB, $ilLog;
 		$url = $this->configObject->getMatterhornServer()."/series/";				
@@ -221,7 +221,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 	/**
 	* Do Cloning
 	*/
-	function doCloneObject($new_obj, $a_target_id, $a_copy_id)
+	function doCloneObject($neiw_obj, $a_target_id, $a_copy_id = NULL)
 	{	
 	#	$new_obj->setSeries($this->getSeries());
 #		$new_obj->setMhRetVal($this->getMhRetVal());
