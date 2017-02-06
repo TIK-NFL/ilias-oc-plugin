@@ -21,7 +21,7 @@ $GLOBALS['COOKIE_PATH'] = substr($_SERVER['PHP_SELF'], 0,
                           strpos($_SERVER['PHP_SELF'], $basename));
 
 include_once 'Services/Context/classes/class.ilContext.php';
-ilContext::init(ilContext::CONTEXT_WEB_ACCESS_CHECK);
+ilContext::init(ilContext::CONTEXT_WAC);
 
 // Now the ILIAS header can be included
 require_once './include/inc.header.php';
@@ -72,9 +72,9 @@ class ilMatterhornUploadFile
      /**
      * Constructor
      */
-    public function ilMatterhornUploadFile()
+    public function __construct()
     {
-        global  $ilAccess, $lng, $ilLog;
+        global  $ilAccess, $lng;
 
         $this->lng = &$lng;
         $this->ilAccess = &$ilAccess;
@@ -84,15 +84,15 @@ class ilMatterhornUploadFile
         // get the requested file and its type
         $uri = parse_url($_SERVER['REQUEST_URI']);
         parse_str($uri['query'], $this->params);
-        #$ilLog->write("Request for:".substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json");
-        $ilLog->write('Request for: '.$uri['path']);
-        #$ilLog->write("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
+        #ilLoggerFactory::getLogger('xmh')->debug("Request for:".substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json");
+        ilLoggerFactory::getLogger('xmh')->debug('Request for: '.$uri['path']);
+        #ilLoggerFactory::getLogger('xmh')->debug("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
 
         // initialize app
         global $basename;
         // check if it is a request for an upload
         if (0 == strcmp(str_replace('/uploadfile.php', '/upload', $_SERVER['PHP_SELF']), $uri['path'])) {
-            $ilLog->write('uploadrequest for: '.print_r($this->params, true));
+            ilLoggerFactory::getLogger('xmh')->debug('uploadrequest for: '.print_r($this->params, true));
             switch ($_SERVER['REQUEST_METHOD']) {
                 case 'GET':
                     $this->requestType = 'uploadCheck';
@@ -112,7 +112,7 @@ class ilMatterhornUploadFile
 
                         return false;
                     }
-                    $ilLog->write('Upload for: '.$_POST['seriesid']);
+                    ilLoggerFactory::getLogger('xmh')->debug('Upload for: '.$_POST['seriesid']);
                     $this->obj_id = $_POST['seriesid'];
                     break;
             }
@@ -125,7 +125,7 @@ class ilMatterhornUploadFile
 
                     return false;
                 }
-                $ilLog->write('CreatedEpisode for: '.$_POST['seriesid']);
+                ilLoggerFactory::getLogger('xmh')->debug('CreatedEpisode for: '.$_POST['seriesid']);
                 $this->obj_id = $_POST['seriesid'];
             } else {
                 if (0 == strcmp(str_replace('/uploadfile.php', '/newJob', $_SERVER['PHP_SELF']), $uri['path'])) {
@@ -136,7 +136,7 @@ class ilMatterhornUploadFile
 
                         return false;
                     }
-                    $ilLog->write('NewJob for: '.$_POST['seriesid']);
+                    ilLoggerFactory::getLogger('xmh')->debug('NewJob for: '.$_POST['seriesid']);
                     $this->obj_id = $_POST['seriesid'];
                 } else {
                     if (0 == strcmp(str_replace('/uploadfile.php', '/finishUpload', $_SERVER['PHP_SELF']), $uri['path'])) {
@@ -147,7 +147,7 @@ class ilMatterhornUploadFile
 
                             return false;
                         }
-                        $ilLog->write('NewJob for: '.$_POST['seriesid']);
+                        ilLoggerFactory::getLogger('xmh')->debug('NewJob for: '.$_POST['seriesid']);
                         $this->obj_id = $_POST['seriesid'];
                     }
                 }
@@ -203,28 +203,6 @@ class ilMatterhornUploadFile
     }
 
     /**
-     * Determine the current user(s).
-     */
-    public function determineUser()
-    {
-        global $ilUser;
-
-        // a valid user session is found 
-        if ($_SESSION['AccountId']) {
-            $this->check_users = array($_SESSION['AccountId']);
-
-            return;
-        } else {
-            $this->check_users = array(ANONYMOUS_USER_ID);
-            $_SESSION['AccountId'] = ANONYMOUS_USER_ID;
-            $ilUser->setId(ANONYMOUS_USER_ID);
-            $ilUser->read();
-
-            return;
-        }
-    }
-
-    /**
      * Check access rights of the requested file.
      */
     public function checkEpisodeAccess()
@@ -233,8 +211,6 @@ class ilMatterhornUploadFile
         if ($this->errorcode) {
             return false;
         }
-        // do this here because ip based checking may be set after construction
-        $this->determineUser();
         if ($this->checkAccessObject($this->obj_id)) {
             return true;
         }
@@ -255,29 +231,27 @@ class ilMatterhornUploadFile
      */
     public function checkFileAccess()
     {
-        #global $ilLog;
-        #$ilLog->write("MHSendfile: check access for ". $this->obj_id);
+        #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access for ". $this->obj_id);
         // an error already occurred at class initialisation
         if ($this->errorcode) {
-            #$ilLog->write("MHSendfile: check access already has error code for ". $this->obj_id);
+            #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access already has error code for ". $this->obj_id);
             return false;
         }
 
         // do this here because ip based checking may be set after construction
-        $this->determineUser();
 
         $type = 'xmh';
         $iliasid = substr($this->obj_id, 10);
         if (!$iliasid || $type == 'none') {
             $this->errorcode = 404;
             $this->errortext = $this->lng->txt('obj_not_found');
-            #$ilLog->write("MHSendfile: obj_not_found");
+            #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: obj_not_found");
             return false;
         }
         if ($this->checkAccessObject($iliasid)) {
             return true;
         }
-        #$ilLog->write("MHSendfile: no access found");
+        #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: no access found");
         // none of the checks above gives access
         $this->errorcode = 403;
         $this->errortext = $this->lng->txt('msg_no_perm_read');
@@ -292,22 +266,24 @@ class ilMatterhornUploadFile
      *
      * @return bool access given (true/false)
      */
+ 
     private function checkAccessObject($obj_id, $obj_type = '')
     {
-        global $ilAccess;
+        global $DIC;
 
         if (!$obj_type) {
             $obj_type = ilObject::_lookupType($obj_id);
         }
         $ref_ids = ilObject::_getAllReferences($obj_id);
+        $access = $DIC->access();
 
         foreach ($ref_ids as $ref_id) {
-            foreach ($this->check_users as $user_id) {
-                if ($ilAccess->checkAccessOfUser($user_id, 'write', '', $ref_id, $obj_type, $obj_id)) {
-                    return true;
-                }
+            ilLoggerFactory::getLogger('xmh')->debug("checking object for refid: ".$ref_id. " and user: ".$DIC->user()->getId(). " result:". $access->checkAccess("write", "upload", $ref_id));
+            if ($access->checkAccess("access", "upload", $ref_id)) {
+                return true;
             }
         }
+        ilLoggerFactory::getLogger('xmh')->debug("checking object access failed for upload");
 
         return false;
     }
@@ -343,7 +319,7 @@ class ilMatterhornUploadFile
             return false;
         }
         if (!(preg_match('/(\d{4})-(\d{1,2})-(\d{1,2})/', $episodedate, $matches) && checkdate($matches[2], $matches[3], $matches[1]))) {
-            $ilLog->write('episodedate:'.$matches[2].'s');
+            ilLoggerFactory::getLogger('xmh')->debug('episodedate:'.$matches[2].'s');
             header('HTTP/1.0 400 Bad Request');
             echo 'Missing or bad parameter episodedate';
 
@@ -394,7 +370,7 @@ class ilMatterhornUploadFile
         $mediapackage = preg_replace($pattern, $replacement, $mediapackage);
 
         // add episode.xml to media package
-        $ilLog->write($httpCode.$mediapackage);
+        ilLoggerFactory::getLogger('xmh')->debug($httpCode.$mediapackage);
         $fields = array('flavor' => urlencode('dublincore/episode'), 'mediaPackage' => urlencode($mediapackage), 'dublinCore' => urlencode($episodexml));
 
         $fields_string = '';
@@ -408,7 +384,7 @@ class ilMatterhornUploadFile
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mediapackage = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $ilLog->write($httpCode.$mediapackage);
+        ilLoggerFactory::getLogger('xmh')->debug($httpCode.$mediapackage);
 
         // add series.xml to media package
         $fields_string = '';
@@ -431,7 +407,6 @@ class ilMatterhornUploadFile
 
     public function createNewJob()
     {
-        global $ilLog;
         if (!array_key_exists('iliasupload_mpid_'.$_POST['mpid'], $_SESSION)) {
             header('HTTP/1.0 400 Bad Request');
             echo 'Missing parameter mpid';
@@ -455,7 +430,7 @@ class ilMatterhornUploadFile
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $job = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $ilLog->write($httpCode.$job);
+        ilLoggerFactory::getLogger('xmh')->debug($httpCode.$job);
         header('Content-Type: text/text');
         echo $job;
     }
@@ -488,22 +463,21 @@ class ilMatterhornUploadFile
               case UPLOAD_ERR_OK:
                   break;
               case UPLOAD_ERR_NO_FILE:
-                  $ilLog->write('Upload_error: No file sent.');
+                  ilLoggerFactory::getLogger('xmh')->debug('Upload_error: No file sent.');
                   throw new RuntimeException('No file sent.');
               case UPLOAD_ERR_INI_SIZE:
               case UPLOAD_ERR_FORM_SIZE:
-                  $ilLog->write('Upload_error: Exceeded filesize limit.');
+                  ilLoggerFactory::getLogger('xmh')->debug('Upload_error: Exceeded filesize limit.');
                   throw new RuntimeException('Exceeded filesize limit.');
               default:
-                  $ilLog->write('Upload_error: Unknown errors.');
+                  ilLoggerFactory::getLogger('xmh')->debug('Upload_error: Unknown errors.');
                   throw new RuntimeException('Unknown errors.');
             }
                 $tmpfile = $file['tmp_name'];
                 $filename = $_POST['resumableFilename'];
                 $chunknumber = $_POST['resumableChunkNumber'];
                 $jobID = $_POST['jobid'];
-                global $ilLog;
-                $ilLog->write($tmpfile);
+                ilLoggerFactory::getLogger('xmh')->debug($tmpfile);
                 if (function_exists('curl_file_create')) {
                     $cFile = curl_file_create($tmpfile);
                 } else {
@@ -518,7 +492,7 @@ class ilMatterhornUploadFile
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
                 $job = curl_exec($ch);
                 $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                $ilLog->write($httpCode.$job);
+                ilLoggerFactory::getLogger('xmh')->debug($httpCode.$job);
                 $jobid = uniqid();
                 $_SESSION['iliasupload_jobid_'.$jobid] = $job;
                 header('Content-Type: text/text');
@@ -529,7 +503,6 @@ class ilMatterhornUploadFile
 
     public function finishUpload()
     {
-        global $ilLog;
         if (!array_key_exists('iliasupload_jobid_'.$_POST['jobid'], $_SESSION)) {
             header('HTTP/1.0 400 Bad Request');
             echo 'Missing parameter jobid';
@@ -549,7 +522,7 @@ class ilMatterhornUploadFile
         $trimeditor =  isset($_POST['trimeditor']) && $_POST['trimeditor'] === "true";
 
         $jobxml = new SimpleXMLElement($realjob);
-        $ilLog->write($jobxml->payload[0]->url);
+        ilLoggerFactory::getLogger('xmh')->debug($jobxml->payload[0]->url);
         $fields_string = '';
         $fields = array('mediapackage' => $realmp,
                         'trackUri' => urlencode($jobxml->payload[0]->url),
@@ -565,7 +538,7 @@ class ilMatterhornUploadFile
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mediapackage = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $ilLog->write($httpCode);
+        ilLoggerFactory::getLogger('xmh')->debug($httpCode);
         $fields_string = '';
         $fields = array('mediaPackage' => urlencode($mediapackage),
                         'trimHold' => $trimeditor?"true":"false",

@@ -956,19 +956,20 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
             foreach($mediapackage->metadata->catalog as $catalog){
-                $catalogattribs = $catalag->attributes();
-                if($catalogattribs['type'] === 'dublincore/episode'){
+                $catalogattribs = $catalog->attributes();
+                if((string)$catalogattribs['type'] === 'dublincore/episode'){
                     $dublincoreurl = $catalog->url;
                 }
             }
+
             $dublincore = $this->object->getDublincore($dublincoreurl);
-            $dublincore->title = $mediapackagetitle;
-            $dom_dublincore = dom_import_simplexml($mediapackage);
+            $dublincore->children('http://purl.org/dc/terms/')->title = $mediapackagetitle;
+            $dom_dublincore = dom_import_simplexml($dublincore);
 
             $dom = new DOMDocument('1.0');
             $dom_dublincore = $dom->importNode($dom_dublincore, true);
             $dom_dublincore = $dom->appendChild($dom_dublincore);
-            $dublincore = $this->object->setDublincore($dublincoreurl,$dom_dublincore-saveXML());
+            $dublincore = $this->object->setDublincore($dublincoreurl,$dom->saveXML());
 
             $dom_sxe = dom_import_simplexml($mediapackage);
 
