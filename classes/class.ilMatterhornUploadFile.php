@@ -8,7 +8,7 @@ $_GET['baseClass'] = 'ilStartUpGUI';
 
 $basename = '/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData';
 
-// Define a pseudo module to get a correct ILIAS_HTTP_PATH 
+// Define a pseudo module to get a correct ILIAS_HTTP_PATH
 // (needed for links on the error page).
 // "data" is assumed to be the ILIAS_WEB_DIR
 // (see ilInitialisation::buildHTTPPath() for details)
@@ -194,7 +194,7 @@ class ilMatterhornUploadFile
         */
     }
 
-    /** 
+    /**
      * Returns the type of request.
      */
     public function getRequestType()
