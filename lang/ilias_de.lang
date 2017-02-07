@@ -36,6 +36,7 @@ cancel#:#Abbrechen
 edit#:#Bearbeiten
 status#:#Status
 offline#:#Offline
+online#:#Online
 opencast_plugin_configuration#:#Opencast-Plugin-Konfiguration
 mh_server#:#Basis-URL des Opencast Server
 mh_server_engage#:#Basis-URL des Opencast Engage Server

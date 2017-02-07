@@ -74,20 +74,20 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             case "editProperties":        // list all commands that need write permission here
             case "updateProperties":
             case "trimEpisode":
-            case "showTrimEditor":
+            case "deletescheduled":
             case "publish":
             case "retract":
-            case "deletescheduled":
             case "getEpisodes":
-                                $this->checkPermission("write");
+                $this->checkPermission("write");
                 $this->$cmd();
                 break;
-                        case "editFinishedEpisodes":
-                        case "editTrimProcess":
-                        case "editUpload":
-                        case "editSchedule":
-                                $this->checkPermission("write");
-                                $this->setSubTabs('manage');
+            case "showTrimEditor":
+            case "editFinishedEpisodes":
+            case "editTrimProcess":
+            case "editUpload":
+            case "editSchedule":
+                $this->checkPermission("write");
+                $this->setSubTabs('manage');
                 $this->$cmd();
                 break;
 
@@ -224,13 +224,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $download = new ilCheckboxInputGUI($this->txt("enable_download"), "download");
         $this->form->addItem($download);
 
-        
+
         // online
-        $cb = new ilCheckboxInputGUI($this->lng->txt("online"), "online");
+        $cb = new ilCheckboxInputGUI($this->txt("online"), "online");
+
         $this->form->addItem($cb);
-        
         $this->form->addCommandButton("updateProperties", $this->txt("save"));
-                    
+
         $this->form->setTitle($this->txt("edit_properties"));
         $this->form->setFormAction($ilCtrl->getFormAction($this));
     }
@@ -287,7 +287,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             $ilLog->write("ID does not match in publish episode:".$_GET["id"]);
         }
-        $ilCtrl->redirect($this, "editEpisodes");
+        $ilCtrl->redirect($this, "editFinishedEpisodes");
     }
 
     public function retract()
@@ -300,7 +300,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             $ilLog->write("ID does not match in retract episode:".$_GET["id"]);
         }
-        $ilCtrl->redirect($this, "editEpisodes");
+        $ilCtrl->redirect($this, "editFinishedEpisodes");
     }
 
     public function deletescheduled()
@@ -314,7 +314,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             $ilLog->write("ID does not match in deleteschedule:".$_GET["id"]);
         }
-        $ilCtrl->redirect($this, "editEpisodes");
+        $ilCtrl->redirect($this, "editSchedule");
     }
 
     
@@ -331,15 +331,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $this->checkPermission("read");
         $theodulbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
 
-        
         $player = new ilTemplate("tpl.player.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
-
         $player->setVariable("INITJS", $theodulbase);
-        
+
         $tpl->setContent($player->get());
         $ilTabs->activateTab("content");
     }
-    
+
     public function showSeries()
     {
         global $tpl, $ilTabs, $ilCtrl;
@@ -654,7 +652,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
         $seriestpl = new ilTemplate("tpl.series.edit.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
         $seriestpl->setCurrentBlock("pagestart");
-        
 
         $seriestpl->setVariable("TXT_NONE_FINISHED", $this->getText("none_finished"));
         $seriestpl->setVariable("TXT_NONE_PROCESSING", $this->getText("none_processing"));
@@ -765,7 +762,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage;
             $ilLog->write($this->object->getSeries());
             if (!strpos($this->object->getSeries(), trim($mediapackage->series))) {
-                $ilCtrl->redirect($this, "editEpisodes");
+                $ilCtrl->redirect($this, "editTrimProcess");
             }
             $previewtracks = array();
             $worktracks = array();
@@ -899,7 +896,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $tpl->setContent($trimview->get());
             $ilTabs->activateTab("manage");
         } else {
-            $ilCtrl->redirect($this, "editEpisodes");
+            $ilCtrl->redirect($this, "editTrimProcess");
         }
     }
 
@@ -913,7 +910,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $ilLog->write("namespaces: ". print_r($namespaces, true));
             $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage;
             if (!strpos($this->object->getSeries(), trim($mediapackage->series))) {
-                $ilCtrl->redirect($this, "editEpisodes");
+                $ilCtrl->redirect($this, "editTrimProcess");
             }
             $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
             $tracks = array();
@@ -982,7 +979,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             $ilLog->write("ID does not match an episode:".$_POST["wfid"]);
         }
-        $ilCtrl->redirect($this, "editEpisodes");
+        $ilCtrl->redirect($this, "editTrimProcess");
     }
 
     
