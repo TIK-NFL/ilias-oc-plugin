@@ -240,7 +240,7 @@ iliasopencast.updateprocessing = function() {
         "noprocessing" : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="4">'
             + txt.txt_none_processing + '</td></tr>',
         "processing" : '<tr><td class="std">{{title}}</td> <td class="std">{{date}}</td>'
-            + '<td><div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:{{processdone}}%">{{processcount}}</div></td><td>{{running}}</td>'
+            + '<td class="std"><div class="progress-bar progress-bar-success" role="progressbar" style="width:{{processdone}}%">{{processcount}}</div></td><td class="std">{{running}}</td>'
             + '</tr>',
         "nofinished" : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="'
             + ils.cols_finished + '">' + txt.txt_none_finished + '</td></tr>',

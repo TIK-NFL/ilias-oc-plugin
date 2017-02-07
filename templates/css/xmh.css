@@ -45,13 +45,6 @@ div[data-nothingToUpload] {
     cursor:pointer;
 }
 
-div.progress {  
-    padding-left: 0px;
-    padding-right: 0px;
-    margin-bottom: 0px;
-
-}
-
 .datepicker-days th.datepicker-switch {
     text-align: center;
     font-weight: bold;
