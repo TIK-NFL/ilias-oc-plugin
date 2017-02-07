@@ -124,7 +124,7 @@ class ilMatterhornSendfile
 	* Constructor
 	* @access	public
 	*/
-	function ilMatterhornSendfile()
+	function __construct()
 	{
 		global  $ilAccess, $lng, $ilLog;
 		
