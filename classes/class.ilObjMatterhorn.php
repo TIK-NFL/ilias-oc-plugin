@@ -328,7 +328,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             $currenttime = 0;
             foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
                 $regmatches = array();
-                preg_match("/PT(\d+M)?(\d+S)0N1000F/", (string)$segmentxml->MediaTime->MediaDuration, $regmatches);
+                preg_match("/PT(\d+M)?(\d+S)?0N1000F/", (string)$segmentxml->MediaTime->MediaDuration, $regmatches);
                 $sec = substr($regmatches[2], 0, -1);
                 $min = 0;
                 if (0 != strcmp('', $regmatches[1])) {
