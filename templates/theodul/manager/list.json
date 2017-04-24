@@ -10,6 +10,7 @@
 {"name":"EngagePluginVideoVideoJS","id":"6","description":"Videodisplay plugin which uses videoJS","static-path":"6\/static"},
 {"name":"EngagePluginCustomMhConnection","id":"2","description":"Handles Matterhorns Endpoints","static-path":"2\/static"},
 {"name":"EngagePluginTabShortcuts","id":"10","description":"Simple implementation of a tab with the shortcuts","static-path":"10\/static"}
+{"name":"EngagePluginTimelineUserTracking","id":"3","description":"Tracking of sections the user has played","static-path":"3\/static"}
 ]
 }
 }
