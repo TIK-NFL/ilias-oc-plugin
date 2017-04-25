@@ -63,7 +63,7 @@
    }
 
 .video-js {
-    background-color: #FFF !important;
+    background-color: rgba(0, 0, 0, 0.0) !important;
 }
 .clearfix:before,
 .clearfix:after {
@@ -85,7 +85,11 @@
 }
 
 .vjs-fullscreen-control {
-    visibility: hidden;
+    visibility: visible;
+}
+
+#fullscreen_video_wrapper {
+  background-color: #000;
 }
 
 #indicator {

@@ -24,7 +24,7 @@ define(["jquery", "backbone", "engage/core", "../models/footprint"], function($,
     "use strict";
 
     // var USERTRACKING_ENDPOINT = "/usertracking"; ILPATCH
-    var USERTRACKING_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/usertracking";
+    var USERTRACKING_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/usertracking";
     var USERTRACKING_ENDPOINT_FOOTPRINTS = "/footprint.json";
 
     var mediaPackageID = Engage.model.get("urlParameters").id;

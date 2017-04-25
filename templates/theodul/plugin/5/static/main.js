@@ -163,7 +163,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/core", "moment"],
     });
 
     function initPlugin() {
-        if (isDesktopMode && plugin.inserted) {
+        if (plugin.inserted) {
             initTranslate(Engage.model.get("language"));
             var descriptionView = new DescriptionView(Engage.model.get("mediaPackage"), plugin.template);
             Engage.on(plugin.events.mediaPackageModelError.getName(), function(msg) {
@@ -172,7 +172,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/core", "moment"],
         }
     }
 
-    if (isDesktopMode) {
+    if (isDesktopMode || isMobileMode) {
         // init event
         var relative_plugin_path = Engage.getPluginPath("EngagePluginDescription");
 

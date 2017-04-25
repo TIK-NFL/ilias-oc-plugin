@@ -44,6 +44,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
     var events = {
         plugin_load_done: new Engage.Event("Core:plugin_load_done", "", "handler"),
         timeupdate: new Engage.Event("Video:timeupdate", "notices a timeupdate", "handler"),
+        play: new Engage.Event("Video:play","notices a play event", "handler"),
         mediaPackageModelError: new Engage.Event("MhConnection:mediaPackageModelError", "", "handler")
     };
 
@@ -100,7 +101,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
     var mediapackageID;
     var mediapackageError = false;
 
-    /* TODO: Wait for the new usertracking service...
+    /* TODO: Wait for the new usertracking service... */
 
     function initPlugin() {
         mediapackageID = Engage.model.get("urlParameters").id;
@@ -116,16 +117,24 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
         Engage.on(plugin.events.timeupdate.getName(), function(currentTime) {
             if (!mediapackageError) {
                 // add footprint each timeupdate
-                var cTime = Math.round(currentTime);
-                if (lastFootprint != undefined) {
-                    if (lastFootprint != cTime) {
+                var cTime = Math.floor(currentTime);
+		if (cTime%10 == 0) {
+                    if (lastFootprint != undefined) {
+                        if (lastFootprint != cTime) {
+                            lastFootprint = cTime;
+                            Engage.model.get("footprints").put(cTime-10, cTime);
+                        }
+                    } else {
                         lastFootprint = cTime;
-                        Engage.model.get("footprints").put(cTime, cTime + 1);
                     }
-                } else {
-                    lastFootprint = cTime;
-                }
+		}
             }
+        });
+        Engage.on(plugin.events.play.getName(), function() {
+        Engage.log("Usertracking: Play event");
+            if (!mediapackageError) {
+                Engage.model.get("footprints").put(-1, 0);
+	    }
         });
     }
 
@@ -158,7 +167,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
         }
     });
 
-    */
+    /**/
 
     return plugin;
 });

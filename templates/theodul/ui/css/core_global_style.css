@@ -1,10 +1,10 @@
 /* core global css rules*/
 
-* {
+/* {
     margin: 0;
     padding: 0;
     outline: none !important;
-}
+}*/
 
 #engage_view {
     display: none;
@@ -140,4 +140,8 @@
 
 .browser-version {
     display:inline;
+}
+
+img.loadingImg {
+  max-width: 500px;
 }
