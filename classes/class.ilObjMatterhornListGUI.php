@@ -88,9 +88,14 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
                 "value" => $this->txt("offline"));
 
         }
-            $props[] = array("alert" => false, "property" => "Anzahl zu bearbeiten",
-                "value" => "3");
-
+        $this->plugin->includeClass("class.ilObjMatterhorn.php");
+        $this->object = new ilObjMatterhorn($this->ref_id);
+        $onHoldEpisodes = $this->object->getOnHoldEpisodes();
+        $tempEpisodes = $onHoldEpisodes['workflows'];
+        if ( 0 < $tempEpisodes['totalCount']) {
+            $props[] = array("alert" => false, "property" => $this->txt("to_edit"),
+                    "value" =>  $tempEpisodes['totalCount']);
+        }
         return $props;
     }
 }
