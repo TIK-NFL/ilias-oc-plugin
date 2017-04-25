@@ -80,22 +80,32 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
     */
     public function getProperties()
     {
+        global $ilUser, $ilAccess;
+
         $props = array();
-        
+
         $this->plugin->includeClass("class.ilObjMatterhornAccess.php");
         if (!ilObjMatterhornAccess::checkOnline($this->obj_id)) {
             $props[] = array("alert" => true, "property" => $this->txt("status"),
                 "value" => $this->txt("offline"));
 
         }
-        $this->plugin->includeClass("class.ilObjMatterhorn.php");
-        $this->object = new ilObjMatterhorn($this->ref_id);
-        $onHoldEpisodes = $this->object->getOnHoldEpisodes();
-        $tempEpisodes = $onHoldEpisodes['workflows'];
-        if ( 0 < $tempEpisodes['totalCount']) {
-            $props[] = array("alert" => false, "property" => $this->txt("to_edit"),
-                    "value" =>  $tempEpisodes['totalCount']);
+
+        if ($a_user_id == "") {
+            $a_user_id = $ilUser->getId();
         }
+
+        if ($ilAccess->checkAccessOfUser($a_user_id, "write", "", $a_ref_id)) {
+            $this->plugin->includeClass("class.ilObjMatterhorn.php");
+            $this->object = new ilObjMatterhorn($this->ref_id);
+            $onHoldEpisodes = $this->object->getOnHoldEpisodes();
+            $tempEpisodes = $onHoldEpisodes['workflows'];
+            if ( 0 < $tempEpisodes['totalCount']) {
+                $props[] = array("alert" => false, "property" => $this->txt("to_edit"),
+                        "value" =>  $tempEpisodes['totalCount']);
+            }
+        }
+
         return $props;
     }
 }
