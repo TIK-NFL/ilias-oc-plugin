@@ -166,3 +166,46 @@ $fields = array(
 $ilDB->createTable("rep_robj_xmh_slidetext", $fields);
 $ilDB->addPrimaryKey("rep_robj_xmh_slidetext",array("episode_id","slidetime"));
 ?>
+
+<#14>
+<?php
+$fields = array(
+                'id' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+
+                'series_id' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+                'episode_id' => array(
+                                'type' => 'text',
+                                'length' => 50,
+                                'fixed' => false,
+                                'notnull' => true
+                ),
+                'user_id' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+                'intime' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+                'outtime' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+);
+
+$ilDB->createTable("rep_robj_xmh_usrtrack", $fields);
+// ignore that ILIAS does wont to have an extra autoinc table. This will only work in mysql, but I don't care about Oracle.
+$ilDB->manipulate(" ALTER TABLE rep_robj_xmh_usrtrack MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
+
+?>

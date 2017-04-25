@@ -86,7 +86,10 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
         if (!ilObjMatterhornAccess::checkOnline($this->obj_id)) {
             $props[] = array("alert" => true, "property" => $this->txt("status"),
                 "value" => $this->txt("offline"));
+
         }
+            $props[] = array("alert" => false, "property" => "Anzahl zu bearbeiten",
+                "value" => "3");
 
         return $props;
     }

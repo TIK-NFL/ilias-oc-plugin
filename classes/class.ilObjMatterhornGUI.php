@@ -987,4 +987,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         return $this->txt($a_text);
     }
+    
+    public function addInfoItems($info){
+        $info->addProperty("geht","vielleicht");
+        //ilLoggerFactory::getLogger('xmh')->debug('Info: '.$info);
+    }
 }

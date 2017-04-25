@@ -132,12 +132,16 @@ class ilMatterhornSendfile
         $this->ilAccess =& $ilAccess;
         $this->params = array();
         $this->requestType = "none";
-        
+
         // get the requested file and its type
         $uri = parse_url($_SERVER["REQUEST_URI"]);
-        parse_str($uri["query"], $this->params);
+        if($_SERVER['REQUEST_METHOD'] == 'GET') {
+            parse_str($uri["query"], $this->params);
+        } elseif($_SERVER['REQUEST_METHOD'] == 'PUT') {
+            parse_str(file_get_contents("php://input"), $this->params);
+        }
         #$ilLog->write("Request for:".substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json");
-        #$ilLog->write("Request for:".$uri["path"]);
+        $ilLog->write("Request for:".$uri["path"]);
         #$ilLog->write("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
         
         global $basename;
@@ -153,39 +157,51 @@ class ilMatterhornSendfile
 
             list($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
         } else {
-            $client_start = strpos($_SERVER['PHP_SELF'], $basename."/") + strlen($basename)+1;
-            $pattern = substr($_SERVER['REQUEST_URI'], $client_start+strlen(CLIENT_ID));
-            $this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern)+1));
-            $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
-            if (!preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
-                $this->errorcode = 404;
-                $this->errortext = $this->lng->txt("no_such_episode");
-                return false;
-            }
-            if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
-                $ilLog->write("PreviewRequest for: ".$this->subpath);
-                $this->requestType = "preview";
-                if (!preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
+            if (0 == strcmp(md5(substr($uri["path"], 0, strpos($_SERVER["PHP_SELF"], "/sendfile.php"))."/usertracking"), md5($uri["path"]))) {
+                $this->requestType = "usertracking";
+                if ($_SERVER['REQUEST_METHOD'] === 'PUT' && 
+                    !preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id']) && 
+                    "FOOTPRINT" === $this->params['type']) {
                     $this->errorcode = 404;
-                    $this->errortext = $this->lng->txt("no_such_episode");
+                    $this->errortext = $this->lng->txt("no_such_method");
                     return false;
                 }
-                
-                list($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
+                list($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
             } else {
-                $this->requestType = "file";
                 $client_start = strpos($_SERVER['PHP_SELF'], $basename."/") + strlen($basename)+1;
                 $pattern = substr($_SERVER['REQUEST_URI'], $client_start+strlen(CLIENT_ID));
                 $this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern)+1));
-                $this->file = realpath(ILIAS_ABSOLUTE_PATH . "/". $this->subpath);
-            
-                // build url path for virtual function
-                $this->virtual_path = str_replace($pattern, "virtual-" . $pattern, $uri["path"]);
                 $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
                 if (!preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
                     $this->errorcode = 404;
                     $this->errortext = $this->lng->txt("no_such_episode");
                     return false;
+                }
+                if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
+                    $ilLog->write("PreviewRequest for: ".$this->subpath);
+                    $this->requestType = "preview";
+                    if (!preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
+                        $this->errorcode = 404;
+                        $this->errortext = $this->lng->txt("no_such_episode");
+                        return false;
+                    }
+                    
+                    list($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
+                } else {
+                    $this->requestType = "file";
+                    $client_start = strpos($_SERVER['PHP_SELF'], $basename."/") + strlen($basename)+1;
+                    $pattern = substr($_SERVER['REQUEST_URI'], $client_start+strlen(CLIENT_ID));
+                    $this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern)+1));
+                    $this->file = realpath(ILIAS_ABSOLUTE_PATH . "/". $this->subpath);
+                
+                    // build url path for virtual function
+                    $this->virtual_path = str_replace($pattern, "virtual-" . $pattern, $uri["path"]);
+                    $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
+                    if (!preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
+                        $this->errorcode = 404;
+                        $this->errortext = $this->lng->txt("no_such_episode");
+                        return false;
+                    }
                 }
             }
         }
@@ -320,7 +336,22 @@ class ilMatterhornSendfile
         $this->errortext = $this->lng->txt('msg_no_perm_read');
         return false;
     }
-    
+
+    public function putUserTracking() {
+        global $ilUser, $ilDB;
+        $intime = intval($this->params['in']);
+        $outtime = intval($this->params['out']);
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_usrtrack ".
+                "(series_id, episode_id, user_id, intime, outtime) VALUES (".
+                $ilDB->quote($this->obj_id, "integer").",".
+                $ilDB->quote($this->episode_id, "text").",".
+                $ilDB->quote($ilUser->getId(), "integer").",".
+                $ilDB->quote($intime, "integer").",".
+                $ilDB->quote($outtime, "integer").
+            ")");
+        header("HTTP/1.0 204 Stored");
+
+    }
 
     /**
     * Check access rights for an object by its object id
@@ -634,15 +665,12 @@ class ilMatterhornSendfile
             case 404:
                 header("HTTP/1.0 404 Not Found");
                 return;
-//				break;
             case 403:
             default:
                 header("HTTP/1.0 403 Forbidden");
                 return;
-                
-                //break;
         }
-        
+
         // set the page base to the ILIAS directory
         // to get correct references for images and css files
         $tpl->setCurrentBlock("HeadBaseTag");

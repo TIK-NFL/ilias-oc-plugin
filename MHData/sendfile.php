@@ -18,6 +18,16 @@ switch ($sf->getRequestType()) {
             $sf->sendError();
         }
         break;
+    case "usertracking":
+        if ($sf->checkEpisodeAccess())
+        {
+            $sf->putUserTracking();
+        }
+        else
+        {
+            $sf->sendError();
+        }
+        break;
     case "preview":
         if ($sf->checkPreviewAccess())
         {
