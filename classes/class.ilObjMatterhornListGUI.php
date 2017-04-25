@@ -95,7 +95,7 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
             $a_user_id = $ilUser->getId();
         }
 
-        if ($ilAccess->checkAccessOfUser($a_user_id, "write", "", $a_ref_id)) {
+        if ($ilAccess->checkAccessOfUser($a_user_id, "write", "", $this->ref_id)) {
             $this->plugin->includeClass("class.ilObjMatterhorn.php");
             $this->object = new ilObjMatterhorn($this->ref_id);
             $onHoldEpisodes = $this->object->getOnHoldEpisodes();
