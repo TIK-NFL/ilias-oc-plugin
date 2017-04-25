@@ -59,6 +59,7 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
         }
 
         switch ($a_permission) {
+            case "visible":
             case "read":
                 if (!ilObjMatterhornAccess::checkOnline($a_obj_id) &&
                     !$ilAccess->checkAccessOfUser($a_user_id, "write", "", $a_ref_id)) {
