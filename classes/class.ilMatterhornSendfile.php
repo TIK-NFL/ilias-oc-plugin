@@ -338,20 +338,103 @@ class ilMatterhornSendfile
     }
 
     public function putUserTracking() {
-        global $ilUser, $ilDB;
+        global $ilUser;
         $intime = intval($this->params['in']);
         $outtime = intval($this->params['out']);
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_usrtrack ".
-                "(series_id, episode_id, user_id, intime, outtime) VALUES (".
-                $ilDB->quote($this->obj_id, "integer").",".
-                $ilDB->quote($this->episode_id, "text").",".
-                $ilDB->quote($ilUser->getId(), "integer").",".
-                $ilDB->quote($intime, "integer").",".
-                $ilDB->quote($outtime, "integer").
-            ")");
+
+        $video_id = this->getvideo_id($this->episode_id);
+        $view = this->getLastView($ilUser->getId(), $video_id);
+
+        if ($intime < 0) {
+            if ($view['intime'] < 0) {
+                //double -1 datapoint
+            } else {
+                $view = ['intime' => -1, 'outtime' => 0];
+            }
+        } else {
+            if ($view['intime'] < 0) {
+                // first FOOTPRINT after -1
+                $view['intime'] = $intime;
+                $view['outtime'] = $intime + 10;
+            } else {
+                $view['outtime'] += 10;
+            }
+        }
+
+        this->addView($ilUser->getId(), $video_id, $view);
         header("HTTP/1.0 204 Stored");
 
     }
+
+    /**
+     * search for thr video_id for the episode_id. If no video_id exists for this episode_id, create a new video_id.
+     * @return int the video_id
+     * @access private
+     */
+    private function getvideo_id($episode_id) {
+        global $ilDB;
+
+        $query = $ilDB->query("SELECT id FROM rep_robj_xmh_videos WHERE episode_id LIKE " .
+                $ilDB->quote($episode_id, "text"));
+
+        if ($ilDB->numRows($query) == 0) {
+            //add Video to Table
+            $nextID = $ilDB->nextID("rep_robj_xmh_videos");
+            $sql = "INSERT INTO rep_robj_xmh_videos (id, episode_id) VALUES (" .
+                    $ilDB->quote($nextID, "integer") . ", " .
+                    $ilDB->quote($episode_id, "text") . ")";
+            $ilDB->manipulate($sql);
+
+            return $nextID;
+        } else {
+            return $ilDB->fetch_assoc($query)["id"];
+        }
+    }
+
+    /**
+     * Get the last view from this video from this user
+     * @return array view
+     * @access private
+     */
+    private function getLastView($user_id, $video_id) {
+        global $ilDB;
+
+        $query = $ilDB->query("SELECT id, intime, outtime FROM rep_robj_xmh_views WHERE user_id = " .
+                $ilDB->quote($user_id, "integer") . " AND video_id = " .
+                $ilDB->quote($video_id, "integer") . " ORDER BY id DESC");
+
+        if ($ilDB->numRows($query) == 0) {
+            return ["intime" => -1, "outtime" => 0];
+        } else {
+            return $ilDB->fetch_assoc($query);
+        }
+    }
+
+    /**
+     * Add the view from this video from this user to DB. If the view is an update from last view, update the DB.
+     * @param array view
+     * @access private
+     */
+    private function addView($user_id, $video_id, $view) {
+        global $ilDB;
+
+        if (array_key_exists("id", $view)) {
+            $sql = "UPDATE rep_robj_xmh_views SET intime = " .
+                    $ilDB->quote($view["intime"], "integer") . ", outtime = " .
+                    $ilDB->quote($view["outtime"], "integer") . " WHERE id = " .
+                    $ilDB->quote($view["id"], "integer");
+        } else {
+            $nextID = $ilDB->nextID("rep_robj_xmh_views");
+            $sql = "INSERT INTO rep_robj_xmh_views (id, user_id, video_id, intime, outtime) VALUES (" .
+                    $ilDB->quote($nextID, "integer") . ", " .
+                    $ilDB->quote($user_id, "integer") . ", " .
+                    $ilDB->quote($video_id, "integer") . ", " .
+                    $ilDB->quote($view["intime"], "integer") . ", " .
+                    $ilDB->quote($view["outtime"], "integer") . ")";
+        }
+        $ilDB->manipulate($sql);
+    }
+
 
     /**
     * Check access rights for an object by its object id

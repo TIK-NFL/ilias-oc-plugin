@@ -209,3 +209,55 @@ $ilDB->createTable("rep_robj_xmh_usrtrack", $fields);
 $ilDB->manipulate(" ALTER TABLE rep_robj_xmh_usrtrack MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
 
 ?>
+<#15>
+<?php
+$fields = array(
+                'id' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+                'user_id' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+                'video_id' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+                'intime' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+                'outtime' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+);
+
+$ilDB->createTable("rep_robj_xmh_views", $fields)
+$ilDB->addPrimaryKey("rep_robj_xmh_views", array("id"));
+$ilDB->createSequence("rep_robj_xmh_views");
+
+$fields = array(
+                'id' => array(
+                                'type' => 'integer',
+                                'length' => 8,
+                                'notnull' => true
+                ),
+                'episode_id' => array(
+                                'type' => 'text',
+                                'length' => 50,
+                                'fixed' => false,
+                                'notnull' => true
+                ),
+);
+
+$ilDB->createTable("rep_robj_xmh_videos", $fields)
+$ilDB->addPrimaryKey("rep_robj_xmh_videos", array("id"));
+$ilDB->createSequence("rep_robj_xmh_videos");
+?>
