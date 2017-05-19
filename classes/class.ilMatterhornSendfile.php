@@ -342,8 +342,7 @@ class ilMatterhornSendfile
         $intime = intval($this->params['in']);
         $outtime = intval($this->params['out']);
 
-        $video_id = this->getvideo_id($this->episode_id);
-        $view = this->getLastView($ilUser->getId(), $video_id);
+        $view = this->getLastView($ilUser->getId(), $this->episode_id);
 
         if ($intime < 0) {
             if ($view['intime'] < 0) {
@@ -355,40 +354,20 @@ class ilMatterhornSendfile
             if ($view['intime'] < 0) {
                 // first FOOTPRINT after -1
                 $view['intime'] = $intime;
-                $view['outtime'] = $intime + 10;
+                $view['outtime'] = $outtime;
             } else {
-                $view['outtime'] += 10;
+                if ( $view['outtime'] == $intime) {
+                    //same view
+                    $view['outtime'] == $outtime;
+                } else {
+                    $view = ['intime' => $intime, 'outtime' => $outtime];
+                }
             }
         }
 
-        this->addView($ilUser->getId(), $video_id, $view);
+        this->addView($ilUser->getId(), $episode_id, $view);
         header("HTTP/1.0 204 Stored");
 
-    }
-
-    /**
-     * search for thr video_id for the episode_id. If no video_id exists for this episode_id, create a new video_id.
-     * @return int the video_id
-     * @access private
-     */
-    private function getvideo_id($episode_id) {
-        global $ilDB;
-
-        $query = $ilDB->query("SELECT id FROM rep_robj_xmh_videos WHERE episode_id LIKE " .
-                $ilDB->quote($episode_id, "text"));
-
-        if ($ilDB->numRows($query) == 0) {
-            //add Video to Table
-            $nextID = $ilDB->nextID("rep_robj_xmh_videos");
-            $sql = "INSERT INTO rep_robj_xmh_videos (id, episode_id) VALUES (" .
-                    $ilDB->quote($nextID, "integer") . ", " .
-                    $ilDB->quote($episode_id, "text") . ")";
-            $ilDB->manipulate($sql);
-
-            return $nextID;
-        } else {
-            return $ilDB->fetch_assoc($query)["id"];
-        }
     }
 
     /**
@@ -396,12 +375,12 @@ class ilMatterhornSendfile
      * @return array view
      * @access private
      */
-    private function getLastView($user_id, $video_id) {
+    private function getLastView($user_id, $episode_id) {
         global $ilDB;
 
         $query = $ilDB->query("SELECT id, intime, outtime FROM rep_robj_xmh_views WHERE user_id = " .
-                $ilDB->quote($user_id, "integer") . " AND video_id = " .
-                $ilDB->quote($video_id, "integer") . " ORDER BY id DESC");
+                $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " .
+                $ilDB->quote($episode_id, "text") . " ORDER BY id DESC");
 
         if ($ilDB->numRows($query) == 0) {
             return ["intime" => -1, "outtime" => 0];
@@ -415,7 +394,7 @@ class ilMatterhornSendfile
      * @param array view
      * @access private
      */
-    private function addView($user_id, $video_id, $view) {
+    private function addView($user_id, $episode_id, $view) {
         global $ilDB;
 
         if (array_key_exists("id", $view)) {
@@ -424,11 +403,9 @@ class ilMatterhornSendfile
                     $ilDB->quote($view["outtime"], "integer") . " WHERE id = " .
                     $ilDB->quote($view["id"], "integer");
         } else {
-            $nextID = $ilDB->nextID("rep_robj_xmh_views");
-            $sql = "INSERT INTO rep_robj_xmh_views (id, user_id, video_id, intime, outtime) VALUES (" .
-                    $ilDB->quote($nextID, "integer") . ", " .
+            $sql = "INSERT INTO rep_robj_xmh_views (user_id, episode_id, intime, outtime) VALUES (" .
                     $ilDB->quote($user_id, "integer") . ", " .
-                    $ilDB->quote($video_id, "integer") . ", " .
+                    $ilDB->quote($episode_id, "text") . ", " .
                     $ilDB->quote($view["intime"], "integer") . ", " .
                     $ilDB->quote($view["outtime"], "integer") . ")";
         }
