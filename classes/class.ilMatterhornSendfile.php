@@ -342,7 +342,7 @@ class ilMatterhornSendfile
         $intime = intval($this->params['in']);
         $outtime = intval($this->params['out']);
 
-        $view = this->getLastView($ilUser->getId(), $this->episode_id);
+        $view = $this->getLastView($ilUser->getId(), $this->episode_id);
 
         if ($intime < 0) {
             if ($view['intime'] < 0) {
@@ -365,7 +365,7 @@ class ilMatterhornSendfile
             }
         }
 
-        this->addView($ilUser->getId(), $episode_id, $view);
+        $this->addView($ilUser->getId(), $episode_id, $view);
         header("HTTP/1.0 204 Stored");
 
     }
