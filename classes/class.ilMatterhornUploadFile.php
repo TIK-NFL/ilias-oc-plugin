@@ -302,7 +302,7 @@ class ilMatterhornUploadFile
 
     public function createEpisode()
     {
-        global  $ilUser, $ilLog;
+        global  $ilUser;
 
         $basedir = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->getDirectory();
 

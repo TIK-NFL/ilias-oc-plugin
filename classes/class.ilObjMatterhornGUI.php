@@ -155,11 +155,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     public function setSubTabs($a_tab)
     {
-        global $ilTabs, $ilCtrl, $lng, $ilLog;
+        global $ilTabs, $ilCtrl, $lng;
         
         switch ($a_tab) {
                 case "manage":
-                        $ilLog->write("setting subtabs");
+                        ilLoggerFactory::getLogger('xmh')->debug("setting subtabs");
                         $ilTabs->addSubTab("finishedepisodes", $this->txt('finished_recordings'), $ilCtrl->getLinkTarget($this, 'editFinishedEpisodes'));
                         $ilTabs->addSubTab("processtrim", $this->txt('processtrim'), $ilCtrl->getLinkTarget($this, 'editTrimProcess'));
                         $ilTabs->addSubTab("schedule", $this->txt('scheduled_recordings'), $ilCtrl->getLinkTarget($this, 'editSchedule'));
@@ -279,40 +279,40 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
     public function publish()
     {
-        global $ilCtrl, $ilLog;
-        $ilLog->write("ID:".$_GET["id"]);
+        global $ilCtrl;
+        ilLoggerFactory::getLogger('xmh')->debug("ID:".$_GET["id"]);
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
             $this->object->publish($_GET["id"]);
             ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
         } else {
-            $ilLog->write("ID does not match in publish episode:".$_GET["id"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:".$_GET["id"]);
         }
         $ilCtrl->redirect($this, "editFinishedEpisodes");
     }
 
     public function retract()
     {
-        global $ilCtrl, $ilLog;
-        $ilLog->write("ID:".$_GET["id"]);
+        global $ilCtrl;
+        ilLoggerFactory::getLogger('xmh')->debug("ID:".$_GET["id"]);
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
             $this->object->retract($_GET["id"]);
             ilUtil::sendSuccess($this->txt("msg_episode_retracted"), true);
         } else {
-            $ilLog->write("ID does not match in retract episode:".$_GET["id"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in retract episode:".$_GET["id"]);
         }
         $ilCtrl->redirect($this, "editFinishedEpisodes");
     }
 
     public function deletescheduled()
     {
-        global $ilCtrl, $ilLog;
-        $ilLog->write("deleteing message");
-        $ilLog->write("ID:".$_GET["id"]);
+        global $ilCtrl;
+        ilLoggerFactory::getLogger('xmh')->debug("deleteing message");
+        ilLoggerFactory::getLogger('xmh')->debug("ID:".$_GET["id"]);
         if (preg_match('/^[0-9]+/', $_GET["id"])) {
             $this->object->deleteschedule($_GET["id"]);
             ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
         } else {
-            $ilLog->write("ID does not match in deleteschedule:".$_GET["id"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in deleteschedule:".$_GET["id"]);
         }
         $ilCtrl->redirect($this, "editSchedule");
     }
@@ -358,7 +358,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $seriestpl->parseCurrentBlock();
             foreach ($released_episodes as $item) {
                 $seriestpl->setCurrentBlock($this->object->getDownload()?"episodedownload":"episode");
-                //$ilLog->write("Adding: ".$item["title"]);
+                //ilLoggerFactory::getLogger('xmh')->debug("Adding: ".$item["title"]);
                     
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
                 $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
@@ -395,14 +395,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
     private function extractProcessingEpisodes($workflow)
     {
-        global $ilLog;
         $totalops = 0.0;
         $finished = 0;
         $running = "Waiting";
 
         foreach ($workflow["operations"]["operation"] as $operation) {
             //search for trim. If it will run, count only up to here if it is not finished yet, otherwise count from here
-            $ilLog->write($operation["id"]);
+            ilLoggerFactory::getLogger('xmh')->debug($operation["id"]);
             $state = (string)$operation["state"];
             if ($operation["id"] === "trim") {
                 if ($operation["if"] === "true") {
@@ -645,7 +644,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     private function editEpisodes($section)
     {
         global $tpl, $ilTabs, $ilCtrl;
-        global $ilLog;
         $ilTabs->activateTab("manage");
         $editbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/edit";
         $this->checkPermission("write");
@@ -673,7 +671,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
         switch ($section) {
             case 'finished':
-                $ilLog->write($section);
+                ilLoggerFactory::getLogger('xmh')->debug($section);
                 $this->tabs->activateSubTab('finishedepisodes');
                 $seriestpl->setCurrentBlock('finishedstart');
                 $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
@@ -689,7 +687,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->touchblock("footerfinished");
                 break;
             case 'trimprocess':
-                $ilLog->write($section);
+                ilLoggerFactory::getLogger('xmh')->debug($section);
                 $this->tabs->activateSubTab('processtrim');
                 $seriestpl->setCurrentBlock("processing");
                 $seriestpl->setVariable("TXT_PROCESSING", $this->getText("processing"));
@@ -706,7 +704,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->parseCurrentBlock();
                 break;
             case 'upload':
-                $ilLog->write($section);
+                ilLoggerFactory::getLogger('xmh')->debug($section);
                 $this->tabs->activateSubTab('upload');
                 $seriestpl->setCurrentBlock("upload");
                 $seriestpl->setVariable("TXT_ADD_NEW_EPISODE", $this->getText("add_new_episode"));
@@ -722,7 +720,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->parseCurrentBlock();
                 break;
             case 'scheduled':
-            $ilLog->write($section);
+                ilLoggerFactory::getLogger('xmh')->debug($section);
                 $this->tabs->activateSubTab('schedule');
                 $seriestpl->setCurrentBlock("scheduled");
                 $seriestpl->setVariable("TXT_SCHEDULED_RECORDING", $this->getText("scheduled_recordings"));
@@ -752,7 +750,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     public function showTrimEditor()
     {
-        global $tpl, $ilTabs, $ilCtrl, $ilLog;
+        global $tpl, $ilTabs, $ilCtrl;
         $this->checkPermission("write");
         $trimbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/trim";
 
@@ -760,7 +758,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $workflow = $this->object->getWorkflow($_GET["id"]);
             $namespaces = $workflow->getNamespaces(true);
             $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage;
-            $ilLog->write($this->object->getSeries());
+            ilLoggerFactory::getLogger('xmh')->debug($this->object->getSeries());
             if (!strpos($this->object->getSeries(), trim($mediapackage->series))) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
@@ -768,7 +766,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $worktracks = array();
             foreach ($mediapackage->media->track as $track) {
                 $trackattribs = $track->attributes();
-                $ilLog->write((string)$trackattribs['type']." >>".(string)$track->mimetype."<<");
+                ilLoggerFactory::getLogger('xmh')->debug((string)$trackattribs['type']." >>".(string)$track->mimetype."<<");
                 switch ((string)$trackattribs['type']) {
                     case "composite/iliaspreview":
                         if (!array_key_exists("sbs", $previewtracks)) {
@@ -777,11 +775,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                         if ("video/mp4" === (string)$track->mimetype) {
                             $previewtracks['sbs']['mp4'] = $track;
                             $_SESSION["mhpreviewurlpreviewsbsmp4".$_GET["id"]] = (string)$track->url;
-                            $ilLog->write("setting mp4 sbs: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
+                            ilLoggerFactory::getLogger('xmh')->debug("setting mp4 sbs: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
                         } else {
                             $previewtracks['sbs']['webm'] = $track;
                             $_SESSION["mhpreviewurlpreviewsbswebm".$_GET["id"]] = (string)$track->url;
-                            $ilLog->write("setting webm sbs: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
+                            ilLoggerFactory::getLogger('xmh')->debug("setting webm sbs: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
                         }
                         break;
                     case "presentation/preview":
@@ -791,11 +789,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                         if ("video/mp4" === (string)$track->mimetype) {
                             $previewtracks['presentation']['mp4'] = $track;
                             $_SESSION["mhpreviewurlpreviewpresentationmp4".$_GET["id"]] = (string)$track->url;
-                            $ilLog->write("setting mp4 presentation: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
+                            ilLoggerFactory::getLogger('xmh')->debug("setting mp4 presentation: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
                         } else {
                             $previewtracks['presentation']['webm'] = $track;
                             $_SESSION["mhpreviewurlpreviewpresentationwebm".$_GET["id"]] = (string)$track->url;
-                            $ilLog->write("setting webm presentation: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
+                            ilLoggerFactory::getLogger('xmh')->debug("setting webm presentation: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
                         }
                         break;
                     case "presenter/preview":
@@ -805,11 +803,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                         if ("video/mp4" === (string)$track->mimetype) {
                             $previewtracks['presenter']['mp4'] = $track;
                             $_SESSION["mhpreviewurlpreviewpresentermp4".$_GET["id"]] = (string)$track->url;
-                            $ilLog->write("setting mp4 presenter: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
+                            ilLoggerFactory::getLogger('xmh')->debug("setting mp4 presenter: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
                         } else {
                             $previewtracks['presenter']['webm'] = $track;
                             $_SESSION["mhpreviewurlpreviewpresenterwebm".$_GET["id"]] = (string)$track->url;
-                            $ilLog->write("setting webm presenter: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
+                            ilLoggerFactory::getLogger('xmh')->debug("setting webm presenter: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
                         }
                         break;
                     case "presentation/work":
@@ -902,12 +900,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
     public function trimEpisode()
     {
-        global $ilCtrl, $ilLog;
-        //$ilLog->write("ID:".$_POST["wfid"]);
+        global $ilCtrl;
+        //ilLoggerFactory::getLogger('xmh')->debug("ID:".$_POST["wfid"]);
         if (preg_match('/^[0-9a-f\-]+/', $_POST["wfid"])) {
             $workflow = $this->object->getWorkflow($_POST["wfid"]);
             $namespaces = $workflow->getNamespaces(true);
-            $ilLog->write("namespaces: ". print_r($namespaces, true));
+            ilLoggerFactory::getLogger('xmh')->debug("namespaces: ". print_r($namespaces, true));
             $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage;
             if (!strpos($this->object->getSeries(), trim($mediapackage->series))) {
                 $ilCtrl->redirect($this, "editTrimProcess");
@@ -977,7 +975,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {
-            $ilLog->write("ID does not match an episode:".$_POST["wfid"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match an episode:".$_POST["wfid"]);
         }
         $ilCtrl->redirect($this, "editTrimProcess");
     }

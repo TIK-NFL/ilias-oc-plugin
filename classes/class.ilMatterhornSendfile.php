@@ -126,7 +126,7 @@ class ilMatterhornSendfile
     */
     public function __construct()
     {
-        global  $ilAccess, $lng, $ilLog;
+        global  $ilAccess, $lng;
         
         $this->lng =& $lng;
         $this->ilAccess =& $ilAccess;
@@ -140,14 +140,14 @@ class ilMatterhornSendfile
         } elseif($_SERVER['REQUEST_METHOD'] == 'PUT') {
             parse_str(file_get_contents("php://input"), $this->params);
         }
-        #$ilLog->write("Request for:".substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json");
-        $ilLog->write("Request for:".$uri["path"]);
-        #$ilLog->write("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
+        #ilLoggerFactory::getLogger('xmh')->debug("Request for:".substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json");
+        ilLoggerFactory::getLogger('xmh')->debug("Request for:".$uri["path"]);
+        #ilLoggerFactory::getLogger('xmh')->debug("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
         
         global $basename;
         // check if it is a request for an episode
         if (0 == strcmp(md5(substr($uri["path"], 0, strpos($_SERVER["PHP_SELF"], "/sendfile.php"))."/episode.json"), md5($uri["path"]))) {
-            //$ilLog->write("EpisodeRequest for: ".print_r($this->params,true));
+            //ilLoggerFactory::getLogger('xmh')->debug("EpisodeRequest for: ".print_r($this->params,true));
             $this->requestType = "episode";
             if (!preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
                 $this->errorcode = 404;
@@ -178,7 +178,7 @@ class ilMatterhornSendfile
                     return false;
                 }
                 if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
-                    $ilLog->write("PreviewRequest for: ".$this->subpath);
+                    ilLoggerFactory::getLogger('xmh')->debug("PreviewRequest for: ".$this->subpath);
                     $this->requestType = "preview";
                     if (!preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
                         $this->errorcode = 404;
@@ -308,11 +308,10 @@ class ilMatterhornSendfile
     */
     public function checkFileAccess()
     {
-        #global $ilLog;
-        #$ilLog->write("MHSendfile: check access for ". $this->obj_id);
+        #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access for ". $this->obj_id);
         // an error already occurred at class initialisation
         if ($this->errorcode) {
-            #$ilLog->write("MHSendfile: check access already has error code for ". $this->obj_id);
+            #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access already has error code for ". $this->obj_id);
             return false;
         }
 
@@ -324,13 +323,13 @@ class ilMatterhornSendfile
         if (!$iliasid || $type == 'none') {
             $this->errorcode = 404;
             $this->errortext = $this->lng->txt("obj_not_found");
-            #$ilLog->write("MHSendfile: obj_not_found");
+            #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: obj_not_found");
             return false;
         }
         if ($this->checkAccessObject($iliasid)) {
             return true;
         }
-        #$ilLog->write("MHSendfile: no access found");
+        #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: no access found");
         // none of the checks above gives access
         $this->errorcode = 403;
         $this->errortext = $this->lng->txt('msg_no_perm_read');
@@ -381,9 +380,8 @@ class ilMatterhornSendfile
     public function sendEpisode()
     {
         global $basename;
-        #global $ilLog;
         
-        #$ilLog->write("Manifestbasedir: ".$this->configObject->getXSendfileBasedir().$this->obj_id.'/'.$this->episode_id);
+        #ilLoggerFactory::getLogger('xmh')->debug("Manifestbasedir: ".$this->configObject->getXSendfileBasedir().$this->obj_id.'/'.$this->episode_id);
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/manifest.xml', null, true);
 
         $episode = array();
@@ -444,11 +442,11 @@ class ilMatterhornSendfile
                 }
             }
             if (isset($catalog['type']) && 0 == strcmp((string)$catalog['type'], 'mpeg-7/segments')) {
-                #$ilLog->write("setting catalog to ".(string)$catalog['type']);
+                #ilLoggerFactory::getLogger('xmh')->debug("setting catalog to ".(string)$catalog['type']);
                 $segments = $catalog;
             }
             if (isset($catalog['type']) && 0 == strcmp((string)$catalog['type'], 'mpeg-7/text')) {
-                #$ilLog->write("setting catalog to ".(string)$catalog['type']);
+                #ilLoggerFactory::getLogger('xmh')->debug("setting catalog to ".(string)$catalog['type']);
                 $segments = $catalog;
             }
             array_push($metadata['catalog'], $cat);
@@ -520,7 +518,6 @@ class ilMatterhornSendfile
     
     private function convertSegment($catalog)
     {
-        global $ilLog;
         $urlsplit = explode('/', (string)$catalog->url);
         end($urlsplit);
         $segmentsxml = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/'.prev($urlsplit).'/'.end($urlsplit), null, true);
@@ -562,14 +559,13 @@ class ilMatterhornSendfile
     public function sendFile()
     {
 
-        #global $ilLog;
 //		header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
         include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-        #$ilLog->write("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$this->subpath);
+        #ilLoggerFactory::getLogger('xmh')->debug("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$this->subpath);
         $mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir().$this->subpath);
         header("Content-Type: ".$mime);
 #		if (isset($_SERVER['HTTP_RANGE'])) {
-#			$ilLog->write("range request".$_SERVER['HTTP_RANGE']);
+#			ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
 #		}
         $file = $this->configObject->getXSendfileBasedir().$this->subpath;
         $this->sendData($file);
@@ -634,20 +630,20 @@ class ilMatterhornSendfile
     
     public function sendPreview()
     {
-        global $ilLog;
+
         $urlsplit = explode('/', $this->subpath);
         $typesplit = explode('.', $urlsplit[2]);
-        $ilLog->write(print_r($typesplit, true));
-        $ilLog->write('mhpreviewurl'.$typesplit[0].$typesplit[1].$urlsplit[1]);
+        ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
+        ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl'.$typesplit[0].$typesplit[1].$urlsplit[1]);
         $realfile = str_replace($this->configObject->getMatterhornServer().'/files', $this->configObject
       ->getMatterhornFilesDirectory(), $_SESSION['mhpreviewurl'.$typesplit[0].$typesplit[1].$urlsplit[1]]);
-        $ilLog->write("Real preview file: ".$realfile);
+        ilLoggerFactory::getLogger('xmh')->debug("Real preview file: ".$realfile);
 //    header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
       include_once("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
         $mime = ilMimeTypeUtil::getMimeType($realfile);
         header("Content-Type: ".$mime);
 #       if (isset($_SERVER['HTTP_RANGE'])) {
-#           $ilLog->write("range request".$_SERVER['HTTP_RANGE']);
+#           ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
 #       }
         $this->sendData($realfile);
     }
