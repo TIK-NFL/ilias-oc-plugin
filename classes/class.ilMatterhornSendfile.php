@@ -341,77 +341,13 @@ class ilMatterhornSendfile
         global $ilUser;
         $intime = intval($this->params['in']);
         $outtime = intval($this->params['out']);
+        $user_id = $ilUser->getId();
+        
+        ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass("class.ilMatterhornUserTracking.php");
+        ilMatterhornUserTracking::putUserTracking($user_id, $this->episode_id, $intime, $outtime);
 
-        $view = $this->getLastView($ilUser->getId(), $this->episode_id);
-
-        if ($intime < 0) {
-            if ($view['intime'] < 0) {
-                //double -1 datapoint
-            } else {
-                $view = ['intime' => -1, 'outtime' => 0];
-            }
-        } else {
-            if ($view['intime'] < 0) {
-                // first FOOTPRINT after -1
-                $view['intime'] = $intime;
-                $view['outtime'] = $outtime;
-            } else {
-                if ( $view['outtime'] == $intime) {
-                    //same view
-                    $view['outtime'] == $outtime;
-                } else {
-                    $view = ['intime' => $intime, 'outtime' => $outtime];
-                }
-            }
-        }
-
-        $this->addView($ilUser->getId(), $episode_id, $view);
         header("HTTP/1.0 204 Stored");
-
     }
-
-    /**
-     * Get the last view from this video from this user
-     * @return array view
-     * @access private
-     */
-    private function getLastView($user_id, $episode_id) {
-        global $ilDB;
-
-        $query = $ilDB->query("SELECT id, intime, outtime FROM rep_robj_xmh_views WHERE user_id = " .
-                $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " .
-                $ilDB->quote($episode_id, "text") . " ORDER BY id DESC");
-
-        if ($ilDB->numRows($query) == 0) {
-            return ["intime" => -1, "outtime" => 0];
-        } else {
-            return $ilDB->fetch_assoc($query);
-        }
-    }
-
-    /**
-     * Add the view from this video from this user to DB. If the view is an update from last view, update the DB.
-     * @param array view
-     * @access private
-     */
-    private function addView($user_id, $episode_id, $view) {
-        global $ilDB;
-
-        if (array_key_exists("id", $view)) {
-            $sql = "UPDATE rep_robj_xmh_views SET intime = " .
-                    $ilDB->quote($view["intime"], "integer") . ", outtime = " .
-                    $ilDB->quote($view["outtime"], "integer") . " WHERE id = " .
-                    $ilDB->quote($view["id"], "integer");
-        } else {
-            $sql = "INSERT INTO rep_robj_xmh_views (user_id, episode_id, intime, outtime) VALUES (" .
-                    $ilDB->quote($user_id, "integer") . ", " .
-                    $ilDB->quote($episode_id, "text") . ", " .
-                    $ilDB->quote($view["intime"], "integer") . ", " .
-                    $ilDB->quote($view["outtime"], "integer") . ")";
-        }
-        $ilDB->manipulate($sql);
-    }
-
 
     /**
     * Check access rights for an object by its object id
