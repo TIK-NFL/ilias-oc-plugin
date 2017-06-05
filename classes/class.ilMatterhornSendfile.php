@@ -1,35 +1,6 @@
 <?php
+
 /* Copyright (c) 1998-2010 ILIAS open source, Extended GPL, see docs/LICENSE */
-// Prevent a general redirect to the login screen for anonymous users.
-// The checker will show an error page with login link instead
-// (see ilInitialisation::InitILIAS() for details)
-$_GET["baseClass"] = "ilStartUpGUI";
-
-$basename = "/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData";
-
-// Define a pseudo module to get a correct ILIAS_HTTP_PATH
-// (needed for links on the error page).
-// "data" is assumed to be the ILIAS_WEB_DIR
-// (see ilInitialisation::buildHTTPPath() for details)
-define("ILIAS_MODULE", substr($_SERVER['PHP_SELF'], strpos($_SERVER['PHP_SELF'], $basename) + strlen($basename) + 1));
-
-// Define the cookie path to prevent a different session created for web access
-// (see ilInitialisation::setCookieParams() for details)
-$GLOBALS['COOKIE_PATH'] = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_SELF'], $basename));
-
-// Remember if the initial session was empty
-// Then a new session record should not be written
-// (see ilSession::_writeData for details)
-$GLOBALS['WEB_ACCESS_WITHOUT_SESSION'] = (session_id() == "");
-
-include_once "Services/Context/classes/class.ilContext.php";
-ilContext::init(ilContext::CONTEXT_WAC);
-
-// Now the ILIAS header can be included
-require_once "./include/inc.header.php";
-require_once "./Services/Utilities/classes/class.ilUtil.php";
-require_once "./Services/Object/classes/class.ilObject.php";
-require_once "./Services/MediaObjects/classes/class.ilObjMediaObject.php";
 
 /**
  * Class ilMatterhornSendfile
@@ -38,7 +9,7 @@ require_once "./Services/MediaObjects/classes/class.ilObjMediaObject.php";
  * Based on the WebAccessChecker
  *
  * @auther Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
- * 
+ *
  * @author Fred Neumann <fred.neumann@fim.uni-erlangen.de>
  * @version $Id: class.ilWebAccessChecker.php 50013 2014-05-13 16:20:01Z akill $
  *         
@@ -53,7 +24,7 @@ class ilMatterhornSendfile
 
     /**
      * relative file path from ilias directory (without leading /)
-     * 
+     *
      * @var string
      * @access private
      */
@@ -61,7 +32,7 @@ class ilMatterhornSendfile
 
     /**
      * the id of the matterhorn object
-     * 
+     *
      * @var string
      * @access private
      */
@@ -69,7 +40,7 @@ class ilMatterhornSendfile
 
     /**
      * the id of the matterhorn episode
-     * 
+     *
      * @var string
      * @access private
      */
@@ -77,7 +48,7 @@ class ilMatterhornSendfile
 
     /**
      * absolute path in file system
-     * 
+     *
      * @var string
      * @access private
      */
@@ -85,7 +56,7 @@ class ilMatterhornSendfile
 
     /**
      * Stores the request type.
-     * 
+     *
      * @var string
      * @access private
      */
@@ -94,7 +65,7 @@ class ilMatterhornSendfile
     /**
      * The mimetype to be sent
      * will be determined if null
-     * 
+     *
      * @var string
      * @access private
      */
@@ -102,7 +73,7 @@ class ilMatterhornSendfile
 
     /**
      * errorcode for sendError
-     * 
+     *
      * @var integer
      * @access private
      */
@@ -110,7 +81,7 @@ class ilMatterhornSendfile
 
     /**
      * errortext for sendError
-     * 
+     *
      * @var integer
      * @access private
      */
@@ -118,7 +89,7 @@ class ilMatterhornSendfile
 
     /**
      * the configuration for the matterhorn object
-     * 
+     *
      * @var ilMatterhornConfig
      * @access private
      */
@@ -126,7 +97,7 @@ class ilMatterhornSendfile
 
     /**
      * Constructor
-     * 
+     *
      * @access public
      */
     public function __construct()
@@ -252,7 +223,7 @@ class ilMatterhornSendfile
 
     /**
      * Returns the type of request
-     * 
+     *
      * @access public
      */
     public function getRequestType()
@@ -286,7 +257,7 @@ class ilMatterhornSendfile
 
     /**
      * Check access rights of the requested file
-     * 
+     *
      * @access public
      */
     public function checkEpisodeAccess()
@@ -313,7 +284,7 @@ class ilMatterhornSendfile
 
     /**
      * Check access rights of the requested file
-     * 
+     *
      * @access public
      */
     public function checkFileAccess()
@@ -379,7 +350,7 @@ class ilMatterhornSendfile
 
     /**
      * Send the requested eposide.json
-     * 
+     *
      * @access public
      */
     public function sendEpisode()
@@ -576,7 +547,7 @@ class ilMatterhornSendfile
 
     /**
      * Send the requested file as if directly delivered from the web server
-     * 
+     *
      * @access public
      */
     public function sendFile()
@@ -668,7 +639,7 @@ class ilMatterhornSendfile
 
     /**
      * Send an error response for the requested file
-     * 
+     *
      * @access public
      */
     public function sendError()
@@ -725,7 +696,7 @@ class ilMatterhornSendfile
 
     /**
      * Get the mime type of the requested file
-     * 
+     *
      * @param
      *            string default type
      * @return string mime type
