@@ -28,7 +28,7 @@ class ilMatterhornSendfile
      * @var string
      * @access private
      */
-    public $subpath;
+    private $subpath;
 
     /**
      * the id of the matterhorn object
@@ -36,7 +36,7 @@ class ilMatterhornSendfile
      * @var string
      * @access private
      */
-    public $obj_id;
+    private $obj_id;
 
     /**
      * the id of the matterhorn episode
@@ -44,7 +44,7 @@ class ilMatterhornSendfile
      * @var string
      * @access private
      */
-    public $episode_id;
+    private $episode_id;
 
     /**
      * absolute path in file system
@@ -52,7 +52,7 @@ class ilMatterhornSendfile
      * @var string
      * @access private
      */
-    public $file;
+    private $file;
 
     /**
      * Stores the request type.
@@ -60,7 +60,7 @@ class ilMatterhornSendfile
      * @var string
      * @access private
      */
-    public $requestType;
+    private $requestType;
 
     /**
      * The mimetype to be sent
@@ -69,7 +69,7 @@ class ilMatterhornSendfile
      * @var string
      * @access private
      */
-    public $mimetype = null;
+    private $mimetype = null;
 
     /**
      * errorcode for sendError
@@ -77,7 +77,7 @@ class ilMatterhornSendfile
      * @var integer
      * @access private
      */
-    public $errorcode;
+    private $errorcode;
 
     /**
      * errortext for sendError
@@ -85,7 +85,7 @@ class ilMatterhornSendfile
      * @var integer
      * @access private
      */
-    public $errortext;
+    private $errortext;
 
     /**
      * the configuration for the matterhorn object
@@ -93,7 +93,7 @@ class ilMatterhornSendfile
      * @var ilMatterhornConfig
      * @access private
      */
-    public $configObject;
+    private $configObject;
 
     /**
      * Constructor
@@ -102,7 +102,7 @@ class ilMatterhornSendfile
      */
     public function __construct()
     {
-        global $ilAccess, $lng;
+        global $ilAccess, $lng, $basename;
         
         $this->lng = & $lng;
         $this->ilAccess = & $ilAccess;
@@ -111,6 +111,9 @@ class ilMatterhornSendfile
         
         // get the requested file and its type
         $uri = parse_url($_SERVER["REQUEST_URI"]);
+        
+        $path = substr($uri["path"], strpos($uri["path"], $basename) + strlen($basename));
+        
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             parse_str($uri["query"], $this->params);
         } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
@@ -120,9 +123,8 @@ class ilMatterhornSendfile
         ilLoggerFactory::getLogger('xmh')->debug("Request for:" . $uri["path"]);
         // ilLoggerFactory::getLogger('xmh')->debug("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
         
-        global $basename;
         // check if it is a request for an episode
-        if (0 == strcmp(md5(substr($uri["path"], 0, strpos($_SERVER["PHP_SELF"], "/sendfile.php")) . "/episode.json"), md5($uri["path"]))) {
+        if (0 == strcmp("/episode.json", $path)) {
             // ilLoggerFactory::getLogger('xmh')->debug("EpisodeRequest for: ".print_r($this->params,true));
             $this->requestType = "episode";
             if (! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
@@ -132,51 +134,35 @@ class ilMatterhornSendfile
             }
             
             list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
+        } else if (0 == strcmp("/usertracking", $path)) {
+            $this->requestType = "usertracking";
+            if ($_SERVER['REQUEST_METHOD'] === 'PUT' && ! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id']) && "FOOTPRINT" === $this->params['type']) {
+                $this->errorcode = 404;
+                $this->errortext = $this->lng->txt("no_such_method");
+                return false;
+            }
+            list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
         } else {
-            if (0 == strcmp(md5(substr($uri["path"], 0, strpos($_SERVER["PHP_SELF"], "/sendfile.php")) . "/usertracking"), md5($uri["path"]))) {
-                $this->requestType = "usertracking";
-                if ($_SERVER['REQUEST_METHOD'] === 'PUT' && ! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id']) && "FOOTPRINT" === $this->params['type']) {
-                    $this->errorcode = 404;
-                    $this->errortext = $this->lng->txt("no_such_method");
-                    return false;
-                }
-                list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
-            } else {
-                $client_start = strpos($_SERVER['PHP_SELF'], $basename . "/") + strlen($basename) + 1;
-                $pattern = substr($_SERVER['REQUEST_URI'], $client_start + strlen(CLIENT_ID));
-                $this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern) + 1));
-                $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
-                if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
+            $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
+            $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
+            if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
+                $this->errorcode = 404;
+                $this->errortext = $this->lng->txt("no_such_episode");
+                return false;
+            }
+            if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
+                ilLoggerFactory::getLogger('xmh')->debug("PreviewRequest for: " . $this->subpath);
+                $this->requestType = "preview";
+                if (! preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
                     $this->errorcode = 404;
                     $this->errortext = $this->lng->txt("no_such_episode");
                     return false;
                 }
-                if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
-                    ilLoggerFactory::getLogger('xmh')->debug("PreviewRequest for: " . $this->subpath);
-                    $this->requestType = "preview";
-                    if (! preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
-                        $this->errorcode = 404;
-                        $this->errortext = $this->lng->txt("no_such_episode");
-                        return false;
-                    }
-                    
-                    list ($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
-                } else {
-                    $this->requestType = "file";
-                    $client_start = strpos($_SERVER['PHP_SELF'], $basename . "/") + strlen($basename) + 1;
-                    $pattern = substr($_SERVER['REQUEST_URI'], $client_start + strlen(CLIENT_ID));
-                    $this->subpath = urldecode(substr($uri["path"], strpos($uri["path"], $pattern) + 1));
-                    $this->file = realpath(ILIAS_ABSOLUTE_PATH . "/" . $this->subpath);
-                    
-                    // build url path for virtual function
-                    $this->virtual_path = str_replace($pattern, "virtual-" . $pattern, $uri["path"]);
-                    $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
-                    if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
-                        $this->errorcode = 404;
-                        $this->errortext = $this->lng->txt("no_such_episode");
-                        return false;
-                    }
-                }
+                
+                list ($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
+            } else {
+                $this->requestType = "file";
+                $this->file = realpath(ILIAS_ABSOLUTE_PATH . "/" . $this->subpath);
             }
         }
         include_once ("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
