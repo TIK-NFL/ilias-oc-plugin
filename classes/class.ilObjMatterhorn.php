@@ -95,7 +95,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     */
     public function doCreate()
     {
-        global $ilDB, $ilLog;
+        global $ilDB;
         $url = $this->configObject->getMatterhornServer()."/series/";
         $fields = $this->createPostFields();
         //url-ify the data for the POST
@@ -117,7 +117,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $ilLog->write("Created new opencast object on server: "+ $httpCode);
+        ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: "+ $httpCode);
         $ilDB->manipulate("INSERT INTO rep_robj_xmh_data ".
                 "(obj_id, is_online, series, mhretval, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (".
                 $ilDB->quote($this->getId(), "integer").",".
@@ -160,7 +160,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     */
     public function doUpdate()
     {
-        global $ilDB, $ilLog;
+        global $ilDB;
 
         $url = $this->configObject->getMatterhornServer()."/series/";
         $fields = $this->createPostFields();
@@ -185,8 +185,8 @@ class ilObjMatterhorn extends ilObjectPlugin
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         
-        $ilLog->write("Updated opencast object on server: "+ $httpCode);
-        $ilLog->write($result);
+        ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: "+ $httpCode);
+        ilLoggerFactory::getLogger('xmh')->debug($result);
         $ilDB->manipulate("UPDATE rep_robj_xmh_data SET ".
             " is_online = ".$ilDB->quote($this->getOnline(), "integer").",".
             " series = ".$ilDB->quote($this->getSeries(), "text").",".
@@ -280,8 +280,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 
     public function updateSearchRecords()
     {
-        //global  $ilLog;
-        //$ilLog->write("updating search for ".$this->getId());
+        //ilLoggerFactory::getLogger('xmh')->debug("updating search for ".$this->getId());
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->obj_id.'/'.$this->episode_id.'/manifest.xml', null, true);
     }
     
@@ -289,8 +288,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function addTextToDB($episodeId)
     {
         global $ilDB;
-        //global $ilLog;
-        //$ilLog->write($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml');
+        //ilLoggerFactory::getLogger('xmh')->debug($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml');
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml', null, true);
         $textcatalog = null;
         foreach ($manifest->metadata->catalog as $catalog) {
@@ -561,7 +559,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 
     public function deleteschedule($workflowid)
     {
-        global $ilLog;
         $url = $this->configObject->getMatterhornServer().'/recordings/'.$workflowid;
 
         //open connection
@@ -575,7 +572,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curlret = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $ilLog->write("delete code: ".$httpCode);
+        ilLoggerFactory::getLogger('xmh')->debug("delete code: ".$httpCode);
         return $httpCode;
     }
     /**
@@ -722,8 +719,6 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getWorkflow($workflowid)
     {
-        global $ilLog;
-                
         $url = $this->configObject->getMatterhornServer()."/workflow/instance/".$workflowid.".xml";
         //open connection
         $ch = curl_init();
@@ -736,9 +731,9 @@ class ilObjMatterhorn extends ilObjectPlugin
         $curlret = curl_exec($ch);
         $workflow = simplexml_load_string($curlret);
         if ($workflow === false) {
-            $ilLog->write("error loading workflow: ".$workflowid);
+            ilLoggerFactory::getLogger('xmh')->debug("error loading workflow: ".$workflowid);
             foreach (libxml_get_errors() as $error) {
-                $ilLog->write("error : ". $error->message);
+                ilLoggerFactory::getLogger('xmh')->debug("error : ". $error->message);
             }
         }
         return $workflow;
@@ -753,8 +748,6 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getDublinCore($dublincoreurl)
     {
-        global $ilLog;
-                
         //open connection
         $ch = curl_init();
         //set the url, number of POST vars, POST data
@@ -766,9 +759,9 @@ class ilObjMatterhorn extends ilObjectPlugin
         $curlret = curl_exec($ch);
         $dublincore= simplexml_load_string($curlret);
         if ($dublincore === false) {
-            $ilLog->write("error loading dublincore: ".$dublincoreurl);
+            ilLoggerFactory::getLogger('xmh')->error("error loading dublincore: ".$dublincoreurl);
             foreach (libxml_get_errors() as $error) {
-                $ilLog->write("error : ". $error->message);
+                ilLoggerFactory::getLogger('xmh')->error("error : ". $error->message);
             }
         }
         return $dublincore;
@@ -783,8 +776,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function setDublinCore($dublincoreurl, $content)
     {
-        global $ilLog;
-        $ilLog->write($httpCode.$content);
+        ilLoggerFactory::getLogger('xmh')->debug($httpCode.$content);
         //open connection
         $ch = curl_init();
         //set the url, number of POST vars, POST data
@@ -803,7 +795,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $curlret = curl_exec($ch);
-        $ilLog->write($httpCode.$curlret);
+        ilLoggerFactory::getLogger('xmh')->debug($httpCode.$curlret);
         //return $dublincore;
     }
 
@@ -818,7 +810,6 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function trim($workflowid, $mediapackage, $removetrack, $trimin, $trimout)
     {
-        global $ilLog;
         $mp = $mediapackage;
         //open connection
         $ch = curl_init();
@@ -848,7 +839,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
             $mp = curl_exec($ch);
         }
-        $ilLog->write($mp);
+        ilLoggerFactory::getLogger('xmh')->debug($mp);
         $url = $this->configObject->getMatterhornServer()."/workflow/replaceAndresume/";
         $fields = array();
         $fields['id'] =  $workflowid;
@@ -867,8 +858,8 @@ class ilObjMatterhorn extends ilObjectPlugin
         $mp = curl_exec($ch);
         if (!curl_errno($ch)) {
             $info = curl_getinfo($ch);
-            $ilLog->write('Successful request to '.$info['url'].' in '. $info['total_time']);
+            ilLoggerFactory::getLogger('xmh')->debug('Successful request to '.$info['url'].' in '. $info['total_time']);
         }
-        $ilLog->write($mp);
+        ilLoggerFactory::getLogger('xmh')->debug($mp);
     }
 }
