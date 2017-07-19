@@ -303,16 +303,12 @@ class ilMatterhornSendfile
         return false;
     }
 
-
-    public function putUserTracking() {
-        global $ilUser;
+    public function putUserTracking()
+    {
+        global $ilUser, $ilDB;
         $intime = intval($this->params['in']);
         $outtime = intval($this->params['out']);
-        $user_id = $ilUser->getId();
-        
-        ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass("class.ilMatterhornUserTracking.php");
-        ilMatterhornUserTracking::putUserTracking($user_id, $this->episode_id, $intime, $outtime);
-
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_usrtrack " . "(series_id, episode_id, user_id, intime, outtime) VALUES (" . $ilDB->quote($this->obj_id, "integer") . "," . $ilDB->quote($this->episode_id, "text") . "," . $ilDB->quote($ilUser->getId(), "integer") . "," . $ilDB->quote($intime, "integer") . "," . $ilDB->quote($outtime, "integer") . ")");
         header("HTTP/1.0 204 Stored");
     }
 
