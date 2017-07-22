@@ -252,4 +252,118 @@ $fields = array(
 
 $ilDB->createTable("rep_robj_xmh_views", $fields);
 $ilDB->manipulate(" ALTER TABLE rep_robj_xmh_views MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
+
+ilLoggerFactory::getLogger('xmh')->info("Convert data from rep_robj_xmh_usrtrack table to rep_robj_xmh_views table data");
+$tempTable = 'rep_robj_xmh_usrtrack';
+$viewsTable = 'rep_robj_xmh_views';
+$blocksize = 10000;
+
+function getLastView($user_id, $episode_id)
+{
+    global $ilDB, $viewsTable;
+    
+    $query = $ilDB->query("SELECT id, intime, outtime FROM " . $viewsTable . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id DESC");
+    
+    if ($ilDB->numRows($query) == 0) {
+        return [
+            "intime" => - 1,
+            "outtime" => 0
+        ];
+    } else {
+        return $ilDB->fetch_assoc($query);
+    }
+}
+
+function addViews($user_id, $episode_id, $views)
+{
+    global $ilDB, $viewsTable;
+    
+    foreach ($views as $view) {
+        if (array_key_exists("id", $view)) {
+            $sql = "UPDATE " . $viewsTable . " SET intime = " . $ilDB->quote($view["intime"], "integer") . ", outtime = " . $ilDB->quote($view["outtime"], "integer") . " WHERE id = " . $ilDB->quote($view["id"], "integer");
+        } else {
+            $sql = "INSERT INTO " . $viewsTable . " (user_id, episode_id, intime, outtime) VALUES (" . $ilDB->quote($user_id, "integer") . ", " . $ilDB->quote($episode_id, "text") . ", " . $ilDB->quote($view["intime"], "integer") . ", " . $ilDB->quote($view["outtime"], "integer") . ")";
+        }
+        $ilDB->manipulate($sql);
+    }
+}
+
+$paredRows = 0;
+
+$sql = "SELECT * FROM `" . $tempTable . "` ORDER BY `id` ASC LIMIT " . $blocksize;
+$sqlDelete = "DELETE FROM `" . $tempTable . "` ORDER BY `id` ASC LIMIT " . $blocksize;
+while ($query = $ilDB->query($sql)) {
+    $rowsNum = $ilDB->numRows($query);
+    
+    if ($rowsNum === 0) {
+        ilLoggerFactory::getLogger('xmh')->info($paredRows . ' rows parsed');
+        break;
+    }
+    ilLoggerFactory::getLogger('xmh')->info('Parsing ' . $rowsNum . ' rows. ' . $paredRows . ' rows parsed');
+    
+    $videos = array();
+    
+    while ($row = $ilDB->fetchAssoc($query)) {
+        $episode_id = $row['episode_id'];
+        $user_id = $row['user_id'];
+        
+        $videos[$episode_id][$user_id][] = $row;
+    }
+    
+    foreach ($videos as $episode_id => $users) {
+        foreach ($users as $user_id => $times) {
+            // get last entry from DB
+            $temp = getLastView($user_id, $episode_id);
+            
+            $userViews = array();
+            
+            foreach ($times as $time) {
+                $intime = $time['intime'];
+                $outtime = $time['outtime'];
+                
+                if ($intime < 0) {
+                    if ($temp['intime'] < 0) {
+                        // double -1 datapoint
+                    } else {
+                        $userViews[] = $temp;
+                        
+                        $temp = [
+                            'intime' => - 1,
+                            'outtime' => 0
+                        ];
+                    }
+                } else {
+                    if ($temp['intime'] < 0) {
+                        // first FOOTPRINT after -1
+                        $temp['intime'] = $intime;
+                        $temp['outtime'] = $outtime;
+                    } else {
+                        if ($view['outtime'] == $intime) {
+                            // same view
+                            $view['outtime'] == $outtime;
+                        } else {
+                            $userViews[] = $temp;
+                            
+                            $view = [
+                                'intime' => $intime,
+                                'outtime' => $outtime
+                            ];
+                        }
+                    }
+                }
+            }
+            $userViews[] = $temp;
+            
+            // add the new view to DB
+            addViews($user_id, $episode_id, $userViews);
+        }
+    }
+    
+    $queryDelete = $ilDB->manipulate($sqlDelete);
+    
+    $paredRows += $rowsNum;
+}
+
+// delete rep_robj_xmh_usrtrack table
+$ilDB->dropTable("rep_robj_xmh_usrtrack");
 ?>
