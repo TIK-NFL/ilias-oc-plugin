@@ -52,6 +52,13 @@ switch ($sf->getRequestType()) {
             $sf->sendError();
         }
         break;
+    case "statistic":
+        if ($sf->checkEpisodeAccess()) {
+            $sf->sendStatistic();
+        } else {
+            $sf->sendError();
+        }
+        break;
     case "preview":
         if ($sf->checkPreviewAccess()) {
             $sf->sendPreview();

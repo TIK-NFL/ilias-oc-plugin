@@ -142,6 +142,16 @@ class ilMatterhornSendfile
                 return false;
             }
             list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
+        } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
+            $this->requestType = "statistic";
+            
+            if (! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
+                $this->errorcode = 404;
+                $this->errortext = $this->lng->txt("no_such_episode");
+                return false;
+            }
+            
+            list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
         } else {
             $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
             $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
