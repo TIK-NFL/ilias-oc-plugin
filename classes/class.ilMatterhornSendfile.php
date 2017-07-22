@@ -317,6 +317,71 @@ class ilMatterhornSendfile
     }
 
     /**
+     * send the Statistic overview for the episode as json.
+     */
+    public function sendStatistic()
+    {
+        ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass("class.ilMatterhornUserTracking.php");
+        $statistic = ilMatterhornUserTracking::getStatisticFromVideo($this->episode_id);
+        $data = array();
+        foreach ($statistic as $name => $value) {
+            $content = array();
+            $content['name'] = $name;
+            switch ($name) {
+                case "total_unique_views":
+                    $content['type'] = "Number";
+                    $content['value'] = $value;
+                    break;
+                case "views":
+                case "unique_views":
+                    $content['type'] = "mapping";
+                    $content['key'] = "time";
+                    $content['value'] = "views";
+                    $content['step'] = 10;
+                    $mapping = array_fill(0, max(array_keys($value)), 0);
+                    $content['mapping'] = array_replace($mapping, $value);
+                    break;
+            }
+            
+            $data[] = $content;
+        }
+        
+        $infoarray = array();
+        $infoarray['name'] = "Episode Name";
+        $infoarray['episode_id'] = $this->episode_id;
+        // $infoarray['series_id'] = $this->;
+        $infoarray['duration'] = $this->getDuration();
+        $infoarray['data'] = $data;
+        
+        $this->sendJSON($infoarray);
+    }
+
+    /**
+     * Get the Duration of the episode in milliseconds as String
+     *
+     * @return string duration in milliseconds
+     */
+    private function getDuration()
+    {
+        global $basename;
+        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
+        $duration = (string) $manifest->duration;
+        return $duration;
+    }
+
+    /**
+     * Send the Array as json
+     *
+     * @param array $array
+     *            the array
+     */
+    private function sendJSON($array)
+    {
+        header("Content-Type: application/json");
+        echo json_encode($array);
+    }
+
+    /**
      * Check access rights for an object by its object id
      *
      * @param
