@@ -107,10 +107,10 @@ class ilMatterhornUserTracking
         global $ilDB;
         // TODO rechte
         // TODO video informationen manifest aus lesen
+        $dataarray = [];
+        
         $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode_id, "text"));
-        if ($ilDB->numRows($query) == 0) {
-            return [];
-        } else {
+        if ($ilDB->numRows($query) > 0) {
             $users = array();
             while ($row = $ilDB->fetch_assoc($query)) {
                 $user_id = $row['user_id'];
@@ -118,19 +118,38 @@ class ilMatterhornUserTracking
                 $users[$user_id][] = $row;
             }
             $data = array();
+            $useruniqueviewdata = array();
             foreach ($users as $user_id => $views) {
+                $userviewdata = array();
                 foreach ($views as $view) {
                     for ($time = $view['intime'] / 10; $time < $view['outtime'] / 10; $time ++) {
-                        if (! array_key_exists($time, $data)) {
-                            $data[$time] = 1;
+                        if (! array_key_exists($time, $userviewdata)) {
+                            $userviewdata[$time] = 1;
                         } else {
-                            $data[$time] ++;
+                            $userviewdata[$time] ++;
                         }
                     }
                 }
+                
+                foreach ($userviewdata as $time => $views) {
+                    if (! array_key_exists($time, $data)) {
+                        $data[$time] = $views;
+                    } else {
+                        $data[$time] += $views;
+                    }
+                    
+                    if (! array_key_exists($time, $useruniqueviewdata)) {
+                        $useruniqueviewdata[$time] = 1;
+                    } else {
+                        $useruniqueviewdata[$time] ++;
+                    }
+                }
             }
-            // TODO Format
-            return $data;
+            
+            $dataarray['views'] = $data;
+            $dataarray['unique_views'] = $useruniqueviewdata;
+            $dataarray['total_unique_views'] = count($users);
         }
+        return $dataarray;
     }
 }
