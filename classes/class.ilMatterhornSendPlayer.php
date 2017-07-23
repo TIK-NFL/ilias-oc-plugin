@@ -12,88 +12,87 @@
 class ilMatterhornSendPlayer
 {
 
-    public $basename = "/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
+    private $basename = "/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
 
     /**
      * relative file path from ilias directory (without leading /)
-     * 
+     *
      * @var string
      * @access private
      */
-    public $subpath;
+    private $subpath;
 
     /**
      * the base path of the ilias installation
-     * 
+     *
      * @var string
      * @access private
      */
-    public $iliasPrefix;
+    private $iliasPrefix;
 
     /**
      * the id of the matterhorn episode
-     * 
+     *
      * @var string
      * @access private
      */
-    public $episode_id;
+    private $episode_id;
 
     /**
      * absolute path in file system
-     * 
+     *
      * @var string
      * @access private
      */
-    public $file;
+    private $file;
 
     /**
      * Stores if this is a request for an episode.
-     * 
+     *
      * @var boolean
      * @access private
      */
-    public $episodeRequest;
+    private $episodeRequest;
 
     /**
      * The mimetype to be sent
      * will be determined if null
-     * 
+     *
      * @var string
      * @access private
      */
-    public $mimetype = null;
+    private $mimetype = null;
 
     /**
      * errorcode for sendError
-     * 
+     *
      * @var integer
      * @access private
      */
-    public $errorcode;
+    private $errorcode;
 
     /**
      * errortext for sendError
-     * 
+     *
      * @var integer
      * @access private
      */
-    public $errortext;
+    private $errortext;
 
     /**
      * Constructor
-     * 
+     *
      * @access public
      */
-    public function ilMatterhornSendPlayer()
+    public function __construct()
     {
-        /*
-         * global $ilUser, $ilAccess, $lng, $ilLog;
-         *
-         * $this->lng =& $lng;
-         * $this->ilAccess =& $ilAccess;
-         * $this->params = array();
-         * $this->episodeRequest = false;
-         */
+        // global $ilUser, $ilAccess, $lng, $ilLog;
+        
+        // $this->lng = & $lng;
+        // $this->ilAccess = & $ilAccess;
+        // $this->params = array();
+        // $this->episodeRequest = false;
+        
         // get the requested file and its type
         // $uri = parse_url($_SERVER["REQUEST_URI"]);
         // parse_str($uri["query"], $this->params);
@@ -102,33 +101,28 @@ class ilMatterhornSendPlayer
         $this->subpath = $_SERVER["DOCUMENT_ROOT"] . substr($_SERVER['PHP_SELF'], 0, $client_start);
         $this->file = substr($_SERVER['REQUEST_URI'], $client_start);
         
-        /*
-         * // debugging
-         * echo "<pre>\n";
-         * //var_dump($uri);
-         * //var_dump($this->params);
-         * echo "REQUEST_URI: ". $_SERVER["REQUEST_URI"]. "\n";
-         * echo "Parsed URI: ". $uri["path"]. "\n";
-         * echo "DOCUMENT_ROOT: ". $_SERVER["DOCUMENT_ROOT"]. "\n";
-         * echo "PHP_SELF: ". $_SERVER["PHP_SELF"]. "\n";
-         * echo "SCRIPT_NAME: ". $_SERVER["SCRIPT_NAME"]. "\n";
-         * echo "SCRIPT_FILENAME: ". $_SERVER["SCRIPT_FILENAME"]. "\n";
-         * echo "subpath: ". $this->subpath. "\n";
-         * echo "file: ". $this->file. "\n";
-         * echo "</pre>";
-         *
-         * # echo phpinfo();
-         * exit;
-         *
-         */
-        /*
-         * if (!file_exists($this->file))
-         * {
-         * $this->errorcode = 404;
-         * $this->errortext = $this->lng->txt("url_not_found");
-         * return false;
-         * }
-         */
+        // // debugging
+        // echo "<pre>\n";
+        // var_dump($uri);
+        // var_dump($this->params);
+        // echo "REQUEST_URI: " . $_SERVER["REQUEST_URI"] . "\n";
+        // echo "Parsed URI: " . $uri["path"] . "\n";
+        // echo "DOCUMENT_ROOT: " . $_SERVER["DOCUMENT_ROOT"] . "\n";
+        // echo "PHP_SELF: " . $_SERVER["PHP_SELF"] . "\n";
+        // echo "SCRIPT_NAME: " . $_SERVER["SCRIPT_NAME"] . "\n";
+        // echo "SCRIPT_FILENAME: " . $_SERVER["SCRIPT_FILENAME"] . "\n";
+        // echo "subpath: " . $this->subpath . "\n";
+        // echo "file: " . $this->file . "\n";
+        // echo "</pre>";
+        
+        // echo phpinfo();
+        // exit();
+        
+        // if (! file_exists($this->file)) {
+        // $this->errorcode = 404;
+        // $this->errortext = $this->lng->txt("url_not_found");
+        // return false;
+        // }
     }
 
     public function checkFileAccess()
@@ -138,7 +132,7 @@ class ilMatterhornSendPlayer
 
     /**
      * Send the requested file as if directly delivered from the web server
-     * 
+     *
      * @access public
      */
     public function sendFile()
@@ -152,6 +146,7 @@ class ilMatterhornSendPlayer
             header("Content-Type: " . finfo_file($finfo, $this->subpath . $this->file));
             finfo_close($finfo);
         }
+        
         if (preg_match("/\.js$|\.css$|\.html/i", $this->subpath . $this->file)) {
             $file = file_get_contents($this->subpath . $this->file);
             if ($this->iliasPrefix != "") {
@@ -167,7 +162,7 @@ class ilMatterhornSendPlayer
 
     /**
      * Send an error response for the requested file
-     * 
+     *
      * @access public
      */
     public function sendError()
@@ -175,16 +170,10 @@ class ilMatterhornSendPlayer
         switch ($this->errorcode) {
             case 404:
                 header("HTTP/1.0 404 Not Found");
-                return;
-            // break;
+                break;
             case 403:
             default:
                 header("HTTP/1.0 403 Forbidden");
-                return;
-            
-            // break;
         }
-        header("HTTP/1.0 404 Not Found");
-        return;
     }
 }
