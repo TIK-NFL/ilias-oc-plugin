@@ -341,7 +341,7 @@ while ($query = $ilDB->query($sqlSelect)) {
                     } else {
                         if ($temp['outtime'] == $intime) {
                             // same view
-                            $temp['outtime'] == $outtime;
+                            $temp['outtime'] = $outtime;
                         } else {
                             $userViews[] = $temp;
                             

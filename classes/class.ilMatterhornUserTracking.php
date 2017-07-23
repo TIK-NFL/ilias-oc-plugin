@@ -38,7 +38,7 @@ class ilMatterhornUserTracking
             } else {
                 if ($view['outtime'] == $intime) {
                     // same view
-                    $view['outtime'] == $outtime;
+                    $view['outtime'] = $outtime;
                 } else {
                     $view = [
                         'intime' => $intime,
@@ -71,7 +71,7 @@ class ilMatterhornUserTracking
                 "outtime" => 0
             ];
         } else {
-            return $ilDB->fetch_assoc($query);
+            return $ilDB->fetchAssoc($query);
         }
     }
 
@@ -112,7 +112,7 @@ class ilMatterhornUserTracking
         $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode_id, "text"));
         if ($ilDB->numRows($query) > 0) {
             $users = array();
-            while ($row = $ilDB->fetch_assoc($query)) {
+            while ($row = $ilDB->fetchAssoc($query)) {
                 $user_id = $row['user_id'];
                 
                 $users[$user_id][] = $row;
