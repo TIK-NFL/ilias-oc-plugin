@@ -291,9 +291,9 @@ function addViews($user_id, $episode_id, $views)
 
 $paredRows = 0;
 
-$sql = "SELECT * FROM `" . $tempTable . "` ORDER BY `id` ASC LIMIT " . $blocksize;
+$sqlSelect = "SELECT * FROM `" . $tempTable . "` ORDER BY `id` ASC LIMIT " . $blocksize;
 $sqlDelete = "DELETE FROM `" . $tempTable . "` ORDER BY `id` ASC LIMIT " . $blocksize;
-while ($query = $ilDB->query($sql)) {
+while ($query = $ilDB->query($sqlSelect)) {
     $rowsNum = $ilDB->numRows($query);
     
     if ($rowsNum === 0) {
