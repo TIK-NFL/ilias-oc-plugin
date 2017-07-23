@@ -357,9 +357,9 @@ class ilMatterhornSendfile
         }
         
         $infoarray = array();
-        $infoarray['name'] = "Episode Name";
+        $infoarray['name'] = $this->getTitle();
         $infoarray['episode_id'] = $this->episode_id;
-        // $infoarray['series_id'] = $this->;
+        $infoarray['series_id'] = $this->obj_id;
         $infoarray['duration'] = $this->getDuration();
         $infoarray['data'] = $data;
         
@@ -375,8 +375,21 @@ class ilMatterhornSendfile
     {
         global $basename;
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
-        $duration = (string) $manifest->duration;
+        $duration = (string) $manifest['duration'];
         return $duration;
+    }
+
+    /**
+     * Get the title of the episode
+     *
+     * @return string
+     */
+    private function getTitle()
+    {
+        global $basename;
+        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
+        $title = (string) $manifest->title;
+        return $title;
     }
 
     /**
