@@ -250,19 +250,20 @@ $fields = array(
     )
 );
 
-$ilDB->createTable("rep_robj_xmh_views", $fields);
-$ilDB->manipulate(" ALTER TABLE rep_robj_xmh_views MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
+const viewsTable = 'rep_robj_xmh_views';
+
+$ilDB->createTable(viewsTable, $fields);
+$ilDB->manipulate(" ALTER TABLE " . viewsTable. " MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
 
 ilLoggerFactory::getLogger('xmh')->info("Convert data from rep_robj_xmh_usrtrack table to rep_robj_xmh_views table data");
 $tempTable = 'rep_robj_xmh_usrtrack';
-$viewsTable = 'rep_robj_xmh_views';
 $blocksize = 10000;
 
 function getLastView($user_id, $episode_id)
 {
-    global $ilDB, $viewsTable;
+    global $ilDB;
     
-    $query = $ilDB->query("SELECT id, intime, outtime FROM " . $viewsTable . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id DESC");
+    $query = $ilDB->query("SELECT id, intime, outtime FROM " . viewsTable . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id DESC");
     
     if ($ilDB->numRows($query) == 0) {
         return [
@@ -276,13 +277,13 @@ function getLastView($user_id, $episode_id)
 
 function addViews($user_id, $episode_id, $views)
 {
-    global $ilDB, $viewsTable;
+    global $ilDB;
     
     foreach ($views as $view) {
         if (array_key_exists("id", $view)) {
-            $sql = "UPDATE " . $viewsTable . " SET intime = " . $ilDB->quote($view["intime"], "integer") . ", outtime = " . $ilDB->quote($view["outtime"], "integer") . " WHERE id = " . $ilDB->quote($view["id"], "integer");
+            $sql = "UPDATE " . viewsTable . " SET intime = " . $ilDB->quote($view["intime"], "integer") . ", outtime = " . $ilDB->quote($view["outtime"], "integer") . " WHERE id = " . $ilDB->quote($view["id"], "integer");
         } else {
-            $sql = "INSERT INTO " . $viewsTable . " (user_id, episode_id, intime, outtime) VALUES (" . $ilDB->quote($user_id, "integer") . ", " . $ilDB->quote($episode_id, "text") . ", " . $ilDB->quote($view["intime"], "integer") . ", " . $ilDB->quote($view["outtime"], "integer") . ")";
+            $sql = "INSERT INTO " . viewsTable . " (user_id, episode_id, intime, outtime) VALUES (" . $ilDB->quote($user_id, "integer") . ", " . $ilDB->quote($episode_id, "text") . ", " . $ilDB->quote($view["intime"], "integer") . ", " . $ilDB->quote($view["outtime"], "integer") . ")";
         }
         $ilDB->manipulate($sql);
     }
