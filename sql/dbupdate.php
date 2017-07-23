@@ -253,7 +253,7 @@ $fields = array(
 const viewsTable = 'rep_robj_xmh_views';
 
 $ilDB->createTable(viewsTable, $fields);
-$ilDB->manipulate(" ALTER TABLE " . viewsTable. " MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
+$ilDB->manipulate(" ALTER TABLE " . viewsTable . " MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
 
 ilLoggerFactory::getLogger('xmh')->info("Convert data from rep_robj_xmh_usrtrack table to rep_robj_xmh_views table data");
 $tempTable = 'rep_robj_xmh_usrtrack';
@@ -339,13 +339,13 @@ while ($query = $ilDB->query($sql)) {
                         $temp['intime'] = $intime;
                         $temp['outtime'] = $outtime;
                     } else {
-                        if ($view['outtime'] == $intime) {
+                        if ($temp['outtime'] == $intime) {
                             // same view
-                            $view['outtime'] == $outtime;
+                            $temp['outtime'] == $outtime;
                         } else {
                             $userViews[] = $temp;
                             
-                            $view = [
+                            $temp = [
                                 'intime' => $intime,
                                 'outtime' => $outtime
                             ];
