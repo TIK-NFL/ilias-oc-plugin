@@ -113,7 +113,7 @@ define(["require", "jquery", "backbone", "engage/core"], function(require, $, Ba
     function initTranslate(language) {
         var path = Engage.getPluginPath("EngagePluginCustomMhConnection").replace(/(\.\.\/)/g, "");
         //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
-        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" + path;
+        var jsonstr = ILIAS_THEODUL_PATH + path;
 
         Engage.log("Controls: selecting language " + language);
         jsonstr += "language/" + language + ".json";

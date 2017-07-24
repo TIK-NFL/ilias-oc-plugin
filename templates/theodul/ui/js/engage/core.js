@@ -197,7 +197,7 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
     }
     console.log("Controls: selecting language " + selectedLanguage);
     //jsonstr += "language/" + selectedLanguage + ".json"; ILPATCH
-    jsonstr += "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/language/" + selectedLanguage + ".json";
+    jsonstr += ILIAS_THEODUL_PATH + "ui/language/" + selectedLanguage + ".json";
     $.ajax({
       url: jsonstr,
       dataType: "json",
@@ -486,7 +486,7 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
     if (plugin.template !== "none") {
       // load template asynchronously
       // $.get("engage/theodul/" + plugin_path + plugin.template, function(template) { ILPATCH
-      $.get('/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/engage/' + plugin_path + plugin.template, function (template) {
+      $.get(ILIAS_THEODUL_PATH + 'ui/js/engage/' + plugin_path + plugin.template, function (template) {
         var template_data = {};
         // add template data if not undefined
         if (plugin.template_data !== undefined) {
@@ -494,13 +494,13 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
         }
         // add full plugin path to the template data
         // template_data.plugin_path = "engage/theodul/" + plugin_path; ILPATCH
-        template_data.plugin_path = '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/engage/' + plugin_path;
+        template_data.plugin_path = ILIAS_THEODUL_PATH + 'ui/js/engage/' + plugin_path;
         // process the template using underscore and set it in the plugin obj
         var _template = _.template(template);
         plugin.templateProcessed = _template(template_data);
         plugin.template = template;
         // plugin.pluginPath = "engage/theodul/" + plugin_path; ILPATCH
-        plugin.pluginPath = '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/engage/' + plugin_path;
+        plugin.pluginPath = ILIAS_THEODUL_PATH + 'ui/js/engage/' + plugin_path;
         if (plugin.insertIntoDOM) {
           // load the compiled HTML into the component
           engageCore.pluginView.insertPlugin(plugin, plugin_name, translationData);
@@ -550,7 +550,7 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
               type: "text/css",
               rel: "stylesheet",
               // href: "engage/theodul/" + plugin_path + style_path ILPATCH
-              href: '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/engage/' + plugin_path + style_path
+              href: ILIAS_THEODUL_PATH + 'ui/js/engage/' + plugin_path + style_path
             });
             $("head").append(link);
           }
@@ -562,7 +562,7 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
             type: "text/css",
             rel: "stylesheet",
             // href: "engage/theodul/" + plugin_path + plugin.styles ILPATCH
-            href: '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/engage/' + plugin_path + plugin.styles
+            href: ILIAS_THEODUL_PATH + 'ui/js/engage/' + plugin_path + plugin.styles
           });
           $("head").append(link);
         }
@@ -572,7 +572,7 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
       if (plugin.template_topIfBottom && plugin.template_topIfBottom !== "none") {
         // load template asynchronously
         // $.get("engage/theodul/" + plugin_path + plugin.template_topIfBottom, function (template) { ILPATCH
-        $.get('/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/engage/' + plugin_path + plugin.template_topIfBottom, function (template) {
+        $.get(ILIAS_THEODUL_PATH + 'ui/js/engage/' + plugin_path + plugin.template_topIfBottom, function (template) {
           var template_data = {};
           // add template data if not undefined
           if (plugin.template_data_topIfBottom !== undefined) {
@@ -580,13 +580,13 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
           }
           // add full plugin path to the template data
           // template_data.plugin_path = "engage/theodul/" + plugin_path; ILPATCH
-          template_data.plugin_path = '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/engage/' + plugin_path;
+          template_data.plugin_path = ILIAS_THEODUL_PATH + 'ui/js/engage/' + plugin_path;
           // process the template using underscore and set it in the plugin obj
           var _template = _.template(template);
           plugin.templateProcessed_topIfBottom = _template(template_data);
           plugin.template_topIfBottom = template;
           // plugin.pluginPath_topIfBottom = "engage/theodul/" + plugin_path; ILPATCH
-          plugin.pluginPath_topIfBottom = '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/engage/' + plugin_path;
+          plugin.pluginPath_topIfBottom = ILIAS_THEODUL_PATH + 'ui/js/engage/' + plugin_path;
           loadTemplate(plugin, plugin_name, plugin_path);
         });
       } else {
@@ -710,9 +710,9 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
         case "desktop":
         default:
           // cssAttr.href = engageCore.controls_top ? "css/core_desktop_style_top.css" : "css/core_desktop_style_bottom.css"; ILPATCH
-          cssAttr.href = engageCore.controls_top ? "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/css/core_desktop_style_top.css" : "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/css/core_desktop_style_bottom.css";
+          cssAttr.href = engageCore.controls_top ? ILIAS_THEODUL_PATH + "ui/css/core_desktop_style_top.css" : ILIAS_THEODUL_PATH + "ui/css/core_desktop_style_bottom.css";
           // core_template = engageCore.controls_top ? "templates/core_desktop_top.html" : "templates/core_desktop_bottom.html"; ILPATCH
-          core_template = engageCore.controls_top ? "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/templates/core_desktop_top.html" : "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/templates/core_desktop_bottom.html";
+          core_template = engageCore.controls_top ? ILIAS_THEODUL_PATH + "ui/templates/core_desktop_top.html" : ILIAS_THEODUL_PATH + "ui/templates/core_desktop_bottom.html";
           view_logic_path = "engage/views/desktop";
           engageCore.model.desktop = true;
           break;
