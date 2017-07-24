@@ -28,7 +28,7 @@ define(["backbone", "engage/core"], function(Backbone, Engage) {
     };
 
     // var SEARCH_ENDPOINT = "/search/episode.json"; ILPATCH
-    var SEARCH_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/episode.json";
+    var SEARCH_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/" + "episode.json";
 
     var mediaPackageID = Engage.model.get("urlParameters").id;
     if (!mediaPackageID) {

@@ -24,7 +24,7 @@ define(["backbone", "engage/core"], function(Backbone, Engage) {
     "use strict";
 
     // var INFO_ME_ENDPOINT = "/info/me.json"; ILPATCH
-    var INFO_ME_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/info/me.json"
+    var INFO_ME_ENDPOINT = ILIAS_THEODUL_PATH + "../" + "info/me.json"
 
     var InfoMeModel = Backbone.Model.extend({
         urlRoot: INFO_ME_ENDPOINT,

@@ -96,7 +96,7 @@ define(["require", "jquery", "backbone", "engage/core"], function(require, $, Ba
 
     /* change these variables */
     // var SEARCH_ENDPOINT = "/search/episode.json"; ILPATCH
-    var SEARCH_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/episode.json"
+    var SEARCH_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/" + "episode.json";
 
     /* don't change these variables */
     var initCount = 5;
