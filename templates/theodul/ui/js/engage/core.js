@@ -709,14 +709,14 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
           break;
         case "desktop":
         default:
-          // cssAttr.href = engageCore.controls_top ? "css/core_desktop_style_top.css" : "css/core_desktop_style_bottom.css"; ILPATCH
-          cssAttr.href = engageCore.controls_top ? ILIAS_THEODUL_PATH + "ui/css/core_desktop_style_top.css" : ILIAS_THEODUL_PATH + "ui/css/core_desktop_style_bottom.css";
-          // core_template = engageCore.controls_top ? "templates/core_desktop_top.html" : "templates/core_desktop_bottom.html"; ILPATCH
-          core_template = engageCore.controls_top ? ILIAS_THEODUL_PATH + "ui/templates/core_desktop_top.html" : ILIAS_THEODUL_PATH + "ui/templates/core_desktop_bottom.html";
+          cssAttr.href = engageCore.controls_top ? "css/core_desktop_style_top.css" : "css/core_desktop_style_bottom.css";
+          core_template = engageCore.controls_top ? "templates/core_desktop_top.html" : "templates/core_desktop_bottom.html";
           view_logic_path = "engage/views/desktop";
           engageCore.model.desktop = true;
           break;
       }
+      // ILPATH
+      cssAttr.href = ILIAS_THEODUL_PATH + "ui/" + cssAttr.href;
       cssLinkTag.attr(cssAttr);
       // add css to DOM
       $("head").append(cssLinkTag);
@@ -728,6 +728,11 @@ define(["require", "jquery", "underscore", "backbone", "mousetrap", "bowser", "b
       });
     },
     loadCoreTemplate: function (core_template) {
+      // ILPATCH
+      if (core_template !== "none") {
+        core_template = ILIAS_THEODUL_PATH + "ui/" + core_template;
+      }
+
       // get core template
       $.get(core_template, function (template) {
         // set template, render it and add it to DOM
