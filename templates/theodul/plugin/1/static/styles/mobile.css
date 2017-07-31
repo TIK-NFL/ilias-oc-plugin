@@ -82,7 +82,7 @@
 /* line 81, ../scss/mobile.scss */
 #engage_controls #navigation_wrapper .btn-default {
   background-color: rgba(255, 255, 255, 0.5);
-  color: initial; // ILPATH
+  color: initial; /* ILPATH */
   border-color: initial;
 }
 /* line 83, ../scss/mobile.scss */
