@@ -23,6 +23,13 @@ class ilMatterhornSendfile
     public $ilAccess;
 
     /**
+     *
+     * @var ilMatterhornPlugin
+     * @access plublic
+     */
+    public $plugin;
+
+    /**
      * relative file path from ilias directory (without leading /)
      *
      * @var string
@@ -72,22 +79,6 @@ class ilMatterhornSendfile
     private $mimetype = null;
 
     /**
-     * errorcode for sendError
-     *
-     * @var integer
-     * @access private
-     */
-    private $errorcode;
-
-    /**
-     * errortext for sendError
-     *
-     * @var integer
-     * @access private
-     */
-    private $errortext;
-
-    /**
      * the configuration for the matterhorn object
      *
      * @var ilMatterhornConfig
@@ -98,83 +89,29 @@ class ilMatterhornSendfile
     /**
      * Constructor
      *
+     * @param
+     *            mixed uri the parsed REQUEST_URI
+     * @param
+     *            string method the REQUEST_METHOD
      * @access public
      */
-    public function __construct()
+    public function __construct($uri, $method)
     {
-        global $ilAccess, $lng, $basename;
+        global $ilAccess, $lng;
         
+        $lng->loadLanguageModule("rep_robj_xmh");
         $this->lng = & $lng;
         $this->ilAccess = & $ilAccess;
         $this->params = array();
         $this->requestType = "none";
+        $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         
-        // get the requested file and its type
-        $uri = parse_url($_SERVER["REQUEST_URI"]);
-        
-        $path = substr($uri["path"], strpos($uri["path"], $basename) + strlen($basename));
-        
-        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+        if ($method == 'GET') {
             parse_str($uri["query"], $this->params);
-        } elseif ($_SERVER['REQUEST_METHOD'] == 'PUT') {
+        } elseif ($method == 'PUT') {
             parse_str(file_get_contents("php://input"), $this->params);
         }
-        // ilLoggerFactory::getLogger('xmh')->debug("Request for:".substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json");
-        ilLoggerFactory::getLogger('xmh')->debug("Request for:" . $uri["path"]);
-        // ilLoggerFactory::getLogger('xmh')->debug("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
         
-        // check if it is a request for an episode
-        if (0 == strcmp("/episode.json", $path)) {
-            // ilLoggerFactory::getLogger('xmh')->debug("EpisodeRequest for: ".print_r($this->params,true));
-            $this->requestType = "episode";
-            if (! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
-                $this->errorcode = 404;
-                $this->errortext = $this->lng->txt("no_such_episode");
-                return false;
-            }
-            
-            list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
-        } else if (0 == strcmp("/usertracking", $path)) {
-            $this->requestType = "usertracking";
-            if ($_SERVER['REQUEST_METHOD'] === 'PUT' && ! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id']) && "FOOTPRINT" === $this->params['type']) {
-                $this->errorcode = 404;
-                $this->errortext = $this->lng->txt("no_such_method");
-                return false;
-            }
-            list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
-        } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
-            $this->requestType = "statistic";
-            
-            if (! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
-                $this->errorcode = 404;
-                $this->errortext = $this->lng->txt("no_such_episode");
-                return false;
-            }
-            
-            list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
-        } else {
-            $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
-            $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
-            if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
-                $this->errorcode = 404;
-                $this->errortext = $this->lng->txt("no_such_episode");
-                return false;
-            }
-            if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
-                ilLoggerFactory::getLogger('xmh')->debug("PreviewRequest for: " . $this->subpath);
-                $this->requestType = "preview";
-                if (! preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
-                    $this->errorcode = 404;
-                    $this->errortext = $this->lng->txt("no_such_episode");
-                    return false;
-                }
-                
-                list ($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
-            } else {
-                $this->requestType = "file";
-                $this->file = realpath(ILIAS_ABSOLUTE_PATH . "/" . $this->subpath);
-            }
-        }
         include_once ("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
         $this->configObject = new ilMatterhornConfig();
         // debugging
@@ -200,21 +137,97 @@ class ilMatterhornSendfile
          * echo "ckeck_ip: ". $this->check_ip. "\n";
          * echo "send_mimetype: ". $this->send_mimetype. "\n";
          * echo "requesttype: ". $this->requestType. "\n";
-         * echo "errorcode: ". $this->errorcode. "\n";
-         * echo "errortext: ". $this->errortype. "\n";
          * echo "</pre>";
          * var_dump($_SESSION);
          * # echo phpinfo();
          * exit;
          */
-        /*
-         * if (!file_exists($this->file))
-         * {
-         * $this->errorcode = 404;
-         * $this->errortext = $this->lng->txt("url_not_found");
-         * return false;
-         * }
-         */
+        
+        // if (! file_exists($this->file)) {
+        // throw new Exception($this->lng->txt("url_not_found"), 404);
+        // }
+    }
+
+    /**
+     * Main function for handle Requests
+     *
+     * @param
+     *            string path the path of the request
+     * @return boolean
+     */
+    public function handleRequest($path)
+    {
+        ilLoggerFactory::getLogger('xmh')->debug("Request for:" . $path);
+        
+        try {
+            // check if it is a request for an episode
+            if (0 == strcmp("/episode.json", $path)) {
+                $this->requestType = "episode";
+                $this->setID();
+                $this->checkEpisodeAccess();
+                $this->sendEpisode();
+            } else if (0 == strcmp("/usertracking", $path)) {
+                $this->requestType = "usertracking";
+                $this->setID();
+                if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+                    switch ($this->params['type']) {
+                        case "FOOTPRINT":
+                            $this->checkEpisodeAccess();
+                            $this->putUserTracking();
+                            break;
+                        case "VIEWS":
+                            break;
+                        default:
+                            throw new Exception($this->plugin->txt("no_such_method"), 404);
+                    }
+                } else {
+                    throw new Exception($this->plugin->txt("no_such_method"), 404);
+                }
+            } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
+                $this->requestType = "statistic";
+                $this->setID();
+                $this->checkEpisodeAccess();
+                $this->sendStatistic();
+            } else {
+                $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
+                $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
+                if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
+                    throw new Exception($this->plugin->txt("no_such_episode"), 404);
+                }
+                if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
+                    ilLoggerFactory::getLogger('xmh')->debug("PreviewRequest for: " . $this->subpath);
+                    $this->requestType = "preview";
+                    if (! preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
+                        throw new Exception($this->plugin->txt("no_such_episode"), 404);
+                    }
+                    
+                    list ($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
+                    
+                    $this->checkPreviewAccess();
+                    $this->sendPreview();
+                } else {
+                    $this->requestType = "file";
+                    $this->file = realpath(ILIAS_ABSOLUTE_PATH . "/" . $this->subpath);
+                    $this->checkFileAccess();
+                    $this->sendFile();
+                }
+            }
+        } catch (Exception $e) {
+            $this->sendError($e);
+        }
+    }
+
+    /**
+     *
+     * @throws Exception if the id dont match an episode
+     * @access private
+     */
+    private function setID()
+    {
+        if (! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
+            throw new Exception($this->plugin->txt("no_such_episode"), 404);
+        }
+        list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
     }
 
     /**
@@ -254,43 +267,34 @@ class ilMatterhornSendfile
     /**
      * Check access rights of the requested file
      *
+     * @throws Exception if user have no access rights for the file
      * @access public
      */
     public function checkEpisodeAccess()
     {
-        // an error already occurred at class initialisation
-        if ($this->errorcode) {
-            return false;
-        }
         // do this here because ip based checking may be set after construction
         $this->determineUser();
         if ($this->checkAccessObject($this->obj_id)) {
-            return true;
+            return;
         }
         // none of the checks above gives access
-        $this->errorcode = 403;
-        $this->errortext = $this->lng->txt('msg_no_perm_read');
-        return false;
+        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
     }
 
     public function checkPreviewAccess()
     {
-        return $this->checkFileAccess();
+        $this->checkFileAccess();
     }
 
     /**
      * Check access rights of the requested file
      *
+     * @throws Exception if user have no access rights for the file
      * @access public
      */
     public function checkFileAccess()
     {
         // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access for ". $this->obj_id);
-        // an error already occurred at class initialisation
-        if ($this->errorcode) {
-            // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access already has error code for ". $this->obj_id);
-            return false;
-        }
         
         // do this here because ip based checking may be set after construction
         $this->determineUser();
@@ -298,19 +302,15 @@ class ilMatterhornSendfile
         $type = 'xmh';
         $iliasid = substr($this->obj_id, 10);
         if (! $iliasid || $type == 'none') {
-            $this->errorcode = 404;
-            $this->errortext = $this->lng->txt("obj_not_found");
+            throw new Exception($this->lng->txt("obj_not_found"), 404);
             // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: obj_not_found");
-            return false;
         }
         if ($this->checkAccessObject($iliasid)) {
-            return true;
+            return;
         }
         // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: no access found");
         // none of the checks above gives access
-        $this->errorcode = 403;
-        $this->errortext = $this->lng->txt('msg_no_perm_read');
-        return false;
+        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
     }
 
     public function putUserTracking()
@@ -320,7 +320,7 @@ class ilMatterhornSendfile
         $outtime = intval($this->params['out']);
         $user_id = $ilUser->getId();
         
-        ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass("class.ilMatterhornUserTracking.php");
+        $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
         ilMatterhornUserTracking::putUserTracking($user_id, $this->episode_id, $intime, $outtime);
         
         header("HTTP/1.0 204 Stored");
@@ -373,7 +373,6 @@ class ilMatterhornSendfile
      */
     private function getDuration()
     {
-        global $basename;
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
         $duration = (string) $manifest['duration'];
         return $duration;
@@ -386,7 +385,6 @@ class ilMatterhornSendfile
      */
     private function getTitle()
     {
-        global $basename;
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
         $title = (string) $manifest->title;
         return $title;
@@ -433,8 +431,6 @@ class ilMatterhornSendfile
      */
     public function sendEpisode()
     {
-        global $basename;
-        
         // ilLoggerFactory::getLogger('xmh')->debug("Manifestbasedir: ".$this->configObject->getXSendfileBasedir().$this->obj_id.'/'.$this->episode_id);
         $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
         
@@ -718,13 +714,20 @@ class ilMatterhornSendfile
     /**
      * Send an error response for the requested file
      *
+     * @param
+     *            Exception
      * @access public
      */
-    public function sendError()
+    public function sendError($exception)
     {
         global $ilUser, $tpl, $lng, $tree;
         
-        switch ($this->errorcode) {
+        $errorcode = $exception->getCode();
+        $errortext = $exception->getMessage();
+        
+        ilLoggerFactory::getLogger('xmh')->debug($errorcode . " " . $errortext);
+        
+        switch ($errorcode) {
             case 404:
                 header("HTTP/1.0 404 Not Found");
                 return;
@@ -764,7 +767,7 @@ class ilMatterhornSendfile
         }
         
         $tpl->setCurrentBlock("content");
-        $tpl->setVariable("ERROR_MESSAGE", ($this->errortext));
+        $tpl->setVariable("ERROR_MESSAGE", ($errortext));
         $tpl->setVariable("SRC_IMAGE", ilUtil::getImagePath("mess_failure.png"));
         $tpl->parseCurrentBlock();
         
