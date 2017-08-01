@@ -174,6 +174,7 @@ class ilMatterhornSendfile
                             $this->putUserTracking();
                             break;
                         case "VIEWS":
+                            throw new Exception("not implemented yet", 404);
                             break;
                         default:
                             throw new Exception($this->plugin->txt("no_such_method"), 404);
@@ -181,6 +182,8 @@ class ilMatterhornSendfile
                 } else {
                     throw new Exception($this->plugin->txt("no_such_method"), 404);
                 }
+            } else if (0 == strcmp("/usertracking/stats.json", $path)) {
+                throw new Exception("not implemented yet", 404);
             } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
                 $this->requestType = "statistic";
                 $this->setID();
