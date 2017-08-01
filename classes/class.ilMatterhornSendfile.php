@@ -728,48 +728,13 @@ class ilMatterhornSendfile
         switch ($errorcode) {
             case 404:
                 header("HTTP/1.0 404 Not Found");
-                return;
+                break;
             case 403:
             default:
                 header("HTTP/1.0 403 Forbidden");
-                return;
+                break;
         }
-        
-        // set the page base to the ILIAS directory
-        // to get correct references for images and css files
-        $tpl->setCurrentBlock("HeadBaseTag");
-        $tpl->setVariable('BASE', ILIAS_HTTP_PATH . '/error.php');
-        $tpl->parseCurrentBlock();
-        $tpl->addBlockFile("CONTENT", "content", "tpl.error.html");
-        
-        // Check if user is logged in
-        $anonymous = ($ilUser->getId() == ANONYMOUS_USER_ID);
-        
-        if ($anonymous) {
-            // Provide a link to the login screen for anonymous users
-            
-            $tpl->SetCurrentBlock("ErrorLink");
-            $tpl->SetVariable("TXT_LINK", $lng->txt('login_to_ilias'));
-            $tpl->SetVariable("LINK", ILIAS_HTTP_PATH . '/login.php?cmd=force_login&client_id=' . CLIENT_ID);
-            $tpl->ParseCurrentBlock();
-        } else {
-            // Provide a link to the repository for authentified users
-            
-            $nd = $tree->getNodeData(ROOT_FOLDER_ID);
-            $txt = $nd['title'] == 'ILIAS' ? $lng->txt('repository') : $nd['title'];
-            
-            $tpl->SetCurrentBlock("ErrorLink");
-            $tpl->SetVariable("TXT_LINK", $txt);
-            $tpl->SetVariable("LINK", ILIAS_HTTP_PATH . '/ilias.php?baseClass=ilRepositoryGUI&amp;client_id=' . CLIENT_ID);
-            $tpl->ParseCurrentBlock();
-        }
-        
-        $tpl->setCurrentBlock("content");
-        $tpl->setVariable("ERROR_MESSAGE", ($errortext));
-        $tpl->setVariable("SRC_IMAGE", ilUtil::getImagePath("mess_failure.png"));
-        $tpl->parseCurrentBlock();
-        
-        $tpl->show();
+        echo $errortext;
         exit();
     }
 
