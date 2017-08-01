@@ -100,6 +100,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
     var lastFootprint = undefined;
     var mediapackageID;
     var mediapackageError = false;
+    var footprintStep = 10;
 
     /* TODO: Wait for the new usertracking service... */
 
@@ -118,23 +119,25 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
             if (!mediapackageError) {
                 // add footprint each timeupdate
                 var cTime = Math.floor(currentTime);
-		if (cTime%10 == 0) {
+                if (cTime % footprintStep == 0) {
                     if (lastFootprint != undefined) {
                         if (lastFootprint != cTime) {
                             lastFootprint = cTime;
-                            Engage.model.get("footprints").put(cTime-10, cTime);
+                            if (cTime != 0) {
+                                Engage.model.get("footprints").put(cTime - footprintStep, cTime);
+                            }
                         }
                     } else {
                         lastFootprint = cTime;
                     }
-		}
+                }
             }
         });
         Engage.on(plugin.events.play.getName(), function() {
-        Engage.log("Usertracking: Play event");
-            if (!mediapackageError) {
-                Engage.model.get("footprints").put(-1, 0);
-	    }
+            Engage.log("Usertracking: Play event");
+                if (!mediapackageError) {
+                    Engage.model.get("footprints").put(-1, 0);
+            }
         });
     }
 
