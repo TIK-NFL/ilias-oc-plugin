@@ -184,6 +184,8 @@ class ilMatterhornSendfile
                 }
             } else if (0 == strcmp("/usertracking/stats.json", $path)) {
                 throw new Exception("not implemented yet", 404);
+            } else if (0 == strcmp("/usertracking/footprint.json", $path)) {
+                throw new Exception("not implemented yet", 404);
             } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
                 $this->requestType = "statistic";
                 $this->setID();
@@ -193,13 +195,13 @@ class ilMatterhornSendfile
                 $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
                 $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
                 if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
-                    throw new Exception($this->plugin->txt("no_such_episode"), 404);
+                    throw new Exception("", 400);
                 }
                 if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
                     ilLoggerFactory::getLogger('xmh')->debug("PreviewRequest for: " . $this->subpath);
                     $this->requestType = "preview";
                     if (! preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
-                        throw new Exception($this->plugin->txt("no_such_episode"), 404);
+                        throw new Exception("", 400);
                     }
                     
                     list ($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
@@ -226,7 +228,7 @@ class ilMatterhornSendfile
     private function setID()
     {
         if (! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
-            throw new Exception($this->plugin->txt("no_such_episode"), 404);
+            throw new Exception("mediapackageId", 400);
         }
         list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
     }
@@ -731,6 +733,9 @@ class ilMatterhornSendfile
         switch ($errorcode) {
             case 404:
                 header("HTTP/1.0 404 Not Found");
+                break;
+            case 400:
+                header("HTTP/1.0 400 Bad Request");
                 break;
             case 403:
             default:
