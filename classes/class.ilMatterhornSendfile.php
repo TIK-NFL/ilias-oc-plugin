@@ -112,36 +112,34 @@ class ilMatterhornSendfile
             parse_str(file_get_contents("php://input"), $this->params);
         }
         
-        include_once ("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
+        $this->plugin->includeClass("class.ilMatterhornConfig.php");
         $this->configObject = new ilMatterhornConfig();
         // debugging
-        /*
-         * echo "<pre>";
-         * var_dump($uri);
-         * echo "REQUEST_URI: ". $_SERVER["REQUEST_URI"]. "\n";
-         * echo "Parsed URI: ". $uri["path"]. "\n";
-         * echo "DOCUMENT_ROOT: ". $_SERVER["DOCUMENT_ROOT"]. "\n";
-         * echo "PHP_SELF: ". $_SERVER["PHP_SELF"]. "\n";
-         * echo "SCRIPT_NAME: ". $_SERVER["SCRIPT_NAME"]. "\n";
-         * echo "SCRIPT_FILENAME: ". $_SERVER["SCRIPT_FILENAME"]. "\n";
-         * echo "PATH_TRANSLATED: ". $_SERVER["PATH_TRANSLATED"]. "\n";
-         * echo "ILIAS_WEB_DIR: ". ILIAS_WEB_DIR. "\n";
-         * echo "ILIAS_HTTP_PATH: ". ILIAS_HTTP_PATH. "\n";
-         * echo "ILIAS_ABSOLUTE_PATH: ". ILIAS_ABSOLUTE_PATH. "\n";
-         * echo "ILIAS_MODULE: ". ILIAS_MODULE. "\n";
-         * echo "CLIENT_ID: ". CLIENT_ID. "\n";
-         * echo "CLIENT_WEB_DIR: ". CLIENT_WEB_DIR. "\n";
-         * echo "subpath: ". $this->subpath. "\n";
-         * echo "file: ". $this->file. "\n";
-         * echo "disposition: ". $this->disposition. "\n";
-         * echo "ckeck_ip: ". $this->check_ip. "\n";
-         * echo "send_mimetype: ". $this->send_mimetype. "\n";
-         * echo "requesttype: ". $this->requestType. "\n";
-         * echo "</pre>";
-         * var_dump($_SESSION);
-         * # echo phpinfo();
-         * exit;
-         */
+        
+        // echo "<pre>";
+        // var_dump($uri);
+        // echo "REQUEST_URI: " . $_SERVER["REQUEST_URI"] . "\n";
+        // echo "Parsed URI: " . $uri["path"] . "\n";
+        // echo "DOCUMENT_ROOT: " . $_SERVER["DOCUMENT_ROOT"] . "\n";
+        // echo "PHP_SELF: " . $_SERVER["PHP_SELF"] . "\n";
+        // echo "SCRIPT_NAME: " . $_SERVER["SCRIPT_NAME"] . "\n";
+        // echo "SCRIPT_FILENAME: " . $_SERVER["SCRIPT_FILENAME"] . "\n";
+        // echo "PATH_TRANSLATED: " . $_SERVER["PATH_TRANSLATED"] . "\n";
+        // echo "ILIAS_WEB_DIR: " . ILIAS_WEB_DIR . "\n";
+        // echo "ILIAS_HTTP_PATH: " . ILIAS_HTTP_PATH . "\n";
+        // echo "ILIAS_ABSOLUTE_PATH: " . ILIAS_ABSOLUTE_PATH . "\n";
+        // echo "ILIAS_MODULE: " . ILIAS_MODULE . "\n";
+        // echo "CLIENT_ID: " . CLIENT_ID . "\n";
+        // echo "CLIENT_WEB_DIR: " . CLIENT_WEB_DIR . "\n";
+        // echo "subpath: " . $this->subpath . "\n";
+        // echo "file: " . $this->file . "\n";
+        // echo "disposition: " . $this->disposition . "\n";
+        // echo "ckeck_ip: " . $this->check_ip . "\n";
+        // echo "send_mimetype: " . $this->send_mimetype . "\n";
+        // echo "requesttype: " . $this->requestType . "\n";
+        // echo "</pre>";
+        // var_dump($_SESSION);
+        // exit();
         
         // if (! file_exists($this->file)) {
         // throw new Exception($this->lng->txt("url_not_found"), 404);
@@ -715,7 +713,7 @@ class ilMatterhornSendfile
      * Send an error response for the requested file
      *
      * @param
-     *            Exception
+     *            Exception exception
      * @access public
      */
     public function sendError($exception)

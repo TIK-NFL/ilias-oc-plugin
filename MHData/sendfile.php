@@ -33,7 +33,7 @@ require_once "./Services/Utilities/classes/class.ilUtil.php";
 require_once "./Services/Object/classes/class.ilObject.php";
 require_once "./Services/MediaObjects/classes/class.ilObjMediaObject.php";
 
-require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn//classes/class.ilMatterhornSendfile.php";
+require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornSendfile.php";
 
 $uri = parse_url($_SERVER['REQUEST_URI']);
 $method = $_SERVER['REQUEST_METHOD'];
