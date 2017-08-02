@@ -178,6 +178,7 @@ class ilMatterhornUserTracking
                 }
             }
             
+            ksort($userviewdata);
             $userviewdata[max(array_keys($userviewdata)) + 1] = 0;
             
             $last = - 1;
