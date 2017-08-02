@@ -183,7 +183,10 @@ class ilMatterhornSendfile
                     throw new Exception($this->plugin->txt("no_such_method"), 404);
                 }
             } else if (0 == strcmp("/usertracking/stats.json", $path)) {
-                throw new Exception("not implemented yet", 404);
+                $this->requestType = "stats";
+                $this->setID();
+                $this->checkEpisodeAccess();
+                $this->sendStats();
             } else if (0 == strcmp("/usertracking/footprint.json", $path)) {
                 $this->requestType = "footprint";
                 $this->setID();
@@ -383,6 +386,20 @@ class ilMatterhornSendfile
         $response = array();
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
         $response['footprints'] = ilMatterhornUserTracking::getFootprints($this->episode_id, $user_id);
+        $this->sendJSON($response);
+    }
+
+    /**
+     * send Statistics like views
+     */
+    private function sendStats()
+    {
+        $response = array();
+        $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
+        $views = ilMatterhornUserTracking::getViews($this->episode_id);
+        $response['stats'] = [
+            'views' => $views
+        ];
         $this->sendJSON($response);
     }
 

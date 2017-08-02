@@ -47,7 +47,8 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
         urlRoot: USERTRACKING_ENDPOINT + USERTRACKING_ENDPOINT_STATS,
         initialize: function() {
             Engage.log("MhConnection: Init Views model");
-            //this.put(); ILPATH
+            //this.put(); ILPATCH
+            this.update();
         },
         put: function() {
             Engage.log("MhConnection: Adding user to viewers");

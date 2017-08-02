@@ -199,4 +199,23 @@ class ilMatterhornUserTracking
         }
         return $array;
     }
+
+    /**
+     * Get the Views for a video
+     *
+     * @param string $episode_id            
+     * @return int
+     */
+    public static function getViews($episode_id)
+    {
+        global $ilDB;
+        
+        $query = $ilDB->query("SELECT COUNT(user_id) FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode_id, "text"));
+        
+        if ($views = $ilDB->fetchAssoc($query)) {
+            return $views['COUNT(user_id)'];
+        }
+        
+        return 0;
+    }
 }
