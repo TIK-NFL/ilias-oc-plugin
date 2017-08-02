@@ -56,7 +56,7 @@
 				"static-path": "10\/static"
 			},
 			{
-				"name": "EngagePluginTimelineUserTracking",
+				"name": "EngagePluginTimelineStatistics",
 				"id": "3",
 				"description": "Tracking of sections the user has played",
 				"static-path": "3\/static"

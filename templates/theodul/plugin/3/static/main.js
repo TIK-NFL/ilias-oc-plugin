@@ -23,7 +23,7 @@
 define(["require", "jquery", "underscore", "backbone", "engage/core"], function(require, $, _, Backbone, Engage) {
     "use strict";
 
-    var insertIntoDOM = false;
+    var insertIntoDOM = true;
     var PLUGIN_NAME = "Timeline Usertracking Statistics";
     var PLUGIN_TYPE = "engage_timeline";
     var PLUGIN_VERSION = "1.0";
@@ -92,13 +92,12 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
     }
 
     /* change these variables */
-    var renderEveryTimes = 10;
+    var renderEveryTimes = 1;
     var chartPath = "lib/Chart";
     var timelineplugin_opened = "Engage:timelineplugin_opened";
     
     // TODO: Wait for the new usertracking service...
     
-    /*
     var chartOptions = {
         // Boolean - Whether to animate the chart
         animation: false,
@@ -190,7 +189,7 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
         // Number - Width of the grid lines
         scaleGridLineWidth: 1,
         // Boolean - Whether the line is curved between points
-        bezierCurve: true,
+        bezierCurve: false,
         // Number - Tension of the bezier curve between points
         bezierCurveTension: 0.4,
         // Boolean - Whether to show a dot for each point
@@ -208,10 +207,8 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
         // Boolean - Whether to fill the dataset with a colour
         datasetFill: true,
     }
-    */
 
     /* don't change these variables */
-    /*
     var mediapackageChange = "change:mediaPackage";
     var footprintChange = "change:footprints";
     var videoDataModelChange = "change:videoDataModel";
@@ -224,8 +221,8 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
     var mediapackageError = false;
 
     function setSize() {
-        $("#engage_timeline_statistics_chart").attr("width", $(window).width() - 40).attr("height", 60).css({
-            "width": $(window).width() - 40,
+        $("#engage_timeline_statistics_chart").attr("width", $("#engage_timeline_statistics_content").width()).attr("height", 60).css({
+            "width": $("#engage_timeline_statistics_content").width(),
             "height": 60
         });
     }
@@ -247,11 +244,13 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
                     var tmpViewsCount = 0; // view entry count per interval
                     for (var cTime = 0; cTime <= duration; ++cTime) {
                         tmpViews = 0;
+                        var lastTime = -1;
                         _.each(statisticsTimelineView.footprints, function(value, key, list) {
                             value = list.at(key);
-                            if (value.get("position") == cTime) {
-                                tmpViews += value.get("views");
-                                return false; // break the foreach-loop
+                            var position = value.get("position");
+                            if (position <= cTime && position > lastTime) {
+                                tmpViews = value.get("views");
+                                lastTime = position;
                             }
                         });
                         // push chart data each point
@@ -375,7 +374,6 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
             }
         });
     }
-    */
 
     return plugin;
 });

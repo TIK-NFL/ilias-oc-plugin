@@ -60,6 +60,7 @@ define(["jquery", "backbone", "engage/core", "../models/footprint"], function($,
         update: function() {
             // request collection data
             this.fetch({
+                reset: true,
                 data: {
                     id: mediaPackageID
                 },
