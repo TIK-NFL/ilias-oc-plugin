@@ -185,7 +185,10 @@ class ilMatterhornSendfile
             } else if (0 == strcmp("/usertracking/stats.json", $path)) {
                 throw new Exception("not implemented yet", 404);
             } else if (0 == strcmp("/usertracking/footprint.json", $path)) {
-                throw new Exception("not implemented yet", 404);
+                $this->requestType = "footprint";
+                $this->setID();
+                $this->checkEpisodeAccess();
+                $this->sendFootprint();
             } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
                 $this->requestType = "statistic";
                 $this->setID();
@@ -367,6 +370,20 @@ class ilMatterhornSendfile
         $infoarray['data'] = $data;
         
         $this->sendJSON($infoarray);
+    }
+
+    /**
+     * send Footprints for the user
+     */
+    private function sendFootprint()
+    {
+        global $ilUser;
+        $user_id = $ilUser->getId();
+        
+        $response = array();
+        $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
+        $response['footprints'] = ilMatterhornUserTracking::getFootprints($this->episode_id, $user_id);
+        $this->sendJSON($response);
     }
 
     /**

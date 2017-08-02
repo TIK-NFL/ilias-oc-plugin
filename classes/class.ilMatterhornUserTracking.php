@@ -152,4 +152,50 @@ class ilMatterhornUserTracking
         }
         return $dataarray;
     }
+
+    /**
+     * Get the Footprints form a video, user
+     *
+     * @param string $episode_id            
+     * @param int $user_id            
+     * @return array
+     */
+    public static function getFootprints($episode_id, $user_id)
+    {
+        global $ilDB;
+        $array = array();
+        
+        $query = $ilDB->query("SELECT intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " AND user_id = " . $ilDB->quote($user_id, "integer"));
+        if ($ilDB->numRows($query) > 0) {
+            $userviewdata = array();
+            while ($view = $ilDB->fetchAssoc($query)) {
+                for ($time = $view['intime']; $time < $view['outtime']; $time ++) {
+                    if (! array_key_exists($time, $userviewdata)) {
+                        $userviewdata[$time] = 1;
+                    } else {
+                        $userviewdata[$time] ++;
+                    }
+                }
+            }
+            
+            $userviewdata[max(array_keys($userviewdata)) + 1] = 0;
+            
+            $last = - 1;
+            $footprint = array();
+            foreach ($userviewdata as $i => $current) {
+                if ($last !== $current) {
+                    $footprint[] = [
+                        'position' => $i,
+                        'views' => $current
+                    ];
+                }
+                
+                $last = $current;
+            }
+            
+            $array['footprint'] = $footprint;
+            $array['total'] = count($footprint);
+        }
+        return $array;
+    }
 }
