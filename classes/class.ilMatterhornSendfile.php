@@ -8,19 +8,15 @@
  * Checks if a user may access the Matterhorn-Object and sends files using sendfile
  * Based on the WebAccessChecker
  *
- * @auther Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
- *
+ * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  * @author Fred Neumann <fred.neumann@fim.uni-erlangen.de>
  * @version $Id: class.ilWebAccessChecker.php 50013 2014-05-13 16:20:01Z akill $
- *         
- *         
  */
 class ilMatterhornSendfile
 {
 
     public $lng;
-
-    public $ilAccess;
 
     /**
      *
@@ -89,19 +85,18 @@ class ilMatterhornSendfile
     /**
      * Constructor
      *
-     * @param
-     *            mixed uri the parsed REQUEST_URI
-     * @param
-     *            string method the REQUEST_METHOD
+     * @param mixed $uri
+     *            the parsed REQUEST_URI
+     * @param string $method
+     *            the REQUEST_METHOD
      * @access public
      */
     public function __construct($uri, $method)
     {
-        global $ilAccess, $lng;
+        global $lng;
         
         $lng->loadLanguageModule("rep_robj_xmh");
         $this->lng = & $lng;
-        $this->ilAccess = & $ilAccess;
         $this->params = array();
         $this->requestType = "none";
         $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
@@ -149,8 +144,8 @@ class ilMatterhornSendfile
     /**
      * Main function for handle Requests
      *
-     * @param
-     *            string path the path of the request
+     * @param string $path
+     *            the path of the request
      * @return boolean
      */
     public function handleRequest($path)
@@ -227,8 +222,9 @@ class ilMatterhornSendfile
     }
 
     /**
+     * extract obj_id and episode id from the request param
      *
-     * @throws Exception if the id dont match an episode
+     * @throws Exception if the id have wrong syntax
      * @access private
      */
     private function setID()
@@ -242,6 +238,7 @@ class ilMatterhornSendfile
     /**
      * Returns the type of request
      *
+     * @return string the request type of this request
      * @access public
      */
     public function getRequestType()
@@ -290,6 +287,12 @@ class ilMatterhornSendfile
         throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
     }
 
+    /**
+     * Check access rights of the requested preview of the file
+     *
+     * @throws Exception if user have no access rights for the preview
+     * @access public
+     */
     public function checkPreviewAccess()
     {
         $this->checkFileAccess();
@@ -322,7 +325,10 @@ class ilMatterhornSendfile
         throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
     }
 
-    public function putUserTracking()
+    /**
+     * stores the usertracking data in the database
+     */
+    private function putUserTracking()
     {
         global $ilUser;
         $intime = intval($this->params['in']);
@@ -338,9 +344,9 @@ class ilMatterhornSendfile
     /**
      * send the Statistic overview for the episode as json.
      */
-    public function sendStatistic()
+    private function sendStatistic()
     {
-        ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass("class.ilMatterhornUserTracking.php");
+        $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
         $statistic = ilMatterhornUserTracking::getStatisticFromVideo($this->episode_id);
         $data = array();
         foreach ($statistic as $name => $value) {
@@ -442,8 +448,9 @@ class ilMatterhornSendfile
     /**
      * Check access rights for an object by its object id
      *
-     * @param
-     *            int object id
+     * @param int $obj_id
+     *            object id
+     * @param string $obj_type            
      * @return boolean access given (true/false)
      */
     private function checkAccessObject($obj_id, $obj_type = '')
@@ -751,14 +758,11 @@ class ilMatterhornSendfile
     /**
      * Send an error response for the requested file
      *
-     * @param
-     *            Exception exception
+     * @param Exception $exception            
      * @access public
      */
     public function sendError($exception)
     {
-        global $ilUser, $tpl, $lng, $tree;
-        
         $errorcode = $exception->getCode();
         $errortext = $exception->getMessage();
         
@@ -783,8 +787,8 @@ class ilMatterhornSendfile
     /**
      * Get the mime type of the requested file
      *
-     * @param
-     *            string default type
+     * @param string $default
+     *            type
      * @return string mime type
      * @access public
      */
