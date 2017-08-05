@@ -122,7 +122,7 @@ class ilMatterhornUserTracking
             foreach ($users as $user_id => $views) {
                 $userviewdata = array();
                 foreach ($views as $view) {
-                    for ($time = $view['intime'] / 10; $time < $view['outtime'] / 10; $time ++) {
+                    for ($time = (int) ($view['intime'] / 10); $time < (int) ($view['outtime'] / 10); $time ++) {
                         if (! array_key_exists($time, $userviewdata)) {
                             $userviewdata[$time] = 1;
                         } else {
