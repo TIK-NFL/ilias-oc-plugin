@@ -237,12 +237,12 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
                 if (renderEveryTimes_count <= 0) {
                     renderEveryTimes_count = renderEveryTimes;
 
-                    duration /= 1000;
+                    duration = Math.floor(duration / 1000);
                     data = new Array();
                     var labels = new Array(); // chart label array
                     var tmpViews = 0; // views per interval
                     var tmpViewsCount = 0; // view entry count per interval
-                    for (var cTime = 0; cTime <= duration; ++cTime) {
+                    for (var cTime = 0; cTime < duration; ++cTime) {
                         tmpViews = 0;
                         var lastTime = -1;
                         _.each(statisticsTimelineView.footprints, function(value, key, list) {
@@ -256,18 +256,18 @@ define(["require", "jquery", "underscore", "backbone", "engage/core"], function(
                         // push chart data each point
                         labels.push("");
                         data.push(tmpViews);
-
-                        lineChartData = {
-                            labels: labels,
-                            datasets: [{
-                                fillColor: "rgba(151,187,205,0.5)",
-                                strokeColor: "rgba(151,187,205,1)",
-                                pointColor: "rgba(151,187,205,1)",
-                                pointStrokeColor: "#FFFFFF",
-                                data: data
-                            }]
-                        }
                     }
+
+                    lineChartData = {
+                        labels: labels,
+                        datasets: [{
+                            fillColor: "rgba(151,187,205,0.5)",
+                            strokeColor: "rgba(151,187,205,1)",
+                            pointColor: "rgba(151,187,205,1)",
+                            pointStrokeColor: "#FFFFFF",
+                            data: data
+                        }]
+                    };
                 }
 
                 if (lineChartData) {
