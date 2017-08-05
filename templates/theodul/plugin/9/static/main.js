@@ -45,6 +45,9 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
         plugin_load_done: new Engage.Event("Core:plugin_load_done", "", "handler"),
         timeupdate: new Engage.Event("Video:timeupdate", "notices a timeupdate", "handler"),
         play: new Engage.Event("Video:play","notices a play event", "handler"),
+        pause: new Engage.Event("Video:pause","notices a pause event", "handler"),
+        ended: new Engage.Event("Video:ended","notices a ended event", "handler"),
+        slider: new Engage.Event("Slider:stop","notices a slider stop event", "handler"),
         mediaPackageModelError: new Engage.Event("MhConnection:mediaPackageModelError", "", "handler")
     };
 
@@ -98,11 +101,10 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
     var footprintsChange = "change:footprints";
     var initCount = 3;
     var lastFootprint = undefined;
+    var cTime = 0;
     var mediapackageID;
     var mediapackageError = false;
     var footprintStep = 10;
-
-    /* TODO: Wait for the new usertracking service... */
 
     function initPlugin() {
         mediapackageID = Engage.model.get("urlParameters").id;
@@ -111,32 +113,54 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
             return;
         }
 
+        function putFootprint() {
+            if (lastFootprint < cTime) {
+                Engage.model.get("footprints").put(lastFootprint, cTime);
+                lastFootprint = cTime;
+            }
+        }
+
         Engage.on(plugin.events.mediaPackageModelError.getName(), function(msg) {
             mediapackageError = true;
         });
 
         Engage.on(plugin.events.timeupdate.getName(), function(currentTime) {
             if (!mediapackageError) {
-                // add footprint each timeupdate
-                var cTime = Math.floor(currentTime);
-                if (cTime % footprintStep == 0) {
-                    if (lastFootprint != undefined) {
-                        if (lastFootprint != cTime) {
-                            lastFootprint = cTime;
-                            if (cTime != 0) {
-                                Engage.model.get("footprints").put(cTime - footprintStep, cTime);
-                            }
-                        }
-                    } else {
-                        lastFootprint = cTime;
+                cTime = Math.floor(currentTime);
+                if (lastFootprint != undefined) {
+                    if (cTime % footprintStep == 0) {
+                        putFootprint();
                     }
+                } else {
+                    lastFootprint = cTime;
                 }
             }
         });
+
         Engage.on(plugin.events.play.getName(), function() {
             Engage.log("Usertracking: Play event");
-                if (!mediapackageError) {
-                    Engage.model.get("footprints").put(-1, 0);
+            if (!mediapackageError) {
+                Engage.model.get("footprints").put(-1, 0);
+            }
+        });
+
+        Engage.on(plugin.events.slider.getName(), function() {
+            if (!mediapackageError) {
+                putFootprint();
+                lastFootprint = undefined;
+            }
+        });
+
+        Engage.on(plugin.events.pause.getName(), function() {
+            if (!mediapackageError) {
+                putFootprint();
+            }
+        });
+
+        Engage.on(plugin.events.ended.getName(), function() {
+            if (!mediapackageError) {
+                putFootprint();
+                lastFootprint = undefined;
             }
         });
     }
