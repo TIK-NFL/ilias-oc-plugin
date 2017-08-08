@@ -56,7 +56,7 @@ class ilMatterhornUserTracking
     {
         global $ilDB;
         
-        $query = $ilDB->query("SELECT id, intime, outtime FROM " . self::DATATABLE . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id DESC");
+        $query = $ilDB->query("SELECT id, intime, outtime FROM " . self::DATATABLE . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id DESC LIMIT 1");
         
         if ($ilDB->numRows($query) == 0) {
             return [

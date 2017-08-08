@@ -323,16 +323,7 @@ while ($query = $ilDB->query($sqlSelect)) {
                 $outtime = $time['outtime'];
                 
                 if ($intime < 0) {
-                    if ($temp['intime'] < 0) {
-                        // double -1 datapoint
-                    } else {
-                        $userViews[] = $temp;
-                        
-                        $temp = [
-                            'intime' => - 1,
-                            'outtime' => 0
-                        ];
-                    }
+                    // do nothing, if this is the first view of this episode from the user, -1 is added automatically
                 } else {
                     if ($temp['intime'] < 0) {
                         // first FOOTPRINT after -1
