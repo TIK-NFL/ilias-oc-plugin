@@ -203,12 +203,31 @@ class ilMatterhornUserTracking
     {
         global $ilDB;
         
-        $query = $ilDB->query("SELECT COUNT(user_id) FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode_id, "text"));
+        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id ASC");
         
-        if ($views = $ilDB->fetchAssoc($query)) {
-            return $views['COUNT(user_id)'];
+        $viewsCount = 0;
+        
+        if ($ilDB->numRows($query) > 0) {
+            $users = array();
+            while ($row = $ilDB->fetchAssoc($query)) {
+                $user_id = $row['user_id'];
+                
+                $users[$user_id][] = $row;
+            }
+            
+            foreach ($users as $user_id => $views) {
+                $userviews = 1;
+                $lastouttime = - 1;
+                foreach ($views as $view) {
+                    if ($view['intime'] < $lastouttime) {
+                        $userviews ++;
+                    }
+                    $lastouttime = $view['outtime'];
+                }
+                $viewsCount += $userviews;
+            }
         }
         
-        return 0;
+        return $viewsCount;
     }
 }
