@@ -48,6 +48,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
         pause: new Engage.Event("Video:pause","notices a pause event", "handler"),
         ended: new Engage.Event("Video:ended","notices a ended event", "handler"),
         slider: new Engage.Event("Slider:stop","notices a slider stop event", "handler"),
+        seek: new Engage.Event('Video:seek', 'seek video to a given position in seconds', "handler"),
         mediaPackageModelError: new Engage.Event("MhConnection:mediaPackageModelError", "", "handler")
     };
 
@@ -99,7 +100,8 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
     /* don't change these variables */
     var mediapackageChange = "change:mediaPackage";
     var footprintsChange = "change:footprints";
-    var initCount = 3;
+    var videoDataModelChange = "change:videoDataModel";
+    var initCount = 4;
     var lastFootprint = undefined;
     var cTime = 0;
     var mediapackageID;
@@ -112,6 +114,19 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
             mediapackageID = "";
             return;
         }
+
+        function continueAtLastView() {
+            if (!Engage.model.has("time") && Engage.model.get("footprints").getLast() && Engage.model.get("videoDataModel").has("duration")) {
+                var duration = Math.floor(parseInt(Engage.model.get("videoDataModel").get("duration")) / 1000);
+                var second = Engage.model.get("footprints").getLast();
+                if (second < duration) {
+                    Engage.model.set("time", second);
+                }
+            }
+        };
+
+        Engage.model.get("footprints").on("change", continueAtLastView);
+        Engage.model.get("videoDataModel").on("change", continueAtLastView);
 
         function putFootprint() {
             if (lastFootprint < cTime) {
@@ -163,6 +178,13 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
                 lastFootprint = undefined;
             }
         });
+
+        Engage.on(plugin.events.seek.getName(), function(second) {
+            if (!mediapackageError) {
+                putFootprint();
+                lastFootprint = second;
+            }
+        });
     }
 
     // init event
@@ -179,6 +201,14 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
 
     // footprints model created
     Engage.model.on(footprintsChange, function() {
+        initCount -= 1;
+        if (initCount <= 0) {
+            initPlugin();
+        }
+    });
+
+    // videoDataModel model created
+    Engage.model.on(videoDataModelChange, function() {
         initCount -= 1;
         if (initCount <= 0) {
             initPlugin();

@@ -392,6 +392,7 @@ class ilMatterhornSendfile
         $response = array();
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
         $response['footprints'] = ilMatterhornUserTracking::getFootprints($this->episode_id, $user_id);
+        $response['last'] = ilMatterhornUserTracking::getLastSecondViewed($this->episode_id, $user_id);
         $this->sendJSON($response);
     }
 

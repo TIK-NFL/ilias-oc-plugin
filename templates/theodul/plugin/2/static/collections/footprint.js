@@ -70,7 +70,11 @@ define(["jquery", "backbone", "engage/core", "../models/footprint"], function($,
             });
         },
         parse: function(response) {
+            this.lastSecond = response.last;
             return response.footprints.footprint;
+        },
+        getLast: function() {
+            return this.lastSecond;
         }
     });
 

@@ -230,4 +230,16 @@ class ilMatterhornUserTracking
         
         return $viewsCount;
     }
+
+    /**
+     * Get the seconds of the last view from this video from this user
+     *
+     * @param string $episode_id            
+     * @param int $user_id            
+     * @return int seconds
+     */
+    public static function getLastSecondViewed($episode_id, $user_id)
+    {
+        return self::getLastView($user_id, $episode_id)['outtime'];
+    }
 }
