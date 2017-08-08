@@ -22,14 +22,7 @@ class ilMatterhornUserTracking
         $view = self::getLastView($user_id, $episode_id);
         
         if ($intime < 0) {
-            if ($view['intime'] < 0) {
-                // double -1 datapoint
-            } else {
-                $view = [
-                    'intime' => - 1,
-                    'outtime' => 0
-                ];
-            }
+            // do nothing, if this is the first view of this episode from the user, -1 is added automatically
         } else {
             if ($view['intime'] < 0) {
                 // first FOOTPRINT after -1
