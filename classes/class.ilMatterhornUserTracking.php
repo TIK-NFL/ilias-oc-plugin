@@ -242,4 +242,16 @@ class ilMatterhornUserTracking
     {
         return self::getLastView($user_id, $episode_id)['outtime'];
     }
+
+    /**
+     * Delete all Views for the specified episode_id
+     *
+     * @param string $episode_id            
+     */
+    public static function removeViews($episode_id)
+    {
+        global $ilDB;
+        
+        $ilDB->manipulate("DELETE FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode_id, "text"));
+    }
 }
