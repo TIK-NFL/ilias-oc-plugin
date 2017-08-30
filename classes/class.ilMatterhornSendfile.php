@@ -190,7 +190,7 @@ class ilMatterhornSendfile
             } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
                 $this->requestType = "statistic";
                 $this->setID();
-                $this->checkEpisodeAccess();
+                $this->checkEpisodeAccess("write");
                 $this->sendStatistic();
             } else {
                 $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
@@ -249,7 +249,7 @@ class ilMatterhornSendfile
     /**
      * Determine the current user(s)
      */
-    public function determineUser()
+    private function determineUser()
     {
         global $ilUser;
         
@@ -273,14 +273,14 @@ class ilMatterhornSendfile
     /**
      * Check access rights of the requested file
      *
-     * @throws Exception if user have no access rights for the file
-     * @access public
+     * @param string $permission            
+     * @throws Exception if user have no $permission access for the file
      */
-    public function checkEpisodeAccess()
+    private function checkEpisodeAccess($permission = "read")
     {
         // do this here because ip based checking may be set after construction
         $this->determineUser();
-        if ($this->checkAccessObject($this->obj_id)) {
+        if ($this->checkAccessObject($this->obj_id, $permission)) {
             return;
         }
         // none of the checks above gives access
@@ -291,9 +291,8 @@ class ilMatterhornSendfile
      * Check access rights of the requested preview of the file
      *
      * @throws Exception if user have no access rights for the preview
-     * @access public
      */
-    public function checkPreviewAccess()
+    private function checkPreviewAccess()
     {
         $this->checkFileAccess();
     }
@@ -323,6 +322,31 @@ class ilMatterhornSendfile
         // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: no access found");
         // none of the checks above gives access
         throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
+    }
+
+    /**
+     * Check access rights for an object by its object id
+     *
+     * @param int $obj_id
+     *            object id
+     * @param string $permission
+     *            read/write
+     * @param string $obj_type            
+     * @return boolean access given (true/false)
+     */
+    private function checkAccessObject($obj_id, $permission = 'read', $obj_type = '')
+    {
+        global $ilAccess, $ilUser;
+        if (! $obj_type) {
+            $obj_type = ilObject::_lookupType($obj_id);
+        }
+        $ref_ids = ilObject::_getAllReferences($obj_id);
+        foreach ($ref_ids as $ref_id) {
+            if ($ilAccess->checkAccessOfUser($ilUser->getId(), $permission, "view", $ref_id, $obj_type, $obj_id)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -444,29 +468,6 @@ class ilMatterhornSendfile
     {
         header("Content-Type: application/json");
         echo json_encode($array);
-    }
-
-    /**
-     * Check access rights for an object by its object id
-     *
-     * @param int $obj_id
-     *            object id
-     * @param string $obj_type            
-     * @return boolean access given (true/false)
-     */
-    private function checkAccessObject($obj_id, $obj_type = '')
-    {
-        global $ilAccess, $ilUser;
-        if (! $obj_type) {
-            $obj_type = ilObject::_lookupType($obj_id);
-        }
-        $ref_ids = ilObject::_getAllReferences($obj_id);
-        foreach ($ref_ids as $ref_id) {
-            if ($ilAccess->checkAccessOfUser($ilUser->getId(), "read", "view", $ref_id, $obj_type, $obj_id)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
