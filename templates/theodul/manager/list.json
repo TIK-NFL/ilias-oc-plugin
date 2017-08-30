@@ -60,6 +60,12 @@
 				"id": "3",
 				"description": "Tracking of sections the user has played",
 				"static-path": "3\/static"
+			},
+			{
+				"name": "EngagePluginTabStatistics",
+				"id": "11",
+				"description": "Statistics of the video from the usertracking",
+				"static-path": "11\/static"
 			}
 		]
 	}
