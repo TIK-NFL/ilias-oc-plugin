@@ -151,7 +151,7 @@ class ilMatterhornSendfile
     public function handleRequest($path)
     {
         ilLoggerFactory::getLogger('xmh')->debug("Request for:" . $path);
-        
+
         try {
             // check if it is a request for an episode
             if (0 == strcmp("/episode.json", $path)) {
@@ -195,18 +195,13 @@ class ilMatterhornSendfile
             } else {
                 $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
                 $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
+
                 if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
                     throw new Exception("", 400);
                 }
-                if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
-                    ilLoggerFactory::getLogger('xmh')->debug("PreviewRequest for: " . $this->subpath);
+                if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
                     $this->requestType = "preview";
-                    if (! preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9]+\/preview(sbs|presentation|presenter).(mp4|webm)/', $this->subpath)) {
-                        throw new Exception("", 400);
-                    }
-                    
                     list ($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
-                    
                     $this->checkPreviewAccess();
                     $this->sendPreview();
                 } else {
@@ -490,6 +485,7 @@ class ilMatterhornSendfile
         $attachments = array(
             "attachment" => array()
         );
+        $previewrefs = [];
         foreach ($manifest->attachments->attachment as $attachment) {
             $att = array();
             if (isset($attachment['id'])) {
@@ -515,8 +511,17 @@ class ilMatterhornSendfile
                     array_push($att['tags']['tag'], (string) $tag);
                 }
             }
+            if (isset($attachment['type']) && (string) $attachment['type'] == "presentation/segment+preview") {
+                if (isset($attachment['ref'])) {
+                     preg_match("/(.*)time=(.*)F(\d+)/", (string) $attachment['ref'], $regmatches);
+                     $previewrefs[$regmatches[2]] = $att;
+                }
+            }
             array_push($attachments['attachment'], $att);
         }
+        #ilLoggerFactory::getLogger('xmh')->debug((string) $segmentxml->MediaTime->MediaDuration);
+        #ilLoggerFactory::getLogger('xmh')->debug(print_r($previewrefs,true));
+
         $episode['search-results']["result"]["mediapackage"]['attachments'] = $attachments;
         
         $metadata = array(
@@ -621,13 +626,13 @@ class ilMatterhornSendfile
             $episode['search-results']["result"]["dcCreator"] = $creators;
         }
         if ($segments) {
-            $episode['search-results']["result"]["segments"] = $this->convertSegment($segments);
+            $episode['search-results']["result"]["segments"] = $this->convertSegment($segments, $previewrefs);
         }
         header("Content-Type: application/json");
         echo json_encode($episode);
     }
 
-    private function convertSegment($catalog)
+    private function convertSegment($catalog, $previewrefs)
     {
         $urlsplit = explode('/', (string) $catalog->url);
         end($urlsplit);
@@ -638,13 +643,18 @@ class ilMatterhornSendfile
         );
         $currentidx = 0;
         $currenttime = 0;
+
         foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
             $regmatches = array();
-            preg_match("/PT(\d+M)?(\d+S)0N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
+            preg_match("/PT(\d+M)?(\d+S)(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
             $sec = substr($regmatches[2], 0, - 1);
             $min = 0;
+            $msec = 0;
             if (0 != strcmp('', $regmatches[1])) {
                 $min = substr($regmatches[1], 0, - 1);
+            }
+            if (0 != strcmp('', $regmatches[3])) {
+                $msec = $regmatches[3];
             }
             $segment = array();
             $segment['index'] = $currentidx;
@@ -657,7 +667,37 @@ class ilMatterhornSendfile
             }
             $segment['text'] = $text;
             
-            $segment['duration'] = ($min * 60 + $sec) * 1000;
+            $segment['duration'] = ($min * 60 + $sec) * 1000 + $msec;
+            $curmesc = $cursec = $curmin = $remainhour = 0;
+            $curmsec = $currenttime%1000;
+            $remainsec = intdiv($currenttime,1000);
+            $cursec = $remainsec%60;
+            $remainmin = intdiv($remainsec,60);
+            $curmin = $remainmin%60;
+            $remainhour = intdiv($remainmin,60);
+
+            $format = "T%02d:%02d:%02d:%03d";
+            $timecode = sprintf($format,$remainhour, $curmin,$cursec,$curmsec);
+            $oldformat = "T%02d:%02d:%02d:0";
+            $oldtimecode = sprintf($oldformat,$remainhour, $curmin,$cursec);
+            if(isset($previewrefs[$timecode])){
+                $attachment = $previewrefs[$timecode];
+                preg_match("/track:(.*);time=(.*)F(\d+)/", (string) $attachment['ref'], $regmatches);
+                $preview = [];
+                $preview["$"] = (string) $attachment['url'];
+                $preview["ref"] = $regmatches[1];
+            } elseif (isset($previewrefs[$oldtimecode])){
+                $attachment = $previewrefs[$oldtimecode];
+                preg_match("/track:(.*);time=(.*)F(\d+)/", (string) $attachment['ref'], $regmatches);
+                $preview = [];
+                $preview["$"] = (string) $attachment['url'];
+                $preview["ref"] = $regmatches[1];
+            }
+
+            $previews = [];
+            $previews["preview"] = $preview;
+            $segment['previews'] = $previews;
+
             $currentidx ++;
             $currenttime = $currenttime + $segment['duration'];
             array_push($segments['segment'], $segment);
@@ -745,7 +785,8 @@ class ilMatterhornSendfile
         $typesplit = explode('.', $urlsplit[2]);
         ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
         ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl' . $typesplit[0] . $typesplit[1] . $urlsplit[1]);
-        $realfile = str_replace($this->configObject->getMatterhornServer() . '/files', $this->configObject->getMatterhornFilesDirectory(), $_SESSION['mhpreviewurl' . $typesplit[0] . $typesplit[1] . $urlsplit[1]]);
+        $realfile = str_replace($this->configObject->getMatterhornServer() . '/static/mh_default_org/internal', $this->configObject->getMatterhornFilesDirectory(), $_SESSION['mhpreviewurl' . $typesplit[0] . $typesplit[1] . $urlsplit[1]]);
+        
         ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
         // header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");

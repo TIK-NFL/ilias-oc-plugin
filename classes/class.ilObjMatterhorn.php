@@ -103,10 +103,10 @@ class ilObjMatterhorn extends ilObjectPlugin
             $fields_string .= $key.'='.$value.'&';
         }
         rtrim($fields_string, '&');
-        
+
         //open connection
         $ch = curl_init();
-        
+
         //set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
@@ -132,7 +132,7 @@ class ilObjMatterhorn extends ilObjectPlugin
                 ")");
         $this->createMetaData();
     }
-    
+
     /**
     * Read data from db
     */
@@ -185,7 +185,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         
-        ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: "+ $httpCode);
+        ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: ". $httpCode);
         ilLoggerFactory::getLogger('xmh')->debug($result);
         $ilDB->manipulate("UPDATE rep_robj_xmh_data SET ".
             " is_online = ".$ilDB->quote($this->getOnline(), "integer").",".
@@ -326,7 +326,8 @@ class ilObjMatterhorn extends ilObjectPlugin
             $currenttime = 0;
             foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
                 $regmatches = array();
-                preg_match("/PT(\d+M)?(\d+S)?0N1000F/", (string)$segmentxml->MediaTime->MediaDuration, $regmatches);
+                #preg_match("/PT(\d+M)?(\d+S)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
+                preg_match("/PT(\d+M)?(\d+S)(\d+)?(0)?N1000F/", (string)$segmentxml->MediaTime->MediaDuration, $regmatches);
                 $sec = substr($regmatches[2], 0, -1);
                 $min = 0;
                 if (0 != strcmp('', $regmatches[1])) {
@@ -559,7 +560,8 @@ class ilObjMatterhorn extends ilObjectPlugin
 
     public function deleteschedule($workflowid)
     {
-        $url = $this->configObject->getMatterhornServer().'/recordings/'.$workflowid;
+
+        $url = $this->configObject->getMatterhornServer().'/admin-ng/event/'.$workflowid;
 
         //open connection
         $ch = curl_init();
@@ -629,16 +631,15 @@ class ilObjMatterhorn extends ilObjectPlugin
       */
     public function getScheduledEpisodes()
     {
-        $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
-
+        $url = $this->configObject->getMatterhornServer()."/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
-        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => '-stopped','op'=>'schedule','count'=>'50');
-        
+        $params = array('filter' =>'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:ilias_xmh_'.$this->getId());
+
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
         //open connection
         $ch = curl_init();
-        
+
         //set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
@@ -659,15 +660,15 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getOnHoldEpisodes()
     {
-        $url = $this->configObject->getMatterhornServer()."/workflow/instances.json";
+        $url = $this->configObject->getMatterhornServer()."/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
-        $params = array('seriesId' =>'ilias_xmh_'.$this->getId(),'state' => array('-stopped','paused'),'op'=>array('-schedule','-capture','-ingest'));
-        
+        $params = array('filter' =>'comments:OPEN,series:ilias_xmh_'.$this->getId());
+
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
         //open connection
         $ch = curl_init();
-        
+
         //set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
@@ -676,7 +677,6 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curlret = curl_exec($ch);
         $searchResult = json_decode($curlret, true);
-
         return $searchResult;
     }
 
@@ -709,7 +709,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         return $searchResult;
     }
 
-    
+
     /**
      * Get workflow
      *
@@ -738,6 +738,34 @@ class ilObjMatterhorn extends ilObjectPlugin
         }
         return $workflow;
     }
+
+    /**
+     * Get editor tool json from admin-ng
+     *
+     * @param String the id of the epsidoe
+     *
+     * @return the editor json from the admin ui
+     */
+    public function getEditor($episodeid)
+    {
+        $url = $this->configObject->getMatterhornServer()."/admin-ng/tools/".$episodeid."/editor.json";
+        ilLoggerFactory::getLogger('xmh')->debug("loading: " + $url);
+        //open connection
+        $ch = curl_init();
+        //set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser().':'.$this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-Requested-Auth: Digest","X-Opencast-Matterhorn-Authorization: true"));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curlret = curl_exec($ch);
+        $editorjson = json_decode($curlret);
+        if ($workflow === false) {
+            ilLoggerFactory::getLogger('xmh')->debug("error loading editor: ".$episodeid);
+        }
+        return $editorjson;
+    }
+
 
     /**
      * Get dublincore
