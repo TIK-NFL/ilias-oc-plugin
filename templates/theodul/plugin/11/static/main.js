@@ -25,7 +25,7 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 	"use strict";
 
 	var insertIntoDOM = true;
-	var PLUGIN_NAME = "Statistic";
+	var PLUGIN_NAME = "Statistics";
 	var PLUGIN_TYPE = "engage_tab";
 	var PLUGIN_VERSION = "1.0";
 	var PLUGIN_TEMPLATE_DESKTOP = "templates/desktop.html";
@@ -94,7 +94,7 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 	/* don't change these variables */
 	var USERTRACKING_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/"
 			+ "usertracking";
-	var USERTRACKING_ENDPOINT_STATISTIC = USERTRACKING_ENDPOINT
+	var USERTRACKING_ENDPOINT_STATISTICS = USERTRACKING_ENDPOINT
 			+ "/statistic.json";
 	var viewsModelChange = "change:views";
 	var mediapackageChange = "change:mediaPackage";
@@ -120,6 +120,7 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 					data.value_locale = language;
 					translations = data;
 					locale = translate("value_locale", locale);
+					Utils.setTranslateFunction(translate);
 				}
 			}
 		});
@@ -130,7 +131,7 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 				: strIfNotFound;
 	}
 
-	var StatisticTabView = Backbone.View.extend({
+	var StatisticsTabView = Backbone.View.extend({
 		initialize : function(mediaPackageModel, template) {
 			this.setElement($(plugin.container)); // every plugin view has
 			// it's own container
@@ -155,6 +156,8 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 				// compile template and load into the html
 				var template = _.template(this.template);
 				this.$el.html(template(tempVars));
+				
+				$("#engage_tab_" + plugin.name.replace(/\s/g,"_")).text(translate("statistics", "Statistics"));
 
 				var mediaPackageID = Engage.model.get("urlParameters").id;
 				if (!mediaPackageID) {
@@ -162,7 +165,7 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 				}
 
 				Utils.showData("#engage_statistics_content", d3
-						.json(USERTRACKING_ENDPOINT_STATISTIC + "?id="
+						.json(USERTRACKING_ENDPOINT_STATISTICS + "?id="
 								+ mediaPackageID), options);
 			}
 		}
@@ -173,19 +176,19 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 		if (isDesktopMode && plugin.inserted) {
 			initTranslate(Engage.model.get("language"));
 			// create a new view with the media package model and the template
-			var statisticTabView = new StatisticTabView(Engage.model
+			var statisticsTabView = new StatisticsTabView(Engage.model
 					.get("mediaPackage"), plugin.template);
 			Engage.on(plugin.events.mediaPackageModelError.getName(), function(
 					msg) {
 				mediapackageError = true;
 			});
-			statisticTabView.render();
+			statisticsTabView.render();
 		}
 	}
 
 	if (isDesktopMode) {
 		// init event
-		Engage.log("Tab:Statistic: Init");
+		Engage.log("Tab:Statistics: Init");
 
 		Engage.model.on(viewsModelChange, function() {
 			initCount -= 1;

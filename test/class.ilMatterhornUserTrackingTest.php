@@ -88,8 +88,6 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1, $result['unique_views'][2]);
         $this->assertEquals(1, $result['unique_views'][3]);
         $this->assertEquals(1, $result['unique_views'][4]);
-        
-        $this->assertEquals(1, $result['total_unique_views']);
     }
 
     public function testGetFootprints()

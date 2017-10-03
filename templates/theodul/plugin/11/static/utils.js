@@ -27,6 +27,30 @@ define([ "./lib/d3" ], function(d3) {
 		return string;
 	}
 
+	var translateFunction = null;
+
+	/**
+	 * 
+	 * @param {string}
+	 *            str
+	 * @param {string}
+	 *            strIfNotFound
+	 * @returns {string}
+	 */
+	function translate(str, strIfNotFound) {
+		return translateFunction ? translateFunction(str, strIfNotFound)
+				: (strIfNotFound ? strIfNotFound : str);
+	}
+
+	/**
+	 * 
+	 * @param {function}
+	 *            parTranslatFunction
+	 */
+	function setTranslateFunction(parTranslatFunction) {
+		translateFunction = parTranslatFunction;
+	}
+
 	/**
 	 * 
 	 * @param {String|Node}
@@ -231,6 +255,8 @@ define([ "./lib/d3" ], function(d3) {
 	 */
 	function TimeGraphic(drawArea, time, step, maxy) {
 
+		var overlap = true;
+
 		maxy = maxy || 0;
 
 		var selfsvg = drawArea.svg.selectAll("#TimeGraphic").data([ this ]);
@@ -264,14 +290,14 @@ define([ "./lib/d3" ], function(d3) {
 					"translate(" + drawArea.width + ",0)").call(yAxis).append(
 					"text").attr("class", "label").attr("transform",
 					"rotate(90)").attr("y", -15).attr("x",
-					(drawArea.height / 2)).attr("fill", "#000").text("Views");
+					(drawArea.height / 2)).attr("fill", "#000").text(translate("views", "Views"));
 		}
 
 		// Add an axis to show the time values.
 		selfsvg.append("g").attr("class", "x axis").attr("transform",
 				"translate(0," + drawArea.height + ")").call(xAxis).append(
 				"text").attr("class", "label").attr("x", drawArea.width / 2)
-				.attr("y", 30).attr("fill", "#000").text("Zeit");
+				.attr("y", 30).attr("fill", "#000").text(translate("time", "Time"));
 
 		// Add labeled rects for each time (so that no enter or exit is
 		// required).
@@ -293,10 +319,11 @@ define([ "./lib/d3" ], function(d3) {
 						return value ? [ value ] : [ 0 ];
 					});
 			newdata.exit().remove();
-			newdata.enter().append("rect").attr("class", data.name).attr("x",
-					datas.length === 1 ? 0 : barWidth).attr("y",
-					drawArea.height).attr("width",
-					datas.length === 1 ? barWidth : 0);
+			var x = overlap || datas.length === 1 ? 0 : barWidth;
+			var width = overlap || datas.length === 1 ? barWidth : 0;
+			newdata.enter().append("rect").attr("class", data.name)
+					.attr("x", x).attr("y", drawArea.height).attr("width",
+							width);
 
 			this.updateAll();
 
@@ -312,7 +339,7 @@ define([ "./lib/d3" ], function(d3) {
 			datas.splice(index, 1);
 			var removedata = time.selectAll("rect").filter("." + data.name)
 					.classed("remove", true);
-			if (datas.length > 0) {
+			if (!overlap && datas.length > 0) {
 				removedata.transition().attr("x", function(d, i) {
 					return (barWidth / datas.length) * index;
 				}).attr("width", 0);
@@ -334,9 +361,12 @@ define([ "./lib/d3" ], function(d3) {
 
 			var datacount = datas.length;
 			var needupdate = time.selectAll("rect:not(.remove)");
-			needupdate.transition().attr("x", function(d, i) {
-				return barWidth / datacount * i;
-			}).attr("width", barWidth / datacount);
+
+			if (!overlap) {
+				needupdate.transition().attr("x", function(d, i) {
+					return barWidth / datacount * i;
+				}).attr("width", barWidth / datacount);
+			}
 
 			needupdate.transition("height").attr("y", y).attr("height",
 					function(value) {
@@ -388,10 +418,11 @@ define([ "./lib/d3" ], function(d3) {
 
 			newcaptions.append("text").attr("x", 12).attr("y", 15).text(
 					function(d) {
+						var displayName = translate(d.name, d.name);
 						if (d instanceof NumberData) {
-							return d.value + " " + d.name;
+							return d.value + " " + displayName;
 						}
-						return d.name;
+						return displayName;
 					});
 			newcaptions.append("rect").attr("class", function(d) {
 				return d.name;
@@ -418,6 +449,7 @@ define([ "./lib/d3" ], function(d3) {
 	}
 
 	var Utils = {
+		setTranslateFunction : setTranslateFunction,
 		showData : showData
 	};
 

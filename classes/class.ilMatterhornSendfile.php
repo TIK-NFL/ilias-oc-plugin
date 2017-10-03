@@ -151,7 +151,7 @@ class ilMatterhornSendfile
     public function handleRequest($path)
     {
         ilLoggerFactory::getLogger('xmh')->debug("Request for:" . $path);
-
+        
         try {
             // check if it is a request for an episode
             if (0 == strcmp("/episode.json", $path)) {
@@ -195,7 +195,7 @@ class ilMatterhornSendfile
             } else {
                 $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
                 $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
-
+                
                 if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
                     throw new Exception("", 400);
                 }
@@ -371,21 +371,13 @@ class ilMatterhornSendfile
         foreach ($statistic as $name => $value) {
             $content = array();
             $content['name'] = $name;
-            switch ($name) {
-                case "total_unique_views":
-                    $content['type'] = "Number";
-                    $content['value'] = $value;
-                    break;
-                case "views":
-                case "unique_views":
-                    $content['type'] = "mapping";
-                    $content['key'] = "time";
-                    $content['value'] = "views";
-                    $content['step'] = 10;
-                    $mapping = array_fill(0, max(array_keys($value)), 0);
-                    $content['mapping'] = array_replace($mapping, $value);
-                    break;
-            }
+            
+            $content['type'] = "mapping";
+            $content['key'] = "time";
+            $content['value'] = "views";
+            $content['step'] = 10;
+            $mapping = array_fill(0, max(array_keys($value)), 0);
+            $content['mapping'] = array_replace($mapping, $value);
             
             $data[] = $content;
         }
@@ -513,15 +505,15 @@ class ilMatterhornSendfile
             }
             if (isset($attachment['type']) && (string) $attachment['type'] == "presentation/segment+preview") {
                 if (isset($attachment['ref'])) {
-                     preg_match("/(.*)time=(.*)F(\d+)/", (string) $attachment['ref'], $regmatches);
-                     $previewrefs[$regmatches[2]] = $att;
+                    preg_match("/(.*)time=(.*)F(\d+)/", (string) $attachment['ref'], $regmatches);
+                    $previewrefs[$regmatches[2]] = $att;
                 }
             }
             array_push($attachments['attachment'], $att);
         }
-        #ilLoggerFactory::getLogger('xmh')->debug((string) $segmentxml->MediaTime->MediaDuration);
-        #ilLoggerFactory::getLogger('xmh')->debug(print_r($previewrefs,true));
-
+        // ilLoggerFactory::getLogger('xmh')->debug((string) $segmentxml->MediaTime->MediaDuration);
+        // ilLoggerFactory::getLogger('xmh')->debug(print_r($previewrefs,true));
+        
         $episode['search-results']["result"]["mediapackage"]['attachments'] = $attachments;
         
         $metadata = array(
@@ -643,7 +635,7 @@ class ilMatterhornSendfile
         );
         $currentidx = 0;
         $currenttime = 0;
-
+        
         foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
             $regmatches = array();
             preg_match("/PT(\d+M)?(\d+S)(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
@@ -669,35 +661,35 @@ class ilMatterhornSendfile
             
             $segment['duration'] = ($min * 60 + $sec) * 1000 + $msec;
             $curmesc = $cursec = $curmin = $remainhour = 0;
-            $curmsec = $currenttime%1000;
-            $remainsec = intdiv($currenttime,1000);
-            $cursec = $remainsec%60;
-            $remainmin = intdiv($remainsec,60);
-            $curmin = $remainmin%60;
-            $remainhour = intdiv($remainmin,60);
-
+            $curmsec = $currenttime % 1000;
+            $remainsec = intdiv($currenttime, 1000);
+            $cursec = $remainsec % 60;
+            $remainmin = intdiv($remainsec, 60);
+            $curmin = $remainmin % 60;
+            $remainhour = intdiv($remainmin, 60);
+            
             $format = "T%02d:%02d:%02d:%03d";
-            $timecode = sprintf($format,$remainhour, $curmin,$cursec,$curmsec);
+            $timecode = sprintf($format, $remainhour, $curmin, $cursec, $curmsec);
             $oldformat = "T%02d:%02d:%02d:0";
-            $oldtimecode = sprintf($oldformat,$remainhour, $curmin,$cursec);
-            if(isset($previewrefs[$timecode])){
+            $oldtimecode = sprintf($oldformat, $remainhour, $curmin, $cursec);
+            if (isset($previewrefs[$timecode])) {
                 $attachment = $previewrefs[$timecode];
                 preg_match("/track:(.*);time=(.*)F(\d+)/", (string) $attachment['ref'], $regmatches);
                 $preview = [];
                 $preview["$"] = (string) $attachment['url'];
                 $preview["ref"] = $regmatches[1];
-            } elseif (isset($previewrefs[$oldtimecode])){
+            } elseif (isset($previewrefs[$oldtimecode])) {
                 $attachment = $previewrefs[$oldtimecode];
                 preg_match("/track:(.*);time=(.*)F(\d+)/", (string) $attachment['ref'], $regmatches);
                 $preview = [];
                 $preview["$"] = (string) $attachment['url'];
                 $preview["ref"] = $regmatches[1];
             }
-
+            
             $previews = [];
             $previews["preview"] = $preview;
             $segment['previews'] = $previews;
-
+            
             $currentidx ++;
             $currenttime = $currenttime + $segment['duration'];
             array_push($segments['segment'], $segment);

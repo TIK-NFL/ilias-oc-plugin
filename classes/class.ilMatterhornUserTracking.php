@@ -141,7 +141,6 @@ class ilMatterhornUserTracking
             
             $dataarray['views'] = $data;
             $dataarray['unique_views'] = $useruniqueviewdata;
-            $dataarray['total_unique_views'] = count($users);
         }
         return $dataarray;
     }

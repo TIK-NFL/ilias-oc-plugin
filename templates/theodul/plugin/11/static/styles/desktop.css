@@ -33,4 +33,5 @@ rect.unique_views {
 
 .caption rect {
     stroke: grey;
+    cursor: pointer;
 }
