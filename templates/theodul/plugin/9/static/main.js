@@ -115,18 +115,18 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
             return;
         }
 
-        function continueAtLastView() {
-            if (!Engage.model.has("time") && Engage.model.get("footprints").getLast() && Engage.model.get("videoDataModel").has("duration")) {
-                var duration = Math.floor(parseInt(Engage.model.get("videoDataModel").get("duration")) / 1000);
-                var second = Engage.model.get("footprints").getLast();
-                if (second < duration) {
-                    Engage.model.set("time", second);
-                }
-            }
-        };
-
-        Engage.model.get("footprints").on("change", continueAtLastView);
-        Engage.model.get("videoDataModel").on("change", continueAtLastView);
+//        function continueAtLastView() {
+//            if (!Engage.model.has("time") && Engage.model.get("footprints").getLast() && Engage.model.get("videoDataModel").has("duration")) {
+//                var duration = Math.floor(parseInt(Engage.model.get("videoDataModel").get("duration")) / 1000);
+//                var second = Engage.model.get("footprints").getLast();
+//                if (second < duration) {
+//                    Engage.model.set("time", second);
+//                }
+//            }
+//        };
+//
+//        Engage.model.get("footprints").on("change", continueAtLastView);
+//        Engage.model.get("videoDataModel").on("change", continueAtLastView);
 
         function putFootprint() {
             if (lastFootprint < cTime) {
