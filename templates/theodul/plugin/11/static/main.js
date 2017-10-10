@@ -21,7 +21,8 @@
 /* jslint browser: true */
 /* global define */
 define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
-		"./utils" ], function($, _, Backbone, Engage, d3, Utils) {
+		"./utils", "./models/statistics" ], function($, _, Backbone, Engage,
+		d3, Utils, StatisticsModel) {
 	"use strict";
 
 	var insertIntoDOM = true;
@@ -92,10 +93,6 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 	var class_tabGroupItem = "tab-group-item";
 
 	/* don't change these variables */
-	var USERTRACKING_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/"
-			+ "usertracking";
-	var USERTRACKING_ENDPOINT_STATISTICS = USERTRACKING_ENDPOINT
-			+ "/statistic.json";
 	var viewsModelChange = "change:views";
 	var mediapackageChange = "change:mediaPackage";
 	var initCount = 3;
@@ -132,11 +129,11 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 	}
 
 	var StatisticsTabView = Backbone.View.extend({
-		initialize : function(mediaPackageModel, template) {
+		initialize : function(statisticsModel, template) {
 			this.setElement($(plugin.container)); // every plugin view has
 			// it's own container
 			// associated with it
-			this.model = mediaPackageModel;
+			this.model = statisticsModel;
 			this.template = template;
 			// bind the render function always to the view
 			_.bindAll(this, "render");
@@ -145,7 +142,8 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 			this.model.bind("change", this.render);
 		},
 		render : function() {
-			if (!mediapackageError) {
+			if (!mediapackageError
+					&& this.model.get("available") === "available") {
 				var tempVars = {};
 
 				var options = {
@@ -156,17 +154,18 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 				// compile template and load into the html
 				var template = _.template(this.template);
 				this.$el.html(template(tempVars));
-				
-				$("#engage_tab_" + plugin.name.replace(/\s/g,"_")).text(translate("statistics", "Statistics"));
 
-				var mediaPackageID = Engage.model.get("urlParameters").id;
-				if (!mediaPackageID) {
-					mediaPackageID = "";
-				}
+				$("#engage_tab_" + plugin.name.replace(/\s/g, "_")).text(
+						translate("statistics", "Statistics"));
 
-				Utils.showData("#engage_statistics_content", d3
-						.json(USERTRACKING_ENDPOINT_STATISTICS + "?id="
-								+ mediaPackageID), options);
+				Utils.showData("#engage_statistics_content",
+						this.model.attributes, options);
+			} else
+				(this.model.get("available") === "notavailable")
+			{
+				$("#engage_tab_" + plugin.name.replace(/\s/g, "_")).parent()
+						.parent("li").detach();
+				$("#engage_statistics_content").detach();
 			}
 		}
 	});
@@ -176,8 +175,8 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 		if (isDesktopMode && plugin.inserted) {
 			initTranslate(Engage.model.get("language"));
 			// create a new view with the media package model and the template
-			var statisticsTabView = new StatisticsTabView(Engage.model
-					.get("mediaPackage"), plugin.template);
+			var statisticsTabView = new StatisticsTabView(
+					new StatisticsModel(), plugin.template);
 			Engage.on(plugin.events.mediaPackageModelError.getName(), function(
 					msg) {
 				mediapackageError = true;

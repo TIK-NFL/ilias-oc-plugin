@@ -55,12 +55,12 @@ define([ "./lib/d3" ], function(d3) {
 	 * 
 	 * @param {String|Node}
 	 *            selector
-	 * @param {d3.request}
-	 *            request
+	 * @param {object}
+	 *            data
 	 * @param {object}
 	 *            [options]
 	 */
-	function showData(selector, request, options) {
+	function showData(selector, data, options) {
 		options = options || {};
 
 		var element = d3.select(selector);
@@ -91,23 +91,21 @@ define([ "./lib/d3" ], function(d3) {
 			svg : svg
 		};
 
-		request.get(function(error, data) {
-			var mediaData = new MediaData(data);
+		var mediaData = new MediaData(data);
 
-			mediaData.data.forEach(function(availableData) {
-				if (availableData instanceof MappingData) {
-					availableData.drawMapping(drawArea);
-				}
-			});
-
-			var caption = new Caption(drawArea);
-			mediaData.data.forEach(function(availableData) {
-				caption.add(availableData);
-			});
-			// A label
-			svg.append("text").attr("class", "title").attr("x", width / 2)
-					.attr("y", -2).text(mediaData.title);
+		mediaData.data.forEach(function(availableData) {
+			if (availableData instanceof MappingData) {
+				availableData.drawMapping(drawArea);
+			}
 		});
+
+		var caption = new Caption(drawArea);
+		mediaData.data.forEach(function(availableData) {
+			caption.add(availableData);
+		});
+		// A label
+		svg.append("text").attr("class", "title").attr("x", width / 2).attr(
+				"y", -2).text(mediaData.title);
 
 		function createTimeAxis(time, step, maxy) {
 			return new TimeGraphic(drawArea, time, step, maxy);
@@ -290,14 +288,16 @@ define([ "./lib/d3" ], function(d3) {
 					"translate(" + drawArea.width + ",0)").call(yAxis).append(
 					"text").attr("class", "label").attr("transform",
 					"rotate(90)").attr("y", -15).attr("x",
-					(drawArea.height / 2)).attr("fill", "#000").text(translate("views", "Views"));
+					(drawArea.height / 2)).attr("fill", "#000").text(
+					translate("views", "Views"));
 		}
 
 		// Add an axis to show the time values.
 		selfsvg.append("g").attr("class", "x axis").attr("transform",
 				"translate(0," + drawArea.height + ")").call(xAxis).append(
 				"text").attr("class", "label").attr("x", drawArea.width / 2)
-				.attr("y", 30).attr("fill", "#000").text(translate("time", "Time"));
+				.attr("y", 30).attr("fill", "#000").text(
+						translate("time", "Time"));
 
 		// Add labeled rects for each time (so that no enter or exit is
 		// required).
