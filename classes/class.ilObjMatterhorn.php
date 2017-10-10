@@ -189,6 +189,12 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         global $ilDB;
         
+        $this->getPlugin()->includeClass("class.ilMatterhornUserTracking.php");
+        
+        foreach ($this->getReleasedEpisodes() as $episode_id) {
+            ilMatterhornUserTracking::removeViews($episode_id);
+        }
+        
         $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep " . " WHERE series_id = " . $ilDB->quote($this->getId(), "text"));
         
         $ilDB->manipulate("DELETE FROM rep_robj_xmh_data WHERE " . " obj_id = " . $ilDB->quote($this->getId(), "integer"));
