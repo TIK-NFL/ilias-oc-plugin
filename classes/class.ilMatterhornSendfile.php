@@ -192,6 +192,16 @@ class ilMatterhornSendfile
                 $this->setID();
                 $this->checkEpisodeAccess("write");
                 $this->sendStatistic();
+            } else if (0 == strcmp("/info/me.json", $path)) {
+                $this->requestType = "me";
+                $this->setID();
+                $this->checkEpisodeAccess();
+                $this->sendMe();
+            } else if (0 == strcmp("/manager/list.json", $path)) {
+                $this->requestType = "list";
+                $this->setID();
+                $this->checkEpisodeAccess();
+                $this->sendList();
             } else {
                 $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
                 $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
@@ -418,6 +428,28 @@ class ilMatterhornSendfile
         $response['stats'] = [
             'views' => $views
         ];
+        $this->sendJSON($response);
+    }
+
+    /**
+     * send the info/me.json
+     */
+    private function sendMe()
+    {
+        $this->plugin->includeClass("class.ilMatterhornInfo.php");
+        $info = new ilMatterhornInfo();
+        $response = $info->getMyInfo();
+        $this->sendJSON($response);
+    }
+
+    /**
+     * send the manager/list.json
+     */
+    private function sendList()
+    {
+        $this->plugin->includeClass("class.ilMatterhornInfo.php");
+        $info = new ilMatterhornInfo();
+        $response = $info->listPlugins();
         $this->sendJSON($response);
     }
 

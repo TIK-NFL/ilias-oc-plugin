@@ -540,7 +540,7 @@ define(['require', 'jquery', 'underscore', 'backbone', 'basil', 'bootbox', 'enga
         playPause();
         timeUpdate();
         addNonFlashEvents();
-        checkLoginStatus();
+        // checkLoginStatus(); ILPATCH
       }
     }
   });

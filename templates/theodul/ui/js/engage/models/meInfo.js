@@ -43,7 +43,7 @@ define(['jquery', 'backbone'], function($, Backbone) {
      */
     var MeInfoModel = Backbone.Model.extend({
         //urlRoot: "../../../info/me.json", ILPATCH
-        urlRoot: ILIAS_THEODUL_PATH + "../info/me.json",
+        urlRoot: ILIAS_THEODUL_PATH + "../../MHData/" + "info/me.json",
         initialize: function() {
             this.fetch({
                 success: function(me) {
