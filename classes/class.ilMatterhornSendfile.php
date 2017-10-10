@@ -194,13 +194,9 @@ class ilMatterhornSendfile
                 $this->sendStatistic();
             } else if (0 == strcmp("/info/me.json", $path)) {
                 $this->requestType = "me";
-                $this->setID();
-                $this->checkEpisodeAccess();
                 $this->sendMe();
             } else if (0 == strcmp("/manager/list.json", $path)) {
                 $this->requestType = "list";
-                $this->setID();
-                $this->checkEpisodeAccess();
                 $this->sendList();
             } else {
                 $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
