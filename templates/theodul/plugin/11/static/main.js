@@ -160,9 +160,7 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 
 				Utils.showData("#engage_statistics_content",
 						this.model.attributes, options);
-			} else
-				(this.model.get("available") === "notavailable")
-			{
+			} else if (this.model.get("available") === "notavailable") {
 				$("#engage_tab_" + plugin.name.replace(/\s/g, "_")).parent()
 						.parent("li").detach();
 				$("#engage_statistics_content").detach();
