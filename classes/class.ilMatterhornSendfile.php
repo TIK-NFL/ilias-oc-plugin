@@ -248,30 +248,6 @@ class ilMatterhornSendfile
     }
 
     /**
-     * Determine the current user(s)
-     */
-    private function determineUser()
-    {
-        global $ilUser;
-        
-        // a valid user session is found
-        if ($_SESSION["AccountId"]) {
-            $this->check_users = array(
-                $_SESSION["AccountId"]
-            );
-            return;
-        } else {
-            $this->check_users = array(
-                ANONYMOUS_USER_ID
-            );
-            $_SESSION["AccountId"] = ANONYMOUS_USER_ID;
-            $ilUser->setId(ANONYMOUS_USER_ID);
-            $ilUser->read();
-            return;
-        }
-    }
-
-    /**
      * Check access rights of the requested file
      *
      * @param string $permission            
@@ -279,8 +255,6 @@ class ilMatterhornSendfile
      */
     private function checkEpisodeAccess($permission = "read")
     {
-        // do this here because ip based checking may be set after construction
-        $this->determineUser();
         if ($this->checkAccessObject($this->obj_id, $permission)) {
             return;
         }
@@ -307,10 +281,6 @@ class ilMatterhornSendfile
     public function checkFileAccess()
     {
         // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access for ". $this->obj_id);
-        
-        // do this here because ip based checking may be set after construction
-        $this->determineUser();
-        
         $type = 'xmh';
         $iliasid = substr($this->obj_id, 10);
         if (! $iliasid || $type == 'none') {
