@@ -513,7 +513,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function publish($episodeId)
     {
         global $ilDB;
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_rel_ep " . "(episode_id, series_id) VALUES (" . $ilDB->quote($episodeId, "text") . "," . $ilDB->quote($this->getId(), "integer") . ") " . "on duplicate key update  episode_id = episode_id");
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_rel_ep " . "(episode_id, series_id) VALUES (" . $ilDB->quote($episodeId, "text") . "," . $ilDB->quote($this->getId(), "integer") . ")");
         $this->addTextToDB($episodeId);
     }
 
