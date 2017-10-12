@@ -6,4 +6,6 @@ This plugin also requires to a workflow handler for Opencast, which enables dist
 are usable by this plugin. This plugin is currently only available in the [Bitbucket Repo](https://bitbucket.org/pascalgrube/matterhorn/branch/distribution-ilias)
 and not part of the official Opencast Distribution. 
 
+The plugin folder MUST be named 'Matterhorn'.
+
 Databases: MySQL/MariaDB only
