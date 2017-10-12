@@ -66,15 +66,6 @@ class ilMatterhornSendfile
     private $requestType;
 
     /**
-     * The mimetype to be sent
-     * will be determined if null
-     *
-     * @var string
-     * @access private
-     */
-    private $mimetype = null;
-
-    /**
      * the configuration for the matterhorn object
      *
      * @var ilMatterhornConfig
@@ -130,7 +121,6 @@ class ilMatterhornSendfile
         // echo "file: " . $this->file . "\n";
         // echo "disposition: " . $this->disposition . "\n";
         // echo "ckeck_ip: " . $this->check_ip . "\n";
-        // echo "send_mimetype: " . $this->send_mimetype . "\n";
         // echo "requesttype: " . $this->requestType . "\n";
         // echo "</pre>";
         // var_dump($_SESSION);
@@ -706,7 +696,7 @@ class ilMatterhornSendfile
         // header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
         // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$this->subpath);
-        $mime = ilMimeTypeUtil::getMimeType($this->configObject->getXSendfileBasedir() . $this->subpath);
+        $mime = ilMimeTypeUtil::lookupMimeType($this->configObject->getXSendfileBasedir() . $this->subpath);
         header("Content-Type: " . $mime);
         // if (isset($_SERVER['HTTP_RANGE'])) {
         // ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
@@ -780,7 +770,7 @@ class ilMatterhornSendfile
         ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
         // header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-        $mime = ilMimeTypeUtil::getMimeType($realfile);
+        $mime = ilMimeTypeUtil::lookupMimeType($realfile);
         header("Content-Type: " . $mime);
         // if (isset($_SERVER['HTTP_RANGE'])) {
         // ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
@@ -815,28 +805,5 @@ class ilMatterhornSendfile
         }
         echo $errortext;
         exit();
-    }
-
-    /**
-     * Get the mime type of the requested file
-     *
-     * @param string $default
-     *            type
-     * @return string mime type
-     * @access public
-     */
-    public function getMimeType($default = 'application/octet-stream')
-    {
-        // take a previously set mimetype
-        if (isset($this->mimetype)) {
-            return $this->mimetype;
-        }
-        
-        $mime = '';
-        
-        include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-        $mime = ilMimeTypeUtil::getMimeType($this->file);
-        $this->mimetype = $mime ? $mime : $default;
-        return $this->mimetype;
     }
 }

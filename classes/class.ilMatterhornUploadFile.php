@@ -175,7 +175,6 @@ class ilMatterhornUploadFile
         echo "file:                ". $this->file. "\n";
         echo "disposition:         ". $this->disposition. "\n";
         echo "ckeck_ip:            ". $this->check_ip. "\n";
-        echo "send_mimetype:       ". $this->send_mimetype. "\n";
         echo "requesttype:         ". $this->requestType. "\n";
         echo "errorcode:           ". $this->errorcode. "\n";
         echo "errortext:           ". $this->errortype. "\n";
@@ -622,28 +621,5 @@ class ilMatterhornUploadFile
 
         $tpl->show();
         exit;
-    }
-
-    /**
-     * Get the mime type of the requested file.
-     *
-     * @param    string      default type
-     *
-     * @return string mime type
-     */
-    public function getMimeType($default = 'application/octet-stream')
-    {
-        // take a previously set mimetype
-        if (isset($this->mimetype)) {
-            return $this->mimetype;
-        }
-
-        $mime = '';
-
-        include_once './Services/Utilities/classes/class.ilMimeTypeUtil.php';
-        $mime = ilMimeTypeUtil::getMimeType($this->file);
-        $this->mimetype = $mime ? $mime : $default;
-
-        return $this->mimetype;
     }
 }
