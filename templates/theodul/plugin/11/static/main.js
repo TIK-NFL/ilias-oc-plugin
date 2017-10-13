@@ -147,8 +147,8 @@ define([ "jquery", "underscore", "backbone", "engage/core", "./lib/d3",
 				var tempVars = {};
 
 				var options = {
-					svgWidth : $(window).width(),
-					svgHeight : $(window).width() * 9 / 16
+					svgWidth : 1280,
+					svgHeight : 720
 				};
 
 				// compile template and load into the html
