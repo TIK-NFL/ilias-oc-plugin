@@ -523,26 +523,25 @@ class ilMatterhornUploadFile
         $jobxml = new SimpleXMLElement($realjob);
         ilLoggerFactory::getLogger('xmh')->debug($jobxml->payload[0]->url);
         $fields_string = '';
-        $fields = array('mediapackage' => $realmp,
-                        'trackUri' => urlencode($jobxml->payload[0]->url),
+        $fields = array('mediaPackage' => $realmp,
+                        'url' => urlencode($jobxml->payload[0]->url),
                         'flavor' => urlencode('presentation/source'),
                         );
         foreach ($fields as $key => $value) {
             $fields_string .= $key.'='.$value.'&';
         }
         rtrim($fields_string, '&');
-        $url = $this->configObject->getMatterhornServer().'/mediapackage/addTrack';
+        $url = $this->configObject->getMatterhornServer().'/ingest/addTrack';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mediapackage = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        ilLoggerFactory::getLogger('xmh')->debug($httpCode);
+        ilLoggerFactory::getLogger('xmh')->debug("Adding track to MP: ".$httpCode);
         $fields_string = '';
         $fields = array('mediaPackage' => urlencode($mediapackage),
-                        'trimHold' => $trimeditor?"true":"false",
-                        'archiveOp' => 'true',
-                        'distribution' => urlencode('Matterhorn Media Module'),
+                        'straightToPublishing' => $trimeditor?"false":"true",
+                        'distribution' => urlencode('ILIAS-Upload'),
                         );
         foreach ($fields as $key => $value) {
             $fields_string .= $key.'='.$value.'&';

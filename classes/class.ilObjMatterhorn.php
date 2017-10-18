@@ -178,8 +178,28 @@ class ilObjMatterhorn extends ilObjectPlugin
         
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: " . $httpCode);
         ilLoggerFactory::getLogger('xmh')->debug($result);
-        $ilDB->manipulate("UPDATE rep_robj_xmh_data SET " . " is_online = " . $ilDB->quote($this->getOnline(), "integer") . "," . " series = " . $ilDB->quote($this->getSeries(), "text") . "," . " lectureid = " . $ilDB->quote($this->getLectureID(), "text") . "," . " viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . "," . " manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . "," . " download = " . $ilDB->quote($this->getDownload(), "integer") . "," . " mhretval = " . $ilDB->quote($httpCode, "text") . " " . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
-        $this->updateMetaData();
+	if (204 == $httpCode) {
+            $url = $this->configObject->getMatterhornServer() . "/series/ilias_xmh_". $this->getId().".xml";
+            // open connection
+            $ch = curl_init();
+        
+            // set the url, number of POST vars, POST data
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+            curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                "X-Requested-Auth: Digest",
+                "X-Opencast-Matterhorn-Authorization: true"
+            ));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $result = curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server: " . $httpCode);
+            ilLoggerFactory::getLogger('xmh')->debug($result);
+            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET " . " is_online = " . $ilDB->quote($this->getOnline(), "integer") . "," . " series = " . $ilDB->quote($result, "text") . "," . " lectureid = " . $ilDB->quote($this->getLectureID(), "text") . "," . " viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . "," . " manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . "," . " download = " . $ilDB->quote($this->getDownload(), "integer") . "," . " mhretval = " . $ilDB->quote($httpCode, "text") . " " . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
+           $this->updateMetaData();
+	   $this->doRead();
+	}
     }
 
     /**
@@ -234,7 +254,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     </dcterms:subject>
   <dcterms:description xml:lang="en">' . $this->getDescription() . '</dcterms:description>
   <dcterms:publisher>
-    University of  Stuttgart, Germany
+    University of Stuttgart, Germany
     </dcterms:publisher>
   <dcterms:identifier>
     ilias_xmh_' . $this->getId() . '</dcterms:identifier>
@@ -742,7 +762,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getEditor($episodeid)
     {
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $episodeid . "/editor.json";
-        ilLoggerFactory::getLogger('xmh')->debug("loading: " + $url);
+        ilLoggerFactory::getLogger('xmh')->info("loading: ". $url);
         // open connection
         $ch = curl_init();
         // set the url, number of POST vars, POST data
@@ -756,10 +776,41 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curlret = curl_exec($ch);
         $editorjson = json_decode($curlret);
-        if ($workflow === false) {
-            ilLoggerFactory::getLogger('xmh')->debug("error loading editor: " . $episodeid);
+        if ($editorjson === false) {
+            ilLoggerFactory::getLogger('xmh')->error("error loading editor.json for episode " . $episodeid);
         }
         return $editorjson;
+    }
+
+    /**
+     * Get the media objects json from admin-ng
+     *
+     * @param
+     *            String the id of the epsidoe
+     *            
+     * @return the media json from the admin ui
+     */
+    public function getMedia($episodeid)
+    {
+        $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/" . $episodeid . "/asset/media/media.json";
+        ilLoggerFactory::getLogger('xmh')->info("loading: ".$url);
+        // open connection
+        $ch = curl_init();
+        // set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "X-Requested-Auth: Digest",
+            "X-Opencast-Matterhorn-Authorization: true"
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curlret = curl_exec($ch);
+        $mediajson = json_decode($curlret);
+        if ($mediajson === false) {
+            ilLoggerFactory::getLogger('xmh')->error("error loading media for episode " . $episodeid);
+        }
+        return $mediajson;
     }
 
     /**
@@ -838,15 +889,13 @@ class ilObjMatterhorn extends ilObjectPlugin
      * @param
      *            Integer workflowid the workflow id
      * @param
-     *            Array array containing the information about the tracks
-     * @param
-     *            String removetrack the id of the track to be removed
+     *            String keeptrack the id of the track to be removed
      * @param
      *            Float trimin the start time of the new tracks
      * @param
      *            Float trimout the endtime of the video
      */
-    public function trim($workflowid, $mediapackage, $removetrack, $trimin, $trimout)
+    public function trim($eventid, $keeptracks, $trimin, $trimout)
     {
         $mp = $mediapackage;
         // open connection
@@ -856,44 +905,22 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             "X-Requested-Auth: Digest",
             "X-Opencast-Matterhorn-Authorization: true",
-            'Content-Type: application/x-www-form-urlencoded',
+	    'Content-Type: application/json',
             'charset=UTF-8',
             'Connection: Keep-Alive'
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
-        if (isset($removetrack)) {
-            $url = $this->configObject->getMatterhornServer() . "/mediapackage/removeTrack";
-            $fields = array();
-            $fields['mediapackage'] = urlencode(trim($mp));
-            $fields['trackId'] = $removetrack;
-            // url-ify the data for the POST
-            foreach ($fields as $key => $value) {
-                $fields_string .= $key . '=' . $value . '&';
-            }
-            rtrim($fields_string, '&');
-            
-            // set the url, number of POST vars, POST data
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_POST, count($fields));
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-            $mp = curl_exec($ch);
-        }
-        ilLoggerFactory::getLogger('xmh')->debug($mp);
-        $url = $this->configObject->getMatterhornServer() . "/workflow/replaceAndresume/";
-        $fields = array();
-        $fields['id'] = $workflowid;
-        $fields['mediapackage'] = urlencode($mp);
-        $fields_string = "";
-        $fields['properties'] = "trimin=" . (1000 * $trimin) . "\nnewduration=" . (1000 * ($trimout - $trimin));
-        // url-ify the data for the POST
-        foreach ($fields as $key => $value) {
-            $fields_string .= $key . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
+        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/".$eventid."/editor.json";
+#	                     ',"startTime":"00:00:02.818","endTime":"00:00:34.320","deleted":false}],'.
+
+        $fields_string = '{"concat":{"segments":[{"start":'.(1000 * $trimin).',"end":'.(1000 * $trimout).
+	                     ',"deleted":false}],'.
+			     '"tracks":["'.implode('","',$keeptracks).'"]},"workflow":"ilias-publish-after-cutting"}';
+
+        ilLoggerFactory::getLogger('xmh')->debug("FIELDSTRING:".$fields_string);
         // set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, count($fields));
+        curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mp = curl_exec($ch);
         if (! curl_errno($ch)) {

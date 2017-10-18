@@ -732,25 +732,28 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $trimbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/trim";
 
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
+            ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: ".$_GET["id"]);
             $editor = $this->object->getEditor($_GET["id"]);
             if (!strpos($this->object->getSeries(), $editor->series->id)) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
             $previewtracks = array();
             $worktracks = array();
-            foreach ($editor->tracks as $track) {
+	    $media = $this->object->getMedia($_GET["id"]);
+            foreach ($media as $track) {
 
-                ilLoggerFactory::getLogger('xmh')->debug($track->flavor);
-                switch ($track->flavor) {
-                    case "presentation":
+#                ilLoggerFactory::getLogger('xmh')->debug("Track".print_r($track,true));
+                switch ($track->type) {
+                    case "presentation/source":
+                        ilLoggerFactory::getLogger('xmh')->debug("Found presentation track");
                         $worktracks['presentation'] = $track;
                         break;
-                    case "presenter":
+                    case "presenter/source":
                         $worktracks['presenter'] = $track;
                         break;
                 }
             }
-            ilLoggerFactory::getLogger('xmh')->debug($editor->previews);
+            ilLoggerFactory::getLogger('xmh')->debug(print_r($worktracks,true));
             $_SESSION["mhpreviewurlpreviewsbsmp4".$_GET["id"]] = $editor->previews[0]->uri;
 
             $trimview = new ilTemplate("tpl.trimview.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
@@ -766,12 +769,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $trimview->setCurrentBlock("dualstream");
                 $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
                 $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
-                $presenterattributes = $worktracks['presenter']->attributes();
-                $trimview->setVariable("LEFTTRACKID", $presenterattributes['id']);
-                $trimview->setVariable("LEFTTRACKTYPE", $presenterattributes['type']);
-                $presentationattributes = $worktracks['presentation']->attributes();
-                $trimview->setVariable("RIGHTTRACKID", $presentationattributes['id']);
-                $trimview->setVariable("RIGHTTRACKTYPE", $presentationattributes['type']);
+                $presenterattributes = $worktracks['presenter'];
+                $trimview->setVariable("LEFTTRACKID", $presenterattributes->id);
+                $trimview->setVariable("LEFTTRACKTYPE", $presenterattributes->type);
+                $presentationattributes = $worktracks['presentation'];
+                $trimview->setVariable("RIGHTTRACKID", $presentationattributes->id);
+                $trimview->setVariable("RIGHTTRACKTYPE", $presentationattributes->type);
                 $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
                 $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
                 $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));
@@ -826,13 +829,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $ilCtrl;
-        //ilLoggerFactory::getLogger('xmh')->debug("ID:".$_POST["wfid"]);
-        if (preg_match('/^[0-9a-f\-]+/', $_POST["wfid"])) {
-            $editor = $this->object->getEditor($_POST["wfid"]);
-            if (!strpos($this->object->getSeries(), $editor['series'])) {
+        if (preg_match('/^[0-9a-f\-]+/', $_POST["eventid"])) {
+            $editor = $this->object->getEditor($_POST["eventid"]);
+            ilLoggerFactory::getLogger('xmh')->debug("eventid".print_r($editor,true));
+            if (!strpos($this->object->getSeries(), $editor->series->id)) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
-            $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
+#            $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
             $tracks = array();
             if (isset($_POST["lefttrack"])) {
                 $track = array();
@@ -846,45 +849,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $track['flavor'] = ilUtil::stripScriptHTML($_POST["righttrackflavor"]);
                 array_push($tracks, $track);
             }
-
-            foreach ($mediapackage->media->track as $track) {
-                $trackattribs = $track->attributes();
-                if (false !== strpos($trackattribs['type'], "work")) {
-                    $keeptrack = false;
-                    foreach ($tracks as $guitrack) {
-                        if ($guitrack['id'] === (string)$trackattribs['id']) {
-                            $trackattribs['type'] = $guitrack['flavor'];
-                            $keeptrack = true;
-                        }
-                    }
-                    if (!$keeptrack) {
-                        $removetrack = $trackattribs['id'];
-                    }
-                }
-            }
-            foreach ($mediapackage->metadata->catalog as $catalog) {
-                $catalogattribs = $catalog->attributes();
-                if ((string)$catalogattribs['type'] === 'dublincore/episode') {
-                    $dublincoreurl = $catalog->url;
-                }
-            }
-
-            $dublincore = $this->object->getDublincore($dublincoreurl);
-            $dublincore->children('http://purl.org/dc/terms/')->title = $mediapackagetitle;
-            $dom_dublincore = dom_import_simplexml($dublincore);
-
-            $dom = new DOMDocument('1.0');
-            $dom_dublincore = $dom->importNode($dom_dublincore, true);
-            $dom_dublincore = $dom->appendChild($dom_dublincore);
-            $dublincore = $this->object->setDublincore($dublincoreurl, $dom->saveXML());
-
-            $dom_sxe = dom_import_simplexml($mediapackage);
-
-            $dom = new DOMDocument('1.0');
-            $dom_sxe = $dom->importNode($dom_sxe, true);
-            $dom_sxe = $dom->appendChild($dom_sxe);
-
-
+            $keeptracks = [];
+	    foreach($tracks as $track){
+	        array_push($keeptracks,$track['id']);
+	    }
             $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimin"]));
             list($hours, $minutes, $seconds) = sscanf($str_time, "%d:%d:%d");
             $trimin = $hours * 3600 + $minutes * 60 + $seconds;
@@ -893,11 +861,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
             $trimout = $hours * 3600 + $minutes * 60 + $seconds;
 
-            $this->object->trim($_POST["wfid"], $dom->saveXML(), $removetrack, $trimin, $trimout);
+            $this->object->trim($_POST["eventid"], $keeptracks, $trimin, $trimout);
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match an episode:".$_POST["wfid"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match an episode:".$_POST["eventid"]);
         }
         $ilCtrl->redirect($this, "editTrimProcess");
     }
