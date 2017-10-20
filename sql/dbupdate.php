@@ -271,7 +271,7 @@ function getLastView($user_id, $episode_id)
             "outtime" => 0
         ];
     } else {
-        return $ilDB->fetch_assoc($query);
+        return $ilDB->fetchAssoc($query);
     }
 }
 
