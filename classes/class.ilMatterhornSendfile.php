@@ -765,7 +765,7 @@ class ilMatterhornSendfile
         $typesplit = explode('.', $urlsplit[2]);
         ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
         ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl' . $typesplit[0] . $typesplit[1] . $urlsplit[1]);
-        $realfile = str_replace($this->configObject->getMatterhornServer() . '/static/mh_default_org/internal', $this->configObject->getMatterhornFilesDirectory(), $_SESSION['mhpreviewurl' . $typesplit[0] . $typesplit[1] . $urlsplit[1]]);
+        $realfile = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal', $this->configObject->getMatterhornFilesDirectory(), $_SESSION['mhpreviewurl' . $typesplit[0] . $typesplit[1] . $urlsplit[1]]);
         
         ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
         // header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
