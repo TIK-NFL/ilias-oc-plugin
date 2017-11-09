@@ -306,7 +306,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function deletescheduled()
     {
         global $ilCtrl;
-        ilLoggerFactory::getLogger('xmh')->debug("deleteing message");
         ilLoggerFactory::getLogger('xmh')->debug("ID:".$_GET["id"]);
         if (preg_match('/^[0-9]+/', $_GET["id"])) {
             $this->object->deleteschedule($_GET["id"]);
@@ -341,7 +340,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function showSeries()
     {
         global $tpl, $ilTabs, $ilCtrl;
-        
+
         $this->checkPermission("read");
 
         $released_episodes = $this->extractReleasedEpisodes(true);
@@ -437,10 +436,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     private function extractReleasedEpisodes($skipUnreleased=false)
     {
         global $ilCtrl;
-        
+
         $released_episodes  = $this->object->getReleasedEpisodes();
         $episodes = array();
-        
+
         foreach ($this->object->getSearchResult()->mediapackage as $value) {
             if ($skipUnreleased && $this->object->getManualRelease()) {
                 if (! in_array($value['id'], $released_episodes)) {
@@ -491,40 +490,29 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         return $episodes;
     }
     
-    private function extractScheduledEpisode($workflow)
+    private function extractScheduledEpisode($event)
     {
         global $ilCtrl;
-        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", (string)$workflow['id']);
+        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", (string)$event['id']);
         $scheduled_episode = array(
-            'title' => $workflow["mediapackage"]['title'],
-            'mhid' => $workflow['id'],
+            'title' => $event["title"],
+            'mhid' => $event["id"],
             'deletescheduledurl' => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "deletescheduled")
         );
-        $workflowconfig = $workflow['configurations']['configuration'];
-        foreach ($workflowconfig as $configuration) {
-            switch ($configuration['key']) {
-                case 'schedule.start':
-                    $scheduled_episode['startdate'] = $configuration['$']/1000;
-                    continue;
-                case 'schedule.stop':
-                    $scheduled_episode['stopdate'] = $configuration['$']/1000;
-                    continue;
-                case 'schedule.location':
-                    $scheduled_episode['location'] = $configuration['$'];
-                    continue;
-            }
-        }
+        $scheduled_episode['startdate'] = $event['start_date'];
+        $scheduled_episode['stopdate'] = $event['end_date'];
+        $scheduled_episode['location'] = $event['location'];
         return $scheduled_episode;
     }
     
-    private function extractOnholdEpisode($workflow)
+    private function extractOnholdEpisode($event)
     {
         global $ilCtrl;
-        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $workflow['id']);
+        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $event['id']);
         $onhold_episode = array(
-            'title' => $workflow["mediapackage"]['title'],
+            'title' => $event["title"],
             'trimurl' => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showTrimEditor"),
-            'date' => $workflow["mediapackage"]['start'],
+            'date' => $event["start_date"],
         );
         return $onhold_episode;
     }
@@ -556,35 +544,24 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     
         $scheduled_items = array();
         $scheduledEpisodes = $this->object->getScheduledEpisodes();
-        $tempEpisodes = $scheduledEpisodes['workflows'];
-        if (is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']) {
-            if (1 == $tempEpisodes['totalCount']) {
-                $workflow = $tempEpisodes['workflow'];
-                $scheduled_items[] = $this->extractScheduledEpisode($workflow);
-            } else {
-                foreach ($tempEpisodes['workflow'] as $workflow) {
-                    $scheduled_items[] = $this->extractScheduledEpisode($workflow);
-                }
+        if (is_array($scheduledEpisodes) && 0 < $scheduledEpisodes['total']) {
+            foreach ($scheduledEpisodes['results'] as $event) {
+                $scheduled_items[] = $this->extractScheduledEpisode($event);
             }
         }
         uasort($scheduled_items, array($this, 'sortbystartdate'));
         foreach ($scheduled_items as $key=>$value) {
-            $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_UNIX));
-            $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate(new ilDateTime($value["stopdate"], IL_CAL_UNIX));
+            $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_DATETIME));
+            $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate(new ilDateTime($value["stopdate"], IL_CAL_DATETIME));
         }
     
     
         $onhold_items = array();
         $onHoldEpisodes = $this->object->getOnHoldEpisodes();
-        $tempEpisodes = $onHoldEpisodes['workflows'];
-        if (is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']) {
-            if (1 == $tempEpisodes['totalCount']) {
-                $workflow = $tempEpisodes['workflow'];
-                $onhold_items[] = $this->extractOnholdEpisode($workflow);
-            } else {
-                foreach ($tempEpisodes['workflow'] as $workflow) {
-                    $onhold_items[] = $this->extractOnholdEpisode($workflow);
-                }
+        #$tempEpisodes = $onHoldEpisodes['workflows'];
+        if (is_array($onHoldEpisodes) && 0 < $onHoldEpisodes['total']) {
+            foreach ($onHoldEpisodes['results'] as $event) {  
+                $onhold_items[] = $this->extractOnholdEpisode($event);
             }
         }
     
@@ -755,69 +732,36 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $trimbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/trim";
 
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
-            $workflow = $this->object->getWorkflow($_GET["id"]);
-            $namespaces = $workflow->getNamespaces(true);
-            $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage;
-            ilLoggerFactory::getLogger('xmh')->debug($this->object->getSeries());
-            if (!strpos($this->object->getSeries(), trim($mediapackage->series))) {
+            ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: ".$_GET["id"]);
+            $editor = $this->object->getEditor($_GET["id"]);
+            if (!strpos($this->object->getSeries(), $editor->series->id)) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
             $previewtracks = array();
             $worktracks = array();
-            foreach ($mediapackage->media->track as $track) {
-                $trackattribs = $track->attributes();
-                ilLoggerFactory::getLogger('xmh')->debug((string)$trackattribs['type']." >>".(string)$track->mimetype."<<");
-                switch ((string)$trackattribs['type']) {
-                    case "composite/iliaspreview":
-                        if (!array_key_exists("sbs", $previewtracks)) {
-                            $previewtracks["sbs"] = array();
-                        }
-                        if ("video/mp4" === (string)$track->mimetype) {
-                            $previewtracks['sbs']['mp4'] = $track;
-                            $_SESSION["mhpreviewurlpreviewsbsmp4".$_GET["id"]] = (string)$track->url;
-                            ilLoggerFactory::getLogger('xmh')->debug("setting mp4 sbs: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
-                        } else {
-                            $previewtracks['sbs']['webm'] = $track;
-                            $_SESSION["mhpreviewurlpreviewsbswebm".$_GET["id"]] = (string)$track->url;
-                            ilLoggerFactory::getLogger('xmh')->debug("setting webm sbs: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
-                        }
-                        break;
-                    case "presentation/preview":
-                        if (!array_key_exists("presentation", $previewtracks)) {
-                            $previewtracks['presentation'] = array();
-                        }
-                        if ("video/mp4" === (string)$track->mimetype) {
-                            $previewtracks['presentation']['mp4'] = $track;
-                            $_SESSION["mhpreviewurlpreviewpresentationmp4".$_GET["id"]] = (string)$track->url;
-                            ilLoggerFactory::getLogger('xmh')->debug("setting mp4 presentation: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
-                        } else {
-                            $previewtracks['presentation']['webm'] = $track;
-                            $_SESSION["mhpreviewurlpreviewpresentationwebm".$_GET["id"]] = (string)$track->url;
-                            ilLoggerFactory::getLogger('xmh')->debug("setting webm presentation: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
-                        }
-                        break;
-                    case "presenter/preview":
-                        if (!array_key_exists("presenter", $previewtracks)) {
-                            $previewtracks['presenter'] = array();
-                        }
-                        if ("video/mp4" === (string)$track->mimetype) {
-                            $previewtracks['presenter']['mp4'] = $track;
-                            $_SESSION["mhpreviewurlpreviewpresentermp4".$_GET["id"]] = (string)$track->url;
-                            ilLoggerFactory::getLogger('xmh')->debug("setting mp4 presenter: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
-                        } else {
-                            $previewtracks['presenter']['webm'] = $track;
-                            $_SESSION["mhpreviewurlpreviewpresenterwebm".$_GET["id"]] = (string)$track->url;
-                            ilLoggerFactory::getLogger('xmh')->debug("setting webm presenter: ".(string)$trackattribs['type']." ".(string)$track->mimetype);
-                        }
-                        break;
-                    case "presentation/work":
+	    $media = $this->object->getMedia($_GET["id"]);
+            foreach ($media as $track) {
+
+#                ilLoggerFactory::getLogger('xmh')->debug("Track".print_r($track,true));
+                switch ($track->type) {
+                    case "presentation/source":
+                        ilLoggerFactory::getLogger('xmh')->debug("Found presentation track");
                         $worktracks['presentation'] = $track;
                         break;
-                    case "presenter/work":
+                    case "presenter/source":
                         $worktracks['presenter'] = $track;
                         break;
                 }
             }
+            ilLoggerFactory::getLogger('xmh')->debug(print_r($worktracks,true));
+	    foreach ($editor->previews as $preview){
+	        if (strpos($preview->uri, "composite.mp4") !== false) {
+                    $_SESSION["mhpreviewurlpreviewsbsmp4".$_GET["id"]] = $preview->uri;
+	        } else {
+                    $_SESSION["mhpreviewurlpreviewsbsweb".$_GET["id"]] = $preview->uri;
+		}
+	    }
+
             $trimview = new ilTemplate("tpl.trimview.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
             $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
@@ -831,12 +775,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $trimview->setCurrentBlock("dualstream");
                 $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
                 $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
-                $presenterattributes = $worktracks['presenter']->attributes();
-                $trimview->setVariable("LEFTTRACKID", $presenterattributes['id']);
-                $trimview->setVariable("LEFTTRACKTYPE", $presenterattributes['type']);
-                $presentationattributes = $worktracks['presentation']->attributes();
-                $trimview->setVariable("RIGHTTRACKID", $presentationattributes['id']);
-                $trimview->setVariable("RIGHTTRACKTYPE", $presentationattributes['type']);
+                $presenterattributes = $worktracks['presenter'];
+                $trimview->setVariable("LEFTTRACKID", $presenterattributes->id);
+                $trimview->setVariable("LEFTTRACKTYPE", $presenterattributes->type);
+                $presentationattributes = $worktracks['presentation'];
+                $trimview->setVariable("RIGHTTRACKID", $presentationattributes->id);
+                $trimview->setVariable("RIGHTTRACKTYPE", $presentationattributes->type);
                 $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
                 $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
                 $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));
@@ -846,9 +790,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $trackkey = $trackkeys[0];
                 $trimview->setCurrentBlock("singlestream");
                 $trimview->setVariable("TXT_LEFT_TRACK_SINGLE", $this->getText("left_side_single"));
-                $attributes = $worktracks[$trackkey]->attributes();
-                $trimview->setVariable("LEFTTRACKID", $attributes['id']);
-                $trimview->setVariable("LEFTTRACKTYPE", $attributes['type']);
+                $attributes = $worktracks[$trackkey];
+                $trimview->setVariable("LEFTTRACKID", $attributes->id);
+                $trimview->setVariable("LEFTTRACKTYPE", $attributes->flavor);
                 $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
                 $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
                 $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));
@@ -857,22 +801,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             // if there are two tracks, there is also a sbs track. Otherwise use the only track present.
-            if (array_key_exists('sbs', $previewtracks)) {
-                $downloadurlmp4 = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewsbs.mp4";
-                $downloadurlwebm = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewsbs.webm";
-            } else {
-                if (array_key_exists('presentation', $previewtracks)) {
-                    $downloadurlmp4 = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewpresentation.mp4";
-                    $downloadurlwebm = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewpresentation.webm";
-                } else {
-                    $downloadurlmp4 = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewpresenter.mp4";
-                    $downloadurlwebm = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($mediapackage->series)."/".$_GET["id"]."/previewpresenter.webm";
-                }
-            }
+            $downloadurlmp4 = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($editor->series->id)."/".$_GET["id"]."/previewsbs.mp4";
+            $downloadurlwebm = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($editor->series->id)."/".$_GET["id"]."/previewsbs.webm";
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_WEBM", $downloadurlwebm);
-            $mpattribs = $mediapackage->attributes();
-            $duration = (int)$mpattribs['duration'];
+            
+            $duration = $editor->duration;
             $trimview->setVariable("TRACKLENGTH", $duration/1000);
             $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
@@ -901,16 +835,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $ilCtrl;
-        //ilLoggerFactory::getLogger('xmh')->debug("ID:".$_POST["wfid"]);
-        if (preg_match('/^[0-9a-f\-]+/', $_POST["wfid"])) {
-            $workflow = $this->object->getWorkflow($_POST["wfid"]);
-            $namespaces = $workflow->getNamespaces(true);
-            ilLoggerFactory::getLogger('xmh')->debug("namespaces: ". print_r($namespaces, true));
-            $mediapackage = $workflow->children($namespaces['ns3'])->mediapackage;
-            if (!strpos($this->object->getSeries(), trim($mediapackage->series))) {
+        if (preg_match('/^[0-9a-f\-]+/', $_POST["eventid"])) {
+            $editor = $this->object->getEditor($_POST["eventid"]);
+            ilLoggerFactory::getLogger('xmh')->debug("eventid".print_r($editor,true));
+            if (!strpos($this->object->getSeries(), $editor->series->id)) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
-            $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
+#            $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
             $tracks = array();
             if (isset($_POST["lefttrack"])) {
                 $track = array();
@@ -924,45 +855,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $track['flavor'] = ilUtil::stripScriptHTML($_POST["righttrackflavor"]);
                 array_push($tracks, $track);
             }
-
-            foreach ($mediapackage->media->track as $track) {
-                $trackattribs = $track->attributes();
-                if (false !== strpos($trackattribs['type'], "work")) {
-                    $keeptrack = false;
-                    foreach ($tracks as $guitrack) {
-                        if ($guitrack['id'] === (string)$trackattribs['id']) {
-                            $trackattribs['type'] = $guitrack['flavor'];
-                            $keeptrack = true;
-                        }
-                    }
-                    if (!$keeptrack) {
-                        $removetrack = $trackattribs['id'];
-                    }
-                }
-            }
-            foreach ($mediapackage->metadata->catalog as $catalog) {
-                $catalogattribs = $catalog->attributes();
-                if ((string)$catalogattribs['type'] === 'dublincore/episode') {
-                    $dublincoreurl = $catalog->url;
-                }
-            }
-
-            $dublincore = $this->object->getDublincore($dublincoreurl);
-            $dublincore->children('http://purl.org/dc/terms/')->title = $mediapackagetitle;
-            $dom_dublincore = dom_import_simplexml($dublincore);
-
-            $dom = new DOMDocument('1.0');
-            $dom_dublincore = $dom->importNode($dom_dublincore, true);
-            $dom_dublincore = $dom->appendChild($dom_dublincore);
-            $dublincore = $this->object->setDublincore($dublincoreurl, $dom->saveXML());
-
-            $dom_sxe = dom_import_simplexml($mediapackage);
-
-            $dom = new DOMDocument('1.0');
-            $dom_sxe = $dom->importNode($dom_sxe, true);
-            $dom_sxe = $dom->appendChild($dom_sxe);
-
-
+            $keeptracks = [];
+	    foreach($tracks as $track){
+	        array_push($keeptracks,$track['id']);
+	    }
             $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimin"]));
             list($hours, $minutes, $seconds) = sscanf($str_time, "%d:%d:%d");
             $trimin = $hours * 3600 + $minutes * 60 + $seconds;
@@ -971,11 +867,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
             $trimout = $hours * 3600 + $minutes * 60 + $seconds;
 
-            $this->object->trim($_POST["wfid"], $dom->saveXML(), $removetrack, $trimin, $trimout);
+            $this->object->trim($_POST["eventid"], $keeptracks, $trimin, $trimout);
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match an episode:".$_POST["wfid"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match an episode:".$_POST["eventid"]);
         }
         $ilCtrl->redirect($this, "editTrimProcess");
     }

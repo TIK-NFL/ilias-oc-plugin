@@ -98,6 +98,8 @@ define(["jquery", "engage/core", "engage/models/engage", "engage/tab_logic"], fu
                 EngageCore.trigger(timelineplugin_closed);
             }
         });
+        // ILPATCH
+        $("#" + id_engage_timeline_expand_btn_img).attr("src", ILIAS_THEODUL_PATH + $("#" + id_engage_timeline_expand_btn_img).attr("src"));
     }
 
     /*

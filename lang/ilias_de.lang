@@ -104,3 +104,6 @@ upload_canceled#:#Hochladen abgebrochen
 cancel_upload#:#Hochladen abbrechen
 
 to_edit#:#Aufzeichnungen bereit zum Schneiden
+
+no_such_method#:#Keine solche Methode
+no_such_episode#:#Keine solche Episode

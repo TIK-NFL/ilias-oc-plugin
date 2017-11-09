@@ -175,7 +175,6 @@ class ilMatterhornUploadFile
         echo "file:                ". $this->file. "\n";
         echo "disposition:         ". $this->disposition. "\n";
         echo "ckeck_ip:            ". $this->check_ip. "\n";
-        echo "send_mimetype:       ". $this->send_mimetype. "\n";
         echo "requesttype:         ". $this->requestType. "\n";
         echo "errorcode:           ". $this->errorcode. "\n";
         echo "errortext:           ". $this->errortype. "\n";
@@ -524,26 +523,25 @@ class ilMatterhornUploadFile
         $jobxml = new SimpleXMLElement($realjob);
         ilLoggerFactory::getLogger('xmh')->debug($jobxml->payload[0]->url);
         $fields_string = '';
-        $fields = array('mediapackage' => $realmp,
-                        'trackUri' => urlencode($jobxml->payload[0]->url),
+        $fields = array('mediaPackage' => $realmp,
+                        'url' => urlencode($jobxml->payload[0]->url),
                         'flavor' => urlencode('presentation/source'),
                         );
         foreach ($fields as $key => $value) {
             $fields_string .= $key.'='.$value.'&';
         }
         rtrim($fields_string, '&');
-        $url = $this->configObject->getMatterhornServer().'/mediapackage/addTrack';
+        $url = $this->configObject->getMatterhornServer().'/ingest/addTrack';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mediapackage = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        ilLoggerFactory::getLogger('xmh')->debug($httpCode);
+        ilLoggerFactory::getLogger('xmh')->debug("Adding track to MP: ".$httpCode);
         $fields_string = '';
         $fields = array('mediaPackage' => urlencode($mediapackage),
-                        'trimHold' => $trimeditor?"true":"false",
-                        'archiveOp' => 'true',
-                        'distribution' => urlencode('Matterhorn Media Module'),
+                        'straightToPublishing' => $trimeditor?"false":"true",
+                        'distribution' => urlencode('ILIAS-Upload'),
                         );
         foreach ($fields as $key => $value) {
             $fields_string .= $key.'='.$value.'&';
@@ -622,28 +620,5 @@ class ilMatterhornUploadFile
 
         $tpl->show();
         exit;
-    }
-
-    /**
-     * Get the mime type of the requested file.
-     *
-     * @param    string      default type
-     *
-     * @return string mime type
-     */
-    public function getMimeType($default = 'application/octet-stream')
-    {
-        // take a previously set mimetype
-        if (isset($this->mimetype)) {
-            return $this->mimetype;
-        }
-
-        $mime = '';
-
-        include_once './Services/Utilities/classes/class.ilMimeTypeUtil.php';
-        $mime = ilMimeTypeUtil::getMimeType($this->file);
-        $this->mimetype = $mime ? $mime : $default;
-
-        return $this->mimetype;
     }
 }
