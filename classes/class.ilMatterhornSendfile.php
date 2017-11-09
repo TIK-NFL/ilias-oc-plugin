@@ -729,8 +729,8 @@ class ilMatterhornSendfile
                 if (isset($range[1]) && is_numeric($range[1])) {
                     $c_end = $range[1];
                 } else {
-                    if ($range[0] + 20*1024-1 < $size){
-                        $c_end = $range[0] + 20*1024-1;
+                    if ($range[0] + 100*1024-1 < $size){
+                        $c_end = $range[0] + 100*1024-1;
                     } else {
                         $c_end = $size;
                     }
@@ -765,7 +765,7 @@ class ilMatterhornSendfile
             ilLoggerFactory::getLogger('xmh')->debug("Inloop ".$p." Rest:". ($end-$p) ." Buffer". $buffer);
             set_time_limit(0);
             $content = fread($fp, $buffer);
-            ilLoggerFactory::getLogger('xmh')->debug("Contentlent ".strlen($content));
+            ilLoggerFactory::getLogger('xmh')->debug("Contentlen ".strlen($content));
             echo $content;
             flush();
         }
@@ -813,7 +813,7 @@ class ilMatterhornSendfile
         }
 
         $realfile = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal', $this->configObject->getMatterhornFilesDirectory(), $previewtrack);
-        
+        $xaccel =  str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "/", $previewtrack);
         ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
         // header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
@@ -822,7 +822,9 @@ class ilMatterhornSendfile
         // if (isset($_SERVER['HTTP_RANGE'])) {
         // ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
         // }
-        $this->sendData($realfile, false, $mime);
+        //$this->sendData($realfile);
+        ilLoggerFactory::getLogger('xmh')->debug("X-Accel-Redirect: /protectedpreview" . $xaccel);
+        header("X-Accel-Redirect: /protectedpreview" . $xaccel);
     }
 
     /**
