@@ -655,7 +655,8 @@ class ilObjMatterhorn extends ilObjectPlugin
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:ilias_xmh_' . $this->getId()
+            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:ilias_xmh_' . $this->getId(),
+            'sort'   => 'date:ASC'
         );
         
         /* Update URL to container Query String of Paramaters */
