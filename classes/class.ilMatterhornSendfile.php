@@ -50,6 +50,13 @@ class ilMatterhornSendfile
     private $episode_id;
 
     /**
+     * the matterhorn episode
+     *
+     * @var ilMatterhornEpisode
+     */
+    private $epidode;
+
+    /**
      * absolute path in file system
      *
      * @var string
@@ -224,6 +231,9 @@ class ilMatterhornSendfile
             throw new Exception("mediapackageId", 400);
         }
         list ($this->obj_id, $this->episode_id) = explode('/', $this->params['id']);
+        
+        $this->plugin->includeClass("class.ilMatterhornEpisode.php");
+        $this->episode = new ilMatterhornEpisode($this->obj_id, $this->episode_id);
     }
 
     /**
@@ -321,7 +331,7 @@ class ilMatterhornSendfile
         $user_id = $ilUser->getId();
         
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
-        ilMatterhornUserTracking::putUserTracking($user_id, $this->episode_id, $intime, $outtime);
+        ilMatterhornUserTracking::putUserTracking($user_id, $this->episode->getEpisodeId(), $intime, $outtime);
         
         header("HTTP/1.0 204 Stored");
     }
@@ -332,7 +342,7 @@ class ilMatterhornSendfile
     private function sendStatistic()
     {
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
-        $statistic = ilMatterhornUserTracking::getStatisticFromVideo($this->episode_id);
+        $statistic = ilMatterhornUserTracking::getStatisticFromVideo($this->episode->getEpisodeId());
         $data = array();
         foreach ($statistic as $name => $value) {
             $content = array();
@@ -349,10 +359,10 @@ class ilMatterhornSendfile
         }
         
         $infoarray = array();
-        $infoarray['name'] = $this->getTitle();
-        $infoarray['episode_id'] = $this->episode_id;
-        $infoarray['series_id'] = $this->obj_id;
-        $infoarray['duration'] = $this->getDuration();
+        $infoarray['name'] = $this->epidode->getTitle();
+        $infoarray['episode_id'] = $this->epidode->getEpisodeId();
+        $infoarray['series_id'] = $this->epidode->getSeriesId();
+        $infoarray['duration'] = $this->epidode->getDuration();
         $infoarray['data'] = $data;
         
         $this->sendJSON($infoarray);
@@ -368,8 +378,8 @@ class ilMatterhornSendfile
         
         $response = array();
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
-        $response['footprints'] = ilMatterhornUserTracking::getFootprints($this->episode_id, $user_id);
-        $response['last'] = ilMatterhornUserTracking::getLastSecondViewed($this->episode_id, $user_id);
+        $response['footprints'] = ilMatterhornUserTracking::getFootprints($this->episode->getEpisodeId(), $user_id);
+        $response['last'] = ilMatterhornUserTracking::getLastSecondViewed($this->episode->getEpisodeId(), $user_id);
         $this->sendJSON($response);
     }
 
@@ -380,7 +390,7 @@ class ilMatterhornSendfile
     {
         $response = array();
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
-        $views = ilMatterhornUserTracking::getViews($this->episode_id);
+        $views = ilMatterhornUserTracking::getViews($this->episode->getEpisodeId());
         $response['stats'] = [
             'views' => $views
         ];
@@ -410,30 +420,6 @@ class ilMatterhornSendfile
     }
 
     /**
-     * Get the Duration of the episode in milliseconds as String
-     *
-     * @return string duration in milliseconds
-     */
-    private function getDuration()
-    {
-        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
-        $duration = (string) $manifest['duration'];
-        return $duration;
-    }
-
-    /**
-     * Get the title of the episode
-     *
-     * @return string
-     */
-    private function getTitle()
-    {
-        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
-        $title = (string) $manifest->title;
-        return $title;
-    }
-
-    /**
      * Send the Array as json
      *
      * @param array $array
@@ -452,8 +438,7 @@ class ilMatterhornSendfile
      */
     public function sendEpisode()
     {
-        // ilLoggerFactory::getLogger('xmh')->debug("Manifestbasedir: ".$this->configObject->getXSendfileBasedir().$this->obj_id.'/'.$this->episode_id);
-        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
+        $manifest = $this->epidode->getManifest();
         
         $episode = array();
         $episode['search-results'] = array(
