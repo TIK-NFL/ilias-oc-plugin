@@ -16,8 +16,7 @@ define([ "./lib/d3" ], function(d3) {
 
 		var string;
 		if (hours > 0) {
-			string = hours + ":" + (minutes < 10 ? "0" + minutes : minutes)
-					+ ":" + (seconds < 10 ? "0" + seconds : seconds);
+			string = hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
 		} else if (minutes > 0) {
 			string = minutes + ":" + (seconds < 10 ? "0" + seconds : seconds);
 		} else {
@@ -38,8 +37,7 @@ define([ "./lib/d3" ], function(d3) {
 	 * @returns {string}
 	 */
 	function translate(str, strIfNotFound) {
-		return translateFunction ? translateFunction(str, strIfNotFound)
-				: (strIfNotFound ? strIfNotFound : str);
+		return translateFunction ? translateFunction(str, strIfNotFound) : (strIfNotFound ? strIfNotFound : str);
 	}
 
 	/**
@@ -80,10 +78,8 @@ define([ "./lib/d3" ], function(d3) {
 		var height = svgHeight - margin.top - margin.bottom;
 
 		// An SVG element with a bottom-right origin.
-		var svg = element.append("svg").attr("width", "100%").attr("height",
-				"100%").attr("viewBox", "0 0 " + svgWidth + " " + svgHeight)
-				.append("g").attr("transform",
-						"translate(" + margin.left + "," + margin.top + ")");
+		var svg = element.append("svg").attr("width", "100%").attr("height", "100%").attr("viewBox", "0 0 " + svgWidth + " " + svgHeight).append("g").attr("transform",
+				"translate(" + margin.left + "," + margin.top + ")");
 
 		var drawArea = {
 			width : width,
@@ -104,8 +100,7 @@ define([ "./lib/d3" ], function(d3) {
 			caption.add(availableData);
 		});
 		// A label
-		svg.append("text").attr("class", "title").attr("x", width / 2).attr(
-				"y", -2).text(mediaData.title);
+		svg.append("text").attr("class", "title").attr("x", width / 2).attr("y", -2).text(mediaData.title);
 
 		function createTimeAxis(time, step, maxy) {
 			return new TimeGraphic(drawArea, time, step, maxy);
@@ -199,13 +194,11 @@ define([ "./lib/d3" ], function(d3) {
 		this.drawMapping = function(drawArea) {
 			this.show = true;
 
-			var time = parseInt(mediaData.duration.substring(0,
-					mediaData.duration.length - 3));
+			var time = parseInt(mediaData.duration.substring(0, mediaData.duration.length - 3));
 			var maxviews = d3.max(this.mapping);
 			var step = this.step;
 
-			var axis = TimeGraphic.getTimeGraphic(drawArea, time, step,
-					maxviews);
+			var axis = TimeGraphic.getTimeGraphic(drawArea, time, step, maxviews);
 
 			// Produce a map from time to [views].
 			var mappedData = this.mapping.map(function(element, index) {
@@ -232,11 +225,9 @@ define([ "./lib/d3" ], function(d3) {
 		};
 
 		this.toggleDraw = function(drawArea) {
-			if (this.show) {
-				this.remove(drawArea);
-			} else {
-				this.drawMapping(drawArea);
-			}
+			this.show = !this.show;
+			var axis = TimeGraphic.getTimeGraphic(drawArea);
+			axis.toggle(this);
 		};
 	}
 
@@ -258,23 +249,18 @@ define([ "./lib/d3" ], function(d3) {
 		maxy = maxy || 0;
 
 		var selfsvg = drawArea.svg.selectAll("#TimeGraphic").data([ this ]);
-		selfsvg = selfsvg.enter().append("g").attr("id", "TimeGraphic").merge(
-				selfsvg);
+		selfsvg = selfsvg.enter().append("g").attr("id", "TimeGraphic").merge(selfsvg);
 		selfsvg.selectAll("*").remove();
 
 		var barWidth = Math.max((drawArea.width / time) * step, 1);
 
-		var x = d3.scaleLinear().range([ 0, drawArea.width ]).domain(
-				[ 0, time ]);
+		var x = d3.scaleLinear().range([ 0, drawArea.width ]).domain([ 0, time ]);
 
-		var y = d3.scaleLinear().range([ drawArea.height, 0 ]).domain(
-				[ 0, maxy ]);
+		var y = d3.scaleLinear().range([ drawArea.height, 0 ]).domain([ 0, maxy ]);
 
-		var yAxis = d3.axisRight().scale(y).tickSize(-drawArea.width).ticks(
-				Math.min(10, maxy));
+		var yAxis = d3.axisRight().scale(y).tickSize(-drawArea.width).ticks(Math.min(10, maxy));
 
-		var xAxis = d3.axisBottom().scale(x).ticks(
-				Math.min(20, time / step + 1)).tickFormat(toHHMMSS);
+		var xAxis = d3.axisBottom().scale(x).ticks(Math.min(20, time / step + 1)).tickFormat(toHHMMSS);
 
 		// A sliding container to hold the bars by time.
 		var times = selfsvg.append("g").attr("class", "times");
@@ -284,28 +270,19 @@ define([ "./lib/d3" ], function(d3) {
 
 		function drawYAxis() {
 			selfsvg.selectAll(".y.axis").remove();
-			selfsvg.append("g").attr("class", "y axis").attr("transform",
-					"translate(" + drawArea.width + ",0)").call(yAxis).append(
-					"text").attr("class", "label").attr("transform",
-					"rotate(90)").attr("y", -15).attr("x",
-					(drawArea.height / 2)).attr("fill", "#000").text(
-					translate("views", "Views"));
+			selfsvg.append("g").attr("class", "y axis").attr("transform", "translate(" + drawArea.width + ",0)").call(yAxis).append("text").attr("class", "label").attr(
+					"transform", "rotate(90)").attr("y", -15).attr("x", (drawArea.height / 2)).attr("fill", "#000").text(translate("views", "Views"));
 		}
 
 		// Add an axis to show the time values.
-		selfsvg.append("g").attr("class", "x axis").attr("transform",
-				"translate(0," + drawArea.height + ")").call(xAxis).append(
-				"text").attr("class", "label").attr("x", drawArea.width / 2)
-				.attr("y", 30).attr("fill", "#000").text(
-						translate("time", "Time"));
+		selfsvg.append("g").attr("class", "x axis").attr("transform", "translate(0," + drawArea.height + ")").call(xAxis).append("text").attr("class", "label").attr("x",
+				drawArea.width / 2).attr("y", 30).attr("fill", "#000").text(translate("time", "Time"));
 
 		// Add labeled rects for each time (so that no enter or exit is
 		// required).
-		var time = times.selectAll(".time").data(d3.range(0, time, step))
-				.enter().append("g").attr("class", "time").attr("transform",
-						function(time) {
-							return "translate(" + x(time) + ",0)";
-						});
+		var time = times.selectAll(".time").data(d3.range(0, time, step)).enter().append("g").attr("class", "time").attr("transform", function(time) {
+			return "translate(" + x(time) + ",0)";
+		});
 
 		var datas = [];
 		this.add = function(data, mappedData) {
@@ -313,17 +290,14 @@ define([ "./lib/d3" ], function(d3) {
 				datas.push(data);
 			}
 
-			var newdata = time.selectAll("rect").filter("." + data.name).data(
-					function(time) {
-						var value = mappedData.get(time);
-						return value ? [ value ] : [ 0 ];
-					});
+			var newdata = time.selectAll("rect").filter("." + data.name).data(function(time) {
+				var value = mappedData.get(time);
+				return value ? [ value ] : [ 0 ];
+			});
 			newdata.exit().remove();
 			var x = overlap || datas.length === 1 ? 0 : barWidth;
 			var width = overlap || datas.length === 1 ? barWidth : 0;
-			newdata.enter().append("rect").attr("class", data.name)
-					.attr("x", x).attr("y", drawArea.height).attr("width",
-							width);
+			newdata.enter().append("rect").attr("class", data.name).attr("x", x).attr("y", drawArea.height).attr("width", width);
 
 			this.updateAll();
 
@@ -337,41 +311,59 @@ define([ "./lib/d3" ], function(d3) {
 			}
 
 			datas.splice(index, 1);
-			var removedata = time.selectAll("rect").filter("." + data.name)
-					.classed("remove", true);
+			var removedata = time.selectAll("rect").filter("." + data.name).classed("remove", true);
 			if (!overlap && datas.length > 0) {
 				removedata.transition().attr("x", function(d, i) {
 					return (barWidth / datas.length) * index;
 				}).attr("width", 0);
 			}
 
-			removedata.transition("height").attr("y", drawArea.height).attr(
-					"height", 0).remove();
+			removedata.transition("height").attr("y", drawArea.height).attr("height", 0).remove();
 
+			this.updateAll();
+		};
+
+		this.toggle = function(data) {
+			var index = datas.indexOf(data);
+			if (index < 0) {
+				return;
+			}
+			if (!data.show) {
+				time.selectAll("rect").filter("." + data.name).transition("height").attr("y", drawArea.height).attr("height", 0);
+			}
 			this.updateAll();
 		};
 
 		this.updateAll = function() {
 			var max = datas.reduce(function(max, data) {
-				return Math.max(max, d3.max(data.mapping));
+				if (data.show) {
+					return Math.max(max, d3.max(data.mapping));
+				} else {
+					return max;
+				}
+
 			}, 0);
 			if (max !== maxy) {
 				this.updateMaxY(max);
 			}
 
 			var datacount = datas.length;
-			var needupdate = time.selectAll("rect:not(.remove)");
+			for (var i = 0; i < datacount; i++) {
+				var data = datas[i];
+				if (data.show) {
+					var needupdate = time.selectAll("rect:not(.remove)").filter("." + data.name);
 
-			if (!overlap) {
-				needupdate.transition().attr("x", function(d, i) {
-					return barWidth / datacount * i;
-				}).attr("width", barWidth / datacount);
-			}
+					if (!overlap) {
+						needupdate.transition().attr("x", function(d, i) {
+							return barWidth / datacount * i;
+						}).attr("width", barWidth / datacount);
+					}
 
-			needupdate.transition("height").attr("y", y).attr("height",
-					function(value) {
+					needupdate.transition("height").attr("y", y).attr("height", function(value) {
 						return drawArea.height - y(value);
 					});
+				}
+			}
 		};
 
 		this.updateMaxY = function(newmaxy) {
@@ -400,43 +392,38 @@ define([ "./lib/d3" ], function(d3) {
 	 *            drawArea
 	 */
 	function Caption(drawArea) {
-		var caption = drawArea.svg.append("g").attr("class", "caption").attr(
-				"transform", "translate(" + drawArea.width * 2 / 3 + ", 2)");
+		var caption = drawArea.svg.append("g").attr("class", "caption").attr("transform", "translate(" + drawArea.width * 2 / 3 + ", 2)");
 
 		this.add = function(data) {
 			var datas = caption.selectAll("g").data();
 			datas.push(data);
 			var captions = caption.selectAll("g").data(datas);
-			var newcaptions = captions.enter().append("g").attr("class",
-					function(d) {
-						return d.name;
-					}).attr("transform", function(d, i) {
+			var newcaptions = captions.enter().append("g").attr("class", function(d) {
+				return d.name;
+			}).attr("transform", function(d, i) {
 				return "translate(0," + (i * 20) + ")";
 			}).attr("x", 0).attr("y", function(d, i) {
 				return i * 20;
 			});
 
-			newcaptions.append("text").attr("x", 12).attr("y", 15).text(
-					function(d) {
-						var displayName = translate(d.name, d.name);
-						if (d instanceof NumberData) {
-							return d.value + " " + displayName;
-						}
-						return displayName;
-					});
+			newcaptions.append("text").attr("x", 12).attr("y", 15).text(function(d) {
+				var displayName = translate(d.name, d.name);
+				if (d instanceof NumberData) {
+					return d.value + " " + displayName;
+				}
+				return displayName;
+			});
 			newcaptions.append("rect").attr("class", function(d) {
 				return d.name;
 			}).attr("fill-opacity", function(d) {
 				return d.show ? 1 : 0;
-			}).attr("x", 1).attr("y", 6).attr("width", 8).attr("height", 8).on(
-					"click", mouseclick);
+			}).attr("x", 1).attr("y", 6).attr("width", 8).attr("height", 8).on("click", mouseclick);
 		};
 
 		this.update = function() {
-			caption.selectAll("g").select("rect").attr("fill-opacity",
-					function(d) {
-						return d.show ? 1 : 0;
-					});
+			caption.selectAll("g").select("rect").attr("fill-opacity", function(d) {
+				return d.show ? 1 : 0;
+			});
 		};
 
 		function mouseclick(d, i) {
