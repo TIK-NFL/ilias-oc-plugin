@@ -52,7 +52,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     protected function afterConstructor()
     {
         global $ilTabs;
-        include_once("./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php");
+        $this->getPlugin()->includeClass("class.ilMatterhornConfig.php");
         $this->configObject = new ilMatterhornConfig();
         $this->tabs = $ilTabs;
     }

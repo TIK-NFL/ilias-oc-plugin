@@ -53,12 +53,12 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
     public function initConfigurationForm()
     {
         global $lng, $ilCtrl;
-
-        include_once './Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php';
+        
+        $pl = $this->getPluginObject();
+        
+        $pl->includeClass("class.ilMatterhornConfig.php");
 
         $this->configObject = new ilMatterhornConfig();
-
-        $pl = $this->getPluginObject();
 
         include_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
         $form = new ilPropertyFormGUI();
