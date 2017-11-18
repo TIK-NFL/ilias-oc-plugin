@@ -10,16 +10,16 @@ class ilMatterhornUserTracking
      *
      * @param int $user_id
      *            the user id for the tracking data
-     * @param string $episode_id
+     * @param ilMatterhornEpisode $episode
      *            the video that has been viewed
      * @param int $intime
      *            the start of the time periode of the view
      * @param int $outtime
      *            the end of time period of the view
      */
-    public static function putUserTracking($user_id, $episode_id, $intime, $outtime)
+    public static function putUserTracking($user_id, $episode, $intime, $outtime)
     {
-        $view = self::getLastView($user_id, $episode_id);
+        $view = self::getLastView($user_id, $episode->getEpisodeId());
         
         if ($intime < 0) {
             // do nothing, if this is the first view of this episode from the user, -1 is added automatically
@@ -41,7 +41,7 @@ class ilMatterhornUserTracking
             }
         }
         
-        self::addView($user_id, $episode_id, $view);
+        self::addView($user_id, $episode->getEpisodeId(), $view);
     }
 
     /**
@@ -92,17 +92,17 @@ class ilMatterhornUserTracking
     /**
      * Get the statistics form a video, includes view count for 10 sec Intervals of the video
      *
-     * @param string $episode_id            
+     * @param ilMatterhornEpisode $episode            
      * @return array
      */
-    public static function getStatisticFromVideo($episode_id)
+    public static function getStatisticFromVideo($episode)
     {
         global $ilDB;
         // TODO rechte
         // TODO video informationen manifest aus lesen
         $dataarray = [];
         
-        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode_id, "text"));
+        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text"));
         if ($ilDB->numRows($query) > 0) {
             $users = array();
             while ($row = $ilDB->fetchAssoc($query)) {
@@ -148,16 +148,16 @@ class ilMatterhornUserTracking
     /**
      * Get the Footprints form a video, user
      *
-     * @param string $episode_id            
+     * @param ilMatterhornEpisode $episode            
      * @param int $user_id            
      * @return array
      */
-    public static function getFootprints($episode_id, $user_id)
+    public static function getFootprints($episode, $user_id)
     {
         global $ilDB;
         $array = array();
         
-        $query = $ilDB->query("SELECT intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " AND user_id = " . $ilDB->quote($user_id, "integer"));
+        $query = $ilDB->query("SELECT intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text") . " AND user_id = " . $ilDB->quote($user_id, "integer"));
         if ($ilDB->numRows($query) > 0) {
             $userviewdata = array();
             while ($view = $ilDB->fetchAssoc($query)) {
@@ -195,14 +195,14 @@ class ilMatterhornUserTracking
     /**
      * Get the Views for a video
      *
-     * @param string $episode_id            
+     * @param ilMatterhornEpisode $episode            
      * @return int
      */
-    public static function getViews($episode_id)
+    public static function getViews($episode)
     {
         global $ilDB;
         
-        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id ASC");
+        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text") . " ORDER BY id ASC");
         
         $viewsCount = 0;
         
@@ -233,24 +233,24 @@ class ilMatterhornUserTracking
     /**
      * Get the seconds of the last view from this video from this user
      *
-     * @param string $episode_id            
+     * @param ilMatterhornEpisode $episode            
      * @param int $user_id            
      * @return int seconds
      */
-    public static function getLastSecondViewed($episode_id, $user_id)
+    public static function getLastSecondViewed($episode, $user_id)
     {
-        return self::getLastView($user_id, $episode_id)['outtime'];
+        return self::getLastView($user_id, $episode->getEpisodeId())['outtime'];
     }
 
     /**
      * Delete all Views for the specified episode_id
      *
-     * @param string $episode_id            
+     * @param ilMatterhornEpisode $episode            
      */
-    public static function removeViews($episode_id)
+    public static function removeViews($episode)
     {
         global $ilDB;
         
-        $ilDB->manipulate("DELETE FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode_id, "text"));
+        $ilDB->manipulate("DELETE FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text"));
     }
 }

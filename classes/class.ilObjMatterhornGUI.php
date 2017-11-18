@@ -280,12 +280,15 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function publish()
     {
         global $ilCtrl;
-        ilLoggerFactory::getLogger('xmh')->debug("ID:".$_GET["id"]);
-        if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
-            $this->object->publish($_GET["id"]);
+        $episodeId = $_GET["id"];
+        ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
+        $episode = $this->object->getEpisode($episodeId);
+        
+        if ($episode) {
+            $episode->publish();
             ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:".$_GET["id"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:" . $episode);
         }
         $ilCtrl->redirect($this, "editFinishedEpisodes");
     }
@@ -293,12 +296,15 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function retract()
     {
         global $ilCtrl;
-        ilLoggerFactory::getLogger('xmh')->debug("ID:".$_GET["id"]);
-        if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
-            $this->object->retract($_GET["id"]);
+        $episodeId = $_GET["id"];
+        ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
+        $episode = $this->object->getEpisode($episodeId);
+        
+        if ($episode) {
+            $episode->retract();
             ilUtil::sendSuccess($this->txt("msg_episode_retracted"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in retract episode:".$_GET["id"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in retract episode:" . $episodeId);
         }
         $ilCtrl->redirect($this, "editFinishedEpisodes");
     }

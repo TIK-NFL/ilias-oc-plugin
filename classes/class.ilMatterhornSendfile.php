@@ -331,7 +331,7 @@ class ilMatterhornSendfile
         $user_id = $ilUser->getId();
         
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
-        ilMatterhornUserTracking::putUserTracking($user_id, $this->episode->getEpisodeId(), $intime, $outtime);
+        ilMatterhornUserTracking::putUserTracking($user_id, $this->episode, $intime, $outtime);
         
         header("HTTP/1.0 204 Stored");
     }
@@ -342,7 +342,7 @@ class ilMatterhornSendfile
     private function sendStatistic()
     {
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
-        $statistic = ilMatterhornUserTracking::getStatisticFromVideo($this->episode->getEpisodeId());
+        $statistic = ilMatterhornUserTracking::getStatisticFromVideo($this->episode);
         $data = array();
         foreach ($statistic as $name => $value) {
             $content = array();
@@ -378,8 +378,8 @@ class ilMatterhornSendfile
         
         $response = array();
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
-        $response['footprints'] = ilMatterhornUserTracking::getFootprints($this->episode->getEpisodeId(), $user_id);
-        $response['last'] = ilMatterhornUserTracking::getLastSecondViewed($this->episode->getEpisodeId(), $user_id);
+        $response['footprints'] = ilMatterhornUserTracking::getFootprints($this->episode, $user_id);
+        $response['last'] = ilMatterhornUserTracking::getLastSecondViewed($this->episode, $user_id);
         $this->sendJSON($response);
     }
 
@@ -390,7 +390,7 @@ class ilMatterhornSendfile
     {
         $response = array();
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
-        $views = ilMatterhornUserTracking::getViews($this->episode->getEpisodeId());
+        $views = ilMatterhornUserTracking::getViews($this->episode);
         $response['stats'] = [
             'views' => $views
         ];
