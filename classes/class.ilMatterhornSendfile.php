@@ -824,7 +824,7 @@ class ilMatterhornSendfile
         // }
         //$this->sendData($realfile);
         ilLoggerFactory::getLogger('xmh')->debug("X-Accel-Redirect: /protectedpreview" . $xaccel);
-        header("X-Accel-Redirect: /protectedpreview" . $xaccel);
+        header("X-Accel-Redirect: /__protectedpreview__" . $xaccel);
     }
 
     /**
