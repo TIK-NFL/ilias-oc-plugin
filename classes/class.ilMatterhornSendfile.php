@@ -1,5 +1,4 @@
 <?php
-
 /* Copyright (c) 1998-2010 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 /**
@@ -712,12 +711,10 @@ class ilMatterhornSendfile
         $length = $size; // Content length
         $start = 0; // Start byte
         $end = $size - 1; // End byte
-        
-        header("Accept-Ranges: 0-$length");
         if (isset($_SERVER['HTTP_RANGE'])) {
+            ilLoggerFactory::getLogger('xmh')->debug("Starting partial get");
             $c_start = $start;
             $c_end = $end;
-            
             list (, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
             if (strpos($range, ',') !== false) {
                 header('HTTP/1.1 416 Requested Range Not Satisfiable');
@@ -729,10 +726,18 @@ class ilMatterhornSendfile
             } else {
                 $range = explode('-', $range);
                 $c_start = $range[0];
-                $c_end = (isset($range[1]) && is_numeric($range[1])) ? $range[1] : $size;
+                if (isset($range[1]) && is_numeric($range[1])) {
+                    $c_end = $range[1];
+                } else {
+                    if ($range[0] + 100*1024-1 < $size){
+                        $c_end = $range[0] + 100*1024-1;
+                    } else {
+                        $c_end = $size;
+                    }
+                }
             }
             $c_end = ($c_end > $end) ? $end : $c_end;
-            if ($c_start > $c_end || $c_start > $size - 1 || $c_end >= $size) {
+            if ($c_start > $c_end || $c_end >= $size) {
                 header('HTTP/1.1 416 Requested Range Not Satisfiable');
                 header("Content-Range: bytes $start-$end/$size");
                 exit();
@@ -740,33 +745,75 @@ class ilMatterhornSendfile
             $start = $c_start;
             $end = $c_end;
             $length = $end - $start + 1;
-            fseek($fp, $start);
+            $fppos = fseek($fp, $start);
+            ilLoggerFactory::getLogger('xmh')->debug($start.'-'.$end.':'.$length." FP POS:".$fppos );
             header('HTTP/1.1 206 Partial Content');
+        } else {
+            ilLoggerFactory::getLogger('xmh')->debug("Starting normal get");
         }
-        
+
         header("Content-Range: bytes $start-$end/$size");
         header("Content-Length: " . $length);
-        
+        header('Accept-Ranges: bytes');
+
         $buffer = 1024 * 8;
         while (! feof($fp) && ($p = ftell($fp)) <= $end) {
+            ilLoggerFactory::getLogger('xmh')->debug("Loopstart ". $p." Rest:". ($end-$p) ." Buffer". $buffer);
             if ($p + $buffer > $end) {
                 $buffer = $end - $p + 1;
             }
+            ilLoggerFactory::getLogger('xmh')->debug("Inloop ".$p." Rest:". ($end-$p) ." Buffer". $buffer);
             set_time_limit(0);
-            echo fread($fp, $buffer);
+            $content = fread($fp, $buffer);
+            ilLoggerFactory::getLogger('xmh')->debug("Contentlen ".strlen($content));
+            echo $content;
             flush();
         }
+        ilLoggerFactory::getLogger('xmh')->debug("Afterloop ".$p." Rest:". ($end-$p));
         fclose($fp);
+        ilLoggerFactory::getLogger('xmh')->debug("Done sending");
     }
 
+    public function getEditor($episodeid){
+        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $episodeid . "/editor.json";
+        ilLoggerFactory::getLogger('xmh')->info("loading: ". $url);
+        // open connection
+        $ch = curl_init();
+        // set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "X-Requested-Auth: Digest",
+            "X-Opencast-Matterhorn-Authorization: true"
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curlret = curl_exec($ch);
+        $editorjson = json_decode($curlret);
+        if ($editorjson === false) {
+            ilLoggerFactory::getLogger('xmh')->error("error loading editor.json for episode " . $episodeid);
+        }
+        return $editorjson;
+    }
+    
     public function sendPreview()
     {
+    
+	    
         $urlsplit = explode('/', $this->subpath);
         $typesplit = explode('.', $urlsplit[2]);
         ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
-        ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl' . $typesplit[0] . $typesplit[1] . $urlsplit[1]);
-        $realfile = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal', $this->configObject->getMatterhornFilesDirectory(), $_SESSION['mhpreviewurl' . $typesplit[0] . $typesplit[1] . $urlsplit[1]]);
-        
+        ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl typesplit0:' . $typesplit[0] .' typesplit1:'.$typesplit[1] .' urlsplit1:'. $urlsplit[1]);
+        $editor = $this->getEditor($urlsplit[1]);
+        $previewtrack = "";
+        foreach ($editor->previews as $preview){
+            if (strpos($preview->uri, $typesplit[1])) {
+                $previewtrack = $preview->uri;
+            }
+        }
+
+        $realfile = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal', $this->configObject->getMatterhornFilesDirectory(), $previewtrack);
+        $xaccel =  str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "/", $previewtrack);
         ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
         // header('x-sendfile: '.$this->configObject->getXSendfileBasedir() . substr($this->subpath, strlen($this->obj_id)));
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
@@ -775,7 +822,9 @@ class ilMatterhornSendfile
         // if (isset($_SERVER['HTTP_RANGE'])) {
         // ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
         // }
-        $this->sendData($realfile);
+        //$this->sendData($realfile);
+        ilLoggerFactory::getLogger('xmh')->debug("X-Accel-Redirect: /protectedpreview" . $xaccel);
+        header("X-Accel-Redirect: /protectedpreview" . $xaccel);
     }
 
     /**

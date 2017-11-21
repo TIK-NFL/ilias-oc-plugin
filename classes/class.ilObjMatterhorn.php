@@ -655,7 +655,8 @@ class ilObjMatterhorn extends ilObjectPlugin
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
-            'filter' => 'comments:OPEN,series:ilias_xmh_' . $this->getId()
+            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:ilias_xmh_' . $this->getId(),
+            'sort'   => 'date:ASC'
         );
         
         /* Update URL to container Query String of Paramaters */
@@ -685,8 +686,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getProcessingEpisodes()
     {
         $url = $this->configObject->getMatterhornServer() . "/workflow/instances.json";
-        /* $_GET Parameters to Send */
-        // http://matterhorn.localdomain/workflow/instances.json?compact=false&state=-stopped&state=running&op=-schedule&op=-capture&sort=DATE_CREATED_DESC&count=10&startPage=0&_=1449664693513
         $params = array(
             'seriesId' => 'ilias_xmh_' . $this->getId(),
             'state' => array(
