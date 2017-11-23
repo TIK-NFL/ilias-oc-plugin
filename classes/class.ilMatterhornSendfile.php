@@ -54,7 +54,7 @@ class ilMatterhornSendfile
      *
      * @var ilMatterhornEpisode
      */
-    private $epidode;
+    private $episode;
 
     /**
      * absolute path in file system
@@ -359,10 +359,10 @@ class ilMatterhornSendfile
         }
         
         $infoarray = array();
-        $infoarray['name'] = $this->epidode->getTitle();
-        $infoarray['episode_id'] = $this->epidode->getEpisodeId();
-        $infoarray['series_id'] = $this->epidode->getSeriesId();
-        $infoarray['duration'] = $this->epidode->getDuration();
+        $infoarray['name'] = $this->episode->getTitle();
+        $infoarray['episode_id'] = $this->episode->getEpisodeId();
+        $infoarray['series_id'] = $this->episode->getSeriesId();
+        $infoarray['duration'] = $this->episode->getDuration();
         $infoarray['data'] = $data;
         
         $this->sendJSON($infoarray);
@@ -438,7 +438,7 @@ class ilMatterhornSendfile
      */
     public function sendEpisode()
     {
-        $manifest = $this->epidode->getManifest();
+        $manifest = $this->episode->getManifest();
         
         $episode = array();
         $episode['search-results'] = array(
