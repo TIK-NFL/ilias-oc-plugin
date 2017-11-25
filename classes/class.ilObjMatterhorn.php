@@ -21,7 +21,7 @@
  * +-----------------------------------------------------------------------------+
  */
 require_once 'Services/Repository/classes/class.ilObjectPlugin.php';
-require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
 
 /**
  * Application class for matterhorn repository object.
