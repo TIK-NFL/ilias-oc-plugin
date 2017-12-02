@@ -195,7 +195,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: " . $httpCode);
         ilLoggerFactory::getLogger('xmh')->debug($result);
         if (204 == $httpCode) {
-            $url = $this->configObject->getMatterhornServer() . "/series/ilias_xmh_" . $this->getId() . ".xml";
+            $url = $this->configObject->getMatterhornServer() . "/series/" . $this->configObject->getSeriesPrefix() . $this->getId() . ".xml";
             // open connection
             $ch = curl_init();
             
@@ -273,7 +273,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     University of Stuttgart, Germany
     </dcterms:publisher>
   <dcterms:identifier>
-    ilias_xmh_' . $this->getId() . '</dcterms:identifier>
+    ' . $this->configObject->getSeriesPrefix() . $this->getId() . '</dcterms:identifier>
   <dcterms:references>' . $this->getLectureID() . '</dcterms:references>
   <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("Y-m-d") . '</dcterms:modified>
   <dcterms:format xsi:type="dcterms:IMT">
@@ -294,7 +294,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function updateSearchRecords()
     {
         // ilLoggerFactory::getLogger('xmh')->debug("updating search for ".$this->getId());
-        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
+        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . $this->configObject->getSeriesPrefix() . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
     }
 
     //
@@ -466,7 +466,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getLastFSInodeUpdate()
     {
-        $filename = $this->configObject->getXSendfileBasedir() . "ilias_xmh_" . $this->getId();
+        $filename = $this->configObject->getXSendfileBasedir() . $this->configObject->getSeriesPrefix() . $this->getId();
         if (file_exists($filename)) {
             return filemtime($filename);
         }
@@ -517,7 +517,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getSearchResult()
     {
-        $basedir = $this->configObject->getXSendfileBasedir() . "ilias_xmh_" . $this->getId();
+        $basedir = $this->configObject->getXSendfileBasedir() . $this->configObject->getSeriesPrefix() . $this->getId();
         $xmlstr = "<?xml version='1.0' standalone='yes'?>\n<results />";
         $resultcount = 0;
         $results = new SimpleXMLElement($xmlstr);
@@ -565,7 +565,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:ilias_xmh_' . $this->getId(),
+            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $this->configObject->getSeriesPrefix() . $this->getId(),
             'sort' => 'date:ASC'
         );
         
@@ -599,7 +599,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
-            'filter' => 'comments:OPEN,series:ilias_xmh_' . $this->getId()
+            'filter' => 'comments:OPEN,series:' . $this->configObject->getSeriesPrefix() . $this->getId()
         );
         
         /* Update URL to container Query String of Paramaters */
@@ -632,7 +632,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         /* $_GET Parameters to Send */
         // http://matterhorn.localdomain/workflow/instances.json?compact=false&state=-stopped&state=running&op=-schedule&op=-capture&sort=DATE_CREATED_DESC&count=10&startPage=0&_=1449664693513
         $params = array(
-            'seriesId' => 'ilias_xmh_' . $this->getId(),
+            'seriesId' => $this->configObject->getSeriesPrefix() . $this->getId(),
             'state' => array(
                 '-stopped',
                 'running'

@@ -199,10 +199,10 @@ class ilMatterhornSendfile
                 $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
                 $this->obj_id = substr($this->subpath, 0, strpos($this->subpath, '/'));
                 
-                if (! preg_match('/^ilias_xmh_[0-9]+/', $this->obj_id)) {
+                if (! preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+/', $this->obj_id)) {
                     throw new Exception("", 400);
                 }
-                if (preg_match('/^ilias_xmh_[0-9]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
+                if (preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
                     $this->requestType = "preview";
                     list ($this->obj_id, $this->episode_id) = explode('/', $this->subpath);
                     $this->checkPreviewAccess();
@@ -601,7 +601,7 @@ class ilMatterhornSendfile
     {
         $urlsplit = explode('/', (string) $catalog->url);
         end($urlsplit);
-        $segmentsxml = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
+        $segmentsxml = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . $this->configObject->getSeriesPrefix() . $this->obj_id . '/' . $this->episode_id . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
         
         $segments = array(
             "segment" => array()

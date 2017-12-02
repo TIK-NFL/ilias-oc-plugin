@@ -132,6 +132,16 @@ class ilMatterhornConfig
     }
 
     /**
+     * Get the Prefix of series created by this plugin.
+     *
+     * @return string the prefix
+     */
+    public function getSeriesPrefix()
+    {
+        return 'ilias_xmh_';
+    }
+
+    /**
      *
      * @param
      *            $key

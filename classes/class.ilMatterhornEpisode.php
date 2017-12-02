@@ -58,7 +58,10 @@ class ilMatterhornEpisode
      */
     public function getOpencastSeriesId()
     {
-        return 'ilias_xmh_' . $this->getSeriesId();
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("class.ilMatterhornConfig.php");
+        $configObject = new ilMatterhornConfig();
+        return $configObject->getSeriesPrefix() . $this->getSeriesId();
     }
 
     /**
