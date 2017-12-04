@@ -36,41 +36,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 $uf = new ilMatterhornUploadFile($uri, $method);
 
-switch ($uf->getRequestType()) {
-    case "uploadCheck":
-        if ($uf->checkEpisodeAccess()) {
-            $uf->checkChunk();
-        } else {
-            $uf->sendError();
-        }
-        break;
-    case "upload":
-        if ($uf->checkEpisodeAccess()) {
-            $uf->uploadChunk();
-        } else {
-            $uf->sendError();
-        }
-        break;
-    case "createEpisode":
-        if ($uf->checkEpisodeAccess()) {
-            $uf->createEpisode();
-        } else {
-            $uf->sendError();
-        }
-        break;
-    case "newJob":
-        if ($uf->checkEpisodeAccess()) {
-            $uf->createNewJob();
-        } else {
-            $uf->sendError();
-        }
-        break;
-    case "finishUpload":
-        if ($uf->checkEpisodeAccess()) {
-            $uf->finishUpload();
-        } else {
-            $uf->sendError();
-        }
-        break;
-}
+$basename = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_SELF'], '/uploadfile.php'));
+$path = substr($uri["path"], strpos($uri["path"], $basename) + strlen($basename));
+
+$uf->handleRequest($path, $method);
 ?>

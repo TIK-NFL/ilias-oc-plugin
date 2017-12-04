@@ -63,41 +63,6 @@ class ilMatterhornUploadFile
             parse_str(file_get_contents("php://input"), $this->params);
         }
         
-        $basename = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_SELF'], '/uploadfile.php'));
-        $path = substr($uri["path"], strpos($uri["path"], $basename) + strlen($basename));
-        
-        try {
-            // check if it is a request for an upload
-            if (0 == strcmp('/upload', $path)) {
-                ilLoggerFactory::getLogger('xmh')->debug('uploadrequest for: ' . print_r($this->params, true));
-                switch ($method) {
-                    case 'GET':
-                        $this->requestType = 'uploadCheck';
-                        $this->setID();
-                        break;
-                    case 'POST':
-                        $this->requestType = 'upload';
-                        $this->setID();
-                        ilLoggerFactory::getLogger('xmh')->debug('Upload for: ' . $this->obj_id);
-                        break;
-                }
-            } else if (0 == strcmp('/createEpisode', $path)) {
-                $this->requestType = 'createEpisode';
-                $this->setID();
-                ilLoggerFactory::getLogger('xmh')->debug('CreatedEpisode for: ' . $this->obj_id);
-            } else if (0 == strcmp('/newJob', $path)) {
-                $this->requestType = 'newJob';
-                $this->setID();
-                ilLoggerFactory::getLogger('xmh')->debug('NewJob for: ' . $this->obj_id);
-            } else if (0 == strcmp('/finishUpload', $path)) {
-                $this->requestType = 'finishUpload';
-                $this->setID();
-                ilLoggerFactory::getLogger('xmh')->debug('NewJob for: ' . $this->obj_id);
-            }
-        } catch (Exception $e) {
-            $this->sendError($e);
-        }
-        
         // debugging
         /*
          * echo "<pre>";
@@ -132,11 +97,55 @@ class ilMatterhornUploadFile
      *
      * @param string $path
      *            the path of the request
+     * @param string $method
+     *            the REQUEST_METHOD
      * @return boolean
      */
-    public function handleRequest($path)
+    public function handleRequest($path, $method)
     {
-        ilLoggerFactory::getLogger('xmh')->debug('Request for: ' . $uri['path']);
+        ilLoggerFactory::getLogger('xmh')->debug('Request for: ' . $path);
+        
+        try {
+            // check if it is a request for an upload
+            if (0 == strcmp('/upload', $path)) {
+                ilLoggerFactory::getLogger('xmh')->debug('uploadrequest for: ' . print_r($this->params, true));
+                switch ($method) {
+                    case 'GET':
+                        $this->requestType = 'uploadCheck';
+                        $this->setID();
+                        $this->checkEpisodeAccess();
+                        $this->checkChunk();
+                        break;
+                    case 'POST':
+                        $this->requestType = 'upload';
+                        $this->setID();
+                        ilLoggerFactory::getLogger('xmh')->debug('Upload for: ' . $this->obj_id);
+                        $this->checkEpisodeAccess();
+                        $this->uploadChunk();
+                        break;
+                }
+            } else if (0 == strcmp('/createEpisode', $path)) {
+                $this->requestType = 'createEpisode';
+                $this->setID();
+                ilLoggerFactory::getLogger('xmh')->debug('CreatedEpisode for: ' . $this->obj_id);
+                $this->checkEpisodeAccess();
+                $this->createEpisode();
+            } else if (0 == strcmp('/newJob', $path)) {
+                $this->requestType = 'newJob';
+                $this->setID();
+                ilLoggerFactory::getLogger('xmh')->debug('NewJob for: ' . $this->obj_id);
+                $this->checkEpisodeAccess();
+                $this->createNewJob();
+            } else if (0 == strcmp('/finishUpload', $path)) {
+                $this->requestType = 'finishUpload';
+                $this->setID();
+                ilLoggerFactory::getLogger('xmh')->debug('NewJob for: ' . $this->obj_id);
+                $this->checkEpisodeAccess();
+                $this->finishUpload();
+            }
+        } catch (Exception $e) {
+            $this->sendError($e);
+        }
     }
 
     /**
@@ -176,29 +185,6 @@ class ilMatterhornUploadFile
         throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
     }
 
-    public function checkPreviewAccess()
-    {
-        return $this->checkFileAccess();
-    }
-
-    /**
-     * Check access rights of the requested file.
-     */
-    public function checkFileAccess()
-    {
-        // do this here because ip based checking may be set after construction
-        $type = 'xmh';
-        $iliasid = substr($this->obj_id, 10);
-        if (! $iliasid || $type == 'none') {
-            throw new Exception($this->lng->txt('obj_not_found'), 404);
-        }
-        if ($this->checkAccessObject($iliasid)) {
-            return true;
-        }
-        // none of the checks above gives access
-        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
-    }
-
     /**
      * Check access rights for an object by its object id.
      *
@@ -207,13 +193,12 @@ class ilMatterhornUploadFile
      *            
      * @return bool access given (true/false)
      */
-    private function checkAccessObject($obj_id, $obj_type = '')
+    private function checkAccessObject($obj_id)
     {
         global $DIC;
         
-        if (! $obj_type) {
-            $obj_type = ilObject::_lookupType($obj_id);
-        }
+        $obj_type = ilObject::_lookupType($obj_id);
+        
         $ref_ids = ilObject::_getAllReferences($obj_id);
         $access = $DIC->access();
         
