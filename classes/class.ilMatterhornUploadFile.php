@@ -1,31 +1,6 @@
 <?php
 
 /* Copyright (c) 1998-2010 ILIAS open source, Extended GPL, see docs/LICENSE */
-// Prevent a general redirect to the login screen for anonymous users.
-// The checker will show an error page with login link instead
-// (see ilInitialisation::InitILIAS() for details)
-$_GET['baseClass'] = 'ilStartUpGUI';
-
-$basename = '/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData';
-
-// Define a pseudo module to get a correct ILIAS_HTTP_PATH
-// (needed for links on the error page).
-// "data" is assumed to be the ILIAS_WEB_DIR
-// (see ilInitialisation::buildHTTPPath() for details)
-define('ILIAS_MODULE', substr($_SERVER['PHP_SELF'], strpos($_SERVER['PHP_SELF'], $basename) + strlen($basename) + 1));
-
-// Define the cookie path to prevent a different session created for web access
-// (see ilInitialisation::setCookieParams() for details)
-$GLOBALS['COOKIE_PATH'] = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_SELF'], $basename));
-
-include_once 'Services/Context/classes/class.ilContext.php';
-ilContext::init(ilContext::CONTEXT_WAC);
-
-// Now the ILIAS header can be included
-require_once './include/inc.header.php';
-require_once './Services/Utilities/classes/class.ilUtil.php';
-require_once './Services/Objecst/classes/class.ilObject.php';
-require_once './Services/MediaObjects/classes/class.ilObjMediaObject.php';
 
 /**
  * Class ilMatterhornUploadFile.
@@ -40,6 +15,12 @@ class ilMatterhornUploadFile
     public $lng;
 
     public $ilAccess;
+
+    /**
+     *
+     * @var ilMatterhornPlugin
+     */
+    private $plugin;
 
     /*
      * the id of the matterhorn object
@@ -81,6 +62,10 @@ class ilMatterhornUploadFile
         $this->params = array();
         $this->requestType = 'none';
         
+        $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $this->plugin->includeClass("class.ilMatterhornConfig.php");
+        $this->configObject = new ilMatterhornConfig();
+        
         // get the requested file and its type
         $uri = parse_url($_SERVER['REQUEST_URI']);
         parse_str($uri['query'], $this->params);
@@ -88,8 +73,6 @@ class ilMatterhornUploadFile
         ilLoggerFactory::getLogger('xmh')->debug('Request for: ' . $uri['path']);
         // ilLoggerFactory::getLogger('xmh')->debug("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
         
-        // initialize app
-        global $basename;
         // check if it is a request for an upload
         if (0 == strcmp(str_replace('/uploadfile.php', '/upload', $_SERVER['PHP_SELF']), $uri['path'])) {
             ilLoggerFactory::getLogger('xmh')->debug('uploadrequest for: ' . print_r($this->params, true));
@@ -153,8 +136,6 @@ class ilMatterhornUploadFile
                 }
             }
         }
-        include_once './Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornConfig.php';
-        $this->configObject = new ilMatterhornConfig();
         // debugging
         /*
          * echo "<pre>";

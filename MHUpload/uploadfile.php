@@ -1,63 +1,72 @@
 <?php
 /* Copyright (c) 1998-2010 ILIAS open source, Extended GPL, see docs/LICENSE */
-
 chdir("../../../../../../../../");
 
-require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn//classes/class.ilMatterhornUploadFile.php";
+// Prevent a general redirect to the login screen for anonymous users.
+// The checker will show an error page with login link instead
+// (see ilInitialisation::InitILIAS() for details)
+$_GET['baseClass'] = 'ilStartUpGUI';
+
+$basename = '/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData';
+
+// Define a pseudo module to get a correct ILIAS_HTTP_PATH
+// (needed for links on the error page).
+// "data" is assumed to be the ILIAS_WEB_DIR
+// (see ilInitialisation::buildHTTPPath() for details)
+define('ILIAS_MODULE', substr($_SERVER['PHP_SELF'], strpos($_SERVER['PHP_SELF'], $basename) + strlen($basename) + 1));
+
+// Define the cookie path to prevent a different session created for web access
+// (see ilInitialisation::setCookieParams() for details)
+$GLOBALS['COOKIE_PATH'] = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_SELF'], $basename));
+
+include_once 'Services/Context/classes/class.ilContext.php';
+ilContext::init(ilContext::CONTEXT_WAC);
+
+// Now the ILIAS header can be included
+require_once './include/inc.header.php';
+require_once './Services/Utilities/classes/class.ilUtil.php';
+require_once './Services/Objecst/classes/class.ilObject.php';
+require_once './Services/MediaObjects/classes/class.ilObjMediaObject.php';
+
+require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornUploadFile.php";
 
 $sf = new ilMatterhornUploadFile();
 
 switch ($sf->getRequestType()) {
     case "uploadCheck":
-        if ($sf->checkEpisodeAccess())
-        {
+        if ($sf->checkEpisodeAccess()) {
             $sf->checkChunk();
-        }
-        else
-        {
+        } else {
             $sf->sendError();
         }
         break;
     case "upload":
-        if ($sf->checkEpisodeAccess())
-        {
+        if ($sf->checkEpisodeAccess()) {
             $sf->uploadChunk();
-        }
-        else
-        {
+        } else {
             $sf->sendError();
         }
         break;
     case "createEpisode":
-        if ($sf->checkEpisodeAccess())
-        {
+        if ($sf->checkEpisodeAccess()) {
             $sf->createEpisode();
-        }
-        else
-        {
+        } else {
             $sf->sendError();
         }
         break;
     case "newJob":
-        if ($sf->checkEpisodeAccess())
-        {
+        if ($sf->checkEpisodeAccess()) {
             $sf->createNewJob();
-        }
-        else
-        {
+        } else {
             $sf->sendError();
         }
-    break;
+        break;
     case "finishUpload":
-        if ($sf->checkEpisodeAccess())
-        {
+        if ($sf->checkEpisodeAccess()) {
             $sf->finishUpload();
-        }
-        else
-        {
+        } else {
             $sf->sendError();
         }
-    break;
-
+        break;
 }
 ?>
