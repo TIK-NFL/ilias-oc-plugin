@@ -21,7 +21,7 @@
  * +-----------------------------------------------------------------------------+
  */
 require_once 'Services/Repository/classes/class.ilObjectPlugin.php';
-require_once ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->getDirectory() . '/classes/class.ilMatterhornConfig.php';
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
 
 /**
  * Application class for matterhorn repository object.
@@ -36,38 +36,54 @@ class ilObjMatterhorn extends ilObjectPlugin
 
     /**
      * Stores the series
+     *
+     * @var string
      */
-    public $series;
+    private $series;
 
     /**
      * Stores the mhretval
+     *
+     * @var string
      */
-    public $mhretval;
+    private $mhretval;
 
     /**
      * Stores the lectureID
+     *
+     * @var string
      */
-    public $lectureID;
+    private $lectureID;
 
     /**
      * Stores the viewmode
+     *
+     * @var integer
      */
-    public $viewMode;
+    private $viewMode;
 
     /**
      * Stores the manual release
+     *
+     * @var boolean
      */
-    public $manualrelease;
+    private $manualrelease;
 
     /**
      * Stores the download status
+     *
+     * @var boolean
      */
-    public $download;
+    private $download;
 
     /**
      * Stores the last time the fs was checked for new updates
+     *
+     * @unused
+     *
+     * @var integer
      */
-    public $lastfsInodeUpdate;
+    private $lastfsInodeUpdate;
 
     /**
      * Constructor
@@ -178,11 +194,11 @@ class ilObjMatterhorn extends ilObjectPlugin
         
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: " . $httpCode);
         ilLoggerFactory::getLogger('xmh')->debug($result);
-	if (204 == $httpCode) {
-            $url = $this->configObject->getMatterhornServer() . "/series/ilias_xmh_". $this->getId().".xml";
+        if (204 == $httpCode) {
+            $url = $this->configObject->getMatterhornServer() . "/series/" . $this->configObject->getSeriesPrefix() . $this->getId() . ".xml";
             // open connection
             $ch = curl_init();
-        
+            
             // set the url, number of POST vars, POST data
             curl_setopt($ch, CURLOPT_URL, $url);
             curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
@@ -197,9 +213,9 @@ class ilObjMatterhorn extends ilObjectPlugin
             ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server: " . $httpCode);
             ilLoggerFactory::getLogger('xmh')->debug($result);
             $ilDB->manipulate("UPDATE rep_robj_xmh_data SET " . " is_online = " . $ilDB->quote($this->getOnline(), "integer") . "," . " series = " . $ilDB->quote($result, "text") . "," . " lectureid = " . $ilDB->quote($this->getLectureID(), "text") . "," . " viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . "," . " manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . "," . " download = " . $ilDB->quote($this->getDownload(), "integer") . "," . " mhretval = " . $ilDB->quote($httpCode, "text") . " " . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
-           $this->updateMetaData();
-	   $this->doRead();
-	}
+            $this->updateMetaData();
+            $this->doRead();
+        }
     }
 
     /**
@@ -212,7 +228,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $this->getPlugin()->includeClass("class.ilMatterhornUserTracking.php");
         
         foreach ($this->getReleasedEpisodes() as $episode_id) {
-            ilMatterhornUserTracking::removeViews($episode_id);
+            ilMatterhornUserTracking::removeViews($this->getEpisode($episode_id));
         }
         
         $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep " . " WHERE series_id = " . $ilDB->quote($this->getId(), "text"));
@@ -257,7 +273,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     University of Stuttgart, Germany
     </dcterms:publisher>
   <dcterms:identifier>
-    ilias_xmh_' . $this->getId() . '</dcterms:identifier>
+    ' . $this->configObject->getSeriesPrefix() . $this->getId() . '</dcterms:identifier>
   <dcterms:references>' . $this->getLectureID() . '</dcterms:references>
   <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("Y-m-d") . '</dcterms:modified>
   <dcterms:format xsi:type="dcterms:IMT">
@@ -272,86 +288,13 @@ class ilObjMatterhorn extends ilObjectPlugin
         return $fields;
     }
 
+    /**
+     * @unused
+     */
     public function updateSearchRecords()
     {
         // ilLoggerFactory::getLogger('xmh')->debug("updating search for ".$this->getId());
-        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
-    }
-
-    public function addTextToDB($episodeId)
-    {
-        global $ilDB;
-        // ilLoggerFactory::getLogger('xmh')->debug($this->configObject->getXSendfileBasedir().'ilias_xmh_'.$this->getId().'/'.$episodeId.'/manifest.xml');
-        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->getId() . '/' . $episodeId . '/manifest.xml', null, true);
-        $textcatalog = null;
-        foreach ($manifest->metadata->catalog as $catalog) {
-            $cat = array();
-            if (isset($catalog['id'])) {
-                $cat['id'] = (string) $catalog['id'];
-            }
-            if (isset($catalog['type'])) {
-                $cat['type'] = (string) $catalog['type'];
-            }
-            if (isset($catalog['ref'])) {
-                $cat['ref'] = (string) $catalog['ref'];
-            }
-            if (isset($catalog->mimetype)) {
-                $cat['mimetype'] = (string) $catalog->mimetype;
-            }
-            if (isset($catalog->url)) {
-                $cat['url'] = (string) $catalog->url;
-            }
-            if (isset($catalog->tags)) {
-                $cat['tags'] = array(
-                    'tag' => array()
-                );
-                foreach ($catalog->tags->tag as $tag) {
-                    array_push($cat['tags']['tag'], (string) $tag);
-                }
-            }
-            if (isset($catalog['type']) && 0 == strcmp((string) $catalog['type'], 'mpeg-7/text')) {
-                $textcatalog = $cat;
-            }
-        }
-        if ($textcatalog) {
-            $segments = array_slice(explode("/", $textcatalog["url"]), - 2);
-            $segmentsxml = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . 'ilias_xmh_' . $this->getId() . '/' . $episodeId . '/' . $segments[0] . '/' . $segments[1], null, true);
-            $segments = array(
-                "segment" => array()
-            );
-            $currentidx = 0;
-            $currenttime = 0;
-            foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
-                $regmatches = array();
-                // preg_match("/PT(\d+M)?(\d+S)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
-                preg_match("/PT(\d+M)?(\d+S)(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
-                $sec = substr($regmatches[2], 0, - 1);
-                $min = 0;
-                if (0 != strcmp('', $regmatches[1])) {
-                    $min = substr($regmatches[1], 0, - 1);
-                }
-                $duration = ($min * 60 + $sec) * 1000;
-                $text = "";
-                if ($segmentxml->SpatioTemporalDecomposition) {
-                    foreach ($segmentxml->SpatioTemporalDecomposition->VideoText as $textxml) {
-                        $text = $text . " " . (string) $textxml->Text;
-                    }
-                    if ($text != "") {
-                        $ilDB->manipulate("INSERT INTO rep_robj_xmh_slidetext " . "(episode_id, series_id, slidetext, slidetime) VALUES (" . $ilDB->quote($episodeId, "text") . "," . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "text") . ")");
-                    }
-                }
-                $currentidx ++;
-                $currenttime = $currenttime + $duration;
-            }
-        }
-        return $segments;
-    }
-
-    public function removeTextFromDB($episodeId)
-    {
-        global $ilDB;
-        
-        $ilDB->manipulate("DELETE FROM rep_robj_xmh_slidetext " . " WHERE episode_id = " . $ilDB->quote($episodeId, "text") . " and series_id  = " . $ilDB->quote($this->getId(), "integer"));
+        $manifest = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . $this->configObject->getSeriesPrefix() . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
     }
 
     //
@@ -382,8 +325,8 @@ class ilObjMatterhorn extends ilObjectPlugin
     /**
      * Set series information
      *
-     * @param
-     *            String series
+     * @param String $a_val
+     *            series
      */
     public function setSeries($a_val)
     {
@@ -403,8 +346,8 @@ class ilObjMatterhorn extends ilObjectPlugin
     /**
      * Set the http return code when creating the series
      *
-     * @param
-     *            int mhretval
+     * @param int $a_val
+     *            mhretval
      */
     public function setMhRetVal($a_val)
     {
@@ -424,8 +367,8 @@ class ilObjMatterhorn extends ilObjectPlugin
     /**
      * Set the lectureID
      *
-     * @param
-     *            String lectureID
+     * @param String $a_val
+     *            lectureID
      */
     public function setLectureID($a_val)
     {
@@ -445,8 +388,8 @@ class ilObjMatterhorn extends ilObjectPlugin
     /**
      * Set the ViewMode
      *
-     * @param
-     *            Integer viewMode
+     * @param Integer $a_val
+     *            viewMode
      */
     public function setViewMode($a_val)
     {
@@ -466,8 +409,8 @@ class ilObjMatterhorn extends ilObjectPlugin
     /**
      * Set manual release
      *
-     * @param
-     *            boolean manual release
+     * @param boolean $a_val
+     *            manual release
      */
     public function setManualRelease($a_val)
     {
@@ -487,8 +430,8 @@ class ilObjMatterhorn extends ilObjectPlugin
     /**
      * Set enable download
      *
-     * @param
-     *            boolean enable download
+     * @param boolean $a_val
+     *            enable download
      */
     public function setDownload($a_val)
     {
@@ -506,42 +449,43 @@ class ilObjMatterhorn extends ilObjectPlugin
     }
 
     /**
-     * Set fsinodeupdate
+     * Set lastfsInodeUpdate
      *
-     * @param
-     *            int the timestamp of the last inode update
+     * @param int $a_val
+     *            the timestamp of the last inode update
      */
     public function setLastFSInodeUpdate($a_val)
     {
-        $this->fsinodeupdate = $a_val;
+        $this->lastfsInodeUpdate = $a_val;
     }
 
     /**
-     * Get fsinodeupdate
+     * Get lastfsInodeUpdate
      *
      * @return int the timestamp of the last inode update
      */
     public function getLastFSInodeUpdate()
     {
-        $filename = $this->configObject->getXSendfileBasedir() . "ilias_xmh_" . $this->getId();
+        $filename = $this->configObject->getXSendfileBasedir() . $this->configObject->getSeriesPrefix() . $this->getId();
         if (file_exists($filename)) {
             return filemtime($filename);
         }
         return - 1;
     }
 
-    public function publish($episodeId)
+    /**
+     * checks if the $episodeId exists and returns the Episode object
+     *
+     * @param string $episodeId            
+     * @return ilMatterhornEpisode
+     */
+    public function getEpisode($episodeId)
     {
-        global $ilDB;
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_rel_ep " . "(episode_id, series_id) VALUES (" . $ilDB->quote($episodeId, "text") . "," . $ilDB->quote($this->getId(), "integer") . ")");
-        $this->addTextToDB($episodeId);
-    }
-
-    public function retract($episodeId)
-    {
-        global $ilDB;
-        $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep WHERE " . "episode_id=" . $ilDB->quote($episodeId, "text") . " AND series_id=" . $ilDB->quote($this->getId(), "integer"));
-        $this->removeTextFromDB($episodeId);
+        $this->getPlugin()->includeClass("class.ilMatterhornEpisode.php");
+        if (preg_match('/^[0-9a-f\-]+/', $episodeId)) {
+            return new ilMatterhornEpisode($this->getId(), $episodeId);
+        }
+        return null;
     }
 
     public function deleteschedule($workflowid)
@@ -573,7 +517,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getSearchResult()
     {
-        $basedir = $this->configObject->getXSendfileBasedir() . "ilias_xmh_" . $this->getId();
+        $basedir = $this->configObject->getXSendfileBasedir() . $this->configObject->getSeriesPrefix() . $this->getId();
         $xmlstr = "<?xml version='1.0' standalone='yes'?>\n<results />";
         $resultcount = 0;
         $results = new SimpleXMLElement($xmlstr);
@@ -621,8 +565,8 @@ class ilObjMatterhorn extends ilObjectPlugin
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:ilias_xmh_' . $this->getId(),
-            'sort'   => 'date:ASC'
+            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $this->configObject->getSeriesPrefix() . $this->getId(),
+            'sort' => 'date:ASC'
         );
         
         /* Update URL to container Query String of Paramaters */
@@ -655,7 +599,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:ilias_xmh_' . $this->getId(),
+            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $this->configObject->getSeriesPrefix() . $this->getId(),
             'sort'   => 'date:ASC'
         );
         
@@ -687,7 +631,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         $url = $this->configObject->getMatterhornServer() . "/workflow/instances.json";
         $params = array(
-            'seriesId' => 'ilias_xmh_' . $this->getId(),
+            'seriesId' => $this->configObject->getSeriesPrefix() . $this->getId(),
             'state' => array(
                 '-stopped',
                 'running'
@@ -762,7 +706,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getEditor($episodeid)
     {
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $episodeid . "/editor.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: ". $url);
+        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
         // open connection
         $ch = curl_init();
         // set the url, number of POST vars, POST data
@@ -793,7 +737,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getMedia($episodeid)
     {
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/" . $episodeid . "/asset/media/media.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: ".$url);
+        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
         // open connection
         $ch = curl_init();
         // set the url, number of POST vars, POST data
@@ -905,19 +849,17 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             "X-Requested-Auth: Digest",
             "X-Opencast-Matterhorn-Authorization: true",
-	    'Content-Type: application/json',
+            'Content-Type: application/json',
             'charset=UTF-8',
             'Connection: Keep-Alive'
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/".$eventid."/editor.json";
-#	                     ',"startTime":"00:00:02.818","endTime":"00:00:34.320","deleted":false}],'.
-
-        $fields_string = '{"concat":{"segments":[{"start":'.(1000 * $trimin).',"end":'.(1000 * $trimout).
-	                     ',"deleted":false}],'.
-			     '"tracks":["'.implode('","',$keeptracks).'"]},"workflow":"ilias-publish-after-cutting"}';
-
-        ilLoggerFactory::getLogger('xmh')->debug("FIELDSTRING:".$fields_string);
+        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $eventid . "/editor.json";
+        // ',"startTime":"00:00:02.818","endTime":"00:00:34.320","deleted":false}],'.
+        
+        $fields_string = '{"concat":{"segments":[{"start":' . (1000 * $trimin) . ',"end":' . (1000 * $trimout) . ',"deleted":false}],' . '"tracks":["' . implode('","', $keeptracks) . '"]},"workflow":"ilias-publish-after-cutting"}';
+        
+        ilLoggerFactory::getLogger('xmh')->debug("FIELDSTRING:" . $fields_string);
         // set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, 1);

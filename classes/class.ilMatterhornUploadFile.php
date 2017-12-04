@@ -342,7 +342,7 @@ class ilMatterhornUploadFile
         $result = $xpath->query('//dcterms:title');
         $result->item(0)->nodeValue = $episodename;
         $result = $xpath->query('//dcterms:isPartOf');
-        $result->item(0)->nodeValue = 'ilias_xmh_'.$this->obj_id;
+        $result->item(0)->nodeValue = $this->configObject->getSeriesPrefix() . $this->obj_id;
         $result = $xpath->query('//dcterms:recordDate');
         $result->item(0)->nodeValue = $datestring;
         $result = $xpath->query('//dcterms:created');
@@ -354,7 +354,7 @@ class ilMatterhornUploadFile
         $episodexml = $dom->saveXML();
 
         // get the series xml for this mediapackage
-        $url = $this->configObject->getMatterhornServer().'/series/ilias_xmh_'.$this->obj_id.'.xml';
+        $url = $this->configObject->getMatterhornServer().'/series/' . $this->configObject->getSeriesPrefix() . $this->obj_id . '.xml';
         $ch = $this->createCURLCall($url);
         $seriesxml = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

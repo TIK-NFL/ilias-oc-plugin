@@ -2,6 +2,7 @@
 
 class ilMatterhornConfig
 {
+
     /**
      * returns the hostname for the matterhorn server.
      *
@@ -10,10 +11,10 @@ class ilMatterhornConfig
     public function getMatterhornServer()
     {
         $retVal = $this->getValue('mh_server');
-        if (!$retVal) {
+        if (! $retVal) {
             return 'http://host.is.unset';
         }
-
+        
         return $retVal;
     }
 
@@ -25,10 +26,10 @@ class ilMatterhornConfig
     public function getMatterhornEngageServer()
     {
         $retVal = $this->getValue('mh_server_engage');
-        if (!$retVal) {
+        if (! $retVal) {
             return 'http://host.is.unset';
         }
-
+        
         return $retVal;
     }
 
@@ -40,10 +41,10 @@ class ilMatterhornConfig
     public function getMatterhornUser()
     {
         $retVal = $this->getValue('mh_digest_user');
-        if (!$retVal) {
+        if (! $retVal) {
             return 'matterhorn_system_account';
         }
-
+        
         return $retVal;
     }
 
@@ -55,10 +56,10 @@ class ilMatterhornConfig
     public function getMatterhornPassword()
     {
         $retVal = $this->getValue('mh_digest_password');
-        if (!$retVal) {
+        if (! $retVal) {
             return 'CHANGE_ME';
         }
-
+        
         return $retVal;
     }
 
@@ -70,10 +71,10 @@ class ilMatterhornConfig
     public function getMatterhornFilesDirectory()
     {
         $retVal = $this->getValue('mh_files_directory');
-        if (!$retVal) {
+        if (! $retVal) {
             return '/dev/null';
         }
-
+        
         return $retVal;
     }
 
@@ -85,17 +86,17 @@ class ilMatterhornConfig
     public function getXSendfileBasedir()
     {
         $retVal = $this->getValue('xsendfile_basedir');
-        if (!$retVal) {
+        if (! $retVal) {
             return '/dev/null';
         }
-
+        
         return $retVal;
     }
 
     public function setXSendfileBasedir($value)
     {
-        if (substr($value, -1) != '/') {
-            $value = $value.'/';
+        if (substr($value, - 1) != '/') {
+            $value = $value . '/';
         }
         $this->setValue('xsendfile_basedir', $value);
     }
@@ -103,10 +104,10 @@ class ilMatterhornConfig
     public function getMatterhornVersion()
     {
         $retVal = $this->getValue('matterhorn_version');
-        if (!$retVal) {
+        if (! $retVal) {
             return '1.6';
         }
-
+        
         return $retVal;
     }
 
@@ -118,10 +119,10 @@ class ilMatterhornConfig
     public function getUploadWorkflow()
     {
         $retVal = $this->getValue('uploadworkflow');
-        if (!$retVal) {
+        if (! $retVal) {
             return 'default';
         }
-
+        
         return $retVal;
     }
 
@@ -130,37 +131,73 @@ class ilMatterhornConfig
         $this->setValue('uploadworkflow', $value);
     }
 
-    
     /**
-     * @param $key
-     * @param $value
+     * Get the Prefix of series created by this plugin.
+     *
+     * @return string the prefix
+     */
+    public function getSeriesPrefix()
+    {
+        return 'ilias_xmh_';
+    }
+
+    /**
+     *
+     * @param
+     *            $key
+     * @param
+     *            $value
      */
     private function setValue($key, $value)
     {
         global $ilDB;
-
-        if (!is_string($this->getValue($key))) {
-            $ilDB->insert('rep_robj_xmh_config', array('cfgkey' => array('text', $key), 'cfgvalue' => array('text', $value)));
+        
+        if (! is_string($this->getValue($key))) {
+            $ilDB->insert('rep_robj_xmh_config', array(
+                'cfgkey' => array(
+                    'text',
+                    $key
+                ),
+                'cfgvalue' => array(
+                    'text',
+                    $value
+                )
+            ));
         } else {
-            $ilDB->update('rep_robj_xmh_config', array('cfgkey' => array('text', $key), 'cfgvalue' => array('text', $value)), array('cfgkey' => array('text', $key))
-            );
+            $ilDB->update('rep_robj_xmh_config', array(
+                'cfgkey' => array(
+                    'text',
+                    $key
+                ),
+                'cfgvalue' => array(
+                    'text',
+                    $value
+                )
+            ), array(
+                'cfgkey' => array(
+                    'text',
+                    $key
+                )
+            ));
         }
     }
 
     /**
-     * @param $key
      *
+     * @param
+     *            $key
+     *            
      * @return bool|string
      */
     private function getValue($key)
     {
         global $ilDB;
-        $result = $ilDB->query('SELECT cfgvalue FROM rep_robj_xmh_config WHERE cfgkey = '.$ilDB->quote($key, 'text'));
+        $result = $ilDB->query('SELECT cfgvalue FROM rep_robj_xmh_config WHERE cfgkey = ' . $ilDB->quote($key, 'text'));
         if ($result->numRows() == 0) {
             return false;
         }
         $record = $ilDB->fetchAssoc($result);
-
+        
         return (string) $record['cfgvalue'];
     }
 }
