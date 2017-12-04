@@ -22,38 +22,29 @@ class ilMatterhornUploadFile
      */
     private $plugin;
 
-    /*
+    /**
      * the id of the matterhorn object
-     * @var string
-     * @access private
+     *
+     * @var int
      */
-    public $obj_id;
+    private $obj_id;
 
-    /*
-     * errorcode for sendError
-     * @var integer
-     * @access private
-     */
-    public $errorcode;
-
-    /*
-     * errortext for sendError
-     * @var integer
-     * @access private
-     */
-    public $errortext;
-
-    /*
+    /**
      * the configuration for the matterhorn object
+     *
      * @var ilMatterhornConfig
-     * @access private
      */
-    public $configObject;
+    private $configObject;
 
     /**
      * Constructor
+     *
+     * @param mixed $uri
+     *            the parsed REQUEST_URI
+     * @param string $method
+     *            the REQUEST_METHOD
      */
-    public function __construct()
+    public function __construct($uri, $method)
     {
         global $ilAccess, $lng;
         
@@ -66,76 +57,47 @@ class ilMatterhornUploadFile
         $this->plugin->includeClass("class.ilMatterhornConfig.php");
         $this->configObject = new ilMatterhornConfig();
         
-        // get the requested file and its type
-        $uri = parse_url($_SERVER['REQUEST_URI']);
-        parse_str($uri['query'], $this->params);
-        // ilLoggerFactory::getLogger('xmh')->debug("Request for:".substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php")+1)."/episode.json");
-        ilLoggerFactory::getLogger('xmh')->debug('Request for: ' . $uri['path']);
-        // ilLoggerFactory::getLogger('xmh')->debug("Request for:".strcmp(md5(substr($uri["path"],0,strpos($_SERVER["PHP_SELF"],"/sendfile.php"))."/episode.json"), md5($uri["path"])));
-        
-        // check if it is a request for an upload
-        if (0 == strcmp(str_replace('/uploadfile.php', '/upload', $_SERVER['PHP_SELF']), $uri['path'])) {
-            ilLoggerFactory::getLogger('xmh')->debug('uploadrequest for: ' . print_r($this->params, true));
-            switch ($_SERVER['REQUEST_METHOD']) {
-                case 'GET':
-                    $this->requestType = 'uploadCheck';
-                    if (! preg_match('/^[0-9]+/', $this->params['seriesid'])) {
-                        $this->errorcode = 404;
-                        $this->errortext = $this->lng->txt('series');
-                        
-                        return false;
-                    }
-                    $this->obj_id = $this->params['seriesid'];
-                    break;
-                case 'POST':
-                    $this->requestType = 'upload';
-                    if (! preg_match('/^[0-9]+/', $_POST['seriesid'])) {
-                        $this->errorcode = 404;
-                        $this->errortext = $this->lng->txt('series');
-                        
-                        return false;
-                    }
-                    ilLoggerFactory::getLogger('xmh')->debug('Upload for: ' . $_POST['seriesid']);
-                    $this->obj_id = $_POST['seriesid'];
-                    break;
-            }
-        } else {
-            if (0 == strcmp(str_replace('/uploadfile.php', '/createEpisode', $_SERVER['PHP_SELF']), $uri['path'])) {
-                $this->requestType = 'createEpisode';
-                if (! preg_match('/^[0-9]+/', $_POST['seriesid'])) {
-                    $this->errorcode = 404;
-                    $this->errortext = $this->lng->txt('series');
-                    
-                    return false;
-                }
-                ilLoggerFactory::getLogger('xmh')->debug('CreatedEpisode for: ' . $_POST['seriesid']);
-                $this->obj_id = $_POST['seriesid'];
-            } else {
-                if (0 == strcmp(str_replace('/uploadfile.php', '/newJob', $_SERVER['PHP_SELF']), $uri['path'])) {
-                    $this->requestType = 'newJob';
-                    if (! preg_match('/^[0-9]+/', $_POST['seriesid'])) {
-                        $this->errorcode = 404;
-                        $this->errortext = $this->lng->txt('series');
-                        
-                        return false;
-                    }
-                    ilLoggerFactory::getLogger('xmh')->debug('NewJob for: ' . $_POST['seriesid']);
-                    $this->obj_id = $_POST['seriesid'];
-                } else {
-                    if (0 == strcmp(str_replace('/uploadfile.php', '/finishUpload', $_SERVER['PHP_SELF']), $uri['path'])) {
-                        $this->requestType = 'finishUpload';
-                        if (! preg_match('/^[0-9]+/', $_POST['seriesid'])) {
-                            $this->errorcode = 404;
-                            $this->errortext = $this->lng->txt('series');
-                            
-                            return false;
-                        }
-                        ilLoggerFactory::getLogger('xmh')->debug('NewJob for: ' . $_POST['seriesid']);
-                        $this->obj_id = $_POST['seriesid'];
-                    }
-                }
-            }
+        if ($method == 'GET') {
+            parse_str($uri["query"], $this->params);
+        } elseif ($method == 'PUT') {
+            parse_str(file_get_contents("php://input"), $this->params);
         }
+        
+        $basename = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_SELF'], '/uploadfile.php'));
+        $path = substr($uri["path"], strpos($uri["path"], $basename) + strlen($basename));
+        
+        try {
+            // check if it is a request for an upload
+            if (0 == strcmp('/upload', $path)) {
+                ilLoggerFactory::getLogger('xmh')->debug('uploadrequest for: ' . print_r($this->params, true));
+                switch ($method) {
+                    case 'GET':
+                        $this->requestType = 'uploadCheck';
+                        $this->setID();
+                        break;
+                    case 'POST':
+                        $this->requestType = 'upload';
+                        $this->setID();
+                        ilLoggerFactory::getLogger('xmh')->debug('Upload for: ' . $this->obj_id);
+                        break;
+                }
+            } else if (0 == strcmp('/createEpisode', $path)) {
+                $this->requestType = 'createEpisode';
+                $this->setID();
+                ilLoggerFactory::getLogger('xmh')->debug('CreatedEpisode for: ' . $this->obj_id);
+            } else if (0 == strcmp('/newJob', $path)) {
+                $this->requestType = 'newJob';
+                $this->setID();
+                ilLoggerFactory::getLogger('xmh')->debug('NewJob for: ' . $this->obj_id);
+            } else if (0 == strcmp('/finishUpload', $path)) {
+                $this->requestType = 'finishUpload';
+                $this->setID();
+                ilLoggerFactory::getLogger('xmh')->debug('NewJob for: ' . $this->obj_id);
+            }
+        } catch (Exception $e) {
+            $this->sendError($e);
+        }
+        
         // debugging
         /*
          * echo "<pre>";
@@ -158,21 +120,40 @@ class ilMatterhornUploadFile
          * echo "disposition: ". $this->disposition. "\n";
          * echo "ckeck_ip: ". $this->check_ip. "\n";
          * echo "requesttype: ". $this->requestType. "\n";
-         * echo "errorcode: ". $this->errorcode. "\n";
-         * echo "errortext: ". $this->errortype. "\n";
          * echo "</pre>";
          *
          * # echo phpinfo();
          * exit;
          */
-        /*
-         * if (!file_exists($this->file))
-         * {
-         * $this->errorcode = 404;
-         * $this->errortext = $this->lng->txt("url_not_found");
-         * return false;
-         * }
-         */
+    }
+
+    /**
+     * Main function for handle Requests
+     *
+     * @param string $path
+     *            the path of the request
+     * @return boolean
+     */
+    public function handleRequest($path)
+    {
+        ilLoggerFactory::getLogger('xmh')->debug('Request for: ' . $uri['path']);
+    }
+
+    /**
+     * extract obj_id from the request param
+     *
+     * @throws Exception if the seriesid have wrong syntax
+     * @access private
+     */
+    private function setID()
+    {
+        $series_id = $this->params['seriesid'];
+        
+        if (! preg_match('/^[0-9]+/', $series_id)) {
+            throw new Exception($this->lng->txt('series'), 404);
+        }
+        
+        $this->obj_id = intval($series_id);
     }
 
     /**
@@ -188,18 +169,11 @@ class ilMatterhornUploadFile
      */
     public function checkEpisodeAccess()
     {
-        // an error already occurred at class initialisation
-        if ($this->errorcode) {
-            return false;
-        }
         if ($this->checkAccessObject($this->obj_id)) {
             return true;
         }
         // none of the checks above gives access
-        $this->errorcode = 403;
-        $this->errortext = $this->lng->txt('msg_no_perm_read');
-        
-        return false;
+        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
     }
 
     public function checkPreviewAccess()
@@ -212,32 +186,17 @@ class ilMatterhornUploadFile
      */
     public function checkFileAccess()
     {
-        // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access for ". $this->obj_id);
-        // an error already occurred at class initialisation
-        if ($this->errorcode) {
-            // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: check access already has error code for ". $this->obj_id);
-            return false;
-        }
-        
         // do this here because ip based checking may be set after construction
-        
         $type = 'xmh';
         $iliasid = substr($this->obj_id, 10);
         if (! $iliasid || $type == 'none') {
-            $this->errorcode = 404;
-            $this->errortext = $this->lng->txt('obj_not_found');
-            // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: obj_not_found");
-            return false;
+            throw new Exception($this->lng->txt('obj_not_found'), 404);
         }
         if ($this->checkAccessObject($iliasid)) {
             return true;
         }
-        // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile: no access found");
         // none of the checks above gives access
-        $this->errorcode = 403;
-        $this->errortext = $this->lng->txt('msg_no_perm_read');
-        
-        return false;
+        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
     }
 
     /**
@@ -555,66 +514,29 @@ class ilMatterhornUploadFile
 
     /**
      * Send an error response for the requested file.
+     *
+     * @param Exception $exception
      */
-    public function sendError()
+    public function sendError($exception)
     {
-        global $ilUser, $tpl, $lng, $tree;
+        $errorcode = $exception->getCode();
+        $errortext = $exception->getMessage();
         
-        switch ($this->errorcode) {
+        ilLoggerFactory::getLogger('xmh')->debug($errorcode . " " . $errortext);
+        
+        switch ($errorcode) {
             case 400:
                 header('HTTP/1.0 400 Bad Request');
-                
-                return;
-            
+                break;
             case 404:
                 header('HTTP/1.0 404 Not Found');
-                
-                return;
-            // break;
+                break;
             case 403:
             default:
                 header('HTTP/1.0 403 Forbidden');
-                
-                return;
-            
-            // break;
+                break;
         }
-        
-        // set the page base to the ILIAS directory
-        // to get correct references for images and css files
-        $tpl->setCurrentBlock('HeadBaseTag');
-        $tpl->setVariable('BASE', ILIAS_HTTP_PATH . '/error.php');
-        $tpl->parseCurrentBlock();
-        $tpl->addBlockFile('CONTENT', 'content', 'tpl.error.html');
-        
-        // Check if user is logged in
-        $anonymous = ($ilUser->getId() == ANONYMOUS_USER_ID);
-        
-        if ($anonymous) {
-            // Provide a link to the login screen for anonymous users
-            
-            $tpl->SetCurrentBlock('ErrorLink');
-            $tpl->SetVariable('TXT_LINK', $lng->txt('login_to_ilias'));
-            $tpl->SetVariable('LINK', ILIAS_HTTP_PATH . '/login.php?cmd=force_login&client_id=' . CLIENT_ID);
-            $tpl->ParseCurrentBlock();
-        } else {
-            // Provide a link to the repository for authentified users
-            
-            $nd = $tree->getNodeData(ROOT_FOLDER_ID);
-            $txt = $nd['title'] == 'ILIAS' ? $lng->txt('repository') : $nd['title'];
-            
-            $tpl->SetCurrentBlock('ErrorLink');
-            $tpl->SetVariable('TXT_LINK', $txt);
-            $tpl->SetVariable('LINK', ILIAS_HTTP_PATH . '/ilias.php?baseClass=ilRepositoryGUI&amp;client_id=' . CLIENT_ID);
-            $tpl->ParseCurrentBlock();
-        }
-        
-        $tpl->setCurrentBlock('content');
-        $tpl->setVariable('ERROR_MESSAGE', ($this->errortext));
-        $tpl->setVariable('SRC_IMAGE', ilUtil::getImagePath('mess_failure.png'));
-        $tpl->parseCurrentBlock();
-        
-        $tpl->show();
+        echo $errortext;
         exit();
     }
 }

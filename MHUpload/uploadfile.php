@@ -30,42 +30,46 @@ require_once './Services/MediaObjects/classes/class.ilObjMediaObject.php';
 
 require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornUploadFile.php";
 
-$sf = new ilMatterhornUploadFile();
+// get the requested file and its type
+$uri = parse_url($_SERVER['REQUEST_URI']);
+$method = $_SERVER['REQUEST_METHOD'];
 
-switch ($sf->getRequestType()) {
+$uf = new ilMatterhornUploadFile($uri, $method);
+
+switch ($uf->getRequestType()) {
     case "uploadCheck":
-        if ($sf->checkEpisodeAccess()) {
-            $sf->checkChunk();
+        if ($uf->checkEpisodeAccess()) {
+            $uf->checkChunk();
         } else {
-            $sf->sendError();
+            $uf->sendError();
         }
         break;
     case "upload":
-        if ($sf->checkEpisodeAccess()) {
-            $sf->uploadChunk();
+        if ($uf->checkEpisodeAccess()) {
+            $uf->uploadChunk();
         } else {
-            $sf->sendError();
+            $uf->sendError();
         }
         break;
     case "createEpisode":
-        if ($sf->checkEpisodeAccess()) {
-            $sf->createEpisode();
+        if ($uf->checkEpisodeAccess()) {
+            $uf->createEpisode();
         } else {
-            $sf->sendError();
+            $uf->sendError();
         }
         break;
     case "newJob":
-        if ($sf->checkEpisodeAccess()) {
-            $sf->createNewJob();
+        if ($uf->checkEpisodeAccess()) {
+            $uf->createNewJob();
         } else {
-            $sf->sendError();
+            $uf->sendError();
         }
         break;
     case "finishUpload":
-        if ($sf->checkEpisodeAccess()) {
-            $sf->finishUpload();
+        if ($uf->checkEpisodeAccess()) {
+            $uf->finishUpload();
         } else {
-            $sf->sendError();
+            $uf->sendError();
         }
         break;
 }
