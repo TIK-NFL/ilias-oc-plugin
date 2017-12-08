@@ -25,7 +25,7 @@ ilContext::init(ilContext::CONTEXT_WAC);
 // Now the ILIAS header can be included
 require_once './include/inc.header.php';
 require_once './Services/Utilities/classes/class.ilUtil.php';
-require_once './Services/Objecst/classes/class.ilObject.php';
+require_once './Services/Object/classes/class.ilObject.php';
 require_once './Services/MediaObjects/classes/class.ilObjMediaObject.php';
 
 require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornUploadFile.php";
