@@ -14,8 +14,6 @@ class ilMatterhornUploadFile
 
     public $lng;
 
-    public $ilAccess;
-
     /**
      *
      * @var ilMatterhornPlugin
@@ -46,10 +44,9 @@ class ilMatterhornUploadFile
      */
     public function __construct($uri, $method)
     {
-        global $ilAccess, $lng;
+        global $lng;
         
         $this->lng = &$lng;
-        $this->ilAccess = &$ilAccess;
         $this->params = array();
         $this->requestType = 'none';
         
@@ -59,8 +56,8 @@ class ilMatterhornUploadFile
         
         if ($method == 'GET') {
             parse_str($uri["query"], $this->params);
-        } elseif ($method == 'PUT') {
-            parse_str(file_get_contents("php://input"), $this->params);
+        } else if ($method == 'POST') {
+            $this->params = $_POST;
         }
         
         // debugging
