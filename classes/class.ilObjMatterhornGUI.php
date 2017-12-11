@@ -155,7 +155,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     public function setSubTabs($a_tab)
     {
-        global $ilTabs, $ilCtrl, $lng;
+        global $ilTabs, $ilCtrl;
         
         switch ($a_tab) {
                 case "manage":
@@ -257,7 +257,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     */
     public function updateProperties()
     {
-        global $tpl, $lng, $ilCtrl;
+        global $tpl, $ilCtrl;
     
         $this->initPropertiesForm();
         if ($this->form->checkInput()) {
@@ -269,7 +269,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $this->object->setManualRelease($this->form->getInput("manualRelease"));
             $this->object->setDownload($this->form->getInput("download"));
             $this->object->update();
-            ilUtil::sendSuccess($lng->txt("msg_obj_modified"), true);
+            ilUtil::sendSuccess($this->txt("msg_obj_modified"), true);
             $ilCtrl->redirect($this, "editProperties");
         }
 

@@ -16,8 +16,6 @@
 class ilMatterhornSendfile
 {
 
-    public $lng;
-
     /**
      *
      * @var ilMatterhornPlugin
@@ -67,10 +65,6 @@ class ilMatterhornSendfile
      */
     public function __construct($uri, $method)
     {
-        global $lng;
-        
-        $lng->loadLanguageModule("rep_robj_xmh");
-        $this->lng = & $lng;
         $this->params = array();
         $this->requestType = "none";
         $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
@@ -109,7 +103,7 @@ class ilMatterhornSendfile
         // exit();
         
         // if (! file_exists($this->file)) {
-        // throw new Exception($this->lng->txt("url_not_found"), 404);
+        // throw new Exception($this->plugin->txt("url_not_found"), 404);
         // }
     }
 
@@ -257,7 +251,7 @@ class ilMatterhornSendfile
             return;
         }
         // none of the checks above gives access
-        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
+        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
     }
 
     /**
@@ -281,7 +275,7 @@ class ilMatterhornSendfile
             return;
         }
         // none of the checks above gives access
-        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
+        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
     }
 
     /**

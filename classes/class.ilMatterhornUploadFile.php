@@ -12,8 +12,6 @@
 class ilMatterhornUploadFile
 {
 
-    public $lng;
-
     /**
      *
      * @var ilMatterhornPlugin
@@ -44,9 +42,6 @@ class ilMatterhornUploadFile
      */
     public function __construct($uri, $method)
     {
-        global $lng;
-        
-        $this->lng = &$lng;
         $this->params = array();
         $this->requestType = 'none';
         
@@ -156,7 +151,7 @@ class ilMatterhornUploadFile
         $series_id = $this->params['seriesid'];
         
         if (! preg_match('/^[0-9]+/', $series_id)) {
-            throw new Exception($this->lng->txt('series'), 404);
+            throw new Exception($this->plugin->txt('series'), 404);
         }
         
         $this->obj_id = intval($series_id);
@@ -179,7 +174,7 @@ class ilMatterhornUploadFile
             return true;
         }
         // none of the checks above gives access
-        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
+        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
     }
 
     /**
