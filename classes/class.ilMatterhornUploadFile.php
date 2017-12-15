@@ -221,37 +221,27 @@ class ilMatterhornUploadFile
         return $ch;
     }
 
-    public function createEpisode()
+    private function createEpisode()
     {
         global $ilUser;
         
-        $basedir = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->getDirectory();
+        $basedir = $this->plugin->getDirectory();
         
         // parameter checking
-        $episodename = urldecode($_POST['episodename']);
-        $episodedate = urldecode($_POST['episodedate']);
-        $episodetime = urldecode($_POST['episodetime']);
-        $creator = urldecode($_POST['presenter']);
+        $episodename = urldecode($this->params['episodename']);
+        $episodedate = urldecode($this->params['episodedate']);
+        $episodetime = urldecode($this->params['episodetime']);
+        $creator = urldecode($this->params['presenter']);
         $datestring = $episodedate . 'T' . $episodetime . 'Z';
         if (! $episodename) {
-            header('HTTP/1.0 400 Bad Request');
-            echo 'Missing parameter episodename';
-            
-            return false;
+            throw new Exception('Missing parameter episodename', 400);
         }
         if (! (preg_match('/(\d{4})-(\d{1,2})-(\d{1,2})/', $episodedate, $matches) && checkdate($matches[2], $matches[3], $matches[1]))) {
             ilLoggerFactory::getLogger('xmh')->debug('episodedate:' . $matches[2] . 's');
-            header('HTTP/1.0 400 Bad Request');
-            echo 'Missing or bad parameter episodedate';
-            
-            return false;
+            throw new Exception('Missing or bad parameter episodedate', 400);
         }
-        
         if (! (preg_match('/\d{1,2}:\d{1,2}/', $episodetime, $matches) && 0 <= $matches[1] && $matches[2] <= 23 && 0 <= $matches[2] && $matches[2] <= 59)) {
-            header('HTTP/1.0 400 Bad Request');
-            echo 'Missing or bad parameter episodetime';
-            
-            return false;
+            throw new Exception('Missing or bad parameter episodetime', 400);
         }
         
         // create an episode.xml for this media package
@@ -279,6 +269,10 @@ class ilMatterhornUploadFile
         $seriesxml = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         
+        if (! $httpCode) {
+            throw new Exception(curl_error($ch), 503);
+        }
+        
         // create a new media package and fix start date
         $url = $this->configObject->getMatterhornServer() . '/ingest/createMediaPackage';
         $ch = $this->createCURLCall($url);
@@ -295,12 +289,7 @@ class ilMatterhornUploadFile
             'mediaPackage' => urlencode($mediapackage),
             'dublinCore' => urlencode($episodexml)
         );
-        
-        $fields_string = '';
-        foreach ($fields as $key => $value) {
-            $fields_string .= $key . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
+        $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/ingest/addDCCatalog';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
@@ -310,48 +299,41 @@ class ilMatterhornUploadFile
         ilLoggerFactory::getLogger('xmh')->debug($httpCode . $mediapackage);
         
         // add series.xml to media package
-        $fields_string = '';
         $fields = array(
             'flavor' => urlencode('dublincore/series'),
             'mediaPackage' => urlencode($mediapackage),
             'dublinCore' => urlencode($seriesxml)
         );
-        foreach ($fields as $key => $value) {
-            $fields_string .= $key . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
+        $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/ingest/addDCCatalog';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mediapackage = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
         $mpid = uniqid();
         $_SESSION['iliasupload_mpid_' . $mpid] = $mediapackage;
         header('Content-Type: text/text');
         echo $mpid;
     }
 
-    public function createNewJob()
+    private function createNewJob()
     {
-        if (! array_key_exists('iliasupload_mpid_' . $_POST['mpid'], $_SESSION)) {
-            header('HTTP/1.0 400 Bad Request');
-            echo 'Missing parameter mpid';
-            
-            return false;
+        $key_mpid = 'iliasupload_mpid_' . $this->params['mpid'];
+        if (! array_key_exists($key_mpid, $_SESSION)) {
+            throw new Exception('Missing parameter mpid', 400);
         }
-        $realmp = $_SESSION['iliasupload_mpid_' . $_POST['mpid']];
+        $realmp = $_SESSION[$key_mpid];
+        
         $fields = array(
-            'filename' => urlencode($_POST['filename']),
-            'filesize' => urlencode($_POST['filesize']),
-            'chunksize' => urlencode($_POST['chunksize']),
+            'filename' => urlencode($this->params['filename']),
+            'filesize' => urlencode($this->params['filesize']),
+            'chunksize' => urlencode($this->params['chunksize']),
             'flavor' => urlencode('presentation/source'),
             'mediapackage' => $realmp
         );
-        foreach ($fields as $key => $value) {
-            $fields_string .= $key . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
+        $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/upload/newjob';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
@@ -359,11 +341,12 @@ class ilMatterhornUploadFile
         $job = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         ilLoggerFactory::getLogger('xmh')->debug($httpCode . $job);
+        
         header('Content-Type: text/text');
         echo $job;
     }
 
-    public function checkChunk()
+    private function checkChunk()
     {
         if (! (isset($_GET['resumableIdentifier']) && trim($_GET['resumableIdentifier']) != '')) {
             $_GET['resumableIdentifier'] = '';
@@ -379,11 +362,11 @@ class ilMatterhornUploadFile
         if (file_exists($chunk_file)) {
             header('HTTP/1.0 200 Ok');
         } else {
-            header('HTTP/1.0 404 Not Found');
+            throw new Exception("", 404);
         }
     }
 
-    public function uploadChunk()
+    private function uploadChunk()
     {
         if (! empty($_FILES)) {
             foreach ($_FILES as $file) {
@@ -391,15 +374,12 @@ class ilMatterhornUploadFile
                     case UPLOAD_ERR_OK:
                         break;
                     case UPLOAD_ERR_NO_FILE:
-                        ilLoggerFactory::getLogger('xmh')->debug('Upload_error: No file sent.');
-                        throw new RuntimeException('No file sent.');
+                        throw new RuntimeException('No file sent.', 400);
                     case UPLOAD_ERR_INI_SIZE:
                     case UPLOAD_ERR_FORM_SIZE:
-                        ilLoggerFactory::getLogger('xmh')->debug('Upload_error: Exceeded filesize limit.');
-                        throw new RuntimeException('Exceeded filesize limit.');
+                        throw new RuntimeException('Exceeded filesize limit.', 413);
                     default:
-                        ilLoggerFactory::getLogger('xmh')->debug('Upload_error: Unknown errors.');
-                        throw new RuntimeException('Unknown errors.');
+                        throw new RuntimeException('Unknown errors.', 500);
                 }
                 $tmpfile = $file['tmp_name'];
                 $filename = $_POST['resumableFilename'];
@@ -424,25 +404,20 @@ class ilMatterhornUploadFile
                 ilLoggerFactory::getLogger('xmh')->debug($httpCode . $job);
                 $jobid = uniqid();
                 $_SESSION['iliasupload_jobid_' . $jobid] = $job;
+                
                 header('Content-Type: text/text');
                 echo $jobid;
             }
         }
     }
 
-    public function finishUpload()
+    private function finishUpload()
     {
         if (! array_key_exists('iliasupload_jobid_' . $_POST['jobid'], $_SESSION)) {
-            header('HTTP/1.0 400 Bad Request');
-            echo 'Missing parameter jobid';
-            
-            return false;
+            throw new Exception('Missing parameter jobid', 400);
         }
         if (! array_key_exists('iliasupload_mpid_' . $_POST['mpid'], $_SESSION)) {
-            header('HTTP/1.0 400 Bad Request');
-            echo 'Missing parameter mpid';
-            
-            return false;
+            throw new Exception('Missing parameter mpid', 400);
         }
         $realjob = $_SESSION['iliasupload_jobid_' . $_POST['jobid']];
         $realmp = $_SESSION['iliasupload_mpid_' . $_POST['mpid']];
@@ -452,16 +427,13 @@ class ilMatterhornUploadFile
         
         $jobxml = new SimpleXMLElement($realjob);
         ilLoggerFactory::getLogger('xmh')->debug($jobxml->payload[0]->url);
-        $fields_string = '';
+        
         $fields = array(
             'mediaPackage' => $realmp,
             'url' => urlencode($jobxml->payload[0]->url),
             'flavor' => urlencode('presentation/source')
         );
-        foreach ($fields as $key => $value) {
-            $fields_string .= $key . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
+        $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/ingest/addTrack';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
@@ -469,22 +441,20 @@ class ilMatterhornUploadFile
         $mediapackage = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         ilLoggerFactory::getLogger('xmh')->debug("Adding track to MP: " . $httpCode);
-        $fields_string = '';
+        
         $fields = array(
             'mediaPackage' => urlencode($mediapackage),
             'straightToPublishing' => $trimeditor ? "false" : "true",
             'distribution' => urlencode('ILIAS-Upload')
         );
-        foreach ($fields as $key => $value) {
-            $fields_string .= $key . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
+        $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/ingest/ingest/' . $this->configObject->getUploadWorkflow();
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $workflow = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
         header('Content-Type: text/text');
         echo 'created workflow';
     }
@@ -501,18 +471,7 @@ class ilMatterhornUploadFile
         
         ilLoggerFactory::getLogger('xmh')->debug($errorcode . " " . $errortext);
         
-        switch ($errorcode) {
-            case 400:
-                header('HTTP/1.0 400 Bad Request');
-                break;
-            case 404:
-                header('HTTP/1.0 404 Not Found');
-                break;
-            case 403:
-            default:
-                header('HTTP/1.0 403 Forbidden');
-                break;
-        }
+        http_response_code($errorcode);
         echo $errortext;
         exit();
     }
