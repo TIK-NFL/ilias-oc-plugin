@@ -285,9 +285,9 @@ class ilMatterhornUploadFile
         // add episode.xml to media package
         ilLoggerFactory::getLogger('xmh')->debug($httpCode . $mediapackage);
         $fields = array(
-            'flavor' => urlencode('dublincore/episode'),
-            'mediaPackage' => urlencode($mediapackage),
-            'dublinCore' => urlencode($episodexml)
+            'flavor' => 'dublincore/episode',
+            'mediaPackage' => $mediapackage,
+            'dublinCore' => $episodexml
         );
         $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/ingest/addDCCatalog';
@@ -300,9 +300,9 @@ class ilMatterhornUploadFile
         
         // add series.xml to media package
         $fields = array(
-            'flavor' => urlencode('dublincore/series'),
-            'mediaPackage' => urlencode($mediapackage),
-            'dublinCore' => urlencode($seriesxml)
+            'flavor' => 'dublincore/series',
+            'mediaPackage' => $mediapackage,
+            'dublinCore' => $seriesxml
         );
         $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/ingest/addDCCatalog';
@@ -327,10 +327,10 @@ class ilMatterhornUploadFile
         $realmp = $_SESSION[$key_mpid];
         
         $fields = array(
-            'filename' => urlencode($this->params['filename']),
-            'filesize' => urlencode($this->params['filesize']),
-            'chunksize' => urlencode($this->params['chunksize']),
-            'flavor' => urlencode('presentation/source'),
+            'filename' => $this->params['filename'],
+            'filesize' => $this->params['filesize'],
+            'chunksize' => $this->params['chunksize'],
+            'flavor' => 'presentation/source',
             'mediapackage' => $realmp
         );
         $fields_string = http_build_query($fields);
@@ -360,7 +360,7 @@ class ilMatterhornUploadFile
         }
         $chunk_file = $temp_dir . '/' . $_GET['resumableFilename'] . '.part' . $_GET['resumableChunkNumber'];
         if (file_exists($chunk_file)) {
-            header('HTTP/1.0 200 Ok');
+            http_response_code(200);
         } else {
             throw new Exception("", 404);
         }
@@ -430,8 +430,8 @@ class ilMatterhornUploadFile
         
         $fields = array(
             'mediaPackage' => $realmp,
-            'url' => urlencode($jobxml->payload[0]->url),
-            'flavor' => urlencode('presentation/source')
+            'url' => $jobxml->payload[0]->url,
+            'flavor' => 'presentation/source'
         );
         $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/ingest/addTrack';
@@ -443,9 +443,9 @@ class ilMatterhornUploadFile
         ilLoggerFactory::getLogger('xmh')->debug("Adding track to MP: " . $httpCode);
         
         $fields = array(
-            'mediaPackage' => urlencode($mediapackage),
+            'mediaPackage' => $mediapackage,
             'straightToPublishing' => $trimeditor ? "false" : "true",
-            'distribution' => urlencode('ILIAS-Upload')
+            'distribution' => 'ILIAS-Upload'
         );
         $fields_string = http_build_query($fields);
         $url = $this->configObject->getMatterhornServer() . '/ingest/ingest/' . $this->configObject->getUploadWorkflow();
