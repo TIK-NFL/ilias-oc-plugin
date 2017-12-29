@@ -659,9 +659,6 @@ class ilMatterhornSendfile
         // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$path);
         $mime = ilMimeTypeUtil::lookupMimeType($this->configObject->getXSendfileBasedir() . $path);
         header("Content-Type: " . $mime);
-        // if (isset($_SERVER['HTTP_RANGE'])) {
-        // ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
-        // }
         $file = $this->configObject->getXSendfileBasedir() . $path;
         $this->sendData($file);
     }
@@ -680,7 +677,7 @@ class ilMatterhornSendfile
             list (, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
             if (strpos($range, ',') !== false) {
                 header('HTTP/1.1 416 Requested Range Not Satisfiable');
-                header("Content-Range: bytes $start-$end/$size");
+                header("Content-Range: bytes */$size");
                 exit();
             }
             if ($range == '-') {
@@ -701,7 +698,7 @@ class ilMatterhornSendfile
             $c_end = ($c_end > $end) ? $end : $c_end;
             if ($c_start > $c_end || $c_end >= $size) {
                 header('HTTP/1.1 416 Requested Range Not Satisfiable');
-                header("Content-Range: bytes $start-$end/$size");
+                header("Content-Range: bytes */$size");
                 exit();
             }
             $start = $c_start;
@@ -738,7 +735,7 @@ class ilMatterhornSendfile
 
     public function getEditor($episodeid)
     {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $episodeid . "/editor.json";
+        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/$episodeid/editor.json";
         ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
         // open connection
         $ch = curl_init();
@@ -773,18 +770,17 @@ class ilMatterhornSendfile
             }
         }
         
-        $realfile = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal', $this->configObject->getMatterhornFilesDirectory(), $previewtrack);
-        $xaccel = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "/", $previewtrack);
+        $relativeFilePath = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "", $previewtrack);
+        $realfile = $this->configObject->getMatterhornFilesDirectory() . "/" . $relativeFilePath;
+        
         ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
         $mime = ilMimeTypeUtil::lookupMimeType($realfile);
         header("Content-Type: " . $mime);
-        // if (isset($_SERVER['HTTP_RANGE'])) {
-        // ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
-        // }
         // $this->sendData($realfile);
-        ilLoggerFactory::getLogger('xmh')->debug("X-Accel-Redirect: /protectedpreview" . $xaccel);
-        header("X-Accel-Redirect: /__protectedpreview__" . $xaccel);
+        $header = $this->configObject->getXSendfileHeader() . ": " . "/__protectedpreview__/" . $relativeFilePath;
+        ilLoggerFactory::getLogger('xmh')->debug($header);
+        header($header);
     }
 
     /**

@@ -83,6 +83,28 @@ class ilMatterhornConfig
         $this->setValue('mh_files_directory', $a_filesdir);
     }
 
+    public function getXSendfileHeader()
+    {
+        $retVal = $this->getValue('xsendfile_header');
+        if (! $retVal) {
+            return $this->getXSendfileHeaderOptions()[0];
+        }
+        return $retVal;
+    }
+
+    public function setXSendfileHeader($value)
+    {
+        $this->setValue('xsendfile_header', $value);
+    }
+
+    public function getXSendfileHeaderOptions()
+    {
+        return array(
+            'X-Sendfile',
+            'X-Accel-Redirect'
+        );
+    }
+
     public function getXSendfileBasedir()
     {
         $retVal = $this->getValue('xsendfile_basedir');
@@ -105,7 +127,7 @@ class ilMatterhornConfig
     {
         $retVal = $this->getValue('matterhorn_version');
         if (! $retVal) {
-            return '1.6';
+            return $this->getMatterhornVersionOptions()[0];
         }
         
         return $retVal;
@@ -114,6 +136,14 @@ class ilMatterhornConfig
     public function setMatterhornVersion($value)
     {
         $this->setValue('matterhorn_version', $value);
+    }
+
+    public function getMatterhornVersionOptions()
+    {
+        return array(
+            '1.6',
+            '2.1'
+        );
     }
 
     public function getUploadWorkflow()
