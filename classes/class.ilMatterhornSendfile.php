@@ -780,7 +780,14 @@ class ilMatterhornSendfile
         $mime = ilMimeTypeUtil::lookupMimeType($realfile);
         header("Content-Type: " . $mime);
         // $this->sendData($realfile);
-        $header = $this->configObject->getXSendfileHeader() . ": " . "/__protectedpreview__/" . $relativeFilePath;
+        switch ($this->configObject->getXSendfileHeader()) {
+            case 'X-Sendfile':
+                $previewPath = "/downloads/mh_default_org/internal/";
+                $header = "X-Sendfile: " . $this->configObject->getMatterhornDirectory() . $previewPath . $relativeFilePath;
+                break;
+            case 'X-Accel-Redirect':
+                $header = "X-Accel-Redirect: " . "/__ilias_xmh_X-Accel__/" . $relativeFilePath;
+        }
         ilLoggerFactory::getLogger('xmh')->debug($header);
         header($header);
     }

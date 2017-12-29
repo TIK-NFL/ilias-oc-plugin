@@ -68,6 +68,14 @@ class ilMatterhornConfig
         $this->setValue('mh_digest_password', $a_password);
     }
 
+    /**
+     * TODO
+     */
+    public function getMatterhornDirectory()
+    {
+        return str_replace("/files", "/", $this->getMatterhornFilesDirectory());
+    }
+
     public function getMatterhornFilesDirectory()
     {
         $retVal = $this->getValue('mh_files_directory');
