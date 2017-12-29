@@ -37,6 +37,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $values['mh_digest_user'] = $this->configObject->getMatterhornUser();
         $values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
         $values['mh_files_directory'] = $this->configObject->getMatterhornFilesDirectory();
+        $values['xsendfile_header'] = $this->configObject->getXSendfileHeader();
         $values['xsendfile_basedir'] = $this->configObject->getXSendfileBasedir();
         $values['opencast_version'] = $this->configObject->getMatterhornVersion();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
@@ -142,6 +143,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $mh_digest_user = $form->getInput('mh_digest_user');
             $mh_digest_password = $form->getInput('mh_digest_password');
             $mh_files_directory = $form->getInput('mh_files_directory');
+            $xsendfile_header = $form->getInput('xsendfile_header');
             $xsendfile_basedir = $form->getInput('xsendfile_basedir');
             $opencast_version = $form->getInput('opencast_version');
             $uploadworkflow = $form->getInput('uploadworkflow');
@@ -151,6 +153,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $this->configObject->setMatterhornUser($mh_digest_user);
             $this->configObject->setMatterhornPassword($mh_digest_password);
             $this->configObject->setMatterhornFilesDirectory($mh_files_directory);
+            $this->configObject->setXSendfileHeader($xsendfile_header);
             $this->configObject->setXSendfileBasedir($xsendfile_basedir);
             $this->configObject->setMatterhornVersion($opencast_version);
             $this->configObject->setUploadWorkflow($uploadworkflow);
