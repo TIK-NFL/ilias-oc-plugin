@@ -24,14 +24,6 @@ class ilMatterhornSendfile
     public $plugin;
 
     /**
-     * relative file path from ilias directory (without leading /)
-     *
-     * @var string
-     * @access private
-     */
-    private $subpath;
-
-    /**
      * the matterhorn episode
      *
      * @var ilMatterhornEpisode
@@ -94,7 +86,6 @@ class ilMatterhornSendfile
         // echo "ILIAS_MODULE: " . ILIAS_MODULE . "\n";
         // echo "CLIENT_ID: " . CLIENT_ID . "\n";
         // echo "CLIENT_WEB_DIR: " . CLIENT_WEB_DIR . "\n";
-        // echo "subpath: " . $this->subpath . "\n";
         // echo "disposition: " . $this->disposition . "\n";
         // echo "ckeck_ip: " . $this->check_ip . "\n";
         // echo "requesttype: " . $this->requestType . "\n";
@@ -165,17 +156,22 @@ class ilMatterhornSendfile
                 $this->requestType = "list";
                 $this->sendList();
             } else {
-                $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
-                $this->setIDFromPath($this->subpath);
+                $clientId = "/" . CLIENT_ID . "/";
+                if (substr($path, 0, strlen($clientId)) != $clientId) {
+                    throw new Exception("Bad CLIENT_ID", 400);
+                }
                 
-                if (preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
+                $subpath = urldecode(substr($path, strlen($clientId)));
+                $this->setIDFromPath($subpath);
+                
+                if (preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $subpath)) {
                     $this->requestType = "preview";
                     $this->checkPreviewAccess();
-                    $this->sendPreview();
+                    $this->sendPreview($subpath);
                 } else {
                     $this->requestType = "file";
                     $this->checkFileAccess();
-                    $this->sendFile($this->subpath);
+                    $this->sendFile($subpath);
                 }
             }
         } catch (Exception $e) {
@@ -652,6 +648,7 @@ class ilMatterhornSendfile
      * Send the requested file as if directly delivered from the web server
      *
      * @param string $path
+     *            relative file path from ilias directory (without leading /)
      */
     private function sendFile($path)
     {
@@ -756,9 +753,14 @@ class ilMatterhornSendfile
         return $editorjson;
     }
 
-    public function sendPreview()
+    /**
+     *
+     * @param string $subpath
+     *            relative file path from ilias directory (without leading /)
+     */
+    private function sendPreview($subpath)
     {
-        $urlsplit = explode('/', $this->subpath);
+        $urlsplit = explode('/', $subpath);
         $typesplit = explode('.', $urlsplit[2]);
         ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
         ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl typesplit0:' . $typesplit[0] . ' typesplit1:' . $typesplit[1] . ' urlsplit1:' . $urlsplit[1]);
@@ -787,7 +789,6 @@ class ilMatterhornSendfile
      * Send an error response for the requested file
      *
      * @param Exception $exception
-     * @access public
      */
     public function sendError($exception)
     {
@@ -796,18 +797,7 @@ class ilMatterhornSendfile
         
         ilLoggerFactory::getLogger('xmh')->debug($errorcode . " " . $errortext);
         
-        switch ($errorcode) {
-            case 404:
-                header("HTTP/1.0 404 Not Found");
-                break;
-            case 400:
-                header("HTTP/1.0 400 Bad Request");
-                break;
-            case 403:
-            default:
-                header("HTTP/1.0 403 Forbidden");
-                break;
-        }
+        http_response_code($errorcode);
         echo $errortext;
         exit();
     }
