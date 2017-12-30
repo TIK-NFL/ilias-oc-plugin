@@ -150,7 +150,7 @@ class ilMatterhornUploadFile
     {
         $series_id = $this->params['seriesid'];
         
-        if (! preg_match('/^[0-9]+/', $series_id)) {
+        if (! preg_match('/^[0-9]+$/', $series_id)) {
             throw new Exception($this->plugin->txt('series'), 404);
         }
         

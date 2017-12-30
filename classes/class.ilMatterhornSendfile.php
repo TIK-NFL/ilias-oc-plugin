@@ -187,7 +187,7 @@ class ilMatterhornSendfile
      */
     private function setID()
     {
-        if (! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
+        if (! preg_match('/^[0-9]+\/[A-Za-z0-9\-]+$/', $this->params['id'])) {
             throw new Exception("mediapackageId", 400);
         }
         $ids = explode('/', $this->params['id'], 2);
@@ -208,12 +208,12 @@ class ilMatterhornSendfile
      */
     private function setIDFromPath($path)
     {
-        $ids = explode('/', $path, 2);
+        $ids = explode('/', $path, 3);
         
-        if (! preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+/', $ids[0])) {
+        if (! preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+$/', $ids[0])) {
             throw new Exception("", 400);
         }
-        if (! preg_match('/^[A-Za-z0-9]+/', $ids[1])) {
+        if (! preg_match('/^[A-Za-z0-9\-]+$/', $ids[1])) {
             throw new Exception("", 400);
         }
         
@@ -746,9 +746,13 @@ class ilMatterhornSendfile
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curlret = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($httpCode != 200) {
+            throw new Exception("error loading editor.json for episode " . $episodeid . " code: " . $httpCode, 500);
+        }
         $editorjson = json_decode($curlret);
         if ($editorjson === false) {
-            ilLoggerFactory::getLogger('xmh')->error("error loading editor.json for episode " . $episodeid);
+            throw new Exception("error loading editor.json for episode " . $episodeid, 500);
         }
         return $editorjson;
     }
