@@ -217,6 +217,7 @@ class ilMatterhornUploadFile
             'X-Opencast-Matterhorn-Authorization: true'
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         
         return $ch;
     }
