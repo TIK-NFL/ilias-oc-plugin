@@ -267,16 +267,21 @@ class ilMatterhornUploadFile
         $url = $this->configObject->getMatterhornServer() . '/series/' . $this->configObject->getSeriesPrefix() . $this->obj_id . '.xml';
         $ch = $this->createCURLCall($url);
         $seriesxml = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        
-        if (! $httpCode) {
-            throw new Exception(curl_error($ch), 503);
+        if (curl_error($ch)) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if (! $httpCode) {
+                throw new Exception(curl_error($ch), 503);
+            }
+            throw new Exception(curl_error($ch), 500);
         }
         
         // create a new media package and fix start date
         $url = $this->configObject->getMatterhornServer() . '/ingest/createMediaPackage';
         $ch = $this->createCURLCall($url);
         $mediapackage = curl_exec($ch);
+        if (curl_error($ch)) {
+            throw new Exception(curl_error($ch), 500);
+        }
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $pattern = '/start=\"(.*)\" id/';
         $replacement = 'start="' . $datestring . '" id';
@@ -295,8 +300,12 @@ class ilMatterhornUploadFile
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mediapackage = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        ilLoggerFactory::getLogger('xmh')->debug($httpCode . $mediapackage);
+        if (curl_error($ch)) {
+            throw new Exception(curl_error($ch), 500);
+        } else {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            ilLoggerFactory::getLogger('xmh')->debug($httpCode . $mediapackage);
+        }
         
         // add series.xml to media package
         $fields = array(
@@ -310,7 +319,9 @@ class ilMatterhornUploadFile
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mediapackage = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if (curl_error($ch)) {
+            throw new Exception(curl_error($ch), 500);
+        }
         
         $mpid = uniqid();
         $_SESSION['iliasupload_mpid_' . $mpid] = $mediapackage;
@@ -339,8 +350,12 @@ class ilMatterhornUploadFile
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $job = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        ilLoggerFactory::getLogger('xmh')->debug($httpCode . $job);
+        if (curl_error($ch)) {
+            throw new Exception(curl_error($ch), 500);
+        } else {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            ilLoggerFactory::getLogger('xmh')->debug($httpCode . $job);
+        }
         
         header('Content-Type: text/text');
         echo $job;
@@ -400,8 +415,12 @@ class ilMatterhornUploadFile
                 curl_setopt($ch, CURLOPT_POST, count($fields));
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
                 $job = curl_exec($ch);
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                ilLoggerFactory::getLogger('xmh')->debug($httpCode . $job);
+                if (curl_error($ch)) {
+                    throw new Exception(curl_error($ch), 500);
+                } else {
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    ilLoggerFactory::getLogger('xmh')->debug($httpCode . $job);
+                }
                 $jobid = uniqid();
                 $_SESSION['iliasupload_jobid_' . $jobid] = $job;
                 
@@ -439,8 +458,12 @@ class ilMatterhornUploadFile
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $mediapackage = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        ilLoggerFactory::getLogger('xmh')->debug("Adding track to MP: " . $httpCode);
+        if (curl_error($ch)) {
+            throw new Exception(curl_error($ch), 500);
+        } else {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            ilLoggerFactory::getLogger('xmh')->debug("Adding track to MP: " . $httpCode);
+        }
         
         $fields = array(
             'mediaPackage' => $mediapackage,
@@ -453,7 +476,9 @@ class ilMatterhornUploadFile
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $workflow = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if (curl_error($ch)) {
+            throw new Exception(curl_error($ch), 500);
+        }
         
         header('Content-Type: text/text');
         echo 'created workflow';
