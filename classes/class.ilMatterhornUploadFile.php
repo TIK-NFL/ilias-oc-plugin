@@ -450,7 +450,7 @@ class ilMatterhornUploadFile
         
         $fields = array(
             'mediaPackage' => $realmp,
-            'url' => $jobxml->payload[0]->url,
+            'url' => (string) $jobxml->payload[0]->url[0],
             'flavor' => 'presentation/source'
         );
         $fields_string = http_build_query($fields);
