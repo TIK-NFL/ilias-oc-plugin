@@ -777,7 +777,8 @@ class ilMatterhornSendfile
         }
         
         $relativeFilePath = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "", $previewtrack);
-        $realfile = $this->configObject->getMatterhornFilesDirectory() . "/" . $relativeFilePath;
+        $previewPath = "/downloads/mh_default_org/internal/";
+        $realfile = $this->configObject->getMatterhornDirectory() . $previewPath . $relativeFilePath;
         
         ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
@@ -786,11 +787,10 @@ class ilMatterhornSendfile
         // $this->sendData($realfile);
         switch ($this->configObject->getXSendfileHeader()) {
             case 'X-Sendfile':
-                $previewPath = "/downloads/mh_default_org/internal/";
-                $header = "X-Sendfile: " . $this->configObject->getMatterhornDirectory() . $previewPath . $relativeFilePath;
+                $header = "X-Sendfile: " . $realfile;
                 break;
             case 'X-Accel-Redirect':
-                $header = "X-Accel-Redirect: " . "/__ilias_xmh_X-Accel__/" . $relativeFilePath;
+                $header = "X-Accel-Redirect: " . "/__ilias_xmh_X-Accel__" . $previewPath . $relativeFilePath;
         }
         ilLoggerFactory::getLogger('xmh')->debug($header);
         header($header);

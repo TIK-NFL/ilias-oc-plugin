@@ -70,12 +70,18 @@ class ilMatterhornConfig
 
     /**
      * TODO
+     * 
+     * @return string org.opencastproject.storage.dir
      */
     public function getMatterhornDirectory()
     {
-        return str_replace("/files", "/", $this->getMatterhornFilesDirectory());
+        return str_replace("/files", "", $this->getMatterhornFilesDirectory());
     }
 
+    /**
+     * 
+     * @return string ${org.opencastproject.storage.dir}/files
+     */
     public function getMatterhornFilesDirectory()
     {
         $retVal = $this->getValue('mh_files_directory');
