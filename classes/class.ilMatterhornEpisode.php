@@ -178,13 +178,18 @@ class ilMatterhornEpisode
             foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
                 $regmatches = array();
                 // preg_match("/PT(\d+M)?(\d+S)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
-                preg_match("/PT(\d+M)?(\d+S)(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
-                $sec = substr($regmatches[2], 0, - 1);
+                preg_match("/PT(\d+M)?(\d+S)?(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
+                $ms = $regmatches[3];
+                $sec = 0;
+                if (0 != strcmp('', $regmatches[2])) {
+                    $sec = substr($regmatches[2], 0, - 1);
+                }
+                
                 $min = 0;
                 if (0 != strcmp('', $regmatches[1])) {
                     $min = substr($regmatches[1], 0, - 1);
                 }
-                $duration = ($min * 60 + $sec) * 1000;
+                $duration = ($min * 60 + $sec) * 1000 + $ms;
                 if ($segmentxml->SpatioTemporalDecomposition) {
                     $text = "";
                     foreach ($segmentxml->SpatioTemporalDecomposition->VideoText as $textxml) {
