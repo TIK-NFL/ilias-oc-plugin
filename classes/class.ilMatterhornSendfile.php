@@ -171,7 +171,7 @@ class ilMatterhornSendfile
                 } else {
                     $this->requestType = "file";
                     $this->checkFileAccess();
-                    $this->sendFile($subpath);
+                    $this->sendFile('upload_directory', $subpath);
                 }
             }
         } catch (Exception $e) {
@@ -647,21 +647,10 @@ class ilMatterhornSendfile
     }
 
     /**
-     * Send the requested file as if directly delivered from the web server
      *
-     * @param string $path
-     *            relative file path from ilias directory (without leading /)
+     * @deprecated use XSendfile feature instead
+     * @param string $filename
      */
-    private function sendFile($path)
-    {
-        include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-        // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile sending file: ".$this->configObject->getUploadDirectory().$path);
-        $mime = ilMimeTypeUtil::lookupMimeType($this->configObject->getUploadDirectory() . $path);
-        header("Content-Type: " . $mime);
-        $file = $this->configObject->getUploadDirectory() . $path;
-        $this->sendData($file);
-    }
-
     public function sendData($filename)
     {
         $fp = fopen($filename, 'rb');
@@ -732,7 +721,7 @@ class ilMatterhornSendfile
         ilLoggerFactory::getLogger('xmh')->debug("Done sending");
     }
 
-    public function getEditor($episodeid)
+    private function getEditor($episodeid)
     {
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/$episodeid/editor.json";
         ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
@@ -779,22 +768,46 @@ class ilMatterhornSendfile
         }
         
         $relativeFilePath = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "", $previewtrack);
-        $previewPath = "/downloads/mh_default_org/internal/";
-        $realfile = $this->configObject->getMatterhornDirectory() . $previewPath . $relativeFilePath;
-        
-        ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
+        $previewPath = "downloads/mh_default_org/internal/";
+        $this->sendFile('mh_directory', $previewPath . $relativeFilePath);
+    }
+
+    /**
+     * Send the requested file as if directly delivered from the web server.
+     *
+     * @param string $directoryName
+     *            the config name of the directory:
+     *            * `upload_directory`
+     *            * `mh_directory`
+     * @param string $relativeFilePath
+     *            relative file path(without leading /)
+     */
+    private function sendFile($directoryName, $relativeFilePath)
+    {
+        switch ($directoryName) {
+            case 'upload_directory':
+                $realFile = $this->configObject->getUploadDirectory() . "/$relativeFilePath";
+                $xAccelAlias = "/__ilias_xmh_upload_directory__/";
+                break;
+            case 'mh_directory':
+                $realFile = $this->configObject->getMatterhornDirectory() . "/$relativeFilePath";
+                $xAccelAlias = "/__ilias_xmh_mh_directory__/";
+                break;
+            default:
+                new Exception("Directory name '$directoryName' is unknow.", 500);
+        }
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-        $mime = ilMimeTypeUtil::lookupMimeType($realfile);
+        $mime = ilMimeTypeUtil::lookupMimeType($realFile);
         header("Content-Type: " . $mime);
-        // $this->sendData($realfile);
+        
         switch ($this->configObject->getXSendfileHeader()) {
             case 'X-Sendfile':
-                $header = "X-Sendfile: " . $realfile;
+                $header = "X-Sendfile: " . $realFile;
                 break;
             case 'X-Accel-Redirect':
-                $header = "X-Accel-Redirect: " . "/__ilias_xmh_X-Accel__" . $previewPath . $relativeFilePath;
+                $header = "X-Accel-Redirect: " . $xAccelAlias . $relativeFilePath;
         }
-        ilLoggerFactory::getLogger('xmh')->debug($header);
+        ilLoggerFactory::getLogger('xmh')->debug("Header: $header");
         header($header);
     }
 

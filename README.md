@@ -6,9 +6,13 @@ This plugin also requires to a workflow handler for Opencast, which enables dist
 are usable by this plugin. This plugin is currently only available in the [Bitbucket Repo](https://bitbucket.org/pascalgrube/matterhorn/branch/distribution-ilias)
 and not part of the official Opencast Distribution.
 
-## Configuration
+## Instalation
 
-The plugin folder MUST be named 'Matterhorn'.
+__REQUIRED__ Databases: MySQL/MariaDB
+
+The plugin folder __MUST__ be named 'Matterhorn'.
+
+## Configuration
 
 ### Plugin-Configuration
 
@@ -16,19 +20,30 @@ The plugin folder MUST be named 'Matterhorn'.
 
 For ngnix set this to `X-Accel-Redirect` and add the config:
 ```
-location /__ilias_xmh_X-Accel__/ {
+location /__ilias_xmh_mh_directory__/ {
    internal;
-   root /${org.opencastproject.storage.dir}/;
+   root ${org.opencastproject.storage.dir}/;
 }
 ```
 
 For apache set this to `X-Sendfile` and add the config:
 ```
-XSendFilePath /${org.opencastproject.storage.dir}/
+XSendFilePath ${org.opencastproject.storage.dir}/
 ```
 
 #### Upload directory
 
-This MUST be the path were episodes are available after upload, so this plugin can serve them to users.
+This __MUST__ be the path were episodes are available after upload, so this plugin can serve them to users.
 
-Databases: MySQL/MariaDB only
+For ngnix add the config:
+```
+location /__ilias_xmh_upload_directory__/ {
+   internal;
+   root ${upload_directory}/;
+}
+```
+
+For apache add the config:
+```
+XSendFilePath ${upload_directory}/
+```
