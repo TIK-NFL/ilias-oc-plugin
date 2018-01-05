@@ -329,7 +329,9 @@ class ilMatterhornSendfile
             $content['key'] = "time";
             $content['value'] = "views";
             $content['step'] = 10;
-            $mapping = array_fill(0, max(array_keys($value)), 0);
+            $arrayKeys = array_keys($value);
+            $max = count($arrayKeys) == 0 ? 0 : max($arrayKeys);
+            $mapping = array_fill(0, $max, 0);
             $content['mapping'] = array_replace($mapping, $value);
             
             $data[] = $content;
