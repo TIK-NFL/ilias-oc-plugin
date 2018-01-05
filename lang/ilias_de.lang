@@ -43,7 +43,8 @@ mh_server_engage#:#Basis-URL des Opencast Engage Server
 mh_digest_user#:#Benutzername des Opencast Digest User
 mh_digest_password#:#Passwort des Opencast Digest User
 mh_files_directory#:#Basisverzeichnis f&uuml;r Opencast Dateien
-xsendfile_basedir#:#Basisverzeichnis f&uuml;r XSendfile
+xsendfile_header#:#Header f&uuml;r XSendfile-Feature
+upload_directory#:#Basisverzeichnis f&uuml;r Ilias Uploads
 opencast_version#:#Opencast-Version
 upload_workflow#:#Workflow zum Verarbeiten von Uploads
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert
@@ -107,3 +108,4 @@ to_edit#:#Aufzeichnungen bereit zum Schneiden
 
 no_such_method#:#Keine solche Methode
 no_such_episode#:#Keine solche Episode
+series#:#Serie

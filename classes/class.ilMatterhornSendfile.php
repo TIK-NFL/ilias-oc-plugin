@@ -16,22 +16,12 @@
 class ilMatterhornSendfile
 {
 
-    public $lng;
-
     /**
      *
      * @var ilMatterhornPlugin
      * @access plublic
      */
     public $plugin;
-
-    /**
-     * relative file path from ilias directory (without leading /)
-     *
-     * @var string
-     * @access private
-     */
-    private $subpath;
 
     /**
      * the matterhorn episode
@@ -67,10 +57,6 @@ class ilMatterhornSendfile
      */
     public function __construct($uri, $method)
     {
-        global $lng;
-        
-        $lng->loadLanguageModule("rep_robj_xmh");
-        $this->lng = & $lng;
         $this->params = array();
         $this->requestType = "none";
         $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
@@ -100,7 +86,6 @@ class ilMatterhornSendfile
         // echo "ILIAS_MODULE: " . ILIAS_MODULE . "\n";
         // echo "CLIENT_ID: " . CLIENT_ID . "\n";
         // echo "CLIENT_WEB_DIR: " . CLIENT_WEB_DIR . "\n";
-        // echo "subpath: " . $this->subpath . "\n";
         // echo "disposition: " . $this->disposition . "\n";
         // echo "ckeck_ip: " . $this->check_ip . "\n";
         // echo "requesttype: " . $this->requestType . "\n";
@@ -109,7 +94,7 @@ class ilMatterhornSendfile
         // exit();
         
         // if (! file_exists($this->file)) {
-        // throw new Exception($this->lng->txt("url_not_found"), 404);
+        // throw new Exception($this->plugin->txt("url_not_found"), 404);
         // }
     }
 
@@ -171,17 +156,22 @@ class ilMatterhornSendfile
                 $this->requestType = "list";
                 $this->sendList();
             } else {
-                $this->subpath = urldecode(substr($path, strlen(CLIENT_ID) + 2));
-                $this->setIDFromPath($this->subpath);
+                $clientId = "/" . CLIENT_ID . "/";
+                if (substr($path, 0, strlen($clientId)) != $clientId) {
+                    throw new Exception("Bad CLIENT_ID", 400);
+                }
                 
-                if (preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $this->subpath)) {
+                $subpath = urldecode(substr($path, strlen($clientId)));
+                $this->setIDFromPath($subpath);
+                
+                if (preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $subpath)) {
                     $this->requestType = "preview";
                     $this->checkPreviewAccess();
-                    $this->sendPreview();
+                    $this->sendPreview($subpath);
                 } else {
                     $this->requestType = "file";
                     $this->checkFileAccess();
-                    $this->sendFile($this->subpath);
+                    $this->sendFile($subpath);
                 }
             }
         } catch (Exception $e) {
@@ -197,7 +187,7 @@ class ilMatterhornSendfile
      */
     private function setID()
     {
-        if (! preg_match('/^[0-9]+\/[A-Za-z0-9]+/', $this->params['id'])) {
+        if (! preg_match('/^[0-9]+\/[A-Za-z0-9\-]+$/', $this->params['id'])) {
             throw new Exception("mediapackageId", 400);
         }
         $ids = explode('/', $this->params['id'], 2);
@@ -218,12 +208,12 @@ class ilMatterhornSendfile
      */
     private function setIDFromPath($path)
     {
-        $ids = explode('/', $path, 2);
+        $ids = explode('/', $path, 3);
         
-        if (! preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+/', $ids[0])) {
+        if (! preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+$/', $ids[0])) {
             throw new Exception("", 400);
         }
-        if (! preg_match('/^[A-Za-z0-9]+/', $ids[1])) {
+        if (! preg_match('/^[A-Za-z0-9\-]+$/', $ids[1])) {
             throw new Exception("", 400);
         }
         
@@ -257,7 +247,7 @@ class ilMatterhornSendfile
             return;
         }
         // none of the checks above gives access
-        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
+        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
     }
 
     /**
@@ -281,7 +271,7 @@ class ilMatterhornSendfile
             return;
         }
         // none of the checks above gives access
-        throw new Exception($this->lng->txt('msg_no_perm_read'), 403);
+        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
     }
 
     /**
@@ -339,7 +329,9 @@ class ilMatterhornSendfile
             $content['key'] = "time";
             $content['value'] = "views";
             $content['step'] = 10;
-            $mapping = array_fill(0, max(array_keys($value)), 0);
+            $arrayKeys = array_keys($value);
+            $max = count($arrayKeys) == 0 ? 0 : max($arrayKeys);
+            $mapping = array_fill(0, $max, 0);
             $content['mapping'] = array_replace($mapping, $value);
             
             $data[] = $content;
@@ -585,7 +577,7 @@ class ilMatterhornSendfile
     {
         $urlsplit = explode('/', (string) $catalog->url);
         end($urlsplit);
-        $segmentsxml = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . $this->episode->getOpencastSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
+        $segmentsxml = new SimpleXMLElement($this->configObject->getUploadDirectory() . $this->episode->getOpencastSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
         
         $segments = array(
             "segment" => array()
@@ -658,17 +650,15 @@ class ilMatterhornSendfile
      * Send the requested file as if directly delivered from the web server
      *
      * @param string $path
+     *            relative file path from ilias directory (without leading /)
      */
     private function sendFile($path)
     {
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-        // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$path);
-        $mime = ilMimeTypeUtil::lookupMimeType($this->configObject->getXSendfileBasedir() . $path);
+        // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile sending file: ".$this->configObject->getUploadDirectory().$path);
+        $mime = ilMimeTypeUtil::lookupMimeType($this->configObject->getUploadDirectory() . $path);
         header("Content-Type: " . $mime);
-        // if (isset($_SERVER['HTTP_RANGE'])) {
-        // ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
-        // }
-        $file = $this->configObject->getXSendfileBasedir() . $path;
+        $file = $this->configObject->getUploadDirectory() . $path;
         $this->sendData($file);
     }
 
@@ -686,7 +676,7 @@ class ilMatterhornSendfile
             list (, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
             if (strpos($range, ',') !== false) {
                 header('HTTP/1.1 416 Requested Range Not Satisfiable');
-                header("Content-Range: bytes $start-$end/$size");
+                header("Content-Range: bytes */$size");
                 exit();
             }
             if ($range == '-') {
@@ -707,7 +697,7 @@ class ilMatterhornSendfile
             $c_end = ($c_end > $end) ? $end : $c_end;
             if ($c_start > $c_end || $c_end >= $size) {
                 header('HTTP/1.1 416 Requested Range Not Satisfiable');
-                header("Content-Range: bytes $start-$end/$size");
+                header("Content-Range: bytes */$size");
                 exit();
             }
             $start = $c_start;
@@ -744,7 +734,7 @@ class ilMatterhornSendfile
 
     public function getEditor($episodeid)
     {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $episodeid . "/editor.json";
+        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/$episodeid/editor.json";
         ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
         // open connection
         $ch = curl_init();
@@ -758,16 +748,25 @@ class ilMatterhornSendfile
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curlret = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($httpCode != 200) {
+            throw new Exception("error loading editor.json for episode " . $episodeid . " code: " . $httpCode, 500);
+        }
         $editorjson = json_decode($curlret);
         if ($editorjson === false) {
-            ilLoggerFactory::getLogger('xmh')->error("error loading editor.json for episode " . $episodeid);
+            throw new Exception("error loading editor.json for episode " . $episodeid, 500);
         }
         return $editorjson;
     }
 
-    public function sendPreview()
+    /**
+     *
+     * @param string $subpath
+     *            relative file path from ilias directory (without leading /)
+     */
+    private function sendPreview($subpath)
     {
-        $urlsplit = explode('/', $this->subpath);
+        $urlsplit = explode('/', $subpath);
         $typesplit = explode('.', $urlsplit[2]);
         ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
         ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl typesplit0:' . $typesplit[0] . ' typesplit1:' . $typesplit[1] . ' urlsplit1:' . $urlsplit[1]);
@@ -779,25 +778,30 @@ class ilMatterhornSendfile
             }
         }
         
-        $realfile = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal', $this->configObject->getMatterhornFilesDirectory(), $previewtrack);
-        $xaccel = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "/", $previewtrack);
+        $relativeFilePath = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "", $previewtrack);
+        $previewPath = "/downloads/mh_default_org/internal/";
+        $realfile = $this->configObject->getMatterhornDirectory() . $previewPath . $relativeFilePath;
+        
         ilLoggerFactory::getLogger('xmh')->debug("Real preview file: " . $realfile);
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
         $mime = ilMimeTypeUtil::lookupMimeType($realfile);
         header("Content-Type: " . $mime);
-        // if (isset($_SERVER['HTTP_RANGE'])) {
-        // ilLoggerFactory::getLogger('xmh')->debug("range request".$_SERVER['HTTP_RANGE']);
-        // }
         // $this->sendData($realfile);
-        ilLoggerFactory::getLogger('xmh')->debug("X-Accel-Redirect: /protectedpreview" . $xaccel);
-        header("X-Accel-Redirect: /__protectedpreview__" . $xaccel);
+        switch ($this->configObject->getXSendfileHeader()) {
+            case 'X-Sendfile':
+                $header = "X-Sendfile: " . $realfile;
+                break;
+            case 'X-Accel-Redirect':
+                $header = "X-Accel-Redirect: " . "/__ilias_xmh_X-Accel__" . $previewPath . $relativeFilePath;
+        }
+        ilLoggerFactory::getLogger('xmh')->debug($header);
+        header($header);
     }
 
     /**
      * Send an error response for the requested file
      *
      * @param Exception $exception
-     * @access public
      */
     public function sendError($exception)
     {
@@ -806,18 +810,7 @@ class ilMatterhornSendfile
         
         ilLoggerFactory::getLogger('xmh')->debug($errorcode . " " . $errortext);
         
-        switch ($errorcode) {
-            case 404:
-                header("HTTP/1.0 404 Not Found");
-                break;
-            case 400:
-                header("HTTP/1.0 400 Bad Request");
-                break;
-            case 403:
-            default:
-                header("HTTP/1.0 403 Forbidden");
-                break;
-        }
+        http_response_code($errorcode);
         echo $errortext;
         exit();
     }

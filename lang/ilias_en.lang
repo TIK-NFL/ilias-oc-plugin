@@ -42,7 +42,8 @@ mh_server#:#Base URL of the Opencast Server
 mh_server_engage#:#Base URL of the Opencast Engage Server
 mh_digest_user#:#Username of the Opencast Digest User
 mh_digest_password#:#Password of the Opencast Digest User
-xsendfile_basedir#:#Base directory for XSendfile
+xsendfile_header#:#Header for XSendfile-Feature
+upload_directory#:#Base directory for ilias uploads
 mh_files_directory#:#Base directory for Opencast files
 opencast_version#:#Opencast Version
 upload_workflow#:#Workflow for processing uploaded files
@@ -107,3 +108,4 @@ to_edit#:#Episodes ready to be trimmmed
 
 no_such_method#:#No such method
 no_such_episode#:#No such Episode
+series#:#series

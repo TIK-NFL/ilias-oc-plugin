@@ -93,7 +93,7 @@ class ilMatterhornEpisode
             $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
             $plugin->includeClass("class.ilMatterhornConfig.php");
             $configObject = new ilMatterhornConfig();
-            $this->manifest = new SimpleXMLElement($configObject->getXSendfileBasedir() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/manifest.xml', null, true);
+            $this->manifest = new SimpleXMLElement($configObject->getUploadDirectory() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/manifest.xml', null, true);
         }
         return $this->manifest;
     }
@@ -169,7 +169,7 @@ class ilMatterhornEpisode
         if ($textcatalog) {
             $segments = array_slice(explode("/", $textcatalog["url"]), - 2);
             $configObject = new ilMatterhornConfig();
-            $segmentsxml = new SimpleXMLElement($configObject->getXSendfileBasedir() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/' . $segments[0] . '/' . $segments[1], null, true);
+            $segmentsxml = new SimpleXMLElement($configObject->getUploadDirectory() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/' . $segments[0] . '/' . $segments[1], null, true);
             $segments = array(
                 "segment" => array()
             );
@@ -178,13 +178,18 @@ class ilMatterhornEpisode
             foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
                 $regmatches = array();
                 // preg_match("/PT(\d+M)?(\d+S)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
-                preg_match("/PT(\d+M)?(\d+S)(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
-                $sec = substr($regmatches[2], 0, - 1);
+                preg_match("/PT(\d+M)?(\d+S)?(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
+                $ms = $regmatches[3];
+                $sec = 0;
+                if (0 != strcmp('', $regmatches[2])) {
+                    $sec = substr($regmatches[2], 0, - 1);
+                }
+                
                 $min = 0;
                 if (0 != strcmp('', $regmatches[1])) {
                     $min = substr($regmatches[1], 0, - 1);
                 }
-                $duration = ($min * 60 + $sec) * 1000;
+                $duration = ($min * 60 + $sec) * 1000 + $ms;
                 if ($segmentxml->SpatioTemporalDecomposition) {
                     $text = "";
                     foreach ($segmentxml->SpatioTemporalDecomposition->VideoText as $textxml) {
