@@ -119,9 +119,9 @@ class ilMatterhornConfig
         );
     }
 
-    public function getXSendfileBasedir()
+    public function getUploadDirectory()
     {
-        $retVal = $this->getValue('xsendfile_basedir');
+        $retVal = $this->getValue('upload_directory');
         if (! $retVal) {
             return '/dev/null';
         }
@@ -129,12 +129,12 @@ class ilMatterhornConfig
         return $retVal;
     }
 
-    public function setXSendfileBasedir($value)
+    public function setUploadDirectory($value)
     {
         if (substr($value, - 1) != '/') {
             $value = $value . '/';
         }
-        $this->setValue('xsendfile_basedir', $value);
+        $this->setValue('upload_directory', $value);
     }
 
     public function getMatterhornVersion()

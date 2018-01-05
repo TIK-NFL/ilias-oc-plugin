@@ -38,7 +38,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
         $values['mh_files_directory'] = $this->configObject->getMatterhornFilesDirectory();
         $values['xsendfile_header'] = $this->configObject->getXSendfileHeader();
-        $values['xsendfile_basedir'] = $this->configObject->getXSendfileBasedir();
+        $values['upload_directory'] = $this->configObject->getUploadDirectory();
         $values['opencast_version'] = $this->configObject->getMatterhornVersion();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
         $form->setValuesByArray($values);
@@ -104,12 +104,12 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $xsendfile_header->setOptions($this->configObject->getXSendfileHeaderOptions());
         $form->addItem($xsendfile_header);
         
-        // xsendfile basedir
-        $xsendfile_basedir = new ilTextInputGUI($pl->txt('xsendfile_basedir'), 'xsendfile_basedir');
-        $xsendfile_basedir->setRequired(true);
-        $xsendfile_basedir->setMaxLength(100);
-        $xsendfile_basedir->setSize(100);
-        $form->addItem($xsendfile_basedir);
+        // upload directory
+        $upload_directory = new ilTextInputGUI($pl->txt('upload_directory'), 'upload_directory');
+        $upload_directory->setRequired(true);
+        $upload_directory->setMaxLength(100);
+        $upload_directory->setSize(100);
+        $form->addItem($upload_directory);
         
         // matterhorn version
         $matterhorn_version = new ilSelectInputGUI($pl->txt('opencast_version'), 'opencast_version');
@@ -144,7 +144,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $mh_digest_password = $form->getInput('mh_digest_password');
             $mh_files_directory = $form->getInput('mh_files_directory');
             $xsendfile_header = $form->getInput('xsendfile_header');
-            $xsendfile_basedir = $form->getInput('xsendfile_basedir');
+            $upload_directory = $form->getInput('upload_directory');
             $opencast_version = $form->getInput('opencast_version');
             $uploadworkflow = $form->getInput('uploadworkflow');
             
@@ -154,7 +154,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $this->configObject->setMatterhornPassword($mh_digest_password);
             $this->configObject->setMatterhornFilesDirectory($mh_files_directory);
             $this->configObject->setXSendfileHeader($xsendfile_header);
-            $this->configObject->setXSendfileBasedir($xsendfile_basedir);
+            $this->configObject->setUploadDirectory($upload_directory);
             $this->configObject->setMatterhornVersion($opencast_version);
             $this->configObject->setUploadWorkflow($uploadworkflow);
             

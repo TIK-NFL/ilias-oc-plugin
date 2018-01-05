@@ -575,7 +575,7 @@ class ilMatterhornSendfile
     {
         $urlsplit = explode('/', (string) $catalog->url);
         end($urlsplit);
-        $segmentsxml = new SimpleXMLElement($this->configObject->getXSendfileBasedir() . $this->episode->getOpencastSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
+        $segmentsxml = new SimpleXMLElement($this->configObject->getUploadDirectory() . $this->episode->getOpencastSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
         
         $segments = array(
             "segment" => array()
@@ -653,10 +653,10 @@ class ilMatterhornSendfile
     private function sendFile($path)
     {
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
-        // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile sending file: ".$this->configObject->getXSendfileBasedir().$path);
-        $mime = ilMimeTypeUtil::lookupMimeType($this->configObject->getXSendfileBasedir() . $path);
+        // ilLoggerFactory::getLogger('xmh')->debug("MHSendfile sending file: ".$this->configObject->getUploadDirectory().$path);
+        $mime = ilMimeTypeUtil::lookupMimeType($this->configObject->getUploadDirectory() . $path);
         header("Content-Type: " . $mime);
-        $file = $this->configObject->getXSendfileBasedir() . $path;
+        $file = $this->configObject->getUploadDirectory() . $path;
         $this->sendData($file);
     }
 

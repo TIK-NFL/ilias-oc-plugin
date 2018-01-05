@@ -93,7 +93,7 @@ class ilMatterhornEpisode
             $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
             $plugin->includeClass("class.ilMatterhornConfig.php");
             $configObject = new ilMatterhornConfig();
-            $this->manifest = new SimpleXMLElement($configObject->getXSendfileBasedir() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/manifest.xml', null, true);
+            $this->manifest = new SimpleXMLElement($configObject->getUploadDirectory() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/manifest.xml', null, true);
         }
         return $this->manifest;
     }
@@ -169,7 +169,7 @@ class ilMatterhornEpisode
         if ($textcatalog) {
             $segments = array_slice(explode("/", $textcatalog["url"]), - 2);
             $configObject = new ilMatterhornConfig();
-            $segmentsxml = new SimpleXMLElement($configObject->getXSendfileBasedir() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/' . $segments[0] . '/' . $segments[1], null, true);
+            $segmentsxml = new SimpleXMLElement($configObject->getUploadDirectory() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/' . $segments[0] . '/' . $segments[1], null, true);
             $segments = array(
                 "segment" => array()
             );

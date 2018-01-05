@@ -10,7 +10,11 @@ and not part of the official Opencast Distribution.
 
 The plugin folder MUST be named 'Matterhorn'.
 
-ngnix:
+### Plugin-Configuration
+
+#### XSendfile header
+
+For ngnix set this to `X-Accel-Redirect` and add the config:
 ```
 location /__ilias_xmh_X-Accel__/ {
    internal;
@@ -18,9 +22,13 @@ location /__ilias_xmh_X-Accel__/ {
 }
 ```
 
-apache:
+For apache set this to `X-Sendfile` and add the config:
 ```
 XSendFilePath /${org.opencastproject.storage.dir}/
 ```
+
+#### Upload directory
+
+This MUST be the path were episodes are available after upload, so this plugin can serve them to users.
 
 Databases: MySQL/MariaDB only
