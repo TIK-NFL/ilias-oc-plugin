@@ -16,9 +16,11 @@ The plugin folder __MUST__ be named 'Matterhorn'.
 
 ### Plugin-Configuration
 
-#### XSendfile header
+#### Opencast directory
 
-For ngnix set this to `X-Accel-Redirect` and add the config:
+This __MUST__ be **org.opencastproject.storage.dir**.
+
+For ngnix add the config:
 ```
 location /__ilias_xmh_mh_directory__/ {
    internal;
@@ -26,10 +28,15 @@ location /__ilias_xmh_mh_directory__/ {
 }
 ```
 
-For apache set this to `X-Sendfile` and add the config:
+For apache add the config:
 ```
-XSendFilePath ${org.opencastproject.storage.dir}/
+XSendFilePath ${org.opencastproject.storage.dir}
 ```
+
+#### XSendfile header
+
+For ngnix select `X-Accel-Redirect`.
+For apache select `X-Sendfile` and enable **mod_xsendfile**.
 
 #### Upload directory
 
@@ -45,5 +52,5 @@ location /__ilias_xmh_upload_directory__/ {
 
 For apache add the config:
 ```
-XSendFilePath ${upload_directory}/
+XSendFilePath ${upload_directory}
 ```

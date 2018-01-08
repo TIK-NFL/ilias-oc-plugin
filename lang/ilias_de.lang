@@ -42,7 +42,7 @@ mh_server#:#Basis-URL des Opencast Server
 mh_server_engage#:#Basis-URL des Opencast Engage Server
 mh_digest_user#:#Benutzername des Opencast Digest User
 mh_digest_password#:#Passwort des Opencast Digest User
-mh_files_directory#:#Basisverzeichnis f&uuml;r Opencast Dateien
+mh_directory#:#Basisverzeichnis von Opencast (org.opencastproject.storage.dir)
 xsendfile_header#:#Header f&uuml;r XSendfile-Feature
 upload_directory#:#Basisverzeichnis f&uuml;r Ilias Uploads
 opencast_version#:#Opencast-Version

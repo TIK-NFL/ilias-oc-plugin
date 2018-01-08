@@ -69,22 +69,12 @@ class ilMatterhornConfig
     }
 
     /**
-     * TODO
-     * 
+     *
      * @return string org.opencastproject.storage.dir
      */
     public function getMatterhornDirectory()
     {
-        return str_replace("/files", "", $this->getMatterhornFilesDirectory());
-    }
-
-    /**
-     * 
-     * @return string ${org.opencastproject.storage.dir}/files
-     */
-    public function getMatterhornFilesDirectory()
-    {
-        $retVal = $this->getValue('mh_files_directory');
+        $retVal = $this->getValue('mh_directory');
         if (! $retVal) {
             return '/dev/null';
         }
@@ -92,9 +82,9 @@ class ilMatterhornConfig
         return $retVal;
     }
 
-    public function setMatterhornFilesDirectory($a_filesdir)
+    public function setMatterhornDirectory($a_filesdir)
     {
-        $this->setValue('mh_files_directory', $a_filesdir);
+        $this->setValue('mh_directory', $a_filesdir);
     }
 
     public function getXSendfileHeader()

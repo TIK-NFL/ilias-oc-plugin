@@ -362,4 +362,5 @@ $ilDB->dropTable("rep_robj_xmh_usrtrack");
 <#16>
 <?php
 $ilDB->query('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('upload_directory', 'text') . ' WHERE cfgkey = ' . $ilDB->quote('xsendfile_basedir', 'text'));
+$ilDB->query('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('mh_directory', 'text') . ', cfgvalue = REPLACE(cfgvalue, "/files", "") WHERE cfgkey = ' . $ilDB->quote('mh_files_directory', 'text'));
 ?>
