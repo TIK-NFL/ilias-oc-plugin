@@ -285,8 +285,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $episode = $this->object->getEpisode($episodeId);
         
         if ($episode) {
-            $episode->publish();
-            ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
+            try {
+                $episode->publish();
+                ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
+            } catch (Exception $e) {
+                if (strpos($e->getMessage(), "already published") == false) {
+                    throw $e;
+                }
+            }
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:" . $episode);
         }

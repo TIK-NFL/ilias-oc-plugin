@@ -127,8 +127,11 @@ class ilMatterhornEpisode
      */
     public function publish()
     {
-        global $ilDB;
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_rel_ep (episode_id, series_id) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . ")");
+        global $DIC;
+        $affected_rows = $DIC->database()->manipulate("INSERT INTO rep_robj_xmh_rel_ep (episode_id, series_id) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . ") ON DUPLICATE KEY UPDATE episode_id = episode_id");
+        if ($affected_rows != 1) {
+            throw new Exception("Episode " . $this->episode_id . " already published!");
+        }
         $this->addTextToDB();
     }
 
