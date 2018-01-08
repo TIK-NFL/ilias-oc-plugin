@@ -199,7 +199,7 @@ class ilMatterhornEpisode
                         $text = $text . " " . (string) $textxml->Text;
                     }
                     if ($text != "") {
-                        $ilDB->manipulate("INSERT INTO rep_robj_xmh_slidetext (episode_id, series_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "text") . ")");
+                        $ilDB->manipulate("INSERT INTO rep_robj_xmh_slidetext (episode_id, series_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "integer") . ")");
                     }
                 }
                 $currentidx ++;

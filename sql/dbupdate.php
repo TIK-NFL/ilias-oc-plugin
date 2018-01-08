@@ -363,4 +363,9 @@ $ilDB->dropTable("rep_robj_xmh_usrtrack");
 <?php
 $ilDB->manipulate('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('upload_directory', 'text') . ' WHERE cfgkey = ' . $ilDB->quote('xsendfile_basedir', 'text'));
 $ilDB->manipulate('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('mh_directory', 'text') . ', cfgvalue = REPLACE(cfgvalue, "/files", "") WHERE cfgkey = ' . $ilDB->quote('mh_files_directory', 'text'));
+$ilDB->modifyTableColumn('rep_robj_xmh_slidetext', 'slidetime', array(
+    'type' => 'integer',
+    'length' => 8,
+    'notnull' => true
+));
 ?>
