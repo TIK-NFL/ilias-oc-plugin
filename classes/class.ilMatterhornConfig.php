@@ -3,6 +3,10 @@
 class ilMatterhornConfig
 {
 
+    const X_SENDFILE = 0;
+
+    const X_ACCEL_REDIRECT = 1;
+
     /**
      * returns the hostname for the matterhorn server.
      *
@@ -87,11 +91,15 @@ class ilMatterhornConfig
         $this->setValue('mh_directory', $a_filesdir);
     }
 
+    /**
+     *
+     * @return int
+     */
     public function getXSendfileHeader()
     {
-        $retVal = $this->getValue('xsendfile_header');
+        $retVal = intval($this->getValue('xsendfile_header'));
         if (! $retVal) {
-            return $this->getXSendfileHeaderOptions()[0];
+            return self::X_SENDFILE;
         }
         return $retVal;
     }
@@ -104,8 +112,8 @@ class ilMatterhornConfig
     public function getXSendfileHeaderOptions()
     {
         return array(
-            'X-Sendfile',
-            'X-Accel-Redirect'
+            self::X_SENDFILE => 'X-Sendfile',
+            self::X_ACCEL_REDIRECT => 'X-Accel-Redirect'
         );
     }
 

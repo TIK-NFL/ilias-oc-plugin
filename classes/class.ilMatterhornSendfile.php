@@ -801,10 +801,10 @@ class ilMatterhornSendfile
         header("Content-Type: " . $mime);
         
         switch ($this->configObject->getXSendfileHeader()) {
-            case 'X-Sendfile':
+            case ilMatterhornConfig::X_SENDFILE:
                 $header = "X-Sendfile: " . $realFile;
                 break;
-            case 'X-Accel-Redirect':
+            case ilMatterhornConfig::X_ACCEL_REDIRECT:
                 $header = "X-Accel-Redirect: " . $xAccelAlias . $relativeFilePath;
         }
         ilLoggerFactory::getLogger('xmh')->debug("Header: $header");
