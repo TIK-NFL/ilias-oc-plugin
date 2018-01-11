@@ -171,7 +171,7 @@ class ilMatterhornSendfile
                 } else {
                     $this->requestType = "file";
                     $this->checkFileAccess();
-                    $this->sendFile('upload_directory', $subpath);
+                    $this->sendFile('distribution_directory', $subpath);
                 }
             }
         } catch (Exception $e) {
@@ -577,7 +577,7 @@ class ilMatterhornSendfile
     {
         $urlsplit = explode('/', (string) $catalog->url);
         end($urlsplit);
-        $segmentsxml = new SimpleXMLElement($this->configObject->getUploadDirectory() . $this->episode->getOpencastSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
+        $segmentsxml = new SimpleXMLElement($this->configObject->getDistributionDirectory() . $this->episode->getOpencastSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
         
         $segments = array(
             "segment" => array()
@@ -777,7 +777,7 @@ class ilMatterhornSendfile
      *
      * @param string $directoryName
      *            the config name of the directory:
-     *            * `upload_directory`
+     *            * `distribution_directory`
      *            * `mh_directory`
      * @param string $relativeFilePath
      *            relative file path(without leading /)
@@ -785,9 +785,9 @@ class ilMatterhornSendfile
     private function sendFile($directoryName, $relativeFilePath)
     {
         switch ($directoryName) {
-            case 'upload_directory':
-                $realFile = $this->configObject->getUploadDirectory() . "/$relativeFilePath";
-                $xAccelAlias = "/__ilias_xmh_upload_directory__/";
+            case 'distribution_directory':
+                $realFile = $this->configObject->getDistributionDirectory() . "/$relativeFilePath";
+                $xAccelAlias = "/__ilias_xmh_distribution_directory__/";
                 break;
             case 'mh_directory':
                 $realFile = $this->configObject->getMatterhornDirectory() . "/$relativeFilePath";

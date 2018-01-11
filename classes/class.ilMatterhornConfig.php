@@ -117,9 +117,9 @@ class ilMatterhornConfig
         );
     }
 
-    public function getUploadDirectory()
+    public function getDistributionDirectory()
     {
-        $retVal = $this->getValue('upload_directory');
+        $retVal = $this->getValue('distribution_directory');
         if (! $retVal) {
             return '/dev/null';
         }
@@ -127,12 +127,12 @@ class ilMatterhornConfig
         return $retVal;
     }
 
-    public function setUploadDirectory($value)
+    public function setDistributionDirectory($value)
     {
         if (substr($value, - 1) != '/') {
             $value = $value . '/';
         }
-        $this->setValue('upload_directory', $value);
+        $this->setValue('distribution_directory', $value);
     }
 
     public function getMatterhornVersion()

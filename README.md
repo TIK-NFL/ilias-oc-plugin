@@ -38,19 +38,19 @@ XSendFilePath ${org.opencastproject.storage.dir}
 For ngnix select `X-Accel-Redirect`.
 For apache select `X-Sendfile` and enable **mod_xsendfile**.
 
-#### Upload directory
+#### Distribution directory
 
 This __MUST__ be the path were episodes are available after upload, so this plugin can serve them to users.
 
 For ngnix add the config:
 ```
-location /__ilias_xmh_upload_directory__/ {
+location /__ilias_xmh_distribution_directory__/ {
    internal;
-   root ${upload_directory}/;
+   root ${distribution_directory}/;
 }
 ```
 
 For apache add the config:
 ```
-XSendFilePath ${upload_directory}
+XSendFilePath ${distribution_directory}
 ```

@@ -294,7 +294,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function updateSearchRecords()
     {
         // ilLoggerFactory::getLogger('xmh')->debug("updating search for ".$this->getId());
-        $manifest = new SimpleXMLElement($this->configObject->getUploadDirectory() . $this->configObject->getSeriesPrefix() . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
+        $manifest = new SimpleXMLElement($this->configObject->getDistributionDirectory() . $this->configObject->getSeriesPrefix() . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
     }
 
     //
@@ -466,7 +466,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getLastFSInodeUpdate()
     {
-        $filename = $this->configObject->getUploadDirectory() . $this->configObject->getSeriesPrefix() . $this->getId();
+        $filename = $this->configObject->getDistributionDirectory() . $this->configObject->getSeriesPrefix() . $this->getId();
         if (file_exists($filename)) {
             return filemtime($filename);
         }
@@ -517,7 +517,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getSearchResult()
     {
-        $basedir = $this->configObject->getUploadDirectory() . $this->configObject->getSeriesPrefix() . $this->getId();
+        $basedir = $this->configObject->getDistributionDirectory() . $this->configObject->getSeriesPrefix() . $this->getId();
         $xmlstr = "<?xml version='1.0' standalone='yes'?>\n<results />";
         $resultcount = 0;
         $results = new SimpleXMLElement($xmlstr);

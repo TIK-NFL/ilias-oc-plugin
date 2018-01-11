@@ -43,7 +43,7 @@ mh_server_engage#:#Base URL of the Opencast Engage Server
 mh_digest_user#:#Username of the Opencast Digest User
 mh_digest_password#:#Password of the Opencast Digest User
 xsendfile_header#:#Header for XSendfile-Feature
-upload_directory#:#Base directory for ilias uploads
+distribution_directory#:#Distribution directory for ilias
 mh_directory#:#Base directory for Opencast (org.opencastproject.storage.dir)
 opencast_version#:#Opencast Version
 upload_workflow#:#Workflow for processing uploaded files

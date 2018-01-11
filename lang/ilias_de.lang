@@ -44,7 +44,7 @@ mh_digest_user#:#Benutzername des Opencast Digest User
 mh_digest_password#:#Passwort des Opencast Digest User
 mh_directory#:#Basisverzeichnis von Opencast (org.opencastproject.storage.dir)
 xsendfile_header#:#Header f&uuml;r XSendfile-Feature
-upload_directory#:#Basisverzeichnis f&uuml;r Ilias Uploads
+distribution_directory#:#Ilias Verteilungsverzeichnis
 opencast_version#:#Opencast-Version
 upload_workflow#:#Workflow zum Verarbeiten von Uploads
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert
