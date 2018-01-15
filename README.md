@@ -20,7 +20,7 @@ The plugin folder __MUST__ be named 'Matterhorn'.
 
 This __MUST__ be **org.opencastproject.storage.dir**.
 
-For ngnix add the config:
+For nginx add the config:
 ```
 location /__ilias_xmh_mh_directory__/ {
    internal;
@@ -35,14 +35,14 @@ XSendFilePath ${org.opencastproject.storage.dir}
 
 #### XSendfile header
 
-For ngnix select `X-Accel-Redirect`.
+For nginx select `X-Accel-Redirect`.
 For apache select `X-Sendfile` and enable **mod_xsendfile**.
 
 #### Distribution directory
 
 This __MUST__ be the path were episodes are available after upload, so this plugin can serve them to users.
 
-For ngnix add the config:
+For nginx add the config:
 ```
 location /__ilias_xmh_distribution_directory__/ {
    internal;
