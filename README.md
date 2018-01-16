@@ -24,7 +24,7 @@ For nginx add the config:
 ```
 location /__ilias_xmh_mh_directory__/ {
    internal;
-   root ${org.opencastproject.storage.dir}/;
+   alias ${org.opencastproject.storage.dir}/;
 }
 ```
 
@@ -46,7 +46,7 @@ For nginx add the config:
 ```
 location /__ilias_xmh_distribution_directory__/ {
    internal;
-   root ${distribution_directory}/;
+   alias ${distribution_directory}/;
 }
 ```
 
