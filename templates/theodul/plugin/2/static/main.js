@@ -96,7 +96,7 @@ define(["require", "jquery", "backbone", "engage/core"], function(require, $, Ba
 
     /* change these variables */
     // var SEARCH_ENDPOINT = "/search/episode.json"; ILPATCH
-    var SEARCH_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/episode.json"
+    var SEARCH_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/" + "episode.json";
 
     /* don't change these variables */
     var initCount = 5;
@@ -113,7 +113,7 @@ define(["require", "jquery", "backbone", "engage/core"], function(require, $, Ba
     function initTranslate(language) {
         var path = Engage.getPluginPath("EngagePluginCustomMhConnection").replace(/(\.\.\/)/g, "");
         //var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
-        var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" + path;
+        var jsonstr = ILIAS_THEODUL_PATH + path;
 
         Engage.log("Controls: selecting language " + language);
         jsonstr += "language/" + language + ".json";

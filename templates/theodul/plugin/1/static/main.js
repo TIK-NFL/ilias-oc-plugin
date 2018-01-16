@@ -159,7 +159,7 @@ define(['require', 'jquery', 'underscore', 'backbone', 'basil', 'bootbox', 'enga
   var min_segment_duration = 5000;
   var logoLink = false;
   //var logo = plugin_path + "images/logo.png"; ILPATCH
-  var logo = "/%iliasbasedir%/templates/default/images/HeaderIcon.svg";
+  var logo = "templates/default/images/HeaderIcon.svg";
   var showEmbed = true;
   // mobile mode: time after controls are hidden again in seconds
   var hideTimeout = 4;
@@ -283,7 +283,7 @@ define(['require', 'jquery', 'underscore', 'backbone', 'basil', 'bootbox', 'enga
   function initTranslate(language, funcSuccess, funcError) {
     var path = Engage.getPluginPath('EngagePluginControls').replace(/(\.\.\/)/g, '');
     // var jsonstr = window.location.origin + "/engage/theodul/" + path; // this solution is really bad, fix it... ILPATCH
-    var jsonstr = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/" + path;
+    var jsonstr = ILIAS_THEODUL_PATH + path;
 
     Engage.log('Controls: selecting language ' + language);
     jsonstr += 'language/' + language + '.json';
@@ -540,7 +540,7 @@ define(['require', 'jquery', 'underscore', 'backbone', 'basil', 'bootbox', 'enga
         playPause();
         timeUpdate();
         addNonFlashEvents();
-        checkLoginStatus();
+        // checkLoginStatus(); ILPATCH
       }
     }
   });

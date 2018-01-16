@@ -33,38 +33,15 @@ require_once "./Services/Utilities/classes/class.ilUtil.php";
 require_once "./Services/Object/classes/class.ilObject.php";
 require_once "./Services/MediaObjects/classes/class.ilObjMediaObject.php";
 
-require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn//classes/class.ilMatterhornSendfile.php";
+require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornSendfile.php";
 
-$sf = new ilMatterhornSendfile();
+$uri = parse_url($_SERVER['REQUEST_URI']);
+$method = $_SERVER['REQUEST_METHOD'];
 
-switch ($sf->getRequestType()) {
-    case "episode":
-        if ($sf->checkEpisodeAccess()) {
-            $sf->sendEpisode();
-        } else {
-            $sf->sendError();
-        }
-        break;
-    case "usertracking":
-        if ($sf->checkEpisodeAccess()) {
-            $sf->putUserTracking();
-        } else {
-            $sf->sendError();
-        }
-        break;
-    case "preview":
-        if ($sf->checkPreviewAccess()) {
-            $sf->sendPreview();
-        } else {
-            $sf->sendError();
-        }
-        break;
-    case "file":
-        if ($sf->checkFileAccess()) {
-            $sf->sendFile();
-        } else {
-            $sf->sendError();
-        }
-        break;
-}
+$sf = new ilMatterhornSendfile($uri, $method);
+
+// get the requested file and its type
+$path = substr($uri["path"], strpos($uri["path"], $basename) + strlen($basename));
+
+$sf->handleRequest($path);
 ?>

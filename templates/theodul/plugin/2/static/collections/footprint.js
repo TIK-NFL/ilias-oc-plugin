@@ -24,7 +24,7 @@ define(["jquery", "backbone", "engage/core", "../models/footprint"], function($,
     "use strict";
 
     // var USERTRACKING_ENDPOINT = "/usertracking"; ILPATCH
-    var USERTRACKING_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/usertracking";
+    var USERTRACKING_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/" + "usertracking";
     var USERTRACKING_ENDPOINT_FOOTPRINTS = "/footprint.json";
 
     var mediaPackageID = Engage.model.get("urlParameters").id;
@@ -60,6 +60,7 @@ define(["jquery", "backbone", "engage/core", "../models/footprint"], function($,
         update: function() {
             // request collection data
             this.fetch({
+                reset: true,
                 data: {
                     id: mediaPackageID
                 },
@@ -69,7 +70,11 @@ define(["jquery", "backbone", "engage/core", "../models/footprint"], function($,
             });
         },
         parse: function(response) {
+            this.lastSecond = response.last;
             return response.footprints.footprint;
+        },
+        getLast: function() {
+            return this.lastSecond;
         }
     });
 

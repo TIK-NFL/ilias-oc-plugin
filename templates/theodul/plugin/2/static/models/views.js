@@ -35,7 +35,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
     });
 
     // var USERTRACKING_ENDPOINT = "/usertracking"; ILPATCH
-    var USERTRACKING_ENDPOINT = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData";
+    var USERTRACKING_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/" + "usertracking";
     var USERTRACKING_ENDPOINT_STATS = "/stats.json";
 
     var mediaPackageID = Engage.model.get("urlParameters").id;
@@ -47,12 +47,13 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
         urlRoot: USERTRACKING_ENDPOINT + USERTRACKING_ENDPOINT_STATS,
         initialize: function() {
             Engage.log("MhConnection: Init Views model");
-            this.put();
+            //this.put(); ILPATCH
+            this.update();
         },
         put: function() {
             Engage.log("MhConnection: Adding user to viewers");
             var thisModel = this;
-/*            $.ajax({
+            $.ajax({
                 type: "PUT",
                 url: USERTRACKING_ENDPOINT,
                 data: {
@@ -64,19 +65,19 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
                 success: function(result) {
                     thisModel.update();
                 }
-            });*/
+            });
         },
         update: function() {
             // request model data
             Engage.log("MhConnection: Updating views model");
-/*            this.fetch({
+            this.fetch({
                 data: {
                     id: mediaPackageID
                 },
                 success: function(model) {
                     model.trigger("change");
                 }
-            });*/
+            });
         },
         defaults: {
             "stats": {

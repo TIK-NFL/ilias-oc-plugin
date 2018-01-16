@@ -24,7 +24,7 @@ define(['jquery', 'backbone'], function($, Backbone) {
     "use strict";
 
     //var PLUGIN_MANAGER_PATH = "/engage/theodul/manager/list.json"; ILPATCH
-    var PLUGIN_MANAGER_PATH = "/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/manager/list.json";
+    var PLUGIN_MANAGER_PATH = ILIAS_THEODUL_PATH + "../../MHData/" + "manager/list.json";
 
     var PluginInfoModel = Backbone.Model.extend({
         // URL of the search enpoint

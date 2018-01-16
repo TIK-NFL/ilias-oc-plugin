@@ -13,7 +13,7 @@
                 WHERE series_id IN (?)
             </Query>
             <Param format="list" type="int" value="objId" />
-            <Field global="YES" store="YES" index="NOT_ANALYZED" column="slidetime" type="text" name="propertyLow" />
+            <Field global="YES" store="YES" index="NOT_ANALYZED" column="slidetime" type="integer" name="propertyLow" />
             <Field global="YES" store="YES" index="ANALYZED" column="slidetext" type="text" name="propertyHigh" />
             <Field global="YES" store="YES" index="NOT_ANALYZED" column="episode_id" type="text" name="subItem" />
             <Field global="NO" store="YES" index="NOT_ANALYZED" column="series_id" type="integer" name="objId"  />          

@@ -1,11 +1,11 @@
 /* global require.js config */
 requirejs.config({
     // baseUrl: "js/lib", ILPATCH
-    baseUrl: '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/ui/js/lib',
+    baseUrl: ILIAS_THEODUL_PATH + 'ui/js/lib',
     paths: {
         engage: "../engage",
         // plugins: "/engage/plugin/*/static" ILPATCH
-        plugins: '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/plugin/*/static'
+        plugins: ILIAS_THEODUL_PATH + 'plugin/*/static'
 
     },
     shim: {
@@ -39,6 +39,6 @@ requirejs.config({
     }
 });
 // var PLUGIN_PATH = "/engage/theodul/plugin/";
-var PLUGIN_PATH = '/%iliasbasedir%/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul/plugin/';
+var PLUGIN_PATH = ILIAS_THEODUL_PATH + 'plugin/';
 // start core logic
 require(["engage/core"]);

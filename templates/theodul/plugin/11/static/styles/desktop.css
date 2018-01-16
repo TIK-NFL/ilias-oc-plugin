@@ -1,0 +1,37 @@
+svg {
+    font: 15px sans-serif;
+}
+
+.axis .label {
+    font: 15px sans-serif;
+    text-anchor: middle;
+}
+
+.y.axis line {
+    stroke: #fff;
+    stroke-opacity: .2;
+    shape-rendering: crispEdges;
+}
+
+.title {
+    font: 300 35px sans-serif;
+    fill: #666;
+    text-anchor: middle;
+}
+
+rect {
+    fill: #439ddc;
+}
+
+rect.unique_views {
+    fill: #15d417;
+}
+
+.caption {
+    font: 15px sans-serif;
+}
+
+.caption rect {
+    stroke: grey;
+    cursor: pointer;
+}
