@@ -27,6 +27,7 @@ ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->
  * Application class for matterhorn repository object.
  *
  * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
 class ilObjMatterhorn extends ilObjectPlugin
 {
@@ -147,16 +148,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     }
 
     /**
-     * Do Cloning
-     */
-    public function doCloneObject($neiw_obj, $a_target_id, $a_copy_id = null)
-    {
-        // $new_obj->setMhRetVal($this->getMhRetVal());
-        // $new_obj->setOnline($this->getOnline());
-        // $new_obj->update();
-    }
-
-    /**
      *
      * @return array
      */
@@ -174,15 +165,6 @@ class ilObjMatterhorn extends ilObjectPlugin
             "identifier" => (string) $children->identifier
         );
         return $series;
-    }
-
-    /**
-     * @unused
-     */
-    public function updateSearchRecords()
-    {
-        // ilLoggerFactory::getLogger('xmh')->debug("updating search for ".$this->getId());
-        $manifest = new SimpleXMLElement($this->configObject->getDistributionDirectory() . $this->configObject->getSeriesPrefix() . $this->obj_id . '/' . $this->episode_id . '/manifest.xml', null, true);
     }
 
     //
