@@ -394,28 +394,6 @@ class ilObjMatterhorn extends ilObjectPlugin
         return null;
     }
 
-    public function deleteschedule($workflowid)
-    {
-        $url = $this->configObject->getMatterhornServer() . '/admin-ng/event/' . $workflowid;
-        
-        // open connection
-        $ch = curl_init();
-        
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'X-Requested-Auth: Digest',
-            'X-Opencast-Matterhorn-Authorization: true'
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        ilLoggerFactory::getLogger('xmh')->debug("delete code: " . $httpCode);
-        return $httpCode;
-    }
-
     /**
      * The series information returned by matterhorn
      *
@@ -469,31 +447,8 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getScheduledEpisodes()
     {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
-        /* $_GET Parameters to Send */
-        $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $this->configObject->getSeriesPrefix() . $this->getId(),
-            'sort' => 'date:ASC'
-        );
-        
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . http_build_query($params);
-        // open connection
-        $ch = curl_init();
-        
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $searchResult = json_decode($curlret, true);
-        
-        return $searchResult;
+        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getScheduledEpisodes($this->getId());
     }
 
     /**
@@ -503,35 +458,8 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getOnHoldEpisodes()
     {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
-        /* $_GET Parameters to Send */
-        $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $this->configObject->getSeriesPrefix() . $this->getId(),
-            'sort' => 'date:ASC'
-        );
-        
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
-        // open connection
-        $ch = curl_init();
-        
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $searchResult = json_decode($curlret, true);
-        
-        if (is_array($searchResult)) {
-            return $searchResult['results'];
-        } else {
-            return [];
-        }
+        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getOnHoldEpisodes($this->getId());
     }
 
     /**
@@ -541,37 +469,8 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getProcessingEpisodes()
     {
-        $url = $this->configObject->getMatterhornServer() . "/workflow/instances.json";
-        $params = array(
-            'seriesId' => $this->configObject->getSeriesPrefix() . $this->getId(),
-            'state' => array(
-                '-stopped',
-                'running'
-            ),
-            'op' => array(
-                '-schedule',
-                '-capture'
-            )
-        );
-        
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
-        // open connection
-        $ch = curl_init();
-        
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $searchResult = json_decode($curlret, true);
-        
-        return $searchResult;
+        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getProcessingEpisodes($this->getId());
     }
 
     /**
@@ -725,13 +624,9 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         // add episode.xml to media package
         $fields = array(
-            'content' => urlencode($content)
+            'content' => $content
         );
-        $fields_string = '';
-        foreach ($fields as $key => $value) {
-            $fields_string .= $key . '=' . $value . '&';
-        }
-        rtrim($fields_string, '&');
+        $fields_string = http_build_query($fields);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
         $curlret = curl_exec($ch);

@@ -98,10 +98,8 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
         }
         
         if ($ilAccess->checkAccess("write", "", $this->ref_id)) {
-            //TODO do not create instances of larger classes here.
-            $this->plugin->includeClass("class.ilObjMatterhorn.php");
-            $this->object = new ilObjMatterhorn($this->ref_id);
-            $onHoldEpisodes = $this->object->getOnHoldEpisodes();
+            $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
+            $onHoldEpisodes = ilOpencastAPI::getInstance()->getOnHoldEpisodes($this->obj_id);
             $count = count($onHoldEpisodes);
             if (0 < $count) {
                 $props[] = array(
