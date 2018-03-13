@@ -319,9 +319,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET["id"];
         ilLoggerFactory::getLogger('xmh')->debug("ID:$episodeId");
-        if (preg_match('/^[0-9]+/', $episodeId)) {
-            $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-            ilOpencastAPI::getInstance()->deleteschedule($episodeId);
+        $episode = $this->object->getEpisode($episodeId);
+        
+        if ($episode) {
+            $episode->deletescheduled();
             ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in deleteschedule:$episodeId");

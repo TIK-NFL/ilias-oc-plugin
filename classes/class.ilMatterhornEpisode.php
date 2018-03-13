@@ -230,6 +230,13 @@ class ilMatterhornEpisode
         $ilDB->manipulate("DELETE FROM rep_robj_xmh_slidetext WHERE episode_id = " . $this->getQuoteEpisodeId() . " AND series_id  = " . $this->getQuoteSeriesId());
     }
 
+    public function deletescheduled()
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        ilOpencastAPI::getInstance()->deleteschedule($this->getEpisodeId());
+    }
+
     /**
      * Get editor tool json from admin-ng for this episode
      *
