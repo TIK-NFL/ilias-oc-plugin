@@ -968,4 +968,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         return $this->txt($a_text);
     }
+
+    public function addInfoItems($info)
+    {
+        $info->addSection($this->getText("opencast_information"));
+        $info->addProperty($this->getText("series_id"), $this->configObject->getSeriesPrefix() . $this->object->getId());
+    }
 }
