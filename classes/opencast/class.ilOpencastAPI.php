@@ -1,8 +1,9 @@
 <?php
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
 
 /**
  * All Communication with the Opencast server should be implemented in this class
- * 
+ *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
 class ilOpencastAPI
