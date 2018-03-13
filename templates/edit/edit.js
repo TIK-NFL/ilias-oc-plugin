@@ -214,30 +214,18 @@ iliasopencast.upload = {
 }
 iliasopencast.init = function() {
     iliasopencast.upload.init();
+
+    iliasopencast.templates = $.get(iliasopencast.settings.uploadtarget + "/../templates/edit/edit.html");
+
+    iliasopencast.updateprocessing();
+    window.setInterval(iliasopencast.updateprocessing, 5000);
 }
 
 iliasopencast.updateprocessing = function() {
     var txt = iliasopencast.translation;
     var ils = iliasopencast.settings;
-    var templates = {
-        "noprocessing" : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="4">' + txt.txt_none_processing + '</td></tr>',
-        "processing" : '<tr><td class="std">{{title}}</td> <td class="std">{{date}}</td>'
-                + '<td class="std"><div class="progress-bar progress-bar-success" role="progressbar" style="width:{{processdone}}%">{{processcount}}</div></td><td class="std">{{running}}</td>'
-                + '</tr>',
-        "nofinished" : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="' + ils.cols_finished + '">' + txt.txt_none_finished + '</td></tr>',
-        "finished" : '<tr>' + '<td class="std"><a href="{{#convertAmpersand}}{{viewurl}}{{/convertAmpersand}}">{{title}}</a></td>'
-                + '<td class="std"><a href="{{#convertAmpersand}}{{viewurl}}{{/convertAmpersand}}"><img src="{{previewurl}}" /></a></td>' + '<td class="std">{{date}}</td>'
-                + ((ils.cols_finished == 4) ? '<td><a href="{{#convertAmpersand}}{{publishurl}}{{/convertAmpersand}}">{{ txt_publish }}</a></td>' : '') + '</tr>',
-        'noonhold' : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="4">' + txt.txt_none_onhold + '</td></tr>',
-        'onhold' : '<tr><td class="std"><a href="{{#convertAmpersand}}{{trimurl}}{{/convertAmpersand}}">{{title}}</a></td> <td class="std">{{date}}</td></tr>',
-        'noscheduled' : '<tr class="tblrow1"><td class="std" style="text-align:center;" colspan="5">' + txt.txt_none_scheduled + '</td></tr>',
-        'scheduled' : '<tr>'
-                + '<td class="std">{{title}}</td> <td class="std">{{startdate}} </td> <td class="std"> {{stopdate}} </td> <td class="std">{{location}} </td><td class="std"><a href="{{#convertAmpersand}}{{deletescheduledurl}}{{/convertAmpersand}}">'
-                + txt.txt_delete + '</a></td>' + '</tr>'
-
-    };
-    var tabledata = "";
-    $.get(ils.processingcmd).done(function(data) {
+    var response = $.get(ils.processingcmd);
+    $.when(response, iliasopencast.templates).done(function(data, templates) {
         if (data['lastupdate'] > -1) {
             if ($("#iliasopencast_finishedtable").data('lastupdate') < data['lastupdate']) {
                 updateTable(data['finished'], "finished");
@@ -250,31 +238,20 @@ iliasopencast.updateprocessing = function() {
         updateTable(data['scheduled'], "scheduled");
     });
 
-    var updateTable = function(data, dataname) {
-        keys = $.map(data, function(v, i) {
-            return i;
-        });
-        var tabledata = "";
-        if (keys.length == 0) {
-            tabledata = templates["no" + dataname];
-        } else {
-            $(keys).each(function() {
-                var episode = data[this];
-                episode['convertAmpersand'] = function() {
-                    return function(str, render) {
-                        return render(str).replace(/&amp;/g, "\&");
-                    }
-                }
-                var html = Mustache.to_html(templates[dataname], episode);
-                tabledata = tabledata + html;
-            });
-        }
+    var updateTable = function(data, dataname, templates) {
+        var sections = {
+            txt : txt,
+            manualRelease : ils.manualRelease
+        };
+        sections[dataname] = [ {
+            episodes : data
+        } ];
+        var tabledata = Mustache.render(templates, sections);
+
         $("#iliasopencast_" + dataname + "table").html(tabledata);
     }
 }
 
 $(document).ready(function() {
     iliasopencast.init();
-    iliasopencast.updateprocessing();
-    window.setInterval(iliasopencast.updateprocessing, 5000);
 });

@@ -1,0 +1,59 @@
+{{#processing}}
+{{^episodes}}
+<tr class="tblrow1">
+ <td class="std" style="text-align:center;" colspan="4">{{txt.txt_none_processing}}</td>
+ </tr>
+{{/episodes}}
+{{#episodes}}
+<tr>
+ <td class="std">{{title}}</td>
+ <td class="std">{{date}}</td>
+ <td class="std"><div class="progress-bar progress-bar-success" role="progressbar" style="width:{{processdone}}%">{{processcount}}</div></td>
+ <td class="std">{{running}}</td>
+</tr>
+{{/episodes}}
+{{/processing}}
+{{#finished}}
+{{^episodes}}
+<tr class="tblrow1">
+ <td class="std" style="text-align:center;" colspan="{{#manualRelease}}4{{/manualRelease}}{{^manualRelease}}3{{/manualRelease}}">{{txt.txt_none_finished}}</td>
+</tr>
+{{/episodes}}
+{{#episodes}}
+<tr>
+ <td class="std"><a href="{{viewurl}}">{{title}}</a></td>
+ <td class="std"><a href="{{viewurl}}"><img src="{{previewurl}}" /></a></td>
+ <td class="std">{{date}}</td>
+ {{#manualRelease}}<td><a href="{{publishurl}}">{{txt_publish}}</a></td>{{/manualRelease}}
+</tr>
+{{/episodes}}
+{{/finished}}
+{{#onhold}}
+{{^episodes}}
+<tr class="tblrow1">
+ <td class="std" style="text-align:center;" colspan="4">{{txt.txt_none_onhold}}</td>
+ </tr>
+{{/episodes}}
+{{#episodes}}
+<tr>
+ <td class="std"><a href="{{trimurl}}">{{title}}</a></td>
+ <td class="std">{{date}}</td>
+</tr>
+{{/episodes}}
+{{/onhold}}
+{{#scheduled}}
+{{^episodes}}
+<tr class="tblrow1">
+ <td class="std" style="text-align:center;" colspan="5">{{txt.txt_none_scheduled}}</td>
+</tr>
+{{/episodes}}
+{{#episodes}}
+<tr>
+ <td class="std">{{title}}</td>
+ <td class="std">{{startdate}} </td>
+ <td class="std"> {{stopdate}} </td>
+ <td class="std">{{location}} </td>
+ <td class="std"><a href="{{deletescheduledurl}}">{{txt.txt_delete}}</a></td>
+</tr>
+{{/episodes}}
+{{/scheduled}}

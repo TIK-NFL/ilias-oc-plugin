@@ -447,8 +447,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     
     private function extractReleasedEpisodes($skipUnreleased=false)
     {
-        global $ilCtrl;
-
         $released_episodes  = $this->object->getReleasedEpisodes();
         $episodes = array();
 
@@ -479,8 +477,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     $downloadurl = $track->url;
                 }
             }
-             
-            $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $this->obj_id."/".(string)$value['id']);
+            
             $published = in_array($value['id'], $released_episodes);
              
             $episodes[(string)$value['id']] = array(
@@ -489,12 +486,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 "mhid" => $this->obj_id."/".(string)$value['id'],
                 "previewurl" => (string)$previewurl,
                 "downloadurl" => $downloadurl,
-                "viewurl" => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"),
+                "viewurl" => $this->getLinkForEpisodeUnescaped("showEpisode", $this->obj_id . "/" . (string) $value['id']),
             );
             if ($this->object->getManualRelease()) {
-                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", (string)$value['id']);
-                $episodes[(string)$value['id']]["publishurl"] = $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $published?"retract":"publish");
-                $episodes[(string)$value['id']]["txt_publish"] = $this->getText($published?"retract":"publish");
+                $episodes[(string)$value['id']]["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", (string) $value['id']);
+                $episodes[(string)$value['id']]["txt_publish"] = $this->getText($published ? "retract" : "publish");
             }
         }
         
@@ -504,12 +500,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     
     private function extractScheduledEpisode($event)
     {
-        global $ilCtrl;
-        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", (string)$event['id']);
         $scheduled_episode = array(
             'title' => $event["title"],
             'mhid' => $event["id"],
-            'deletescheduledurl' => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "deletescheduled")
+            'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event['id'])
         );
         $scheduled_episode['startdate'] = $event['start_date'];
         $scheduled_episode['stopdate'] = $event['end_date'];
@@ -519,14 +513,26 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     
     private function extractOnholdEpisode($event)
     {
-        global $ilCtrl;
-        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $event['id']);
         $onhold_episode = array(
             'title' => $event["title"],
-            'trimurl' => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showTrimEditor"),
+            'trimurl' => $this->getLinkForEpisodeUnescaped("showTrimEditor", (string) $event['id']),
             'date' => $event["start_date"],
         );
         return $onhold_episode;
+    }
+
+    /**
+     * 
+     * @param string $cmd
+     * @param string $id
+     * @return string
+     */
+    private function getLinkForEpisodeUnescaped($cmd, $id) {
+        global $DIC;
+        $DIC->ctrl()->setParameterByClass("ilobjmatterhorngui", "id", $id);
+        $link = $DIC->ctrl()->getLinkTargetByClass("ilobjmatterhorngui", $cmd, "", false, false);
+        $DIC->ctrl()->clearParameterByClass("ilobjmatterhorngui", "id");
+        return $link;
     }
 
     
@@ -650,11 +656,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_UPLOAD_CANCELED", $this->getText("upload_canceled"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID", $this->object->getId());
-        if ($this->object->getManualRelease()) {
-            $seriestpl->setVariable("COLS_FINISHED", "4");
-        } else {
-            $seriestpl->setVariable("COLS_FINISHED", "3");
-        }
+        $seriestpl->setVariable("MANUAL_RELEASE", $this->object->getManualRelease());
 
         $seriestpl->parseCurrentBlock();
 
