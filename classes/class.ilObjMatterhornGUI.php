@@ -479,8 +479,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
             
             $published = in_array($value['id'], $released_episodes);
-             
-            $episodes[(string)$value['id']] = array(
+            
+            $episode = array(
                 "title" => (string)$value->title,
                 "date" => (string)$value['start'],
                 "mhid" => $this->obj_id."/".(string)$value['id'],
@@ -489,12 +489,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 "viewurl" => $this->getLinkForEpisodeUnescaped("showEpisode", $this->obj_id . "/" . (string) $value['id']),
             );
             if ($this->object->getManualRelease()) {
-                $episodes[(string)$value['id']]["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", (string) $value['id']);
-                $episodes[(string)$value['id']]["txt_publish"] = $this->getText($published ? "retract" : "publish");
+                $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", (string) $value['id']);
+                $episode["txt_publish"] = $this->getText($published ? "retract" : "publish");
             }
+            $episodes[] = $episode;
         }
         
-        uasort($episodes, array($this, 'sortbydate'));
+        usort($episodes, array($this, 'sortbydate'));
         return $episodes;
     }
     
@@ -535,7 +536,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         return $link;
     }
 
-    
+    /**
+     * Get Episodes as json
+     */
     public function getEpisodes()
     {
         $processingEpisodes = $this->object->getProcessingEpisodes();
@@ -550,7 +553,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
         }
-        uasort($process_items, array($this, 'sortbydate'));
+        usort($process_items, array($this, 'sortbydate'));
         foreach ($process_items as $key=>$value) {
             $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
@@ -567,7 +570,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $scheduled_items[] = $this->extractScheduledEpisode($event);
             }
         }
-        uasort($scheduled_items, array($this, 'sortbystartdate'));
+        usort($scheduled_items, array($this, 'sortbystartdate'));
         foreach ($scheduled_items as $key=>$value) {
             $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_DATETIME));
             $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate(new ilDateTime($value["stopdate"], IL_CAL_DATETIME));
@@ -583,7 +586,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
         }
     
-        uasort($onhold_items, array($this, 'sortbydate'));
+        usort($onhold_items, array($this, 'sortbydate'));
         foreach ($onhold_items as $key=>$value) {
             $onhold_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
@@ -607,7 +610,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         if ($a[$field] == $b[$field]) {
             return 0;
         }
-        return ($a[$field] < $b[$field]) ? -1 : 1;
+        return ($a[$field] > $b[$field]) ? -1 : 1;
     }
 
     private function sortbystartdate($a, $b)

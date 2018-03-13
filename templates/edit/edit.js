@@ -225,17 +225,19 @@ iliasopencast.updateprocessing = function() {
     var txt = iliasopencast.translation;
     var ils = iliasopencast.settings;
     var response = $.get(ils.processingcmd);
-    $.when(response, iliasopencast.templates).done(function(data, templates) {
+    $.when(response, iliasopencast.templates).done(function(dataResponse, templatesResponse) {
+        var data = dataResponse[0];
+        var templates = templatesResponse[0];
         if (data['lastupdate'] > -1) {
             if ($("#iliasopencast_finishedtable").data('lastupdate') < data['lastupdate']) {
-                updateTable(data['finished'], "finished");
+                updateTable(data['finished'], "finished", templates);
                 $("#iliasopencast_finishedtable").data('lastupdate', data['lastupdate']);
                 console.log("updated finished");
             }
         }
-        updateTable(data['processing'], "processing");
-        updateTable(data['onhold'], "onhold");
-        updateTable(data['scheduled'], "scheduled");
+        updateTable(data['processing'], "processing", templates);
+        updateTable(data['onhold'], "onhold", templates);
+        updateTable(data['scheduled'], "scheduled", templates);
     });
 
     var updateTable = function(data, dataname, templates) {
