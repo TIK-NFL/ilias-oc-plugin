@@ -1,46 +1,83 @@
 .videos {
-        width: 160px;
-        display: inline-block;
+    width: 160px;
+    display: inline-block;
     border: 1px solid #eee;
     padding: 6px 4px;
     margin: 6px 4px;
 }
+
 .videos:hover {
     background: #eee;
 }
+
 .ilTableFootLight {
     font-size: 11px;
 }
+
 .videos img {
     margin: 4px 0;
 }
 
-.top5 { margin-top:5px; }
-.top7 { margin-top:7px; }
-.top10 { margin-top:10px; }
-.top15 { margin-top:15px; }
-.top17 { margin-top:17px; }
-.top30 { margin-top:30px; }
+.top5 {
+    margin-top: 5px;
+}
+
+.top7 {
+    margin-top: 7px;
+}
+
+.top10 {
+    margin-top: 10px;
+}
+
+.top15 {
+    margin-top: 15px;
+}
+
+.top17 {
+    margin-top: 17px;
+}
+
+.top30 {
+    margin-top: 30px;
+}
 
 .drop-zone {
-    text-align:center;
-    border:2px dashed #ccc;
+    text-align: center;
+    border: 2px dashed #ccc;
 }
+
 .danger, .danger:hover {
     background-color: #e74c3c;
 }
+
 .inverse, .inverse:hover {
     background-color: #34495e;
 }
+
 input[type="file"] {
-    height:32px;
+    height: 32px;
 }
+
 div[data-nothingToUpload] {
-    display:none;
+    display: none;
 }
+
 .deleteFile {
     padding: 3px 7px;
     color: #bf0000;
     font-weight: bold;
-    cursor:pointer;
+    cursor: pointer;
+}
+
+#slider-range {
+    background: #A0A0A0;
+}
+
+#slider-range .ui-slider-range {
+    background: #86ED2C;
+}
+
+#slider-range .ui-slider-handle {
+    background: rgb(0, 0, 0);
 }
