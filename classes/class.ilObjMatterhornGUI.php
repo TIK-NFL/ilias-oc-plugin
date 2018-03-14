@@ -734,6 +734,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
         $html = $seriestpl->get();
         $tpl->setContent($html);
+        $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-datepicker3.min.css"));
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
