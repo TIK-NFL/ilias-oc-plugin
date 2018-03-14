@@ -844,6 +844,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d", $hours, $min, $sec));
             $trimview->parseCurrentBlock();
             $tpl->setContent($trimview->get());
+            $tpl->addCss("$trimbase/video-js/video-js.css");
+            $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/slider.css");
+            $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
             $ilTabs->activateTab("manage");
         } else {
             $ilCtrl->redirect($this, "editTrimProcess");
