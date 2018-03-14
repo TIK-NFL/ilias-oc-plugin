@@ -1,12 +1,5 @@
 var iliasopencast = iliasopencast || {}
 
-Date.prototype.yyyymmdd = function() {
-    var yyyy = this.getFullYear().toString();
-    var mm = (this.getMonth() + 1).toString(); // getMonth() is zero-based
-    var dd = this.getDate().toString();
-    return yyyy + '-' + (mm[1] ? mm : "0" + mm[0]) + '-' + (dd[1] ? dd : "0" + dd[0]); // padding
-};
-
 iliasopencast.upload = {
     chunksize : 1 * 1024 * 1024,
     r : new Resumable({
@@ -133,7 +126,7 @@ iliasopencast.upload = {
                 $('#iliasopencast_results').empty();
                 $('#iliasopencast_tracktitle').val("");
                 $('#iliasopencast_trackpresenter').val("");
-                $('#iliasopencast_trackdate').val(today.yyyymmdd());
+                $('#iliasopencast_trackdate').datepicker('update', "today");
                 $("#iliasopencast_trimeditor").attr('checked', false);
                 $('#iliasopencast_tracktime').timepicker({
                     showMeridian : false,
@@ -195,16 +188,13 @@ iliasopencast.upload = {
         $('#iliasopencast_trackdate').datepicker({
             format : "yyyy-mm-dd",
             autoclose : true,
-            setDate : new Date(),
             todayHighlight : true,
             todayBtn : "linked",
             immediateUpdates : true,
         }).on('hide', function(e) {
             upload.checkfieldscomplete();
         });
-        var today = new Date();
-        $('#iliasopencast_trackdate').val(today.yyyymmdd());
-        $('#iliasopencast_trackdate').datepicker('update', today);
+        $('#iliasopencast_trackdate').datepicker('update', "today");
         $('#iliasopencast_tracktime').timepicker({
             showMeridian : false,
             minuteStep : 1
