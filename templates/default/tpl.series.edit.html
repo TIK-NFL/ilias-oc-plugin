@@ -1,160 +1,58 @@
-<!-- BEGIN pagestart -->
-<div class="container">
-<script>
-var iliasopencast = iliasopencast ||  {};
 
-(function(){
-iliasopencast.settings = iliasopencast.settings || {}
-var settings = {
-  uploadtarget : "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHUpload",
-  seriesid : "{SERIES_ID}",
-  processingcmd : "{CMD_PROCESSING}",
-  manualRelease : {MANUAL_RELEASE}
-}
-$.extend(true,iliasopencast.settings, settings);
-
-iliasopencast.translation = {
-    txt_none_processing : "{TXT_NONE_PROCESSING}",
-    txt_none_finished : "{TXT_NONE_FINISHED}",
-    txt_none_scheduled : "{TXT_NONE_SCHEDULED}",
-    txt_none_onhold : "{TXT_NONE_ONHOLD}",
-    txt_delete: "{TXT_DELETE}",
-    txt_uploading: "{TXT_UPLOADING}",
-    txt_done_uploading: "{TXT_DONE_UPLOADING}",
-    txt_upload_canceled: "{TXT_UPLOAD_CANCELED}",
-}
-
-})();
-</script>
-<!-- END pagestart  -->
 <!-- BEGIN upload -->
 <!-- uploadsection -->
 <div class="row">
-  <div class=" col-md-12">
-    <h3 class="ilHeader">{TXT_ADD_NEW_EPISODE}</h3>
-  </div>
+	<div class=" col-md-12 form-group">
+		<span class="form-label" id="basic-addon0">{TXT_TRACK_TITLE}<span
+			class="asterisk">*</span></span> <input type="text" class="form-control"
+			required="true" aria-describedby="basic-addon0"
+			id="iliasopencast_tracktitle" name="tracktitle" value="">
+	</div>
 </div>
 <div class="row">
-  <div class=" col-md-12 form-group">
-    <span class="form-label" id="basic-addon0">{TXT_TRACK_TITLE}<span class="asterisk">*</span></span>
-    <input type="text" class="form-control" required="true" aria-describedby="basic-addon0" id="iliasopencast_tracktitle" name="tracktitle" value="">
-  </div>
-</div>
-<div class="row">
-  <div class=" col-md-12 form-group">
-    <span class="form-label" id="basic-addon1">{TXT_TRACK_PRESENTER}</span>
-    <input type="text" class="form-control" required="true" aria-describedby="basic-addon1" id="iliasopencast_trackpresenter" name="trackpresenter" value="">
-  </div>
+	<div class=" col-md-12 form-group">
+		<span class="form-label" id="basic-addon1">{TXT_TRACK_PRESENTER}</span>
+		<input type="text" class="form-control" required="true"
+			aria-describedby="basic-addon1" id="iliasopencast_trackpresenter"
+			name="trackpresenter" value="">
+	</div>
 </div>
 <div>
-  <div class="row input-group">
-    <div class="col-md-6">
-      <span class="form-label" id="basic-addon2">{TXT_TRACK_DATE}<span class="asterisk">*</span></span>
-      <input type="text" class="form-control" required="true" aria-describedby="basic-addon2" id="iliasopencast_trackdate" name="trackdate" value="">
-    </div>
-    <div class="col-md-6">
-      <span class="form-label" id="basic-addon3">{TXT_TRACK_TIME}<span class="asterisk">*</span></span>
-      <input type="text" class="form-control" required="true" aria-describedby="basic-addon3" id="iliasopencast_tracktime" name="tracktime" value="">
-    </div>
-  </div>
+	<div class="row input-group">
+		<div class="col-md-6">
+			<span class="form-label" id="basic-addon2">{TXT_TRACK_DATE}<span
+				class="asterisk">*</span></span> <input type="text" class="form-control"
+				required="true" aria-describedby="basic-addon2"
+				id="iliasopencast_trackdate" name="trackdate" value="">
+		</div>
+		<div class="col-md-6">
+			<span class="form-label" id="basic-addon3">{TXT_TRACK_TIME}<span
+				class="asterisk">*</span></span> <input type="text" class="form-control"
+				required="true" aria-describedby="basic-addon3"
+				id="iliasopencast_tracktime" name="tracktime" value="">
+		</div>
+	</div>
 </div>
 <div class="row top10">
-  <div class="form-group col-md-6 checkbox">
-    <label><input type="checkbox" class="" required="false" aria-describedby="basic-addon4" id="iliasopencast_trimeditor" name="trimeditor" value="">{TXT_TRIMEDITOR}</label>
-  </div>
+	<div class="form-group col-md-6 checkbox">
+		<label><input type="checkbox" class="" required="false"
+			aria-describedby="basic-addon4" id="iliasopencast_trimeditor"
+			name="trimeditor" value="">{TXT_TRIMEDITOR}</label>
+	</div>
 </div>
 <div class="row top10">
-    <div class="col-md-12">
-        <div data-iliasopencast_nothingToUpload>{TXT_NO_FILES}</div>
-        <div id="iliasopencast_results" class="panel"></div>{TXT_FILE}
-        <div class="alert-box secondary"></div>
-        <button class="btn btn-default" id="iliasopencast_browseButton">{TXT_SELECT_FILE}</button>
-        <button class="btn btn-primary disabled" id="iliasopencast_uploadFiles">{TXT_UPLOAD_FILE}</button>
-        <button class="btn btn-primary disabled" id="iliasopencast_cancelUpload">{TXT_CANCEL_UPLOAD}</button>
-    </div>
+	<div class="col-md-12">
+		<div data-iliasopencast_nothingToUpload>{TXT_NO_FILES}</div>
+		<div id="iliasopencast_results" class="panel"></div>
+		{TXT_FILE}
+		<div class="alert-box secondary"></div>
+		<button class="btn btn-default" id="iliasopencast_browseButton">{TXT_SELECT_FILE}</button>
+		<button class="btn btn-primary disabled"
+			id="iliasopencast_uploadFiles">{TXT_UPLOAD_FILE}</button>
+		<button class="btn btn-primary disabled"
+			id="iliasopencast_cancelUpload">{TXT_CANCEL_UPLOAD}</button>
+	</div>
 </div>
 <!-- uploadsectionend -->
 
 <!-- END upload -->
-<!-- BEGIN finishedstart -->
-<div class="row">
-<div class="col-md-12">
-<h3 class="ilHeader">{TXT_FINISHED_RECORDINGS}</h3>
-<div class="ilTableOuter">
-<table class="fullwidth table table-striped">
-<thead>
-<!-- END finishedstart -->
-<!-- BEGIN headerfinished -->
-<tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_PREVIEW}</th><th class="std">{TXT_DATE}</th><th class="std">{TXT_ACTION}</th></tr>
-<!-- END headerfinished -->
-<!-- BEGIN headerfinishednoaction -->
-<tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_PREVIEW}</th><th class="std">{TXT_DATE}</th></tr>
-<!-- END headerfinishednoaction -->
-<!-- BEGIN footerfinished -->
-</thead>
-<tbody id="iliasopencast_finishedtable" data-lastupdate="-1">
-</tbody>
-</table>
-</div>
-</div></div>
-<!-- END footerfinished -->
-
-<!-- BEGIN processing -->
-<div class="row">
-<div class="col-md-12">
-<h3 class="ilHeader">{TXT_PROCESSING}</h3>
-<div class="ilTableOuter">
-<table class="fullwidth">
-<thead>
-<tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_RECORDDATE}</th><th class="std">{TXT_PROGRESS}</th><th class="std">{TXT_RUNNING}</th></tr>
-</thead>
-<tbody id="iliasopencast_processingtable">
-</tbody>
-</table>
-</div>
-</div></div>
-<!-- END processing -->
-
-<!-- BEGIN onhold -->     
-<div class="row">
-<div class="col-md-12">
-
-<h3 class="ilHeader">{TXT_ONHOLD_RECORDING}</h3>
-<div class="ilTableOuter">
-<table class="fullwidth">
-<thead>
-<tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_RECORDDATE}</th></tr>
-</thead>
-<tbody id="iliasopencast_onholdtable"> 
-</tbody>
-</table>
-</div>
-</div></div>
-<!-- END onhold -->
-
-
-<!-- BEGIN scheduled -->     
-<div class="row">
-  <div class="col-md-12">
-    <h3 class="ilHeader">{TXT_SCHEDULED_RECORDING}</h3>
-    <div class="ilTableOuter">
-      <table class="fullwidth">
-        <thead>
-          <tr class="tblheader"><th class="std">{TXT_TITLE}</th><th class="std">{TXT_STARTDATE}</th><th class="std">{TXT_ENDDATE}</th><th  class="std">{TXT_LOCATION}</th><th class="std">{TXT_ACTION}</th></tr>
-        </thead>
-        <tbody id="iliasopencast_scheduledtable">
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-<!-- END scheduled -->
-
-<!-- BEGIN pageend -->
-<script src="{INITJS}/resumable.js"></script>
-<script src="{INITJS}/mustache.min.js"></script>
-<script src="{INITJS}/bootstrap-datepicker.min.js"></script>
-<script src="{INITJS}/bootstrap-timepicker.min.js"></script>
-<script src="{INITJS}/edit.js"></script>
-</div>
-<!-- END pageend  -->

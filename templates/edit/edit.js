@@ -1,5 +1,4 @@
-var iliasopencast = iliasopencast || {}
-
+function initEdit(iliasopencast) {
 iliasopencast.upload = {
     chunksize : 1 * 1024 * 1024,
     r : new Resumable({
@@ -247,3 +246,4 @@ iliasopencast.updateprocessing = function() {
 $(document).ready(function() {
     iliasopencast.init();
 });
+}

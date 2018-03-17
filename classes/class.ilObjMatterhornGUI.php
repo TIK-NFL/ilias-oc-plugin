@@ -641,14 +641,19 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     
     private function editEpisodes($section)
     {
-        global $tpl, $ilTabs, $ilCtrl;
+        global $DIC;
+        $ilTabs = $DIC->tabs();
+        $ilCtrl = $DIC->ctrl();
+        $tpl = $DIC->ui()->mainTemplate();
+        $factory = $DIC->ui()->factory();
+        
         $ilTabs->activateTab("manage");
         $editbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/edit";
         $this->checkPermission("write");
-
-        $seriestpl = new ilTemplate("tpl.series.edit.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+        
+        $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.js.html");
         $seriestpl->setCurrentBlock("pagestart");
-
+        
         $seriestpl->setVariable("TXT_NONE_FINISHED", $this->getText("none_finished"));
         $seriestpl->setVariable("TXT_NONE_PROCESSING", $this->getText("none_processing"));
         $seriestpl->setVariable("TXT_NONE_ONHOLD", $this->getText("none_onhold"));
@@ -660,48 +665,51 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID", $this->object->getId());
         $seriestpl->setVariable("MANUAL_RELEASE", $this->object->getManualRelease());
-
         $seriestpl->parseCurrentBlock();
-
+        $jsConfig = $seriestpl->get();
+        ilLoggerFactory::getLogger('xmh')->debug($section);
         switch ($section) {
             case 'finished':
-                ilLoggerFactory::getLogger('xmh')->debug($section);
                 $this->tabs->activateSubTab('finishedepisodes');
-                $seriestpl->setCurrentBlock('finishedstart');
-                $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
-                $seriestpl->parseCurrentBlock();
-                $seriestpl->setCurrentBlock($this->object->getManualRelease()?"headerfinished":"headerfinishednoaction");
-                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-                $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
-                $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
+                
+                $colums = array(
+                    $this->getText("title"),
+                    $this->getText("preview"),
+                    $this->getText("date")
+                );
                 if ($this->object->getManualRelease()) {
-                    $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+                    $colums[] = $this->getText("action");
                 }
-                $seriestpl->parseCurrentBlock();
-                $seriestpl->touchblock("footerfinished");
+                
+                $finishedTable = $this->getTableWithId("iliasopencast_finishedtable", $colums);
+                
+                $content = $factory->panel()->standard($this->getText("finished_recordings"), $finishedTable);
                 break;
             case 'trimprocess':
-                ilLoggerFactory::getLogger('xmh')->debug($section);
                 $this->tabs->activateSubTab('processtrim');
-                $seriestpl->setCurrentBlock("processing");
-                $seriestpl->setVariable("TXT_PROCESSING", $this->getText("processing"));
-                $seriestpl->setVariable("TXT_RUNNING", $this->getText("running"));
-                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-                $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
-                $seriestpl->setVariable("TXT_PROGRESS", $this->getText("progress"));
-                $seriestpl->parseCurrentBlock();
-
-                $seriestpl->setCurrentBlock("onhold");
-                $seriestpl->setVariable("TXT_ONHOLD_RECORDING", $this->getText("onhold_recordings"));
-                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-                $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
-                $seriestpl->parseCurrentBlock();
+                
+                $processingTable = $this->getTableWithId("iliasopencast_processingtable", array(
+                    $this->getText("title"),
+                    $this->getText("recorddate"),
+                    $this->getText("progress"),
+                    $this->getText("running")
+                ));
+                
+                $onholdTable = $this->getTableWithId("iliasopencast_onholdtable", array(
+                    $this->getText("title"),
+                    $this->getText("recorddate")
+                ));
+                
+                $content = array(
+                    $factory->panel()->standard($this->getText("processing"), $processingTable),
+                    $factory->panel()->standard($this->getText("onhold_recordings"), $onholdTable)
+                );
                 break;
             case 'upload':
-                ilLoggerFactory::getLogger('xmh')->debug($section);
                 $this->tabs->activateSubTab('upload');
+                
+                $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.html");
                 $seriestpl->setCurrentBlock("upload");
-                $seriestpl->setVariable("TXT_ADD_NEW_EPISODE", $this->getText("add_new_episode"));
                 $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
                 $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
                 $seriestpl->setVariable("TXT_TRACK_DATE", $this->getText("track_date"));
@@ -712,32 +720,57 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("TXT_CANCEL_UPLOAD", $this->getText("cancel_upload"));
                 $seriestpl->setVariable("TXT_TRIMEDITOR", $this->getText("usetrimeditor"));
                 $seriestpl->parseCurrentBlock();
+                
+                $content = $factory->panel()->standard($this->getText("add_new_episode"), $factory->legacy($seriestpl->get()));
                 break;
             case 'scheduled':
-                ilLoggerFactory::getLogger('xmh')->debug($section);
                 $this->tabs->activateSubTab('schedule');
-                $seriestpl->setCurrentBlock("scheduled");
-                $seriestpl->setVariable("TXT_SCHEDULED_RECORDING", $this->getText("scheduled_recordings"));
-                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-                $seriestpl->setVariable("TXT_STARTDATE", $this->getText("startdate"));
-                $seriestpl->setVariable("TXT_ENDDATE", $this->getText("enddate"));
-                $seriestpl->setVariable("TXT_LOCATION", $this->getText("location"));
-                $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
-                $seriestpl->parseCurrentBlock();
+                
+                $scheduledTable = $this->getTableWithId("iliasopencast_scheduledtable", array(
+                    $this->getText("title"),
+                    $this->getText("startdate"),
+                    $this->getText("enddate"),
+                    $this->getText("location"),
+                    $this->getText("action")
+                ));
+                
+                $content = $factory->panel()->standard($this->getText("scheduled_recordings"), $scheduledTable);
                 break;
         }
+        $html = $DIC->ui()
+            ->renderer()
+            ->render($content);
         
-        $seriestpl->setCurrentBlock("pageend");
-        $seriestpl->setVariable("INITJS", $editbase);
-        $seriestpl->parseCurrentBlock();
-        
-
-        $html = $seriestpl->get();
-        $tpl->setContent($html);
+        $tpl->setContent($jsConfig . $html);
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-datepicker3.min.css"));
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
         $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
+        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/resumable.js");
+        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/mustache.min.js");
+        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-datepicker.min.js");
+        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-timepicker.min.js");
+        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/edit.js");
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
+    }
+    
+    /**
+     * @param $id string
+     * @param $columns array
+     * @return \ILIAS\UI\Component\Legacy\Legacy
+     */
+    private function getTableWithId($id, $columns) {
+        global $DIC;
+        $tableTpl = $this->getPlugin()->getTemplate("default/tpl.empty_table.html");
+        $tableTpl->setCurrentBlock("headercolumn");
+        foreach ($columns as $column) {
+            $tableTpl->setVariable("TXT_HEAD", $column);
+            $tableTpl->parseCurrentBlock();
+        }
+        
+        $tableTpl->setCurrentBlock("table");
+        $tableTpl->setVariable("ID", $id);
+        $tableTpl->parseCurrentBlock();
+        return $DIC->ui()->factory()->legacy($tableTpl->get());
     }
 
     /**$trimview->setVariable("TXT_LEFT_TRACK", $this->getText("startdate"));
