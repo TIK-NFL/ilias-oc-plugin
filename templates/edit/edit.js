@@ -206,21 +206,22 @@ iliasopencast.init = function() {
 
     iliasopencast.templates = $.get(iliasopencast.settings.uploadtarget + "/../templates/edit/edit.html");
 
+    iliasopencast.lastupdate = -1;
     iliasopencast.updateprocessing();
     window.setInterval(iliasopencast.updateprocessing, 5000);
 }
 
 iliasopencast.updateprocessing = function() {
-    var txt = iliasopencast.translation;
-    var ils = iliasopencast.settings;
-    var response = $.get(ils.processingcmd);
+    const txt = iliasopencast.translation;
+    const ils = iliasopencast.settings;
+    const response = $.get(ils.processingcmd);
     $.when(response, iliasopencast.templates).done(function(dataResponse, templatesResponse) {
-        var data = dataResponse[0];
-        var templates = templatesResponse[0];
-        if (data['lastupdate'] > -1) {
-            if ($("#iliasopencast_finishedtable").data('lastupdate') < data['lastupdate']) {
+        const data = dataResponse[0];
+        const templates = templatesResponse[0];
+        if (data.lastupdate > -1) {
+            if (iliasopencast.lastupdate < data.lastupdate) {
                 updateTable(data['finished'], "finished", templates);
-                $("#iliasopencast_finishedtable").data('lastupdate', data['lastupdate']);
+                iliasopencast.lastupdate = data.lastupdate;
                 console.log("updated finished");
             }
         }
