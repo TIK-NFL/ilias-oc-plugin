@@ -579,11 +579,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     
         $onhold_items = array();
         $onHoldEpisodes = $this->object->getOnHoldEpisodes();
-        #$tempEpisodes = $onHoldEpisodes['workflows'];
-        if (is_array($onHoldEpisodes) && 0 < $onHoldEpisodes['total']) {
-            foreach ($onHoldEpisodes['results'] as $event) {  
-                $onhold_items[] = $this->extractOnholdEpisode($event);
-            }
+        foreach ($onHoldEpisodes as $event) {
+            $onhold_items[] = $this->extractOnholdEpisode($event);
         }
     
         usort($onhold_items, array($this, 'sortbydate'));

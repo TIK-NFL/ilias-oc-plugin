@@ -24,88 +24,95 @@
 include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
 
 /**
-* ListGUI implementation for Matterhorn object plugin. This one
-* handles the presentation in container items (categories, courses, ...)
-* together with the corresponfing ...Access class.
-*
-* PLEASE do not create instances of larger classes here. Use the
-* ...Access class to get DB data and keep it small.
-*
-* @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
-*/
+ * ListGUI implementation for Matterhorn object plugin.
+ * This one
+ * handles the presentation in container items (categories, courses, ...)
+ * together with the corresponding ...Access class.
+ *
+ * PLEASE do not create instances of larger classes here. Use the
+ * ...Access class to get DB data and keep it small.
+ *
+ * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ */
 class ilObjMatterhornListGUI extends ilObjectPluginListGUI
 {
-    
+
     /**
-    * Init type
-    */
+     * Init type
+     */
     public function initType()
     {
         $this->setType("xmh");
     }
-    
+
     /**
-    * Get name of gui class handling the commands
-    */
+     * Get name of gui class handling the commands
+     */
     public function getGuiClass()
     {
         return "ilObjMatterhornGUI";
     }
-    
+
     /**
-    * Get commands
-    */
+     * Get commands
+     */
     public function initCommands()
     {
         return array(
             array(
                 "permission" => "read",
                 "cmd" => "showSeries",
-                "default" => true),
+                "default" => true
+            ),
             array(
                 "permission" => "write",
                 "cmd" => "editProperties",
                 "txt" => $this->txt("edit"),
-                "default" => false),
+                "default" => false
+            )
         );
     }
 
     /**
-    * Get item properties
-    *
-    * @return	array		array of property arrays:
-    *						"alert" (boolean) => display as an alert property (usually in red)
-    *						"property" (string) => property name
-    *						"value" (string) => property value
-    */
+     * Get item properties
+     *
+     * @return array array of property arrays:
+     *         "alert" (boolean) => display as an alert property (usually in red)
+     *         "property" (string) => property name
+     *         "value" (string) => property value
+     */
     public function getProperties()
     {
-        global $ilUser, $ilAccess;
-
+        global $DIC;
+        $ilUser = $DIC->user();
+        $ilAccess = $DIC->access();
+        
         $props = array();
-
+        
         $this->plugin->includeClass("class.ilObjMatterhornAccess.php");
-        if (!ilObjMatterhornAccess::checkOnline($this->obj_id)) {
-            $props[] = array("alert" => true, "property" => $this->txt("status"),
-                "value" => $this->txt("offline"));
-
+        if (! ilObjMatterhornAccess::checkOnline($this->obj_id)) {
+            $props[] = array(
+                "alert" => true,
+                "property" => $this->txt("status"),
+                "value" => $this->txt("offline")
+            );
         }
-
-        if ($a_user_id == "") {
-            $a_user_id = $ilUser->getId();
-        }
-
-        if ($ilAccess->checkAccessOfUser($a_user_id, "write", "", $this->ref_id)) {
+        
+        if ($ilAccess->checkAccess("write", "", $this->ref_id)) {
+            //TODO do not create instances of larger classes here.
             $this->plugin->includeClass("class.ilObjMatterhorn.php");
             $this->object = new ilObjMatterhorn($this->ref_id);
             $onHoldEpisodes = $this->object->getOnHoldEpisodes();
-            $tempEpisodes = $onHoldEpisodes['workflows'];
-            if ( 0 < $tempEpisodes['totalCount']) {
-                $props[] = array("alert" => false, "property" => $this->txt("to_edit"),
-                        "value" =>  $tempEpisodes['totalCount']);
+            $count = count($onHoldEpisodes);
+            if (0 < $count) {
+                $props[] = array(
+                    "alert" => false,
+                    "property" => $this->txt("to_edit"),
+                    "value" => (string) $count
+                );
             }
         }
-
+        
         return $props;
     }
 }

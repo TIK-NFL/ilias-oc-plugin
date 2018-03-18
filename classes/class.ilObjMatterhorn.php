@@ -619,7 +619,12 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curlret = curl_exec($ch);
         $searchResult = json_decode($curlret, true);
-        return $searchResult;
+        
+        if (is_array($searchResult)) {
+            return $searchResult['results'];
+        } else {
+            return [];
+        }
     }
 
     /**
