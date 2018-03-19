@@ -45,7 +45,7 @@ iliasopencast.upload = {
             location.href = 'http://browsehappy.com/';
     
         upload.r.assignBrowse(upload.browseButton);
-        const template = '<div data-uniqueid="{uniqueIdentifier}"><div class="left fileName">{fileName} ({file.type})<span class="deleteFile">X</span></div><div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;">0%</span></div></div>';
+        const template = '<div data-uniqueid="{{uniqueIdentifier}}"><div class="left fileName">{{fileName}} ({{file.type}})<span class="deleteFile">X</span></div><div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;">0%</span></div></div>';
         upload.r.on('fileAdded', function(file, event) {
             var rendered = Mustache.render(template, file);
             upload.results.append(rendered);
