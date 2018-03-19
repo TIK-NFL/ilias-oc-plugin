@@ -741,6 +741,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/resumable.js");
                 $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-datepicker.min.js");
                 $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-timepicker.min.js");
+                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/upload.js");
+                $tpl->addOnLoadCode("initUpload(iliasopencast);");
                 break;
             case 'scheduled':
                 $ilTabs->activateSubTab('schedule');
@@ -763,6 +765,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $tpl->setContent($jsConfig . $html);
         $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/mustache.min.js");
         $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/edit.js");
+        $tpl->addOnLoadCode("initEdit(iliasopencast);");
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
     }
 
