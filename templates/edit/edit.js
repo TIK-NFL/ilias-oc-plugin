@@ -218,6 +218,7 @@ iliasopencast.updateprocessing = function() {
         if (data.lastupdate > -1) {
             if (iliasopencast.lastupdate < data.lastupdate) {
                 updateTable(data['finished'], "finished", templates);
+                showNumberIndicatorOnSubtab("finishedepisodes", data.finished.length);
                 iliasopencast.lastupdate = data.lastupdate;
                 console.log("updated finished");
             }
@@ -225,6 +226,9 @@ iliasopencast.updateprocessing = function() {
         updateTable(data['processing'], "processing", templates);
         updateTable(data['onhold'], "onhold", templates);
         updateTable(data['scheduled'], "scheduled", templates);
+
+        showNumberIndicatorOnSubtab("processtrim", data.onhold.length + data.processing.length);
+        showNumberIndicatorOnSubtab("schedule", data.scheduled.length);
     });
 
     var updateTable = function(data, dataname, templates) {
@@ -239,6 +243,20 @@ iliasopencast.updateprocessing = function() {
 
         $("#iliasopencast_" + dataname + "table").html(tabledata);
     }
+}
+
+/**
+ * @param string
+ *            id id of sub tab
+ * @param number
+ *            number number to be shown
+ */
+function showNumberIndicatorOnSubtab(id, number) {
+    const tabContent = $("#ilSubTab #subtab_" + id + " a").html(function(index, html) {
+        const indexOfNumberIdicator = html.indexOf(" (<b>");
+        const text = indexOfNumberIdicator == -1 ? html : html.substring(0, indexOfNumberIdicator);
+        return text + (number == 0 ? "" : " (<b>" + number + "</b>)");
+    });
 }
 
 $(document).ready(function() {
