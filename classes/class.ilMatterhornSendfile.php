@@ -92,10 +92,6 @@ class ilMatterhornSendfile
         // echo "</pre>";
         // var_dump($_SESSION);
         // exit();
-        
-        // if (! file_exists($this->file)) {
-        // throw new Exception($this->plugin->txt("url_not_found"), 404);
-        // }
     }
 
     /**
@@ -243,11 +239,12 @@ class ilMatterhornSendfile
      */
     private function checkEpisodeAccess($permission = "read")
     {
+        global $DIC;
         if ($this->checkAccessObject($this->episode->getSeriesId(), $permission)) {
             return;
         }
         // none of the checks above gives access
-        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
+        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
     }
 
     /**
@@ -267,11 +264,12 @@ class ilMatterhornSendfile
      */
     private function checkFileAccess()
     {
+        global $DIC;
         if ($this->checkAccessObject($this->episode->getSeriesId())) {
             return;
         }
         // none of the checks above gives access
-        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
+        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
     }
 
     /**

@@ -170,11 +170,12 @@ class ilMatterhornUploadFile
      */
     public function checkEpisodeAccess()
     {
+        global $DIC;
         if ($this->checkAccessObject($this->obj_id)) {
             return true;
         }
         // none of the checks above gives access
-        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
+        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
     }
 
     /**

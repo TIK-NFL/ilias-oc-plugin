@@ -51,10 +51,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     */
     protected function afterConstructor()
     {
-        global $ilTabs;
         $this->getPlugin()->includeClass("class.ilMatterhornConfig.php");
         $this->configObject = new ilMatterhornConfig();
-        $this->tabs = $ilTabs;
     }
 
     /**
@@ -194,7 +192,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     */
     public function initPropertiesForm()
     {
-        global $ilCtrl;
+        global $DIC;
     
         include_once("Services/Form/classes/class.ilPropertyFormGUI.php");
         $this->form = new ilPropertyFormGUI();
@@ -232,7 +230,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $this->form->addCommandButton("updateProperties", $this->txt("save"));
 
         $this->form->setTitle($this->txt("edit_properties"));
-        $this->form->setFormAction($ilCtrl->getFormAction($this));
+        $this->form->setFormAction($DIC->ctrl()->getFormAction($this));
     }
     
     /**
@@ -257,7 +255,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     */
     public function updateProperties()
     {
-        global $tpl, $ilCtrl;
+        global $DIC;
+        $tpl = $DIC->ui()->mainTemplate();
     
         $this->initPropertiesForm();
         if ($this->form->checkInput()) {
@@ -269,8 +268,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $this->object->setManualRelease($this->form->getInput("manualRelease"));
             $this->object->setDownload($this->form->getInput("download"));
             $this->object->update();
-            ilUtil::sendSuccess($this->txt("msg_obj_modified"), true);
-            $ilCtrl->redirect($this, "editProperties");
+            ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
+            $DIC->ctrl()->redirect($this, "editProperties");
         }
 
         $this->form->setValuesByPost();
@@ -279,7 +278,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
     public function publish()
     {
-        global $ilCtrl;
+        global $DIC;
         $episodeId = $_GET["id"];
         ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
         $episode = $this->object->getEpisode($episodeId);
@@ -296,12 +295,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:" . $episode);
         }
-        $ilCtrl->redirect($this, "editFinishedEpisodes");
+        $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
 
     public function retract()
     {
-        global $ilCtrl;
+        global $DIC;
         $episodeId = $_GET["id"];
         ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
         $episode = $this->object->getEpisode($episodeId);
@@ -312,12 +311,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in retract episode:" . $episodeId);
         }
-        $ilCtrl->redirect($this, "editFinishedEpisodes");
+        $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
 
     public function deletescheduled()
     {
-        global $ilCtrl;
+        global $DIC;
         ilLoggerFactory::getLogger('xmh')->debug("ID:".$_GET["id"]);
         if (preg_match('/^[0-9]+/', $_GET["id"])) {
             $this->object->deleteschedule($_GET["id"]);
@@ -325,39 +324,42 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in deleteschedule:".$_GET["id"]);
         }
-        $ilCtrl->redirect($this, "editSchedule");
+        $DIC->ctrl()->redirect($this, "editSchedule");
     }
 
+    //
+    // Show content
+    //
     
-//
-// Show content
-//
-
     /**
-    * Show content
-    */
+     * Show content
+     */
     public function showEpisode()
     {
-        global $tpl, $ilTabs;
+        global $DIC;
+        $ilTabs = $DIC->tabs();
+        $tpl = $DIC->ui()->mainTemplate();
+        
         $this->checkPermission("read");
-        $theodulbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
-
-        $player = new ilTemplate("tpl.player.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+        $theodulbase = $this->getPlugin()->getDirectory() . "/templates/theodul";
+        
+        $player = $this->getPlugin()->getTemplate("default/tpl.player.html", true, false);
         $player->setVariable("INITJS", $theodulbase);
-
+        
         $tpl->setContent($player->get());
         $ilTabs->activateTab("content");
     }
 
     public function showSeries()
     {
-        global $tpl, $ilTabs, $ilCtrl;
-
+        global $DIC;
+        $ilCtrl = $DIC->ctrl();
+        $tpl = $DIC->ui()->mainTemplate();
         $this->checkPermission("read");
 
         $released_episodes = $this->extractReleasedEpisodes(true);
         if (! $this->object->getViewMode()) {
-            $seriestpl = new ilTemplate("tpl.series.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+            $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.html", true, true);
             $seriestpl->setCurrentBlock($this->object->getDownload()?"headerdownload":"header");
             $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
             $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
@@ -386,22 +388,31 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $html = $seriestpl->get();
             $tpl->setContent($html);
         } else {
-            $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
-            $seriestpl = new ilTemplate("tpl.series.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+            $factory = $DIC->ui()->factory();
+            $cards = array();
             foreach ($released_episodes as $item) {
-                $seriestpl->setCurrentBlock("videodiv");
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
-                $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
-                $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
-                $seriestpl->setVariable("TXT_TITLE", $item["title"]);
-                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
-                $seriestpl->parseCurrentBlock();
+                $url = $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode");
+                
+                $image = $factory->image()->responsive($item["previewurl"], $this->getText("preview"));
+                $content = $factory->listing()->descriptive(array(
+                    $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME))
+                ));
+                $cards[] = $factory->card($item["title"], $image)
+                    ->withSections(array(
+                    $content
+                ))
+                    ->withTitleAction($url);
             }
-            $html = $seriestpl->get();
+            
+            $deck = $factory->deck($cards);
+            $html = $DIC->ui()
+                ->renderer()
+                ->render($deck);
             $tpl->setContent($html);
         }
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
-        $ilTabs->activateTab("content");
+        $DIC->tabs()->activateTab("content");
     }
 
     private function extractProcessingEpisodes($workflow)
@@ -645,7 +656,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $factory = $DIC->ui()->factory();
         
         $ilTabs->activateTab("manage");
-        $editbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/edit";
+        $editbase = $this->getPlugin()->getDirectory() . "/templates/edit";
         $this->checkPermission("write");
         
         $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.js.html");
@@ -667,7 +678,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         ilLoggerFactory::getLogger('xmh')->debug($section);
         switch ($section) {
             case 'finished':
-                $this->tabs->activateSubTab('finishedepisodes');
+                $ilTabs->activateSubTab('finishedepisodes');
                 
                 $colums = array(
                     $this->getText("title"),
@@ -683,7 +694,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $content = $factory->panel()->standard($this->getText("finished_recordings"), $finishedTable);
                 break;
             case 'trimprocess':
-                $this->tabs->activateSubTab('processtrim');
+                $ilTabs->activateSubTab('processtrim');
                 
                 $processingTable = $this->getTableWithId("iliasopencast_processingtable", array(
                     $this->getText("title"),
@@ -703,7 +714,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 );
                 break;
             case 'upload':
-                $this->tabs->activateSubTab('upload');
+                $ilTabs->activateSubTab('upload');
                 
                 $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.html");
                 $seriestpl->setCurrentBlock("upload");
@@ -721,7 +732,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $content = $factory->panel()->standard($this->getText("add_new_episode"), $factory->legacy($seriestpl->get()));
                 break;
             case 'scheduled':
-                $this->tabs->activateSubTab('schedule');
+                $ilTabs->activateSubTab('schedule');
                 
                 $scheduledTable = $this->getTableWithId("iliasopencast_scheduledtable", array(
                     $this->getText("title"),
@@ -777,7 +788,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         global $tpl, $ilTabs, $ilCtrl;
         $this->checkPermission("write");
-        $trimbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/trim";
+        $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
 
         if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: ".$_GET["id"]);
@@ -810,7 +821,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 		}
 	    }
 
-            $trimview = new ilTemplate("tpl.trimview.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+            $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
             $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
@@ -849,8 +860,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             // if there are two tracks, there is also a sbs track. Otherwise use the only track present.
-            $downloadurlmp4 = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($editor->series->id)."/".$_GET["id"]."/previewsbs.mp4";
-            $downloadurlwebm = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($editor->series->id)."/".$_GET["id"]."/previewsbs.webm";
+            $downloadurlmp4 = $this->getPlugin()->getDirectory() . "/MHData/".CLIENT_ID."/".trim($editor->series->id)."/".$_GET["id"]."/previewsbs.mp4";
+            $downloadurlwebm = $this->getPlugin()->getDirectory() . "/MHData/".CLIENT_ID."/".trim($editor->series->id)."/".$_GET["id"]."/previewsbs.webm";
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_WEBM", $downloadurlwebm);
             
