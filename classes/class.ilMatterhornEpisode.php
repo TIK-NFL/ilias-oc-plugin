@@ -1,5 +1,9 @@
 <?php
 
+/**
+ *
+ * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
+ */
 class ilMatterhornEpisode
 {
 

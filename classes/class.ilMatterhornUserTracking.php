@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
+ */
 class ilMatterhornUserTracking
 {
 
@@ -47,8 +50,8 @@ class ilMatterhornUserTracking
     /**
      * Get the last view from this video from this user
      *
-     * @param int $user_id            
-     * @param string $episode_id            
+     * @param int $user_id
+     * @param string $episode_id
      * @return array view
      * @access private
      */
@@ -72,9 +75,9 @@ class ilMatterhornUserTracking
      * Add the view from this video from this user to DB.
      * If the view is an update from last view, update the DB.
      *
-     * @param int $user_id            
-     * @param string $episode_id            
-     * @param array $view            
+     * @param int $user_id
+     * @param string $episode_id
+     * @param array $view
      * @access private
      */
     private static function addView($user_id, $episode_id, $view)
@@ -92,7 +95,7 @@ class ilMatterhornUserTracking
     /**
      * Get the statistics form a video, includes view count for 10 sec Intervals of the video
      *
-     * @param ilMatterhornEpisode $episode            
+     * @param ilMatterhornEpisode $episode
      * @return array
      */
     public static function getStatisticFromVideo($episode)
@@ -148,8 +151,8 @@ class ilMatterhornUserTracking
     /**
      * Get the Footprints form a video, user
      *
-     * @param ilMatterhornEpisode $episode            
-     * @param int $user_id            
+     * @param ilMatterhornEpisode $episode
+     * @param int $user_id
      * @return array
      */
     public static function getFootprints($episode, $user_id)
@@ -195,7 +198,7 @@ class ilMatterhornUserTracking
     /**
      * Get the Views for a video
      *
-     * @param ilMatterhornEpisode $episode            
+     * @param ilMatterhornEpisode $episode
      * @return int
      */
     public static function getViews($episode)
@@ -233,8 +236,8 @@ class ilMatterhornUserTracking
     /**
      * Get the seconds of the last view from this video from this user
      *
-     * @param ilMatterhornEpisode $episode            
-     * @param int $user_id            
+     * @param ilMatterhornEpisode $episode
+     * @param int $user_id
      * @return int seconds
      */
     public static function getLastSecondViewed($episode, $user_id)
@@ -245,7 +248,7 @@ class ilMatterhornUserTracking
     /**
      * Delete all Views for the specified episode_id
      *
-     * @param ilMatterhornEpisode $episode            
+     * @param ilMatterhornEpisode $episode
      */
     public static function removeViews($episode)
     {
