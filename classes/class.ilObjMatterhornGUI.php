@@ -31,6 +31,7 @@ include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 * application classes to fulfill certain tasks.
 *
 * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+* @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
 *
 * $Id$
 *
@@ -380,7 +381,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
                 if ($this->object->getDownload()) {
                     $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
-                    $seriestpl->setVariable("TXT_DOWNLOAD", $this->getText("download"));
+                    $seriestpl->setVariable("TXT_DOWNLOAD", $DIC->language()->txt("download"));
                 }
                 $seriestpl->parseCurrentBlock();
             }
@@ -730,6 +731,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->parseCurrentBlock();
                 
                 $content = $factory->panel()->standard($this->getText("add_new_episode"), $factory->legacy($seriestpl->get()));
+                $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-datepicker3.min.css"));
+                $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
+                $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
+                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/resumable.js");
+                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-datepicker.min.js");
+                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-timepicker.min.js");
                 break;
             case 'scheduled':
                 $ilTabs->activateSubTab('schedule');
@@ -750,13 +757,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             ->render($content);
         
         $tpl->setContent($jsConfig . $html);
-        $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-datepicker3.min.css"));
-        $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
-        $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
-        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/resumable.js");
         $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/mustache.min.js");
-        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-datepicker.min.js");
-        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-timepicker.min.js");
         $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/edit.js");
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
     }
@@ -942,10 +943,5 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function getText($a_text)
     {
         return $this->txt($a_text);
-    }
-    
-    public function addInfoItems($info){
-        $info->addProperty("geht","vielleicht");
-        //ilLoggerFactory::getLogger('xmh')->debug('Info: '.$info);
     }
 }
