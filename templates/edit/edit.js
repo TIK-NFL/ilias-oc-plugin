@@ -43,14 +43,12 @@ iliasopencast.upload = {
         // if resumable is not supported aka IE
         if (!upload.r.support)
             location.href = 'http://browsehappy.com/';
-
+    
         upload.r.assignBrowse(upload.browseButton);
-
+        const template = '<div data-uniqueid="{uniqueIdentifier}"><div class="left fileName">{fileName} ({file.type})<span class="deleteFile">X</span></div><div class="progress"><div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;">0%</span></div></div>';
         upload.r.on('fileAdded', function(file, event) {
-            var template = '<div data-uniqueid="' + file.uniqueIdentifier + '">' + '<div class="left fileName">' + file.fileName + ' (' + file.file.type + ')'
-                    + '<span class="deleteFile">X</span></div>' + '<div class="progress">'
-                    + '<div class="progress-bar progress-bar-success" role="progressbar" style="width:0%;">0%</span>' + '</div>' + '</div>';
-            upload.results.append(template);
+            var rendered = Mustache.render(template, file);
+            upload.results.append(rendered);
             upload.browseButton.addClass("disabled");
             $('#iliasopencast_results .deleteFile').on('click', function() {
                 var self = $(this), parent = self.parent().parent(), identifier = parent.data('uniqueid'), file = upload.r.getFromUniqueIdentifier(identifier);
@@ -106,13 +104,13 @@ iliasopencast.upload = {
         });
 
         upload.r.on('fileProgress', function(file) {
-            var progress = Math.floor(file.progress() * 1000) / 10;
-            $('[data-uniqueId=' + file.uniqueIdentifier + ']').find('.progress-bar').css('width', progress + '%');
-            $('[data-uniqueId=' + file.uniqueIdentifier + ']').find('.progress-bar').html('&nbsp;' + progress + '%');
+            const progress = Math.floor(file.progress() * 1000) / 10;
+            $('[data-uniqueId=' + file.uniqueIdentifier + ']').find('.progress-bar').css('width', progress + '%').html('&nbsp;' + progress + '%').addClass("active progress-bar-striped");
         });
 
         upload.r.on('fileSuccess', function(file, message) {
             $('[data-uniqueId=' + file.uniqueIdentifier + ']').find('.progress').addClass('success');
+            $('[data-uniqueId=' + file.uniqueIdentifier + ']').find('.progress-bar').removeClass("active progress-bar-striped");
             $.post(ils.uploadtarget + "/finishUpload", {
                 seriesid : ils.seriesid,
                 mpid : file.mpid,
@@ -145,8 +143,7 @@ iliasopencast.upload = {
         });
 
         upload.r.on('fileError', function(file, message) {
-            console.log(message);
-
+            $('[data-uniqueId=' + file.uniqueIdentifier + ']').find('.progress-bar').removeClass("active progress-bar-striped").addClass("progress-bar-warning");
         });
         upload.r.on('cancel', function() {
             upload.nothingToUpload.show();
