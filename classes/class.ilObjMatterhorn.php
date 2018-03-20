@@ -154,7 +154,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         ilLoggerFactory::getLogger('xmh')->debug($identifier);
         if (204 == $httpCode) {
             $result = ilOpencastAPI::getInstance()->getSeries($this->getId());
-            $series = $result["identifier"];
+            $series = $result["series"];
             $httpCode = $result["httpCode"];
             
             ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server: " . $httpCode);
