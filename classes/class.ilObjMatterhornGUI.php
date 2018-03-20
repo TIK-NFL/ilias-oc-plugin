@@ -349,13 +349,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
         $ilCtrl = $DIC->ctrl();
         $tpl = $DIC->ui()->mainTemplate();
+        $factory = $DIC->ui()->factory();
+        
         $this->checkPermission("read");
         
         $released_episodes = $this->extractReleasedEpisodes(true);
         if (! $this->object->getViewMode()) {
             $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.html", true, true);
             $seriestpl->setCurrentBlock($this->object->getDownload() ? "headerdownload" : "header");
-            $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
             $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
             $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
             $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
@@ -383,7 +384,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $html = $seriestpl->get();
             $tpl->setContent($html);
         } else {
-            $factory = $DIC->ui()->factory();
             $cards = array();
             foreach ($released_episodes as $item) {
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
