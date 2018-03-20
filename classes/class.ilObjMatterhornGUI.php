@@ -393,10 +393,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $content = $factory->listing()->descriptive(array(
                     $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME))
                 ));
-                $cards[] = $factory->card($item["title"], $image)
-                    ->withSections(array(
+                $sections = array(
                     $content
-                ))
+                );
+                if ($this->object->getDownload()) {
+                    $sections[] = $factory->link()->standard($DIC->language()
+                        ->txt("download"), $item["downloadurl"]);
+                }
+                
+                $cards[] = $factory->card($item["title"], $image)
+                    ->withSections($sections)
                     ->withTitleAction($url);
             }
             
@@ -453,12 +459,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
     private function extractReleasedEpisodes($skipUnreleased = false)
     {
-        $released_episodes = $this->object->getReleasedEpisodes();
+        $releasedEpisodeIds = $this->object->getReleasedEpisodeIds();
         $episodes = array();
         
         foreach ($this->object->getSearchResult()->mediapackage as $value) {
             if ($skipUnreleased && $this->object->getManualRelease()) {
-                if (! in_array($value['id'], $released_episodes)) {
+                if (! in_array($value['id'], $releasedEpisodeIds)) {
                     continue;
                 }
             }
@@ -484,14 +490,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
             
-            $published = in_array($value['id'], $released_episodes);
+            $published = in_array($value['id'], $releasedEpisodeIds);
             
             $episode = array(
                 "title" => (string) $value->title,
                 "date" => (string) $value['start'],
                 "mhid" => $this->obj_id . "/" . (string) $value['id'],
                 "previewurl" => (string) $previewurl,
-                "downloadurl" => $downloadurl,
+                "downloadurl" => (string) $downloadurl,
                 "viewurl" => $this->getLinkForEpisodeUnescaped("showEpisode", $this->obj_id . "/" . (string) $value['id'])
             );
             if ($this->object->getManualRelease()) {

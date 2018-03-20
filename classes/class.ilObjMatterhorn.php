@@ -224,7 +224,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         
         $this->getPlugin()->includeClass("class.ilMatterhornUserTracking.php");
         
-        foreach ($this->getReleasedEpisodes() as $episode_id) {
+        foreach ($this->getReleasedEpisodeIds() as $episode_id) {
             ilMatterhornUserTracking::removeViews($this->getEpisode($episode_id));
         }
         
@@ -510,7 +510,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     /**
      * The series information returned by matterhorn
      *
-     * @return array the episodes by matterhorn for the given seris
+     * @return array the episodes by matterhorn for the this series
      */
     public function getSearchResult()
     {
@@ -540,13 +540,13 @@ class ilObjMatterhorn extends ilObjectPlugin
      *
      * @return array containing the ids of the episodes that have been made public available.
      */
-    public function getReleasedEpisodes()
+    public function getReleasedEpisodeIds()
     {
-        global $ilDB;
+        global $DIC;
         
-        $set = $ilDB->query("SELECT episode_id FROM rep_robj_xmh_rel_ep " . " WHERE series_id = " . $ilDB->quote($this->getId(), "integer"));
+        $set = $DIC->database()->query("SELECT episode_id FROM rep_robj_xmh_rel_ep WHERE series_id = " . $DIC->database()->quote($this->getId(), "integer"));
         $released = array();
-        while ($rec = $ilDB->fetchAssoc($set)) {
+        while ($rec = $DIC->database()->fetchAssoc($set)) {
             array_push($released, ($rec["episode_id"]));
         }
         return $released;
