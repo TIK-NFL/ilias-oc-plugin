@@ -38,6 +38,60 @@ class ilOpencastAPI
         return self::$instance;
     }
 
+    /**
+     * Do a GET Request of the given url on the Matterhorn Server with authorization
+     *
+     * @param string $url
+     * @throws Exception
+     * @return mixed
+     */
+    private function get($url)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
+        $this->setAuthorization($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        $response = curl_exec($ch);
+        if ($response === FALSE) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            throw new Exception("error GET request: $url $httpCode", 500);
+        }
+        return $response;
+    }
+
+    /**
+     * Do a POST Request of the given url on the Matterhorn Server with authorization
+     *
+     * @param string $url
+     * @param array $post
+     * @param boolean $returnHttpCode
+     * @throws Exception
+     * @return mixed
+     */
+    private function post($url, $post, $returnHttpCode = false)
+    {
+        $post_string = http_build_query($post);
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
+        curl_setopt($ch, CURLOPT_POST, count($post));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
+        $this->setAuthorization($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        $response = curl_exec($ch);
+        if ($response === FALSE) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            throw new Exception("error POST request: $url $post_string $httpCode", 500);
+        }
+        
+        if ($returnHttpCode) {
+            return curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        }
+        return $response;
+    }
+
     private function setAuthorization($ch)
     {
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
@@ -55,30 +109,14 @@ class ilOpencastAPI
      * @param integer $id
      * @param integer $refId
      * @param string $lectureId
-     * @return mixed[]
+     * @return string the series dublin core XML document
      */
     public function createSeries($title, $description, $id, $refId, $lectureId)
     {
-        $url = $this->configObject->getMatterhornServer() . "/series/";
+        $url = "/series/";
         $fields = $this->createPostFields($title, $description, $id, $refId, $lectureId);
-        
-        $fields_string = http_build_query($fields);
-        
-        // open connection
-        $ch = curl_init();
-        
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, count($fields));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-        $this->setAuthorization($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $identifier = (string) curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        return array(
-            "identifier" => $identifier,
-            "httpCode" => $httpCode
-        );
+        $seriesxml = (string) $this->post($url, $fields);
+        return $seriesxml;
     }
 
     /**
@@ -88,30 +126,14 @@ class ilOpencastAPI
      * @param integer $id
      * @param integer $refId
      * @param string $lectureId
-     * @return mixed[]
+     * @return integer the httpCode
      */
     public function updateSeries($title, $description, $id, $refId, $lectureId)
     {
-        $url = $this->configObject->getMatterhornServer() . "/series/";
+        $url = "/series/";
         $fields = $this->createPostFields($title, $description, $id, $refId, $lectureId);
-        
-        $fields_string = http_build_query($fields);
-        
-        // open connection
-        $ch = curl_init();
-        
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, count($fields));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-        $this->setAuthorization($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $identifier = (string) curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        return array(
-            "identifier" => $identifier,
-            "httpCode" => $httpCode
-        );
+        $httpCode = (integer) $this->post($url, $fields, true);
+        return $httpCode;
     }
 
     /**
@@ -166,26 +188,16 @@ class ilOpencastAPI
     }
 
     /**
+     * Get the series dublin core
      *
      * @param integer $id
-     * @return string[]
+     * @return string the series dublin core XML document
      */
     public function getSeries($id)
     {
-        $url = $this->configObject->getMatterhornServer() . "/series/" . $this->configObject->getSeriesPrefix() . $id . ".xml";
-        // open connection
-        $ch = curl_init();
-        
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        $this->setAuthorization($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $series = (string) curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        return array(
-            "series" => $series,
-            "httpCode" => $httpCode
-        );
+        $url = "/series/" . $this->configObject->getSeriesPrefix() . $id . ".xml";
+        $seriesxml = (string) $this->get($url);
+        return $seriesxml;
     }
 
     /**
@@ -197,7 +209,7 @@ class ilOpencastAPI
      */
     public function getScheduledEpisodes($id)
     {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
+        $url = "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
             'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $this->configObject->getSeriesPrefix() . $id,
@@ -206,14 +218,8 @@ class ilOpencastAPI
         
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
-        // open connection
-        $ch = curl_init();
         
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        $this->setAuthorization($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
+        $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
         
         return $searchResult;
@@ -245,7 +251,7 @@ class ilOpencastAPI
      */
     public function getOnHoldEpisodes($id)
     {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/events.json";
+        $url = "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
             'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $this->configObject->getSeriesPrefix() . $id,
@@ -254,14 +260,8 @@ class ilOpencastAPI
         
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
-        // open connection
-        $ch = curl_init();
         
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        $this->setAuthorization($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
+        $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
         
         if (is_array($searchResult)) {
@@ -280,7 +280,7 @@ class ilOpencastAPI
      */
     public function getProcessingEpisodes($id)
     {
-        $url = $this->configObject->getMatterhornServer() . "/workflow/instances.json";
+        $url = "/workflow/instances.json";
         $params = array(
             'seriesId' => $this->configObject->getSeriesPrefix() . $id,
             'state' => array(
@@ -295,16 +295,55 @@ class ilOpencastAPI
         
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
-        // open connection
-        $ch = curl_init();
         
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        $this->setAuthorization($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
+        $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
         
         return $searchResult;
+    }
+
+    /**
+     * Get editor tool json from admin-ng
+     *
+     * @param string $episodeid
+     *            the id of the episode
+     * @throws Exception
+     * @return mixed the decoded editor json from the admin ui
+     */
+    public function getEditor($episodeid)
+    {
+        $url = "/admin-ng/tools/$episodeid/editor.json";
+        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
+        try {
+            $curlret = $this->get($url);
+        } catch (Exception $e) {
+            throw new Exception("error loading editor.json for episode " . $episodeid . " code: " . $httpCode, 500, $e);
+        }
+        $editorjson = json_decode($curlret);
+        if ($editorjson === false) {
+            throw new Exception("error loading editor.json for episode " . $episodeid, 500);
+        }
+        return $editorjson;
+    }
+
+    /**
+     * Get the media objects json from admin-ng
+     *
+     * @param
+     *            string the id of the epsidoe
+     * @throws Exception
+     * @return mixed the decoded media json from the admin ui
+     */
+    public function getMedia($episodeid)
+    {
+        $url = "/admin-ng/event/$episodeid/asset/media/media.json";
+        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
+        
+        $curlret = $this->get($url);
+        $mediajson = json_decode($curlret);
+        if ($mediajson === false) {
+            throw new Exception("error loading media for episode " . $episodeid, 500);
+        }
+        return $mediajson;
     }
 }

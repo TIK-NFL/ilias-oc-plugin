@@ -32,7 +32,7 @@ class ilObjMatterhorn extends ilObjectPlugin
 {
 
     /**
-     * Stores the series
+     * Stores the series xml
      *
      * @var string
      */
@@ -108,12 +108,10 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        $result = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId(), $this->getLectureID());
+        $seriesxml = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId(), $this->getLectureID());
         
-        $identifier = $result["identifier"];
-        $httpCode = $result["httpCode"];
-        ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: " . $httpCode);
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, series, mhretval, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote($identifier, "text") . "," . $ilDB->quote($httpCode, "text") . "," . $ilDB->quote($this->getLectureID(), "text") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
+        ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $seriesxml");
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, series, mhretval, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote($seriesxml, "text") . "," . $ilDB->quote(201, "text") . "," . $ilDB->quote($this->getLectureID(), "text") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
         $this->createMetaData();
     }
 
@@ -145,21 +143,15 @@ class ilObjMatterhorn extends ilObjectPlugin
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
         // TODO #25 Dont overwrite changed data in opencast
-        $result = ilOpencastAPI::getInstance()->updateSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId(), $this->getLectureID());
+        $httpCode = ilOpencastAPI::getInstance()->updateSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId(), $this->getLectureID());
         
-        $identifier = $result["identifier"];
-        $httpCode = $result["httpCode"];
-        
-        ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: " . $httpCode);
-        ilLoggerFactory::getLogger('xmh')->debug($identifier);
+        ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: $httpCode");
         if (204 == $httpCode) {
-            $result = ilOpencastAPI::getInstance()->getSeries($this->getId());
-            $series = $result["series"];
-            $httpCode = $result["httpCode"];
+            $seriesxml = ilOpencastAPI::getInstance()->getSeries($this->getId());
             
-            ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server: " . $httpCode);
-            ilLoggerFactory::getLogger('xmh')->debug($series);
-            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", series = " . $ilDB->quote($series, "text") . ", lectureid = " . $ilDB->quote($this->getLectureID(), "text") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . ", mhretval = " . $ilDB->quote($httpCode, "text") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
+            ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server:");
+            ilLoggerFactory::getLogger('xmh')->debug($seriesxml);
+            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", series = " . $ilDB->quote($seriesxml, "text") . ", lectureid = " . $ilDB->quote($this->getLectureID(), "text") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . ", mhretval = " . $ilDB->quote(200, "text") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
             $this->updateMetaData();
             $this->doRead();
         }
@@ -512,29 +504,12 @@ class ilObjMatterhorn extends ilObjectPlugin
      * @param
      *            String the id of the epsidoe
      *            
-     * @return the editor json from the admin ui
+     * @return mixed the editor json from the admin ui
      */
     public function getEditor($episodeid)
     {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $episodeid . "/editor.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $editorjson = json_decode($curlret);
-        if ($editorjson === false) {
-            ilLoggerFactory::getLogger('xmh')->error("error loading editor.json for episode " . $episodeid);
-        }
-        return $editorjson;
+        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getEditor($episodeid);
     }
 
     /**
@@ -547,25 +522,8 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getMedia($episodeid)
     {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/event/" . $episodeid . "/asset/media/media.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $mediajson = json_decode($curlret);
-        if ($mediajson === false) {
-            ilLoggerFactory::getLogger('xmh')->error("error loading media for episode " . $episodeid);
-        }
-        return $mediajson;
+        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getMedia($episodeid);
     }
 
     /**
