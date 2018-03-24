@@ -176,61 +176,68 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $tpl, $ilTabs;
         
         $ilTabs->activateTab("properties");
-        $this->initPropertiesForm();
-        $this->getPropertiesValues();
-        $tpl->setContent($this->form->getHTML());
+        $form = $this->initPropertiesForm();
+        $values = $this->getPropertiesValues();
+        $form->setValuesByArray($values);
+        $tpl->setContent($form->getHTML());
     }
 
     /**
      * Init form.
+     *
+     * @return ilPropertyFormGUI
      */
-    public function initPropertiesForm()
+    private function initPropertiesForm()
     {
         global $DIC;
         
         include_once ("Services/Form/classes/class.ilPropertyFormGUI.php");
-        $this->form = new ilPropertyFormGUI();
+        $form = new ilPropertyFormGUI();
         
         // title
         $ti = new ilTextInputGUI($this->txt("title"), "title");
         $ti->setRequired(true);
-        $this->form->addItem($ti);
+        $form->addItem($ti);
         
         // description
         $ta = new ilTextAreaInputGUI($this->txt("description"), "desc");
-        $this->form->addItem($ta);
+        $form->addItem($ta);
         
         // vorlesungsnummer
         $tl = new ilTextAreaInputGUI($this->txt("lectureID"), "lectureID");
-        $this->form->addItem($tl);
+        $form->addItem($tl);
         
         // viewmode
         $vm = new ilCheckboxInputGUI($this->txt("viewmode"), "viewMode");
-        $this->form->addItem($vm);
+        $form->addItem($vm);
         
         // release episodes individually
         $mr = new ilCheckboxInputGUI($this->txt("manualRelease"), "manualRelease");
-        $this->form->addItem($mr);
+        $form->addItem($mr);
         
         // download
         $download = new ilCheckboxInputGUI($this->txt("enable_download"), "download");
-        $this->form->addItem($download);
+        $form->addItem($download);
         
         // online
         $cb = new ilCheckboxInputGUI($this->txt("online"), "online");
         
-        $this->form->addItem($cb);
-        $this->form->addCommandButton("updateProperties", $this->txt("save"));
+        $form->addItem($cb);
+        $form->addCommandButton("updateProperties", $this->txt("save"));
         
-        $this->form->setTitle($this->txt("edit_properties"));
-        $this->form->setFormAction($DIC->ctrl()
+        $form->setTitle($this->txt("edit_properties"));
+        $form->setFormAction($DIC->ctrl()
             ->getFormAction($this));
+        
+        return $form;
     }
 
     /**
      * Get values for edit properties form
+     *
+     * @return array values
      */
-    public function getPropertiesValues()
+    private function getPropertiesValues()
     {
         $values = array();
         $values["title"] = $this->object->getTitle();
@@ -240,7 +247,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $values["viewMode"] = $this->object->getViewMode();
         $values["manualRelease"] = $this->object->getManualRelease();
         $values["download"] = $this->object->getDownload();
-        $this->form->setValuesByArray($values);
+        return $values;
     }
 
     /**
@@ -251,22 +258,22 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
         $tpl = $DIC->ui()->mainTemplate();
         
-        $this->initPropertiesForm();
-        if ($this->form->checkInput()) {
-            $this->object->setTitle($this->form->getInput("title"));
-            $this->object->setDescription($this->form->getInput("desc"));
-            $this->object->setLectureID($this->form->getInput("lectureID"));
-            $this->object->setOnline($this->form->getInput("online"));
-            $this->object->setViewMode($this->form->getInput("viewMode"));
-            $this->object->setManualRelease($this->form->getInput("manualRelease"));
-            $this->object->setDownload($this->form->getInput("download"));
+        $form = $this->initPropertiesForm();
+        if ($form->checkInput()) {
+            $this->object->setTitle($form->getInput("title"));
+            $this->object->setDescription($form->getInput("desc"));
+            $this->object->setLectureID($form->getInput("lectureID"));
+            $this->object->setOnline($form->getInput("online"));
+            $this->object->setViewMode($form->getInput("viewMode"));
+            $this->object->setManualRelease($form->getInput("manualRelease"));
+            $this->object->setDownload($form->getInput("download"));
             $this->object->update();
             ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
             $DIC->ctrl()->redirect($this, "editProperties");
         }
         
-        $this->form->setValuesByPost();
-        $tpl->setContent($this->form->getHtml());
+        $form->setValuesByPost();
+        $tpl->setContent($form->getHtml());
     }
 
     public function publish()
