@@ -139,7 +139,8 @@ class ilObjMatterhorn extends ilObjectPlugin
         
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: $httpCode");
         if (204 == $httpCode) {
-            $seriesxml = ilOpencastAPI::getInstance()->getSeries($this->getId());
+            $series = $this->getSeriesInformationFromOpencast();
+            $seriesxml = $series["series"];
             
             ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server:");
             ilLoggerFactory::getLogger('xmh')->debug($seriesxml);
@@ -176,6 +177,27 @@ class ilObjMatterhorn extends ilObjectPlugin
         // $new_obj->setMhRetVal($this->getMhRetVal());
         // $new_obj->setOnline($this->getOnline());
         // $new_obj->update();
+    }
+
+    /**
+     *
+     * @return array
+     */
+    public function getSeriesInformationFromOpencast()
+    {
+        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        $seriesxml = ilOpencastAPI::getInstance()->getSeries($this->getId());
+        $xml = new SimpleXMLElement($seriesxml);
+        $children = $xml->children("http://purl.org/dc/terms/");
+        $series = array(
+            "series" => $seriesxml,
+            "title" => (string) $children->title,
+            "description" => (string) $children->description,
+            "publisher" => (string) $children->publisher,
+            "identifier" => (string) $children->identifier,
+            "references" => (string) $children->references
+        );
+        return $series;
     }
 
     /**

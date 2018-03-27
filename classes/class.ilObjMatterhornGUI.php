@@ -239,10 +239,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     private function getPropertiesValues()
     {
+        $series = $this->object->getSeriesInformationFromOpencast();
         $values = array();
         $values["title"] = $this->object->getTitle();
-        $values["desc"] = $this->object->getDescription();
-        $values["lectureID"] = $this->object->getLectureID();
+        $values["desc"] = $series["description"];
+        $values["lectureID"] = $series["references"];
         $values["online"] = $this->object->getOnline();
         $values["viewMode"] = $this->object->getViewMode();
         $values["manualRelease"] = $this->object->getManualRelease();
