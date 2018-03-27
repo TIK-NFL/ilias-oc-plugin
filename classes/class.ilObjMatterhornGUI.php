@@ -815,16 +815,17 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $tpl, $ilTabs, $ilCtrl;
         $this->checkPermission("write");
         $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
-        $id = $_GET["id"];
-        if (preg_match('/^[0-9a-f\-]+/', $id)) {
+        $episode = $this->object->getEpisode($_GET["id"]);
+        if ($episode) {
+            $id = $episode->getEpisodeId();
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
-            $editor = $this->object->getEditor($id);
+            $editor = $episode->getEditor();
             if (! strpos($this->object->getSeries(), $editor->series->id)) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
             $previewtracks = array();
             $worktracks = array();
-            $media = $this->object->getMedia($id);
+            $media = $episode->getMedia();
             foreach ($media as $track) {
                 switch ($track->type) {
                     case "presentation/source":
@@ -921,9 +922,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $ilCtrl;
-        if (preg_match('/^[0-9a-f\-]+/', $_POST["eventid"])) {
-            $editor = $this->object->getEditor($_POST["eventid"]);
-            ilLoggerFactory::getLogger('xmh')->debug("eventid" . print_r($editor, true));
+        $episode = $this->object->getEpisode($_POST["eventid"]);
+        if ($episode) {
+            $editor = $episode->getEditor();
+            ilLoggerFactory::getLogger('xmh')->debug("eventid " . print_r($editor, true));
             if (! strpos($this->object->getSeries(), $editor->series->id)) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
@@ -953,7 +955,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
             $trimout = $hours * 3600 + $minutes * 60 + $seconds;
             
-            $this->object->trim($_POST["eventid"], $keeptracks, $trimin, $trimout);
+            $this->object->trim($episode->getEpisodeId(), $keeptracks, $trimin, $trimout);
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {

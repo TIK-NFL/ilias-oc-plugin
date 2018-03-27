@@ -437,147 +437,19 @@ class ilObjMatterhorn extends ilObjectPlugin
     }
 
     /**
-     * Get workflow
-     *
-     * @param
-     *            Integer workflowid the workflow id
-     *            
-     * @return the workflow as decode json object
-     */
-    public function getWorkflow($workflowid)
-    {
-        $url = $this->configObject->getMatterhornServer() . "/workflow/instance/" . $workflowid . ".xml";
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $workflow = simplexml_load_string($curlret);
-        if ($workflow === false) {
-            ilLoggerFactory::getLogger('xmh')->debug("error loading workflow: " . $workflowid);
-            foreach (libxml_get_errors() as $error) {
-                ilLoggerFactory::getLogger('xmh')->debug("error : " . $error->message);
-            }
-        }
-        return $workflow;
-    }
-
-    /**
-     * Get editor tool json from admin-ng
-     *
-     * @param
-     *            String the id of the epsidoe
-     *            
-     * @return mixed the editor json from the admin ui
-     */
-    public function getEditor($episodeid)
-    {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getEditor($episodeid);
-    }
-
-    /**
-     * Get the media objects json from admin-ng
-     *
-     * @param
-     *            String the id of the epsidoe
-     *            
-     * @return the media json from the admin ui
-     */
-    public function getMedia($episodeid)
-    {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getMedia($episodeid);
-    }
-
-    /**
-     * Get dublincore
-     *
-     * @param
-     *            Integer workflowid the workflow id
-     *            
-     * @return the workflow as decode json object
-     */
-    public function getDublinCore($dublincoreurl)
-    {
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $dublincoreurl);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $dublincore = simplexml_load_string($curlret);
-        if ($dublincore === false) {
-            ilLoggerFactory::getLogger('xmh')->error("error loading dublincore: " . $dublincoreurl);
-            foreach (libxml_get_errors() as $error) {
-                ilLoggerFactory::getLogger('xmh')->error("error : " . $error->message);
-            }
-        }
-        return $dublincore;
-    }
-
-    /**
-     * Set dublincore
-     *
-     * @param
-     *            Integer workflowid the workflow id
-     *            
-     * @return the workflow as decode json object
-     */
-    public function setDublinCore($dublincoreurl, $content)
-    {
-        ilLoggerFactory::getLogger('xmh')->debug($httpCode . $content);
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $dublincoreurl);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        // add episode.xml to media package
-        $fields = array(
-            'content' => $content
-        );
-        $fields_string = http_build_query($fields);
-        curl_setopt($ch, CURLOPT_POST, count($fields));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-        $curlret = curl_exec($ch);
-        ilLoggerFactory::getLogger('xmh')->debug($httpCode . $curlret);
-        // return $dublincore;
-    }
-
-    /**
      * Trims the tracks of a workflow
      *
-     * @param
-     *            Integer workflowid the workflow id
-     * @param
-     *            String keeptrack the id of the track to be removed
-     * @param
-     *            Float trimin the start time of the new tracks
-     * @param
-     *            Float trimout the endtime of the video
+     * @param Integer $eventid
+     *            the workflow id
+     * @param String $keeptrack
+     *            the id of the track to be removed
+     * @param Float $trimin
+     *            the start time of the new tracks
+     * @param Float $trimout
+     *            the endtime of the video
      */
     public function trim($eventid, $keeptracks, $trimin, $trimout)
     {
-        $mp = $mediapackage;
         // open connection
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);

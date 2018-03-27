@@ -730,8 +730,7 @@ class ilMatterhornSendfile
         $typesplit = explode('.', $urlsplit[2]);
         ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
         ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl typesplit0:' . $typesplit[0] . ' typesplit1:' . $typesplit[1] . ' urlsplit1:' . $urlsplit[1]);
-        $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        $editor = ilOpencastAPI::getInstance()->getEditor($this->episode->getEpisodeId());
+        $editor = $this->episode->getEditor();
         $previewtrack = "";
         foreach ($editor->previews as $preview) {
             if (strpos($preview->uri, $typesplit[1])) {

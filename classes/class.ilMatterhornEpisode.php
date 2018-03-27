@@ -229,4 +229,28 @@ class ilMatterhornEpisode
         
         $ilDB->manipulate("DELETE FROM rep_robj_xmh_slidetext WHERE episode_id = " . $this->getQuoteEpisodeId() . " AND series_id  = " . $this->getQuoteSeriesId());
     }
+
+    /**
+     * Get editor tool json from admin-ng for this episode
+     *
+     * @return mixed the decoded editor json from the admin ui
+     */
+    public function getEditor()
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getEditor($this->getEpisodeId());
+    }
+
+    /**
+     * Get the media objects json from admin-ng for this episode
+     *
+     * @return mixed the media json from the admin ui
+     */
+    public function getMedia()
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getMedia($this->getEpisodeId());
+    }
 }

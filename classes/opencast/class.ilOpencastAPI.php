@@ -55,6 +55,9 @@ class ilOpencastAPI
         $response = curl_exec($ch);
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if (! $httpCode) {
+                throw new Exception("error GET request: $url", 503);
+            }
             throw new Exception("error GET request: $url $httpCode", 500);
         }
         return $response;
@@ -136,6 +139,21 @@ class ilOpencastAPI
         return $httpCode;
     }
 
+    private function getAccessControl()
+    {
+        global $DIC;
+        $ilUser = $DIC->user();
+        
+        $userid = $ilUser->getLogin();
+        if (null != $ilUser->getExternalAccount) {
+            $userid = $ilUser->getExternalAccount();
+        }
+        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security">
+								<ace><role>' . $userid . '</role><action>read</action><allow>true</allow></ace>
+								<ace><role>' . $userid . '</role><action>write</action><allow>true</allow></ace>
+						</acl>';
+    }
+
     /**
      *
      * @param string $title
@@ -147,17 +165,6 @@ class ilOpencastAPI
      */
     private function createPostFields($title, $description, $id, $refId, $lectureId)
     {
-        global $DIC;
-        $ilUser = $DIC->user();
-        
-        $userid = $ilUser->getLogin();
-        if (null != $ilUser->getExternalAccount) {
-            $userid = $ilUser->getExternalAccount();
-        }
-        $acl = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security">
-								<ace><role>' . $userid . '</role><action>read</action><allow>true</allow></ace>
-								<ace><role>' . $userid . '</role><action>write</action><allow>true</allow></ace>
-						</acl>';
         $fields = array(
             'series' => '<?xml version="1.0"?>
 <dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -182,7 +189,7 @@ class ilOpencastAPI
    	false
   </oc:promoted>
 </dublincore>',
-            'acl' => $acl
+            'acl' => $this->getAccessControl()
         );
         return $fields;
     }
@@ -317,7 +324,7 @@ class ilOpencastAPI
         try {
             $curlret = $this->get($url);
         } catch (Exception $e) {
-            throw new Exception("error loading editor.json for episode " . $episodeid . " code: " . $httpCode, 500, $e);
+            throw new Exception("error loading editor.json for episode " . $episodeid, 500, $e);
         }
         $editorjson = json_decode($curlret);
         if ($editorjson === false) {
@@ -330,7 +337,7 @@ class ilOpencastAPI
      * Get the media objects json from admin-ng
      *
      * @param
-     *            string the id of the epsidoe
+     *            string the id of the episode
      * @throws Exception
      * @return mixed the decoded media json from the admin ui
      */
