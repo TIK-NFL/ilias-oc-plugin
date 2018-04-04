@@ -113,6 +113,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         return "showSeries";
     }
 
+    /**
+     * @override
+     */
+    protected function supportsCloning()
+    {
+        return false;
+    }
+
     //
     // DISPLAY TABS
     //
