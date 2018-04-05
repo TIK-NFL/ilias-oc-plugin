@@ -141,7 +141,7 @@ class ilOpencastAPI
         $seriesxml = $this->getSeries($id);
         $xml = new SimpleXMLElement($seriesxml);
         $children = $xml->children("http://purl.org/dc/terms/");
-        $children->title = title($title, $id, $refId);
+        $children->title = self::title($title, $id, $refId);
         $children->description = $description;
         $children->modified = date("Y-m-d");
         $seriesxml = $xml->asXML();
@@ -185,7 +185,7 @@ class ilOpencastAPI
   xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
 		
-  <dcterms:title xml:lang="en">' . title($title, $id, $refId) . '</dcterms:title>
+  <dcterms:title xml:lang="en">' . self::title($title, $id, $refId) . '</dcterms:title>
   <dcterms:subject>
     </dcterms:subject>
   <dcterms:description xml:lang="en">' . $description . '</dcterms:description>
