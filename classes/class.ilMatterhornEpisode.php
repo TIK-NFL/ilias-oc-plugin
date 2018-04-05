@@ -246,7 +246,11 @@ class ilMatterhornEpisode
     {
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getEditor($this->getEpisodeId());
+        $editor = ilOpencastAPI::getInstance()->getEditor($this->getEpisodeId());
+        if ($this->getOpencastSeriesId() != (string) $editor->series->id) {
+            throw new Exception("series id not the same", 500);
+        }
+        return $editor;
     }
 
     /**

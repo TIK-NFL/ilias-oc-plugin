@@ -32,13 +32,6 @@ class ilObjMatterhorn extends ilObjectPlugin
 {
 
     /**
-     * Stores the series xml
-     *
-     * @var string
-     */
-    private $series;
-
-    /**
      * Stores the viewmode
      *
      * @var integer
@@ -97,7 +90,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $seriesxml = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
         
         ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $seriesxml");
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, series, viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote($seriesxml, "text") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
         $this->createMetaData();
     }
 
@@ -111,7 +104,6 @@ class ilObjMatterhorn extends ilObjectPlugin
         $set = $ilDB->query("SELECT * FROM rep_robj_xmh_data WHERE obj_id = " . $ilDB->quote($this->getId(), "integer"));
         while ($rec = $ilDB->fetchAssoc($set)) {
             $this->setOnline($rec["is_online"]);
-            $this->setSeries($rec["series"]);
             $this->setViewMode($rec["viewmode"]);
             $this->setManualRelease($rec["manualrelease"]);
             $this->setDownload($rec["download"]);
@@ -130,12 +122,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: $httpCode");
         if (204 == $httpCode) {
-            $series = $this->getSeriesInformationFromOpencast();
-            $seriesxml = $series["series"];
-            
-            ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server:");
-            ilLoggerFactory::getLogger('xmh')->debug($seriesxml);
-            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", series = " . $ilDB->quote($seriesxml, "text") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
+            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
             $this->updateMetaData();
             $this->doRead();
         }
@@ -164,7 +151,6 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function doCloneObject($neiw_obj, $a_target_id, $a_copy_id = null)
     {
-        // $new_obj->setSeries($this->getSeries());
         // $new_obj->setMhRetVal($this->getMhRetVal());
         // $new_obj->setOnline($this->getOnline());
         // $new_obj->update();
@@ -222,27 +208,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getOnline()
     {
         return $this->online;
-    }
-
-    /**
-     * Set series information
-     *
-     * @param String $a_val
-     *            series
-     */
-    public function setSeries($a_val)
-    {
-        $this->series = $a_val;
-    }
-
-    /**
-     * Get series information
-     *
-     * @return String series
-     */
-    public function getSeries()
-    {
-        return $this->series;
     }
 
     /**
