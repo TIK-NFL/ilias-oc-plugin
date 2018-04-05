@@ -126,7 +126,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        // TODO #25 Dont overwrite changed data in opencast
         $httpCode = ilOpencastAPI::getInstance()->updateSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
         
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: $httpCode");
@@ -186,8 +185,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             "title" => (string) $children->title,
             "description" => (string) $children->description,
             "publisher" => (string) $children->publisher,
-            "identifier" => (string) $children->identifier,
-            "references" => (string) $children->references
+            "identifier" => (string) $children->identifier
         );
         return $series;
     }

@@ -105,6 +105,11 @@ class ilOpencastAPI
         ));
     }
 
+    private static function title($title, $id, $refId)
+    {
+        return "ILIAS-$id:$refId:$title";
+    }
+
     /**
      *
      * @param string $title
@@ -132,7 +137,19 @@ class ilOpencastAPI
     public function updateSeries($title, $description, $id, $refId)
     {
         $url = "/series/";
-        $fields = $this->createPostFields($title, $description, $id, $refId);
+        
+        $seriesxml = $this->getSeries($id);
+        $xml = new SimpleXMLElement($seriesxml);
+        $children = $xml->children("http://purl.org/dc/terms/");
+        $children->title = title($title, $id, $refId);
+        $children->description = $description;
+        $children->modified = date("Y-m-d");
+        $seriesxml = $xml->asXML();
+        
+        $fields = array(
+            'series' => $seriesxml,
+            'acl' => $this->getAccessControl()
+        );
         $httpCode = (integer) $this->post($url, $fields, true);
         return $httpCode;
     }
@@ -168,7 +185,7 @@ class ilOpencastAPI
   xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
 		
-  <dcterms:title xml:lang="en">ILIAS-' . $id . ':' . $refId . ':' . $title . '</dcterms:title>
+  <dcterms:title xml:lang="en">' . title($title, $id, $refId) . '</dcterms:title>
   <dcterms:subject>
     </dcterms:subject>
   <dcterms:description xml:lang="en">' . $description . '</dcterms:description>
