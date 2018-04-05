@@ -39,13 +39,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     private $series;
 
     /**
-     * Stores the lectureID
-     *
-     * @var string
-     */
-    private $lectureID;
-
-    /**
      * Stores the viewmode
      *
      * @var integer
@@ -101,10 +94,10 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        $seriesxml = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId(), $this->getLectureID());
+        $seriesxml = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
         
         ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $seriesxml");
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, series, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote($seriesxml, "text") . "," . $ilDB->quote($this->getLectureID(), "text") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, series, viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote($seriesxml, "text") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
         $this->createMetaData();
     }
 
@@ -119,7 +112,6 @@ class ilObjMatterhorn extends ilObjectPlugin
         while ($rec = $ilDB->fetchAssoc($set)) {
             $this->setOnline($rec["is_online"]);
             $this->setSeries($rec["series"]);
-            $this->setLectureID($rec["lectureid"]);
             $this->setViewMode($rec["viewmode"]);
             $this->setManualRelease($rec["manualrelease"]);
             $this->setDownload($rec["download"]);
@@ -135,7 +127,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
         // TODO #25 Dont overwrite changed data in opencast
-        $httpCode = ilOpencastAPI::getInstance()->updateSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId(), $this->getLectureID());
+        $httpCode = ilOpencastAPI::getInstance()->updateSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
         
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: $httpCode");
         if (204 == $httpCode) {
@@ -143,7 +135,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             
             ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server:");
             ilLoggerFactory::getLogger('xmh')->debug($seriesxml);
-            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", series = " . $ilDB->quote($seriesxml, "text") . ", lectureid = " . $ilDB->quote($this->getLectureID(), "text") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
+            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", series = " . $ilDB->quote($seriesxml, "text") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
             $this->updateMetaData();
             $this->doRead();
         }
@@ -231,27 +223,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getSeries()
     {
         return $this->series;
-    }
-
-    /**
-     * Set the lectureID
-     *
-     * @param String $a_val
-     *            lectureID
-     */
-    public function setLectureID($a_val)
-    {
-        $this->lectureID = $a_val;
-    }
-
-    /**
-     * Get the lectureID
-     *
-     * @return string lectureID
-     */
-    public function getLectureID()
-    {
-        return $this->lectureID;
     }
 
     /**

@@ -211,10 +211,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $ta = new ilTextAreaInputGUI($this->txt("description"), "desc");
         $form->addItem($ta);
         
-        // vorlesungsnummer
-        $tl = new ilTextAreaInputGUI($this->txt("lectureID"), "lectureID");
-        $form->addItem($tl);
-        
         // viewmode
         $vm = new ilCheckboxInputGUI($this->txt("viewmode"), "viewMode");
         $form->addItem($vm);
@@ -250,7 +246,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $values = array();
         $values["title"] = $this->object->getTitle();
         $values["desc"] = $this->object->getDescription();
-        $values["lectureID"] = $this->object->getLectureID();
         $values["online"] = $this->object->getOnline();
         $values["viewMode"] = $this->object->getViewMode();
         $values["manualRelease"] = $this->object->getManualRelease();
@@ -270,7 +265,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         if ($form->checkInput()) {
             $this->object->setTitle($form->getInput("title"));
             $this->object->setDescription($form->getInput("desc"));
-            $this->object->setLectureID($form->getInput("lectureID"));
             $this->object->setOnline($form->getInput("online"));
             $this->object->setViewMode($form->getInput("viewMode"));
             $this->object->setManualRelease($form->getInput("manualRelease"));

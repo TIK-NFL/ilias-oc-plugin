@@ -111,13 +111,12 @@ class ilOpencastAPI
      * @param string $description
      * @param integer $id
      * @param integer $refId
-     * @param string $lectureId
      * @return string the series dublin core XML document
      */
-    public function createSeries($title, $description, $id, $refId, $lectureId)
+    public function createSeries($title, $description, $id, $refId)
     {
         $url = "/series/";
-        $fields = $this->createPostFields($title, $description, $id, $refId, $lectureId);
+        $fields = $this->createPostFields($title, $description, $id, $refId);
         $seriesxml = (string) $this->post($url, $fields);
         return $seriesxml;
     }
@@ -128,13 +127,12 @@ class ilOpencastAPI
      * @param string $description
      * @param integer $id
      * @param integer $refId
-     * @param string $lectureId
      * @return integer the httpCode
      */
-    public function updateSeries($title, $description, $id, $refId, $lectureId)
+    public function updateSeries($title, $description, $id, $refId)
     {
         $url = "/series/";
-        $fields = $this->createPostFields($title, $description, $id, $refId, $lectureId);
+        $fields = $this->createPostFields($title, $description, $id, $refId);
         $httpCode = (integer) $this->post($url, $fields, true);
         return $httpCode;
     }
@@ -160,10 +158,9 @@ class ilOpencastAPI
      * @param string $description
      * @param integer $id
      * @param integer $refId
-     * @param string $lectureId
      * @return string[]
      */
-    private function createPostFields($title, $description, $id, $refId, $lectureId)
+    private function createPostFields($title, $description, $id, $refId)
     {
         $fields = array(
             'series' => '<?xml version="1.0"?>
@@ -180,7 +177,6 @@ class ilOpencastAPI
     </dcterms:publisher>
   <dcterms:identifier>
     ' . $this->configObject->getSeriesPrefix() . $id . '</dcterms:identifier>
-  <dcterms:references>' . $lectureId . '</dcterms:references>
   <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("Y-m-d") . '</dcterms:modified>
   <dcterms:format xsi:type="dcterms:IMT">
     video/mp4
