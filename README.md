@@ -1,5 +1,5 @@
 # ilias-oc
-An ILIAS plugin for OpenCast 3.x
+An ILIAS Repository Object plugin for OpenCast 3.x
 
 This plugin creates a tight ingration of Opencast 3.x(1.6 and 2.0 see older releases) and ILIAS.
 This plugin also requires to a workflow handler for Opencast, which enables distributing the files in a way that
@@ -9,6 +9,8 @@ and not part of the official Opencast Distribution.
 ## Installation
 
 __REQUIRED__ Databases: MySQL/MariaDB
+
+It __MUST__ be installed into `Customizing/global/plugins/Services/Repository/RepositoryObject/`.
 
 The plugin folder __MUST__ be named 'Matterhorn'.
 

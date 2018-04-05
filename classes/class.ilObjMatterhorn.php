@@ -39,13 +39,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     private $series;
 
     /**
-     * Stores the lectureID
-     *
-     * @var string
-     */
-    private $lectureID;
-
-    /**
      * Stores the viewmode
      *
      * @var integer
@@ -101,10 +94,10 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        $seriesxml = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId(), $this->getLectureID());
+        $seriesxml = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
         
         ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $seriesxml");
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, series, lectureid,viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote($seriesxml, "text") . "," . $ilDB->quote($this->getLectureID(), "text") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, series, viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote($seriesxml, "text") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
         $this->createMetaData();
     }
 
@@ -119,7 +112,6 @@ class ilObjMatterhorn extends ilObjectPlugin
         while ($rec = $ilDB->fetchAssoc($set)) {
             $this->setOnline($rec["is_online"]);
             $this->setSeries($rec["series"]);
-            $this->setLectureID($rec["lectureid"]);
             $this->setViewMode($rec["viewmode"]);
             $this->setManualRelease($rec["manualrelease"]);
             $this->setDownload($rec["download"]);
@@ -135,7 +127,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
         // TODO #25 Dont overwrite changed data in opencast
-        $httpCode = ilOpencastAPI::getInstance()->updateSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId(), $this->getLectureID());
+        $httpCode = ilOpencastAPI::getInstance()->updateSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
         
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: $httpCode");
         if (204 == $httpCode) {
@@ -144,7 +136,7 @@ class ilObjMatterhorn extends ilObjectPlugin
             
             ilLoggerFactory::getLogger('xmh')->info("Retrieve current series from server:");
             ilLoggerFactory::getLogger('xmh')->debug($seriesxml);
-            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", series = " . $ilDB->quote($seriesxml, "text") . ", lectureid = " . $ilDB->quote($this->getLectureID(), "text") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
+            $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", series = " . $ilDB->quote($seriesxml, "text") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
             $this->updateMetaData();
             $this->doRead();
         }
@@ -253,27 +245,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getSeries()
     {
         return $this->series;
-    }
-
-    /**
-     * Set the lectureID
-     *
-     * @param String $a_val
-     *            lectureID
-     */
-    public function setLectureID($a_val)
-    {
-        $this->lectureID = $a_val;
-    }
-
-    /**
-     * Get the lectureID
-     *
-     * @return string lectureID
-     */
-    public function getLectureID()
-    {
-        return $this->lectureID;
     }
 
     /**
@@ -459,147 +430,19 @@ class ilObjMatterhorn extends ilObjectPlugin
     }
 
     /**
-     * Get workflow
-     *
-     * @param
-     *            Integer workflowid the workflow id
-     *            
-     * @return the workflow as decode json object
-     */
-    public function getWorkflow($workflowid)
-    {
-        $url = $this->configObject->getMatterhornServer() . "/workflow/instance/" . $workflowid . ".xml";
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $workflow = simplexml_load_string($curlret);
-        if ($workflow === false) {
-            ilLoggerFactory::getLogger('xmh')->debug("error loading workflow: " . $workflowid);
-            foreach (libxml_get_errors() as $error) {
-                ilLoggerFactory::getLogger('xmh')->debug("error : " . $error->message);
-            }
-        }
-        return $workflow;
-    }
-
-    /**
-     * Get editor tool json from admin-ng
-     *
-     * @param
-     *            String the id of the epsidoe
-     *            
-     * @return mixed the editor json from the admin ui
-     */
-    public function getEditor($episodeid)
-    {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getEditor($episodeid);
-    }
-
-    /**
-     * Get the media objects json from admin-ng
-     *
-     * @param
-     *            String the id of the epsidoe
-     *            
-     * @return the media json from the admin ui
-     */
-    public function getMedia($episodeid)
-    {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getMedia($episodeid);
-    }
-
-    /**
-     * Get dublincore
-     *
-     * @param
-     *            Integer workflowid the workflow id
-     *            
-     * @return the workflow as decode json object
-     */
-    public function getDublinCore($dublincoreurl)
-    {
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $dublincoreurl);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $dublincore = simplexml_load_string($curlret);
-        if ($dublincore === false) {
-            ilLoggerFactory::getLogger('xmh')->error("error loading dublincore: " . $dublincoreurl);
-            foreach (libxml_get_errors() as $error) {
-                ilLoggerFactory::getLogger('xmh')->error("error : " . $error->message);
-            }
-        }
-        return $dublincore;
-    }
-
-    /**
-     * Set dublincore
-     *
-     * @param
-     *            Integer workflowid the workflow id
-     *            
-     * @return the workflow as decode json object
-     */
-    public function setDublinCore($dublincoreurl, $content)
-    {
-        ilLoggerFactory::getLogger('xmh')->debug($httpCode . $content);
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $dublincoreurl);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        // add episode.xml to media package
-        $fields = array(
-            'content' => $content
-        );
-        $fields_string = http_build_query($fields);
-        curl_setopt($ch, CURLOPT_POST, count($fields));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-        $curlret = curl_exec($ch);
-        ilLoggerFactory::getLogger('xmh')->debug($httpCode . $curlret);
-        // return $dublincore;
-    }
-
-    /**
      * Trims the tracks of a workflow
      *
-     * @param
-     *            Integer workflowid the workflow id
-     * @param
-     *            String keeptrack the id of the track to be removed
-     * @param
-     *            Float trimin the start time of the new tracks
-     * @param
-     *            Float trimout the endtime of the video
+     * @param Integer $eventid
+     *            the workflow id
+     * @param String $keeptrack
+     *            the id of the track to be removed
+     * @param Float $trimin
+     *            the start time of the new tracks
+     * @param Float $trimout
+     *            the endtime of the video
      */
     public function trim($eventid, $keeptracks, $trimin, $trimout)
     {
-        $mp = $mediapackage;
         // open connection
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);

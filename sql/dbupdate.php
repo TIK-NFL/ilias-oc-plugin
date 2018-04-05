@@ -377,4 +377,5 @@ $ilDB->manipulate('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('dis
 <#18>
 <?php
 $ilDB->dropTableColumn('rep_robj_xmh_data', 'mhretval');
+$ilDB->dropTableColumn('rep_robj_xmh_data', 'lectureid');
 ?>

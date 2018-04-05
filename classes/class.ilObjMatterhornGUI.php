@@ -113,6 +113,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         return "showSeries";
     }
 
+    /**
+     * @override
+     */
+    protected function supportsCloning()
+    {
+        return false;
+    }
+
     //
     // DISPLAY TABS
     //
@@ -203,10 +211,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $ta = new ilTextAreaInputGUI($this->txt("description"), "desc");
         $form->addItem($ta);
         
-        // vorlesungsnummer
-        $tl = new ilTextAreaInputGUI($this->txt("lectureID"), "lectureID");
-        $form->addItem($tl);
-        
         // viewmode
         $vm = new ilCheckboxInputGUI($this->txt("viewmode"), "viewMode");
         $form->addItem($vm);
@@ -243,7 +247,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $values = array();
         $values["title"] = $this->object->getTitle();
         $values["desc"] = $series["description"];
-        $values["lectureID"] = $series["references"];
         $values["online"] = $this->object->getOnline();
         $values["viewMode"] = $this->object->getViewMode();
         $values["manualRelease"] = $this->object->getManualRelease();
@@ -263,7 +266,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         if ($form->checkInput()) {
             $this->object->setTitle($form->getInput("title"));
             $this->object->setDescription($form->getInput("desc"));
-            $this->object->setLectureID($form->getInput("lectureID"));
             $this->object->setOnline($form->getInput("online"));
             $this->object->setViewMode($form->getInput("viewMode"));
             $this->object->setManualRelease($form->getInput("manualRelease"));
@@ -320,9 +322,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET["id"];
         ilLoggerFactory::getLogger('xmh')->debug("ID:$episodeId");
-        if (preg_match('/^[0-9]+/', $episodeId)) {
-            $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-            ilOpencastAPI::getInstance()->deleteschedule($episodeId);
+        $episode = $this->object->getEpisode($episodeId);
+        
+        if ($episode) {
+            $episode->deletescheduled();
             ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in deleteschedule:$episodeId");
@@ -816,16 +819,17 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $tpl, $ilTabs, $ilCtrl;
         $this->checkPermission("write");
         $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
-        $id = $_GET["id"];
-        if (preg_match('/^[0-9a-f\-]+/', $id)) {
+        $episode = $this->object->getEpisode($_GET["id"]);
+        if ($episode) {
+            $id = $episode->getEpisodeId();
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
-            $editor = $this->object->getEditor($id);
+            $editor = $episode->getEditor();
             if (! strpos($this->object->getSeries(), $editor->series->id)) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
             $previewtracks = array();
             $worktracks = array();
-            $media = $this->object->getMedia($id);
+            $media = $episode->getMedia();
             foreach ($media as $track) {
                 switch ($track->type) {
                     case "presentation/source":
@@ -922,9 +926,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $ilCtrl;
-        if (preg_match('/^[0-9a-f\-]+/', $_POST["eventid"])) {
-            $editor = $this->object->getEditor($_POST["eventid"]);
-            ilLoggerFactory::getLogger('xmh')->debug("eventid" . print_r($editor, true));
+        $episode = $this->object->getEpisode($_POST["eventid"]);
+        if ($episode) {
+            $editor = $episode->getEditor();
+            ilLoggerFactory::getLogger('xmh')->debug("eventid " . print_r($editor, true));
             if (! strpos($this->object->getSeries(), $editor->series->id)) {
                 $ilCtrl->redirect($this, "editTrimProcess");
             }
@@ -954,7 +959,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
             $trimout = $hours * 3600 + $minutes * 60 + $seconds;
             
-            $this->object->trim($_POST["eventid"], $keeptracks, $trimin, $trimout);
+            $this->object->trim($episode->getEpisodeId(), $keeptracks, $trimin, $trimout);
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {
@@ -966,5 +971,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function getText($a_text)
     {
         return $this->txt($a_text);
+    }
+
+    public function addInfoItems($info)
+    {
+        $info->addSection($this->getText("opencast_information"));
+        $info->addProperty($this->getText("series_id"), $this->configObject->getSeriesPrefix() . $this->object->getId());
     }
 }
