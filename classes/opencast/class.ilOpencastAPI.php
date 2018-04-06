@@ -140,10 +140,12 @@ class ilOpencastAPI
         
         $seriesxml = $this->getSeries($id);
         $xml = new SimpleXMLElement($seriesxml);
-        $children = $xml->children("http://purl.org/dc/terms/");
-        $children->title = self::title($title, $id, $refId);
-        $children->description = $description;
-        $children->modified = date("Y-m-d");
+        $dc = $xml->children("http://purl.org/dc/terms/");
+        $dc->title = self::title($title, $id, $refId);
+        $dc->description = $description;
+        $dc->modified = date("Y-m-d");
+        //workaround for Opencast return 201(CREATED) instead of 204(UPDATED)
+        unset($dc->created);
         $seriesxml = $xml->asXML();
         
         $fields = array(
