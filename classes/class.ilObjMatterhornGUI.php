@@ -243,9 +243,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     private function getPropertiesValues()
     {
+        $series = $this->object->getSeriesInformationFromOpencast();
         $values = array();
         $values["title"] = $this->object->getTitle();
-        $values["desc"] = $this->object->getDescription();
+        $values["desc"] = $series["description"];
         $values["online"] = $this->object->getOnline();
         $values["viewMode"] = $this->object->getViewMode();
         $values["manualRelease"] = $this->object->getManualRelease();
@@ -823,9 +824,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $id = $episode->getEpisodeId();
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
             $editor = $episode->getEditor();
-            if (! strpos($this->object->getSeries(), $editor->series->id)) {
-                $ilCtrl->redirect($this, "editTrimProcess");
-            }
             $previewtracks = array();
             $worktracks = array();
             $media = $episode->getMedia();
@@ -929,9 +927,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         if ($episode) {
             $editor = $episode->getEditor();
             ilLoggerFactory::getLogger('xmh')->debug("eventid " . print_r($editor, true));
-            if (! strpos($this->object->getSeries(), $editor->series->id)) {
-                $ilCtrl->redirect($this, "editTrimProcess");
-            }
             // $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
             $tracks = array();
             if (isset($_POST["lefttrack"])) {
