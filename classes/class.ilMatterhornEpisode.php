@@ -126,6 +126,15 @@ class ilMatterhornEpisode
         return $title;
     }
 
+    public function setTitle($title)
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
+            "title" => $title
+        ));
+    }
+
     /**
      * publish this episode
      */

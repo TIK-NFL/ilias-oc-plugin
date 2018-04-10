@@ -816,7 +816,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     public function showTrimEditor()
     {
-        global $tpl, $ilTabs, $ilCtrl;
+        global $DIC;
+        $tpl = $DIC->ui()->mainTemplate();
+        $ilCtrl = $DIC->ctrl();
+        $factory = $DIC->ui()->factory();
         $this->checkPermission("write");
         $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
         $episode = $this->object->getEpisode($_GET["id"]);
@@ -849,9 +852,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             
             $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
             $trimview->setCurrentBlock("formstart");
-            $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
-            $trimview->setVariable("TRACKTITLE", $mediapackage->title);
+            $trimview->setVariable("TRACKTITLE", $editor->title);
             $trimview->setVariable("INITJS", $trimbase);
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
             $trimview->setVariable("WFID", $id);
@@ -910,11 +912,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_OUTPOINT", $this->getText("outpoint"));
             $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d", $hours, $min, $sec));
             $trimview->parseCurrentBlock();
-            $tpl->setContent($trimview->get());
+            $editorHtml = $trimview->get();
+            $factory->panel()->standard($this->getText("ilias_trim_editor"), $factory->legacy($editorHtml));
+            $html = $DIC->ui()
+                ->renderer()
+                ->render($content);
+            $tpl->setContent($html);
             $tpl->addCss("$trimbase/video-js/video-js.css");
             $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/jquery-ui.min.css");
             $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
-            $ilTabs->activateTab("manage");
+            $DIC->tabs()->activateTab("manage");
         } else {
             $ilCtrl->redirect($this, "editTrimProcess");
         }
@@ -925,9 +932,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $ilCtrl;
         $episode = $this->object->getEpisode($_POST["eventid"]);
         if ($episode) {
+            $title = (string) ilUtil::stripScriptHTML($_POST["tracktitle"]);
+            if ($title) {
+                $episode->setTitle($title);
+            }
             $editor = $episode->getEditor();
             ilLoggerFactory::getLogger('xmh')->debug("eventid " . print_r($editor, true));
-            // $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
             $tracks = array();
             if (isset($_POST["lefttrack"])) {
                 $track = array();

@@ -49,7 +49,7 @@ class ilOpencastAPI
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
-        $this->setAuthorization($ch);
+        $this->digestAuthentication($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         
         $response = curl_exec($ch);
@@ -80,9 +80,9 @@ class ilOpencastAPI
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
         curl_setopt($ch, CURLOPT_POST, count($post));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
-        $this->setAuthorization($ch);
+        $this->digestAuthentication($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         $response = curl_exec($ch);
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -94,8 +94,42 @@ class ilOpencastAPI
         }
         return $response;
     }
+    
+    /**
+     * Do a PUT Request of the given url on the Opencast Server with Basic Authentication
+     *
+     * @param string $url
+     * @param array $post
+     * @param boolean $returnHttpCode
+     * @throws Exception
+     * @return mixed
+     */
+    private function put($url, $post, $returnHttpCode = false)
+    {
+        $post_string = http_build_query($post);
+        
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
+        curl_setopt($ch, CURLOPT_POST, count($post));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
+        $this->basicAuthentication($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        if ($response === FALSE) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            throw new Exception("error PUT request: $url $post_string $httpCode", 500);
+        }
+        
+        if ($returnHttpCode) {
+            return curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        }
+        return $response;
+    }
 
-    private function setAuthorization($ch)
+    private function digestAuthentication($ch)
     {
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
         curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
@@ -103,6 +137,11 @@ class ilOpencastAPI
             "X-Requested-Auth: Digest",
             "X-Opencast-Matterhorn-Authorization: true"
         ));
+    }
+    
+    private function basicAuthentication($ch) {
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getOpencastAPIUser() . ':' . $this->configObject->getOpencastAPIPassword());
     }
 
     private static function title($title, $id, $refId)
@@ -256,7 +295,7 @@ class ilOpencastAPI
         
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        $this->setAuthorization($ch);
+        $this->digestAuthentication($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curlret = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -367,5 +406,31 @@ class ilOpencastAPI
             throw new Exception("error loading media for episode " . $episodeid, 500);
         }
         return $mediajson;
+    }
+
+    /**
+     *
+     * @param string $episodeid
+     * @param array $metadata
+     * @param string $type
+     */
+    public function setEpisodeMetadata($episodeid, $metadata, $type = "dublincore/episode")
+    {
+        $url = "/api/events/$episodeid/metadata";
+        $query = http_build_query(array(
+            "type" => $type
+        ));
+        $adapter = array();
+        foreach ($metadata as $id => $value) {
+            $adapter[] = array(
+                "id" => $id,
+                "value" => $value
+            );
+        }
+        
+        $post = array(
+            "metadata" => json_encode($adapter)
+        );
+        $this->put("$url?$query", $post);
     }
 }

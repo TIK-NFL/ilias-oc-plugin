@@ -34,6 +34,8 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $values['mh_server_engage'] = $this->configObject->getMatterhornEngageServer();
         $values['mh_digest_user'] = $this->configObject->getMatterhornUser();
         $values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
+        $values['oc_api_user'] = $this->configObject->getOpencastAPIUser();
+        $values['oc_api_password'] = $this->configObject->getOpencastAPIPassword();
         $values['mh_directory'] = $this->configObject->getMatterhornDirectory();
         $values['xsendfile_header'] = $this->configObject->getXSendfileHeader();
         $values['distribution_directory'] = $this->configObject->getDistributionDirectory();
@@ -84,6 +86,20 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         
         // mh digest password
         $mh_digest_password = new ilTextInputGUI($pl->txt('mh_digest_password'), 'mh_digest_password');
+        $mh_digest_password->setRequired(true);
+        $mh_digest_password->setMaxLength(100);
+        $mh_digest_password->setSize(100);
+        $form->addItem($mh_digest_password);
+        
+        // oc api user
+        $mh_digest_user = new ilTextInputGUI($pl->txt('oc_api_user'), 'oc_api_user');
+        $mh_digest_user->setRequired(true);
+        $mh_digest_user->setMaxLength(100);
+        $mh_digest_user->setSize(100);
+        $form->addItem($mh_digest_user);
+        
+        // oc api password
+        $mh_digest_password = new ilTextInputGUI($pl->txt('oc_api_password'), 'oc_api_password');
         $mh_digest_password->setRequired(true);
         $mh_digest_password->setMaxLength(100);
         $mh_digest_password->setSize(100);
@@ -140,6 +156,8 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $mh_server_engage = $form->getInput('mh_server_engage');
             $mh_digest_user = $form->getInput('mh_digest_user');
             $mh_digest_password = $form->getInput('mh_digest_password');
+            $oc_api_user = $form->getInput('oc_api_user');
+            $oc_api_password = $form->getInput('oc_api_password');
             $mh_directory = $form->getInput('mh_directory');
             $xsendfile_header = $form->getInput('xsendfile_header');
             $distribution_directory = $form->getInput('distribution_directory');
@@ -150,6 +168,8 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $this->configObject->setMatterhornEngageServer($mh_server_engage);
             $this->configObject->setMatterhornUser($mh_digest_user);
             $this->configObject->setMatterhornPassword($mh_digest_password);
+            $this->configObject->setOpencastAPIUser($oc_api_user);
+            $this->configObject->setOpencastAPIPassword($oc_api_password);
             $this->configObject->setMatterhornDirectory($mh_directory);
             $this->configObject->setXSendfileHeader($xsendfile_header);
             $this->configObject->setDistributionDirectory($distribution_directory);
