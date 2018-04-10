@@ -913,7 +913,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d", $hours, $min, $sec));
             $trimview->parseCurrentBlock();
             $editorHtml = $trimview->get();
-            $factory->panel()->standard($this->getText("ilias_trim_editor"), $factory->legacy($editorHtml));
+            $content = $factory->panel()->standard($this->getText("ilias_trim_editor"), $factory->legacy($editorHtml));
             $html = $DIC->ui()
                 ->renderer()
                 ->render($content);
