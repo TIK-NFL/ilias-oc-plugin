@@ -1,60 +1,55 @@
 <?php
 /**
-    +-----------------------------------------------------------------------------+
-    | ILIAS open source                                                           |
-    +-----------------------------------------------------------------------------+
-    | Copyright (c) 1998-2009 ILIAS open source, University of Cologne            |
-    |                                                                             |
-    | This program is free software; you can redistribute it and/or               |
-    | modify it under the terms of the GNU General Public License                 |
-    | as published by the Free Software Foundation; either version 2              |
-    | of the License, or (at your option) any later version.                      |
-    |                                                                             |
-    | This program is distributed in the hope that it will be useful,             |
-    | but WITHOUT ANY WARRANTY; without even the implied warranty of              |
-    | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               |
-    | GNU General Public License for more details.                                |
-    |                                                                             |
-    | You should have received a copy of the GNU General Public License           |
-    | along with this program; if not, write to the Free Software                 |
-    | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
-    +-----------------------------------------------------------------------------+
-*/
-
-
-include_once("./Services/Repository/classes/class.ilObjectPluginGUI.php");
+ +-----------------------------------------------------------------------------+
+ | ILIAS open source                                                           |
+ +-----------------------------------------------------------------------------+
+ | Copyright (c) 1998-2009 ILIAS open source, University of Cologne            |
+ |                                                                             |
+ | This program is free software; you can redistribute it and/or               |
+ | modify it under the terms of the GNU General Public License                 |
+ | as published by the Free Software Foundation; either version 2              |
+ | of the License, or (at your option) any later version.                      |
+ |                                                                             |
+ | This program is distributed in the hope that it will be useful,             |
+ | but WITHOUT ANY WARRANTY; without even the implied warranty of              |
+ | MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the               |
+ | GNU General Public License for more details.                                |
+ |                                                                             |
+ | You should have received a copy of the GNU General Public License           |
+ | along with this program; if not, write to the Free Software                 |
+ | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
+ +-----------------------------------------------------------------------------+
+ */
+include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 
 /**
-* User Interface class for Opencast repository object.
-*
-* User interface classes process GET and POST parameter and call
-* application classes to fulfill certain tasks.
-*
-* @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
-*
-* $Id$
-*
-* Integration into control structure:
-* - The GUI class is called by ilRepositoryGUI
-* - GUI classes used by this class are ilPermissionGUI (provides the rbac
-*   screens) and ilInfoScreenGUI (handles the info screen).
-*
-* @ilCtrl_isCalledBy ilObjMatterhornGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
-* @ilCtrl_Calls ilObjMatterhornGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI
-* @ilCtrl_Calls ilObjMatterhornGUI: ilCommonActionDispatcherGUI
-*
-*/
+ * User Interface class for Opencast repository object.
+ *
+ * User interface classes process GET and POST parameter and call
+ * application classes to fulfill certain tasks.
+ *
+ * Integration into control structure:
+ * - The GUI class is called by ilRepositoryGUI
+ * - GUI classes used by this class are ilPermissionGUI (provides the rbac
+ * screens) and ilInfoScreenGUI (handles the info screen).
+ *
+ * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
+ *
+ * @ilCtrl_isCalledBy ilObjMatterhornGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
+ * @ilCtrl_Calls ilObjMatterhornGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI
+ * @ilCtrl_Calls ilObjMatterhornGUI: ilCommonActionDispatcherGUI
+ */
 class ilObjMatterhornGUI extends ilObjectPluginGUI
 {
+
     /**
-    * Initialisation
-    */
+     * Initialisation
+     */
     protected function afterConstructor()
     {
-        global $ilTabs;
         $this->getPlugin()->includeClass("class.ilMatterhornConfig.php");
         $this->configObject = new ilMatterhornConfig();
-        $this->tabs = $ilTabs;
     }
 
     /**
@@ -66,12 +61,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     }
 
     /**
-    * Handles all commmands of this class, centralizes permission checks
-    */
+     * Handles all commmands of this class, centralizes permission checks
+     */
     public function performCommand($cmd)
     {
         switch ($cmd) {
-            case "editProperties":        // list all commands that need write permission here
+            case "editProperties": // list all commands that need write permission here
             case "updateProperties":
             case "trimEpisode":
             case "deletescheduled":
@@ -90,8 +85,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $this->setSubTabs('manage');
                 $this->$cmd();
                 break;
-
-            case "showSeries":            // list all commands that need read permission here
+            
+            case "showSeries": // list all commands that need read permission here
             case "showEpisode":
                 $this->checkPermission("read");
                 $this->$cmd();
@@ -103,28 +98,36 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     }
 
     /**
-    * After object has been created -> jump to this command
-    */
+     * After object has been created -> jump to this command
+     */
     public function getAfterCreationCmd()
     {
         return "editProperties";
     }
 
     /**
-    * Get standard command
-    */
+     * Get standard command
+     */
     public function getStandardCmd()
     {
         return "showSeries";
     }
-    
-//
-// DISPLAY TABS
-//
+
+    /**
+     * @override
+     */
+    protected function supportsCloning()
+    {
+        return false;
+    }
+
+    //
+    // DISPLAY TABS
+    //
     
     /**
-    * Set tabs
-    */
+     * Set tabs
+     */
     public function setTabs()
     {
         global $ilTabs, $ilCtrl, $ilAccess;
@@ -133,153 +136,152 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         if ($ilAccess->checkAccess("read", "", $this->object->getRefId())) {
             $ilTabs->addTab("content", $this->txt("content"), $ilCtrl->getLinkTarget($this, "showSeries"));
         }
-
+        
         // standard info screen tab
         $this->addInfoTab();
-
+        
         // a "properties" tab
         if ($ilAccess->checkAccess("write", "", $this->object->getRefId())) {
             $ilTabs->addTab("manage", $this->txt("manage"), $ilCtrl->getLinkTarget($this, "editFinishedEpisodes"));
             $ilTabs->addTab("properties", $this->txt("properties"), $ilCtrl->getLinkTarget($this, "editProperties"));
         }
-
-        // standard epermission tab
+        
+        // standard permission tab
         $this->addPermissionTab();
     }
-    
 
     /**
      * Set the sub tabs
      *
-     * @param string    main tab identifier
+     * @param
+     *            string main tab identifier
      */
     public function setSubTabs($a_tab)
     {
         global $ilTabs, $ilCtrl;
         
         switch ($a_tab) {
-                case "manage":
-                        ilLoggerFactory::getLogger('xmh')->debug("setting subtabs");
-                        $ilTabs->addSubTab("finishedepisodes", $this->txt('finished_recordings'), $ilCtrl->getLinkTarget($this, 'editFinishedEpisodes'));
-                        $ilTabs->addSubTab("processtrim", $this->txt('processtrim'), $ilCtrl->getLinkTarget($this, 'editTrimProcess'));
-                        $ilTabs->addSubTab("schedule", $this->txt('scheduled_recordings'), $ilCtrl->getLinkTarget($this, 'editSchedule'));
-                        $ilTabs->addSubTab("upload", $this->txt('add_new_episode'), $ilCtrl->getLinkTarget($this, 'editUpload'));
-                        break;
+            case "manage":
+                ilLoggerFactory::getLogger('xmh')->debug("setting subtabs");
+                $ilTabs->addSubTab("finishedepisodes", $this->txt('finished_recordings'), $ilCtrl->getLinkTarget($this, 'editFinishedEpisodes'));
+                $ilTabs->addSubTab("processtrim", $this->txt('processtrim'), $ilCtrl->getLinkTarget($this, 'editTrimProcess'));
+                $ilTabs->addSubTab("schedule", $this->txt('scheduled_recordings'), $ilCtrl->getLinkTarget($this, 'editSchedule'));
+                $ilTabs->addSubTab("upload", $this->txt('add_new_episode'), $ilCtrl->getLinkTarget($this, 'editUpload'));
+                break;
         }
     }
 
+    //
+    // Edit properties form
+    //
     
-    
-//
-// Edit properties form
-//
-
     /**
-    * Edit Properties. This commands uses the form class to display an input form.
-    */
+     * Edit Properties.
+     * This commands uses the form class to display an input form.
+     */
     public function editProperties()
     {
         global $tpl, $ilTabs;
         
         $ilTabs->activateTab("properties");
-        $this->initPropertiesForm();
-        $this->getPropertiesValues();
-        $tpl->setContent($this->form->getHTML());
+        $form = $this->initPropertiesForm();
+        $values = $this->getPropertiesValues();
+        $form->setValuesByArray($values);
+        $tpl->setContent($form->getHTML());
     }
-    
+
     /**
-    * Init  form.
-    *
-    * @param        int        $a_mode        Edit Mode
-    */
-    public function initPropertiesForm()
+     * Init form.
+     *
+     * @return ilPropertyFormGUI
+     */
+    private function initPropertiesForm()
     {
-        global $ilCtrl;
-    
-        include_once("Services/Form/classes/class.ilPropertyFormGUI.php");
-        $this->form = new ilPropertyFormGUI();
-    
+        global $DIC;
+        
+        include_once ("Services/Form/classes/class.ilPropertyFormGUI.php");
+        $form = new ilPropertyFormGUI();
+        
         // title
         $ti = new ilTextInputGUI($this->txt("title"), "title");
         $ti->setRequired(true);
-        $this->form->addItem($ti);
+        $form->addItem($ti);
         
         // description
         $ta = new ilTextAreaInputGUI($this->txt("description"), "desc");
-        $this->form->addItem($ta);
-
-        // vorlesungsnummer
-        $tl = new ilTextAreaInputGUI($this->txt("lectureID"), "lectureID");
-        $this->form->addItem($tl);
-
+        $form->addItem($ta);
+        
         // viewmode
         $vm = new ilCheckboxInputGUI($this->txt("viewmode"), "viewMode");
-        $this->form->addItem($vm);
-
+        $form->addItem($vm);
+        
         // release episodes individually
         $mr = new ilCheckboxInputGUI($this->txt("manualRelease"), "manualRelease");
-        $this->form->addItem($mr);
-
-           // download
+        $form->addItem($mr);
+        
+        // download
         $download = new ilCheckboxInputGUI($this->txt("enable_download"), "download");
-        $this->form->addItem($download);
-
-
+        $form->addItem($download);
+        
         // online
         $cb = new ilCheckboxInputGUI($this->txt("online"), "online");
-
-        $this->form->addItem($cb);
-        $this->form->addCommandButton("updateProperties", $this->txt("save"));
-
-        $this->form->setTitle($this->txt("edit_properties"));
-        $this->form->setFormAction($ilCtrl->getFormAction($this));
+        
+        $form->addItem($cb);
+        $form->addCommandButton("updateProperties", $this->txt("save"));
+        
+        $form->setTitle($this->txt("edit_properties"));
+        $form->setFormAction($DIC->ctrl()
+            ->getFormAction($this));
+        
+        return $form;
     }
-    
+
     /**
-    * Get values for edit properties form
-    */
-    public function getPropertiesValues()
+     * Get values for edit properties form
+     *
+     * @return array values
+     */
+    private function getPropertiesValues()
     {
+        $series = $this->object->getSeriesInformationFromOpencast();
         $values = array();
         $values["title"] = $this->object->getTitle();
-        $values["desc"] = $this->object->getDescription();
-        $values["lectureID"] = $this->object->getLectureID();
+        $values["desc"] = $series["description"];
         $values["online"] = $this->object->getOnline();
         $values["viewMode"] = $this->object->getViewMode();
         $values["manualRelease"] = $this->object->getManualRelease();
         $values["download"] = $this->object->getDownload();
-        $this->form->setValuesByArray($values);
+        return $values;
     }
 
-    
     /**
-    * Update properties
-    */
+     * Update properties
+     */
     public function updateProperties()
     {
-        global $tpl, $ilCtrl;
-    
-        $this->initPropertiesForm();
-        if ($this->form->checkInput()) {
-            $this->object->setTitle($this->form->getInput("title"));
-            $this->object->setDescription($this->form->getInput("desc"));
-            $this->object->setLectureID($this->form->getInput("lectureID"));
-            $this->object->setOnline($this->form->getInput("online"));
-            $this->object->setViewMode($this->form->getInput("viewMode"));
-            $this->object->setManualRelease($this->form->getInput("manualRelease"));
-            $this->object->setDownload($this->form->getInput("download"));
+        global $DIC;
+        $tpl = $DIC->ui()->mainTemplate();
+        
+        $form = $this->initPropertiesForm();
+        if ($form->checkInput()) {
+            $this->object->setTitle($form->getInput("title"));
+            $this->object->setDescription($form->getInput("desc"));
+            $this->object->setOnline($form->getInput("online"));
+            $this->object->setViewMode($form->getInput("viewMode"));
+            $this->object->setManualRelease($form->getInput("manualRelease"));
+            $this->object->setDownload($form->getInput("download"));
             $this->object->update();
-            ilUtil::sendSuccess($this->txt("msg_obj_modified"), true);
-            $ilCtrl->redirect($this, "editProperties");
+            ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
+            $DIC->ctrl()->redirect($this, "editProperties");
         }
-
-        $this->form->setValuesByPost();
-        $tpl->setContent($this->form->getHtml());
+        
+        $form->setValuesByPost();
+        $tpl->setContent($form->getHtml());
     }
 
     public function publish()
     {
-        global $ilCtrl;
+        global $DIC;
         $episodeId = $_GET["id"];
         ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
         $episode = $this->object->getEpisode($episodeId);
@@ -296,12 +298,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:" . $episode);
         }
-        $ilCtrl->redirect($this, "editFinishedEpisodes");
+        $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
 
     public function retract()
     {
-        global $ilCtrl;
+        global $DIC;
         $episodeId = $_GET["id"];
         ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
         $episode = $this->object->getEpisode($episodeId);
@@ -312,54 +314,61 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in retract episode:" . $episodeId);
         }
-        $ilCtrl->redirect($this, "editFinishedEpisodes");
+        $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
 
     public function deletescheduled()
     {
-        global $ilCtrl;
-        ilLoggerFactory::getLogger('xmh')->debug("ID:".$_GET["id"]);
-        if (preg_match('/^[0-9]+/', $_GET["id"])) {
-            $this->object->deleteschedule($_GET["id"]);
+        global $DIC;
+        $episodeId = $_GET["id"];
+        ilLoggerFactory::getLogger('xmh')->debug("ID:$episodeId");
+        $episode = $this->object->getEpisode($episodeId);
+        
+        if ($episode) {
+            $episode->deletescheduled();
             ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in deleteschedule:".$_GET["id"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in deleteschedule:$episodeId");
         }
-        $ilCtrl->redirect($this, "editSchedule");
+        $DIC->ctrl()->redirect($this, "editSchedule");
     }
 
+    //
+    // Show content
+    //
     
-//
-// Show content
-//
-
     /**
-    * Show content
-    */
+     * Show content
+     */
     public function showEpisode()
     {
-        global $tpl, $ilTabs;
+        global $DIC;
+        $ilTabs = $DIC->tabs();
+        $tpl = $DIC->ui()->mainTemplate();
+        
         $this->checkPermission("read");
-        $theodulbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/theodul";
-
-        $player = new ilTemplate("tpl.player.html", true, false, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+        $theodulbase = $this->getPlugin()->getDirectory() . "/templates/theodul";
+        
+        $player = $this->getPlugin()->getTemplate("default/tpl.player.html", true, false);
         $player->setVariable("INITJS", $theodulbase);
-
+        
         $tpl->setContent($player->get());
         $ilTabs->activateTab("content");
     }
 
     public function showSeries()
     {
-        global $tpl, $ilTabs, $ilCtrl;
-
+        global $DIC;
+        $ilCtrl = $DIC->ctrl();
+        $tpl = $DIC->ui()->mainTemplate();
+        $factory = $DIC->ui()->factory();
+        
         $this->checkPermission("read");
-
+        
         $released_episodes = $this->extractReleasedEpisodes(true);
         if (! $this->object->getViewMode()) {
-            $seriestpl = new ilTemplate("tpl.series.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
-            $seriestpl->setCurrentBlock($this->object->getDownload()?"headerdownload":"header");
-            $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
+            $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.html", true, true);
+            $seriestpl->setCurrentBlock($this->object->getDownload() ? "headerdownload" : "header");
             $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
             $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
             $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
@@ -368,9 +377,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
             $seriestpl->parseCurrentBlock();
             foreach ($released_episodes as $item) {
-                $seriestpl->setCurrentBlock($this->object->getDownload()?"episodedownload":"episode");
-                //ilLoggerFactory::getLogger('xmh')->debug("Adding: ".$item["title"]);
-                    
+                $seriestpl->setCurrentBlock($this->object->getDownload() ? "episodedownload" : "episode");
+                // ilLoggerFactory::getLogger('xmh')->debug("Adding: ".$item["title"]);
+                
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
                 $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
@@ -378,7 +387,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
                 if ($this->object->getDownload()) {
                     $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
-                    $seriestpl->setVariable("TXT_DOWNLOAD", $this->getText("download"));
+                    $seriestpl->setVariable("TXT_DOWNLOAD", $DIC->language()
+                        ->txt("download"));
                 }
                 $seriestpl->parseCurrentBlock();
             }
@@ -386,22 +396,36 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $html = $seriestpl->get();
             $tpl->setContent($html);
         } else {
-            $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
-            $seriestpl = new ilTemplate("tpl.series.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+            $cards = array();
             foreach ($released_episodes as $item) {
-                $seriestpl->setCurrentBlock("videodiv");
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
-                $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
-                $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
-                $seriestpl->setVariable("TXT_TITLE", $item["title"]);
-                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
-                $seriestpl->parseCurrentBlock();
+                $url = $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode");
+                
+                $image = $factory->image()->responsive($item["previewurl"], $this->getText("preview"));
+                $content = $factory->listing()->descriptive(array(
+                    $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME))
+                ));
+                $sections = array(
+                    $content
+                );
+                if ($this->object->getDownload()) {
+                    $sections[] = $factory->link()->standard($DIC->language()
+                        ->txt("download"), $item["downloadurl"]);
+                }
+                
+                $cards[] = $factory->card($item["title"], $image)
+                    ->withSections($sections)
+                    ->withTitleAction($url);
             }
-            $html = $seriestpl->get();
+            
+            $deck = $factory->deck($cards);
+            $html = $DIC->ui()
+                ->renderer()
+                ->render($deck);
             $tpl->setContent($html);
         }
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
-        $ilTabs->activateTab("content");
+        $DIC->tabs()->activateTab("content");
     }
 
     private function extractProcessingEpisodes($workflow)
@@ -409,11 +433,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $totalops = 0.0;
         $finished = 0;
         $running = "Waiting";
-
+        
         foreach ($workflow["operations"]["operation"] as $operation) {
-            //search for trim. If it will run, count only up to here if it is not finished yet, otherwise count from here
+            // search for trim. If it will run, count only up to here if it is not finished yet, otherwise count from here
             ilLoggerFactory::getLogger('xmh')->debug($operation["id"]);
-            $state = (string)$operation["state"];
+            $state = (string) $operation["state"];
             if ($operation["id"] === "trim") {
                 if ($operation["if"] === "true") {
                     if ($state === "SUCCEEDED") {
@@ -428,108 +452,121 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             if ($state == "SKIPPED" || $state === "SUCCEEDED") {
                 $finished += 1.0;
             }
-
-            if ((string)$state == "RUNNING") {
+            
+            if ((string) $state == "RUNNING") {
                 $running = $operation["description"];
             }
         }
-
+        
         $episode = array(
             'title' => $workflow["mediapackage"]['title'],
             'mhid' => $workflow['id'],
             'date' => $workflow["mediapackage"]['start'],
-            'processdone' => $finished/$totalops*100.0,
-            'processcount' => $finished."/".$totalops,
-            'running' =>  $running
+            'processdone' => $finished / $totalops * 100.0,
+            'processcount' => $finished . "/" . $totalops,
+            'running' => $running
         );
         return $episode;
     }
-    
-    private function extractReleasedEpisodes($skipUnreleased=false)
+
+    private function extractReleasedEpisodes($skipUnreleased = false)
     {
-        global $ilCtrl;
-
-        $released_episodes  = $this->object->getReleasedEpisodes();
+        $releasedEpisodeIds = $this->object->getReleasedEpisodeIds();
         $episodes = array();
-
+        
         foreach ($this->object->getSearchResult()->mediapackage as $value) {
             if ($skipUnreleased && $this->object->getManualRelease()) {
-                if (! in_array($value['id'], $released_episodes)) {
+                if (! in_array($value['id'], $releasedEpisodeIds)) {
                     continue;
                 }
             }
             $previewurl = "unset";
             foreach ($value->attachments->attachment as $attachment) {
-                if ('presentation/search+preview' ==  $attachment['type']) {
+                if ('presentation/search+preview' == $attachment['type']) {
                     $previewurl = $attachment->url;
-                    //prefer presentation/search+preview over presenter/search+preview
+                    // prefer presentation/search+preview over presenter/search+preview
                     break 1;
-                } elseif ('presenter/search+preview' ==  $attachment['type']) {
+                } elseif ('presenter/search+preview' == $attachment['type']) {
                     $previewurl = $attachment->url;
                     // continue searching for a presentation/search+preview
                 }
             }
             $downloadurl = "unset";
             foreach ($value->media->track as $track) {
-                if ('composite/sbs' ==  $track['type']) {
+                if ('composite/sbs' == $track['type']) {
                     $downloadurl = $track->url;
                     break;
                 }
-                if ('presentation/delivery' ==  $track['type'] && 'video/mp4' == $track->mimetype) {
+                if ('presentation/delivery' == $track['type'] && 'video/mp4' == $track->mimetype) {
                     $downloadurl = $track->url;
                 }
             }
-             
-            $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $this->obj_id."/".(string)$value['id']);
-            $published = in_array($value['id'], $released_episodes);
-             
-            $episodes[(string)$value['id']] = array(
-                "title" => (string)$value->title,
-                "date" => (string)$value['start'],
-                "mhid" => $this->obj_id."/".(string)$value['id'],
-                "previewurl" => (string)$previewurl,
-                "downloadurl" => $downloadurl,
-                "viewurl" => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"),
+            
+            $published = in_array($value['id'], $releasedEpisodeIds);
+            
+            $episode = array(
+                "title" => (string) $value->title,
+                "date" => (string) $value['start'],
+                "mhid" => $this->obj_id . "/" . (string) $value['id'],
+                "previewurl" => (string) $previewurl,
+                "downloadurl" => (string) $downloadurl,
+                "viewurl" => $this->getLinkForEpisodeUnescaped("showEpisode", $this->obj_id . "/" . (string) $value['id'])
             );
             if ($this->object->getManualRelease()) {
-                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", (string)$value['id']);
-                $episodes[(string)$value['id']]["publishurl"] = $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", $published?"retract":"publish");
-                $episodes[(string)$value['id']]["txt_publish"] = $this->getText($published?"retract":"publish");
+                $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", (string) $value['id']);
+                $episode["txt_publish"] = $this->getText($published ? "retract" : "publish");
             }
+            $episodes[] = $episode;
         }
         
-        uasort($episodes, array($this, 'sortbydate'));
+        usort($episodes, array(
+            $this,
+            'sortbydate'
+        ));
         return $episodes;
     }
-    
+
     private function extractScheduledEpisode($event)
     {
-        global $ilCtrl;
-        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", (string)$event['id']);
         $scheduled_episode = array(
             'title' => $event["title"],
             'mhid' => $event["id"],
-            'deletescheduledurl' => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "deletescheduled")
+            'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event['id'])
         );
         $scheduled_episode['startdate'] = $event['start_date'];
         $scheduled_episode['stopdate'] = $event['end_date'];
         $scheduled_episode['location'] = $event['location'];
         return $scheduled_episode;
     }
-    
+
     private function extractOnholdEpisode($event)
     {
-        global $ilCtrl;
-        $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $event['id']);
         $onhold_episode = array(
             'title' => $event["title"],
-            'trimurl' => $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showTrimEditor"),
-            'date' => $event["start_date"],
+            'trimurl' => $this->getLinkForEpisodeUnescaped("showTrimEditor", (string) $event['id']),
+            'date' => $event["start_date"]
         );
         return $onhold_episode;
     }
 
-    
+    /**
+     *
+     * @param string $cmd
+     * @param string $id
+     * @return string
+     */
+    private function getLinkForEpisodeUnescaped($cmd, $id)
+    {
+        global $DIC;
+        $DIC->ctrl()->setParameterByClass("ilobjmatterhorngui", "id", $id);
+        $link = $DIC->ctrl()->getLinkTargetByClass("ilobjmatterhorngui", $cmd, "", false, false);
+        $DIC->ctrl()->clearParameterByClass("ilobjmatterhorngui", "id");
+        return $link;
+    }
+
+    /**
+     * Get Episodes as json
+     */
     public function getEpisodes()
     {
         $processingEpisodes = $this->object->getProcessingEpisodes();
@@ -544,16 +581,19 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
         }
-        uasort($process_items, array($this, 'sortbydate'));
-        foreach ($process_items as $key=>$value) {
+        usort($process_items, array(
+            $this,
+            'sortbydate'
+        ));
+        foreach ($process_items as $key => $value) {
             $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
         
         $finished_episodes = $this->extractReleasedEpisodes();
-        foreach ($finished_episodes as $key=>$value) {
+        foreach ($finished_episodes as $key => $value) {
             $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
-    
+        
         $scheduled_items = array();
         $scheduledEpisodes = $this->object->getScheduledEpisodes();
         if (is_array($scheduledEpisodes) && 0 < $scheduledEpisodes['total']) {
@@ -561,27 +601,29 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $scheduled_items[] = $this->extractScheduledEpisode($event);
             }
         }
-        uasort($scheduled_items, array($this, 'sortbystartdate'));
-        foreach ($scheduled_items as $key=>$value) {
+        usort($scheduled_items, array(
+            $this,
+            'sortbystartdate'
+        ));
+        foreach ($scheduled_items as $key => $value) {
             $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_DATETIME));
             $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate(new ilDateTime($value["stopdate"], IL_CAL_DATETIME));
         }
-    
-    
+        
         $onhold_items = array();
         $onHoldEpisodes = $this->object->getOnHoldEpisodes();
-        #$tempEpisodes = $onHoldEpisodes['workflows'];
-        if (is_array($onHoldEpisodes) && 0 < $onHoldEpisodes['total']) {
-            foreach ($onHoldEpisodes['results'] as $event) {  
-                $onhold_items[] = $this->extractOnholdEpisode($event);
-            }
+        foreach ($onHoldEpisodes as $event) {
+            $onhold_items[] = $this->extractOnholdEpisode($event);
         }
-    
-        uasort($onhold_items, array($this, 'sortbydate'));
-        foreach ($onhold_items as $key=>$value) {
+        
+        usort($onhold_items, array(
+            $this,
+            'sortbydate'
+        ));
+        foreach ($onhold_items as $key => $value) {
             $onhold_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
-    
+        
         $data = array();
         $data['lastupdate'] = $this->object->getLastFSInodeUpdate();
         $data['finished'] = $finished_episodes;
@@ -591,17 +633,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         header('Vary: Accept');
         header('Content-type: application/json');
         echo json_encode($data);
-            // no further processing!
-            exit;
+        // no further processing!
+        exit();
     }
-    
 
-    private function sortbydate($a, $b, $field="date")
+    private function sortbydate($a, $b, $field = "date")
     {
         if ($a[$field] == $b[$field]) {
             return 0;
         }
-        return ($a[$field] < $b[$field]) ? -1 : 1;
+        return ($a[$field] > $b[$field]) ? - 1 : 1;
     }
 
     private function sortbystartdate($a, $b)
@@ -609,17 +650,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         return $this->sortbydate($a, $b, "startdate");
     }
 
-
     public function editFinishedEpisodes()
     {
         $this->editEpisodes('finished');
     }
-    
+
     public function editTrimProcess()
     {
         $this->editEpisodes('trimprocess');
     }
-    
+
     public function editUpload()
     {
         $this->editEpisodes('upload');
@@ -629,17 +669,22 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         $this->editEpisodes('scheduled');
     }
-    
+
     private function editEpisodes($section)
     {
-        global $tpl, $ilTabs, $ilCtrl;
+        global $DIC;
+        $ilTabs = $DIC->tabs();
+        $ilCtrl = $DIC->ctrl();
+        $tpl = $DIC->ui()->mainTemplate();
+        $factory = $DIC->ui()->factory();
+        
         $ilTabs->activateTab("manage");
-        $editbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/edit";
+        $editbase = $this->getPlugin()->getDirectory() . "/templates/edit";
         $this->checkPermission("write");
-
-        $seriestpl = new ilTemplate("tpl.series.edit.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+        
+        $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.js.html");
         $seriestpl->setCurrentBlock("pagestart");
-
+        
         $seriestpl->setVariable("TXT_NONE_FINISHED", $this->getText("none_finished"));
         $seriestpl->setVariable("TXT_NONE_PROCESSING", $this->getText("none_processing"));
         $seriestpl->setVariable("TXT_NONE_ONHOLD", $this->getText("none_onhold"));
@@ -650,53 +695,52 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_UPLOAD_CANCELED", $this->getText("upload_canceled"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID", $this->object->getId());
-        if ($this->object->getManualRelease()) {
-            $seriestpl->setVariable("COLS_FINISHED", "4");
-        } else {
-            $seriestpl->setVariable("COLS_FINISHED", "3");
-        }
-
+        $seriestpl->setVariable("MANUAL_RELEASE", $this->object->getManualRelease());
         $seriestpl->parseCurrentBlock();
-
+        $jsConfig = $seriestpl->get();
+        ilLoggerFactory::getLogger('xmh')->debug($section);
         switch ($section) {
             case 'finished':
-                ilLoggerFactory::getLogger('xmh')->debug($section);
-                $this->tabs->activateSubTab('finishedepisodes');
-                $seriestpl->setCurrentBlock('finishedstart');
-                $seriestpl->setVariable("TXT_FINISHED_RECORDINGS", $this->getText("finished_recordings"));
-                $seriestpl->parseCurrentBlock();
-                $seriestpl->setCurrentBlock($this->object->getManualRelease()?"headerfinished":"headerfinishednoaction");
-                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-                $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
-                $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
+                $ilTabs->activateSubTab('finishedepisodes');
+                
+                $colums = array(
+                    $this->getText("title"),
+                    $this->getText("preview"),
+                    $this->getText("date")
+                );
                 if ($this->object->getManualRelease()) {
-                    $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
+                    $colums[] = $this->getText("action");
                 }
-                $seriestpl->parseCurrentBlock();
-                $seriestpl->touchblock("footerfinished");
+                
+                $finishedTable = $this->getTableWithId("iliasopencast_finishedtable", $colums);
+                
+                $content = $factory->panel()->standard($this->getText("finished_recordings"), $finishedTable);
                 break;
             case 'trimprocess':
-                ilLoggerFactory::getLogger('xmh')->debug($section);
-                $this->tabs->activateSubTab('processtrim');
-                $seriestpl->setCurrentBlock("processing");
-                $seriestpl->setVariable("TXT_PROCESSING", $this->getText("processing"));
-                $seriestpl->setVariable("TXT_RUNNING", $this->getText("running"));
-                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-                $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
-                $seriestpl->setVariable("TXT_PROGRESS", $this->getText("progress"));
-                $seriestpl->parseCurrentBlock();
-
-                $seriestpl->setCurrentBlock("onhold");
-                $seriestpl->setVariable("TXT_ONHOLD_RECORDING", $this->getText("onhold_recordings"));
-                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-                $seriestpl->setVariable("TXT_RECORDDATE", $this->getText("recorddate"));
-                $seriestpl->parseCurrentBlock();
+                $ilTabs->activateSubTab('processtrim');
+                
+                $processingTable = $this->getTableWithId("iliasopencast_processingtable", array(
+                    $this->getText("title"),
+                    $this->getText("recorddate"),
+                    $this->getText("progress"),
+                    $this->getText("running")
+                ));
+                
+                $onholdTable = $this->getTableWithId("iliasopencast_onholdtable", array(
+                    $this->getText("title"),
+                    $this->getText("recorddate")
+                ));
+                
+                $content = array(
+                    $factory->panel()->standard($this->getText("processing"), $processingTable),
+                    $factory->panel()->standard($this->getText("onhold_recordings"), $onholdTable)
+                );
                 break;
             case 'upload':
-                ilLoggerFactory::getLogger('xmh')->debug($section);
-                $this->tabs->activateSubTab('upload');
+                $ilTabs->activateSubTab('upload');
+                
+                $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.html");
                 $seriestpl->setCurrentBlock("upload");
-                $seriestpl->setVariable("TXT_ADD_NEW_EPISODE", $this->getText("add_new_episode"));
                 $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
                 $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
                 $seriestpl->setVariable("TXT_TRACK_DATE", $this->getText("track_date"));
@@ -707,54 +751,83 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("TXT_CANCEL_UPLOAD", $this->getText("cancel_upload"));
                 $seriestpl->setVariable("TXT_TRIMEDITOR", $this->getText("usetrimeditor"));
                 $seriestpl->parseCurrentBlock();
+                
+                $content = $factory->panel()->standard($this->getText("add_new_episode"), $factory->legacy($seriestpl->get()));
+                $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-datepicker3.min.css"));
+                $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
+                $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
+                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/resumable.js");
+                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-datepicker.min.js");
+                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-timepicker.min.js");
+                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/upload.js");
+                $tpl->addOnLoadCode("initUpload(iliasopencast);");
                 break;
             case 'scheduled':
-                ilLoggerFactory::getLogger('xmh')->debug($section);
-                $this->tabs->activateSubTab('schedule');
-                $seriestpl->setCurrentBlock("scheduled");
-                $seriestpl->setVariable("TXT_SCHEDULED_RECORDING", $this->getText("scheduled_recordings"));
-                $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
-                $seriestpl->setVariable("TXT_STARTDATE", $this->getText("startdate"));
-                $seriestpl->setVariable("TXT_ENDDATE", $this->getText("enddate"));
-                $seriestpl->setVariable("TXT_LOCATION", $this->getText("location"));
-                $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
-                $seriestpl->parseCurrentBlock();
+                $ilTabs->activateSubTab('schedule');
+                
+                $scheduledTable = $this->getTableWithId("iliasopencast_scheduledtable", array(
+                    $this->getText("title"),
+                    $this->getText("startdate"),
+                    $this->getText("enddate"),
+                    $this->getText("location"),
+                    $this->getText("action")
+                ));
+                
+                $content = $factory->panel()->standard($this->getText("scheduled_recordings"), $scheduledTable);
                 break;
         }
+        $html = $DIC->ui()
+            ->renderer()
+            ->render($content);
         
-        $seriestpl->setCurrentBlock("pageend");
-        $seriestpl->setVariable("INITJS", $editbase);
-        $seriestpl->parseCurrentBlock();
-        
-
-        $html = $seriestpl->get();
-        $tpl->setContent($html);
-        $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
-        $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
+        $tpl->setContent($jsConfig . $html);
+        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/mustache.min.js");
+        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/edit.js");
+        $tpl->addOnLoadCode("initEdit(iliasopencast);");
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
     }
 
-    /**$trimview->setVariable("TXT_LEFT_TRACK", $this->getText("startdate"));
+    /**
+     *
+     * @param $id string
+     * @param $columns array
+     * @return \ILIAS\UI\Component\Legacy\Legacy
+     */
+    private function getTableWithId($id, $columns)
+    {
+        global $DIC;
+        $tableTpl = $this->getPlugin()->getTemplate("default/tpl.empty_table.html");
+        $tableTpl->setCurrentBlock("headercolumn");
+        foreach ($columns as $column) {
+            $tableTpl->setVariable("TXT_HEAD", $column);
+            $tableTpl->parseCurrentBlock();
+        }
+        
+        $tableTpl->setCurrentBlock("table");
+        $tableTpl->setVariable("ID", $id);
+        $tableTpl->parseCurrentBlock();
+        return $DIC->ui()
+            ->factory()
+            ->legacy($tableTpl->get());
+    }
+
+    /**
      * Show the trim episode Page
      */
     public function showTrimEditor()
     {
         global $tpl, $ilTabs, $ilCtrl;
         $this->checkPermission("write");
-        $trimbase = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/templates/trim";
-
-        if (preg_match('/^[0-9a-f\-]+/', $_GET["id"])) {
-            ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: ".$_GET["id"]);
-            $editor = $this->object->getEditor($_GET["id"]);
-            if (!strpos($this->object->getSeries(), $editor->series->id)) {
-                $ilCtrl->redirect($this, "editTrimProcess");
-            }
+        $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
+        $episode = $this->object->getEpisode($_GET["id"]);
+        if ($episode) {
+            $id = $episode->getEpisodeId();
+            ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
+            $editor = $episode->getEditor();
             $previewtracks = array();
             $worktracks = array();
-	    $media = $this->object->getMedia($_GET["id"]);
+            $media = $episode->getMedia();
             foreach ($media as $track) {
-
-#                ilLoggerFactory::getLogger('xmh')->debug("Track".print_r($track,true));
                 switch ($track->type) {
                     case "presentation/source":
                         ilLoggerFactory::getLogger('xmh')->debug("Found presentation track");
@@ -765,23 +838,23 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                         break;
                 }
             }
-            ilLoggerFactory::getLogger('xmh')->debug(print_r($worktracks,true));
-	    foreach ($editor->previews as $preview){
-	        if (strpos($preview->uri, "composite.mp4") !== false) {
-                    $_SESSION["mhpreviewurlpreviewsbsmp4".$_GET["id"]] = $preview->uri;
-	        } else {
-                    $_SESSION["mhpreviewurlpreviewsbsweb".$_GET["id"]] = $preview->uri;
-		}
-	    }
-
-            $trimview = new ilTemplate("tpl.trimview.html", true, true, "Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/");
+            ilLoggerFactory::getLogger('xmh')->debug(print_r($worktracks, true));
+            foreach ($editor->previews as $preview) {
+                if (strpos($preview->uri, "composite.mp4") !== false) {
+                    $_SESSION["mhpreviewurlpreviewsbsmp4$id"] = $preview->uri;
+                } else {
+                    $_SESSION["mhpreviewurlpreviewsbsweb$id"] = $preview->uri;
+                }
+            }
+            
+            $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
             $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
             $trimview->setVariable("TRACKTITLE", $mediapackage->title);
             $trimview->setVariable("INITJS", $trimbase);
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
-            $trimview->setVariable("WFID", $_GET["id"]);
+            $trimview->setVariable("WFID", $id);
             $trimview->parseCurrentBlock();
             if (2 == count($worktracks)) {
                 $trimview->setCurrentBlock("dualstream");
@@ -813,20 +886,20 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             // if there are two tracks, there is also a sbs track. Otherwise use the only track present.
-            $downloadurlmp4 = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($editor->series->id)."/".$_GET["id"]."/previewsbs.mp4";
-            $downloadurlwebm = "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData/".CLIENT_ID."/".trim($editor->series->id)."/".$_GET["id"]."/previewsbs.webm";
+            $downloadurlmp4 = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . trim($editor->series->id) . "/$id/previewsbs.mp4";
+            $downloadurlwebm = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . trim($editor->series->id) . "/$id/previewsbs.webm";
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_WEBM", $downloadurlwebm);
             
             $duration = $editor->duration;
-            $trimview->setVariable("TRACKLENGTH", $duration/1000);
+            $trimview->setVariable("TRACKLENGTH", $duration / 1000);
             $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
-            $hours = floor($duration/3600000);
-            $duration = $duration%3600000;
-            $min = floor($duration/60000);
-            $duration = $duration%60000;
-            $sec = floor($duration/1000);
+            $hours = floor($duration / 3600000);
+            $duration = $duration % 3600000;
+            $min = floor($duration / 60000);
+            $duration = $duration % 60000;
+            $sec = floor($duration / 1000);
             $trimview->setVariable("TXT_TRIMIN", $this->getText("trimin"));
             $trimview->setVariable("TXT_TRIMOUT", $this->getText("trimout"));
             $trimview->setVariable("TXT_CONTINUE", $this->getText("continue"));
@@ -838,6 +911,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d", $hours, $min, $sec));
             $trimview->parseCurrentBlock();
             $tpl->setContent($trimview->get());
+            $tpl->addCss("$trimbase/video-js/video-js.css");
+            $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/jquery-ui.min.css");
+            $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
             $ilTabs->activateTab("manage");
         } else {
             $ilCtrl->redirect($this, "editTrimProcess");
@@ -847,13 +923,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $ilCtrl;
-        if (preg_match('/^[0-9a-f\-]+/', $_POST["eventid"])) {
-            $editor = $this->object->getEditor($_POST["eventid"]);
-            ilLoggerFactory::getLogger('xmh')->debug("eventid".print_r($editor,true));
-            if (!strpos($this->object->getSeries(), $editor->series->id)) {
-                $ilCtrl->redirect($this, "editTrimProcess");
-            }
-#            $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
+        $episode = $this->object->getEpisode($_POST["eventid"]);
+        if ($episode) {
+            $editor = $episode->getEditor();
+            ilLoggerFactory::getLogger('xmh')->debug("eventid " . print_r($editor, true));
+            // $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
             $tracks = array();
             if (isset($_POST["lefttrack"])) {
                 $track = array();
@@ -868,34 +942,34 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 array_push($tracks, $track);
             }
             $keeptracks = [];
-	    foreach($tracks as $track){
-	        array_push($keeptracks,$track['id']);
-	    }
+            foreach ($tracks as $track) {
+                array_push($keeptracks, $track['id']);
+            }
             $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimin"]));
-            list($hours, $minutes, $seconds) = sscanf($str_time, "%d:%d:%d");
+            list ($hours, $minutes, $seconds) = sscanf($str_time, "%d:%d:%d");
             $trimin = $hours * 3600 + $minutes * 60 + $seconds;
-
+            
             $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimout"]));
             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
             $trimout = $hours * 3600 + $minutes * 60 + $seconds;
-
-            $this->object->trim($_POST["eventid"], $keeptracks, $trimin, $trimout);
+            
+            $this->object->trim($episode->getEpisodeId(), $keeptracks, $trimin, $trimout);
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match an episode:".$_POST["eventid"]);
+            ilLoggerFactory::getLogger('xmh')->debug("ID does not match an episode:" . $_POST["eventid"]);
         }
         $ilCtrl->redirect($this, "editTrimProcess");
     }
 
-    
     public function getText($a_text)
     {
         return $this->txt($a_text);
     }
-    
-    public function addInfoItems($info){
-        $info->addProperty("geht","vielleicht");
-        //ilLoggerFactory::getLogger('xmh')->debug('Info: '.$info);
+
+    public function addInfoItems($info)
+    {
+        $info->addSection($this->getText("opencast_information"));
+        $info->addProperty($this->getText("series_id"), $this->configObject->getSeriesPrefix() . $this->object->getId());
     }
 }

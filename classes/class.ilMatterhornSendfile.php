@@ -92,10 +92,6 @@ class ilMatterhornSendfile
         // echo "</pre>";
         // var_dump($_SESSION);
         // exit();
-        
-        // if (! file_exists($this->file)) {
-        // throw new Exception($this->plugin->txt("url_not_found"), 404);
-        // }
     }
 
     /**
@@ -243,11 +239,12 @@ class ilMatterhornSendfile
      */
     private function checkEpisodeAccess($permission = "read")
     {
+        global $DIC;
         if ($this->checkAccessObject($this->episode->getSeriesId(), $permission)) {
             return;
         }
         // none of the checks above gives access
-        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
+        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
     }
 
     /**
@@ -267,11 +264,12 @@ class ilMatterhornSendfile
      */
     private function checkFileAccess()
     {
+        global $DIC;
         if ($this->checkAccessObject($this->episode->getSeriesId())) {
             return;
         }
         // none of the checks above gives access
-        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
+        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
     }
 
     /**
@@ -720,34 +718,7 @@ class ilMatterhornSendfile
         fclose($fp);
         ilLoggerFactory::getLogger('xmh')->debug("Done sending");
     }
-
-    private function getEditor($episodeid)
-    {
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/$episodeid/editor.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
-        // open connection
-        $ch = curl_init();
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curlret = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpCode != 200) {
-            throw new Exception("error loading editor.json for episode " . $episodeid . " code: " . $httpCode, 500);
-        }
-        $editorjson = json_decode($curlret);
-        if ($editorjson === false) {
-            throw new Exception("error loading editor.json for episode " . $episodeid, 500);
-        }
-        return $editorjson;
-    }
-
+    
     /**
      *
      * @param string $subpath
@@ -759,7 +730,7 @@ class ilMatterhornSendfile
         $typesplit = explode('.', $urlsplit[2]);
         ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
         ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl typesplit0:' . $typesplit[0] . ' typesplit1:' . $typesplit[1] . ' urlsplit1:' . $urlsplit[1]);
-        $editor = $this->getEditor($this->episode->getEpisodeId());
+        $editor = $this->episode->getEditor();
         $previewtrack = "";
         foreach ($editor->previews as $preview) {
             if (strpos($preview->uri, $typesplit[1])) {

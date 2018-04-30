@@ -5,8 +5,6 @@ include_once './Services/Component/classes/class.ilPluginConfigGUI.php';
  * Matterhorn configuration user interface class.
  *
  * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
- *        
- * @version $Id$
  */
 class ilMatterhornConfigGUI extends ilPluginConfigGUI
 {

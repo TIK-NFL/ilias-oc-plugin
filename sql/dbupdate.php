@@ -374,3 +374,9 @@ $ilDB->modifyTableColumn('rep_robj_xmh_slidetext', 'slidetime', array(
 $ilDB->manipulate("ALTER TABLE rep_robj_xmh_config CHANGE `cfgkey` `cfgkey` VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;");
 $ilDB->manipulate('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('distribution_directory', 'text') . ' WHERE cfgkey = ' . $ilDB->quote('distribution_direto', 'text'));
 ?>
+<#18>
+<?php
+$ilDB->dropTableColumn('rep_robj_xmh_data', 'mhretval');
+$ilDB->dropTableColumn('rep_robj_xmh_data', 'lectureid');
+$ilDB->dropTableColumn('rep_robj_xmh_data', 'series');
+?>

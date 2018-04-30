@@ -170,11 +170,12 @@ class ilMatterhornUploadFile
      */
     public function checkEpisodeAccess()
     {
+        global $DIC;
         if ($this->checkAccessObject($this->obj_id)) {
             return true;
         }
         // none of the checks above gives access
-        throw new Exception($this->plugin->txt('msg_no_perm_read'), 403);
+        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
     }
 
     /**
@@ -209,7 +210,7 @@ class ilMatterhornUploadFile
     private function createCURLCall($url)
     {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
         curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
@@ -217,7 +218,6 @@ class ilMatterhornUploadFile
             'X-Opencast-Matterhorn-Authorization: true'
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         
         return $ch;
     }
@@ -265,19 +265,11 @@ class ilMatterhornUploadFile
         $episodexml = $dom->saveXML();
         
         // get the series xml for this mediapackage
-        $url = $this->configObject->getMatterhornServer() . '/series/' . $this->configObject->getSeriesPrefix() . $this->obj_id . '.xml';
-        $ch = $this->createCURLCall($url);
-        $seriesxml = curl_exec($ch);
-        if (curl_error($ch)) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            if (! $httpCode) {
-                throw new Exception(curl_error($ch), 503);
-            }
-            throw new Exception(curl_error($ch), 500);
-        }
+        $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        $seriesxml = ilOpencastAPI::getInstance()->getSeries($this->obj_id);
         
         // create a new media package and fix start date
-        $url = $this->configObject->getMatterhornServer() . '/ingest/createMediaPackage';
+        $url = '/ingest/createMediaPackage';
         $ch = $this->createCURLCall($url);
         $mediapackage = curl_exec($ch);
         if (curl_error($ch)) {
@@ -296,7 +288,7 @@ class ilMatterhornUploadFile
             'dublinCore' => $episodexml
         );
         $fields_string = http_build_query($fields);
-        $url = $this->configObject->getMatterhornServer() . '/ingest/addDCCatalog';
+        $url = '/ingest/addDCCatalog';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
@@ -315,7 +307,7 @@ class ilMatterhornUploadFile
             'dublinCore' => $seriesxml
         );
         $fields_string = http_build_query($fields);
-        $url = $this->configObject->getMatterhornServer() . '/ingest/addDCCatalog';
+        $url = '/ingest/addDCCatalog';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
@@ -346,7 +338,7 @@ class ilMatterhornUploadFile
             'mediapackage' => $realmp
         );
         $fields_string = http_build_query($fields);
-        $url = $this->configObject->getMatterhornServer() . '/upload/newjob';
+        $url = '/upload/newjob';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
@@ -411,7 +403,7 @@ class ilMatterhornUploadFile
                     'chunknumber' => urlencode($chunknumber - 1),
                     'filedata' => $cFile
                 );
-                $url = $this->configObject->getMatterhornServer() . '/upload/job/' . $jobID;
+                $url = '/upload/job/' . $jobID;
                 $ch = $this->createCURLCall($url);
                 curl_setopt($ch, CURLOPT_POST, count($fields));
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $fields);
@@ -454,7 +446,7 @@ class ilMatterhornUploadFile
             'flavor' => 'presentation/source'
         );
         $fields_string = http_build_query($fields);
-        $url = $this->configObject->getMatterhornServer() . '/ingest/addTrack';
+        $url = '/ingest/addTrack';
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
@@ -472,7 +464,7 @@ class ilMatterhornUploadFile
             'distribution' => 'ILIAS-Upload'
         );
         $fields_string = http_build_query($fields);
-        $url = $this->configObject->getMatterhornServer() . '/ingest/ingest/' . $this->configObject->getUploadWorkflow();
+        $url = '/ingest/ingest/' . $this->configObject->getUploadWorkflow();
         $ch = $this->createCURLCall($url);
         curl_setopt($ch, CURLOPT_POST, count($fields));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
