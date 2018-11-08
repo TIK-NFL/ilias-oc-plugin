@@ -728,14 +728,17 @@ class ilMatterhornSendfile
     {
         $urlsplit = explode('/', $subpath);
         $typesplit = explode('.', $urlsplit[2]);
-        ilLoggerFactory::getLogger('xmh')->debug(print_r($typesplit, true));
-        ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl typesplit0:' . $typesplit[0] . ' typesplit1:' . $typesplit[1] . ' urlsplit1:' . $urlsplit[1]);
+        $requestedType = $typesplit[1];
+        ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl requested type:' . $requestedType);
         $editor = $this->episode->getEditor();
-        $previewtrack = "";
+        $previewtrack = null;
         foreach ($editor->previews as $preview) {
-            if (strpos($preview->uri, $typesplit[1])) {
+            if (strpos($preview->uri, $requestedType)) {
                 $previewtrack = $preview->uri;
             }
+        }
+        if ($previewtrack == null) {
+            throw new Exception("No Preview", 404);
         }
         
         $relativeFilePath = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "", $previewtrack);

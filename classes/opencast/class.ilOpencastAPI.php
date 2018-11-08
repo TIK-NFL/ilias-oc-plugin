@@ -94,7 +94,7 @@ class ilOpencastAPI
         }
         return $response;
     }
-    
+
     /**
      * Do a PUT Request of the given url on the Opencast Server with Basic Authentication
      *
@@ -138,8 +138,9 @@ class ilOpencastAPI
             "X-Opencast-Matterhorn-Authorization: true"
         ));
     }
-    
-    private function basicAuthentication($ch) {
+
+    private function basicAuthentication($ch)
+    {
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getOpencastAPIUser() . ':' . $this->configObject->getOpencastAPIPassword());
     }
@@ -165,6 +166,16 @@ class ilOpencastAPI
         return $seriesxml;
     }
 
+    private static function setChildren($xml, $name, $value, $ns)
+    {
+        $cc = $xml->children($ns);
+        if (isset($cc->$name)) {
+            $cc->$name = $value;
+        } else {
+            $xml->addChild($name, $value, $ns);
+        }
+    }
+
     /**
      *
      * @param string $title
@@ -179,14 +190,11 @@ class ilOpencastAPI
         
         $seriesxml = $this->getSeries($id);
         $xml = new SimpleXMLElement($seriesxml);
-        $dc = $xml->children("http://purl.org/dc/terms/");
-        $dc->title = self::title($title, $id, $refId);
-        $dc->description = $description;
-        $dc->modified = date("Y-m-d");
-        //workaround for Opencast return 201(CREATED) instead of 204(UPDATED)
-        unset($dc->created);
+        $ns = "http://purl.org/dc/terms/";
+        self::setChildren($xml, "title", self::title($title, $id, $refId), $ns);
+        self::setChildren($xml, "description", $description, $ns);
+        self::setChildren($xml, "modified", date("c"), $ns);
         $seriesxml = $xml->asXML();
-        
         $fields = array(
             'series' => $seriesxml,
             'acl' => $this->getAccessControl()
@@ -235,7 +243,7 @@ class ilOpencastAPI
     </dcterms:publisher>
   <dcterms:identifier>
     ' . $this->configObject->getSeriesPrefix() . $id . '</dcterms:identifier>
-  <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("Y-m-d") . '</dcterms:modified>
+  <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("c") . '</dcterms:modified>
   <dcterms:format xsi:type="dcterms:IMT">
     video/mp4
     </dcterms:format>
