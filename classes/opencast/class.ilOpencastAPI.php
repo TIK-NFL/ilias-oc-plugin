@@ -141,13 +141,22 @@ class ilOpencastAPI
         $seriesxml = $this->getSeries($id);
         $xml = new SimpleXMLElement($seriesxml);
         $dc = $xml->children("http://purl.org/dc/terms/");
-        $dc->title = self::title($title, $id, $refId);
-        $dc->description = $description;
-        $dc->modified = date("Y-m-d");
-        //workaround for Opencast return 201(CREATED) instead of 204(UPDATED)
-        unset($dc->created);
+	if(isset($dc->title)){
+          ilLoggerFactory::getLogger('xmh')->debug("Updating title");
+          $dc->title = self::title($title, $id, $refId);
+	} else {
+          ilLoggerFactory::getLogger('xmh')->debug("Adding new title");
+	  $xml->addChild("title",$description,"http://purl.org/dc/terms/");
+	}
+	if(isset($dc->description)){
+          ilLoggerFactory::getLogger('xmh')->debug("Updating description");
+          $dc->description = $description;
+	} else {
+          ilLoggerFactory::getLogger('xmh')->debug("Adding new description");
+	  $xml->addChild("description",$description,"http://purl.org/dc/terms/");
+	}
+        $dc->modified = date("c");
         $seriesxml = $xml->asXML();
-        
         $fields = array(
             'series' => $seriesxml,
             'acl' => $this->getAccessControl()
