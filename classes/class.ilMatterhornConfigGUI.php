@@ -92,18 +92,18 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $form->addItem($mh_digest_password);
         
         // oc api user
-        $mh_digest_user = new ilTextInputGUI($pl->txt('oc_api_user'), 'oc_api_user');
-        $mh_digest_user->setRequired(true);
-        $mh_digest_user->setMaxLength(100);
-        $mh_digest_user->setSize(100);
-        $form->addItem($mh_digest_user);
+        $oc_api_user = new ilTextInputGUI($pl->txt('oc_api_user'), 'oc_api_user');
+        $oc_api_user->setRequired(true);
+        $oc_api_user->setMaxLength(100);
+        $oc_api_user->setSize(100);
+        $form->addItem($oc_api_user);
         
         // oc api password
-        $mh_digest_password = new ilTextInputGUI($pl->txt('oc_api_password'), 'oc_api_password');
-        $mh_digest_password->setRequired(true);
-        $mh_digest_password->setMaxLength(100);
-        $mh_digest_password->setSize(100);
-        $form->addItem($mh_digest_password);
+        $oc_api_password = new ilTextInputGUI($pl->txt('oc_api_password'), 'oc_api_password');
+        $oc_api_password->setRequired(true);
+        $oc_api_password->setMaxLength(100);
+        $oc_api_password->setSize(100);
+        $form->addItem($oc_api_password);
         
         // mh directory
         $mh_directory = new ilTextInputGUI($pl->txt('mh_directory'), 'mh_directory');
