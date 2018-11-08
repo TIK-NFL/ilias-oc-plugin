@@ -126,6 +126,16 @@ class ilOpencastAPI
         return $seriesxml;
     }
 
+    private static function setChildren($xml, $name, $value, $ns)
+    {
+        $cc = $xml->children($ns);
+        if (isset($cc->$name)) {
+            $cc->$name = $value;
+        } else {
+            $xml->addChild($name, $value, $ns);
+        }
+    }
+
     /**
      *
      * @param string $title
@@ -140,22 +150,10 @@ class ilOpencastAPI
         
         $seriesxml = $this->getSeries($id);
         $xml = new SimpleXMLElement($seriesxml);
-        $dc = $xml->children("http://purl.org/dc/terms/");
-	if(isset($dc->title)){
-          ilLoggerFactory::getLogger('xmh')->debug("Updating title");
-          $dc->title = self::title($title, $id, $refId);
-	} else {
-          ilLoggerFactory::getLogger('xmh')->debug("Adding new title");
-	  $xml->addChild("title",$description,"http://purl.org/dc/terms/");
-	}
-	if(isset($dc->description)){
-          ilLoggerFactory::getLogger('xmh')->debug("Updating description");
-          $dc->description = $description;
-	} else {
-          ilLoggerFactory::getLogger('xmh')->debug("Adding new description");
-	  $xml->addChild("description",$description,"http://purl.org/dc/terms/");
-	}
-        $dc->modified = date("c");
+        $ns = "http://purl.org/dc/terms/";
+        self::setChildren($xml, "title", self::title($title, $id, $refId), $ns);
+        self::setChildren($xml, "description", $description, $ns);
+        self::setChildren($xml, "modified", date("c"), $ns);
         $seriesxml = $xml->asXML();
         $fields = array(
             'series' => $seriesxml,
@@ -205,7 +203,7 @@ class ilOpencastAPI
     </dcterms:publisher>
   <dcterms:identifier>
     ' . $this->configObject->getSeriesPrefix() . $id . '</dcterms:identifier>
-  <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("Y-m-d") . '</dcterms:modified>
+  <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("c") . '</dcterms:modified>
   <dcterms:format xsi:type="dcterms:IMT">
     video/mp4
     </dcterms:format>
