@@ -8,15 +8,15 @@
     <Document type="subItem">
         <DataSource type="JDBC" action="append">
             <Query>
-                SELECT series_id, episode_id, slidetime, slidetext
-                FROM rep_robj_xmh_slidetext
-                WHERE series_id IN (?)
+                SELECT data.obj_id, slidetext.episode_id, slidetext.slidetime, slidetext.slidetext
+                FROM rep_robj_xmh_slidetext slidetext, rep_robj_xmh_rel_ep rel, rep_robj_xmh_data data
+                WHERE data.series_id = rel.series_id AND rel.episode_id = slidetext.episode_id AND data.obj_id IN (?)
             </Query>
             <Param format="list" type="int" value="objId" />
-            <Field global="YES" store="YES" index="NOT_ANALYZED" column="slidetime" type="integer" name="propertyLow" />
-            <Field global="YES" store="YES" index="ANALYZED" column="slidetext" type="text" name="propertyHigh" />
-            <Field global="YES" store="YES" index="NOT_ANALYZED" column="episode_id" type="text" name="subItem" />
-            <Field global="NO" store="YES" index="NOT_ANALYZED" column="series_id" type="integer" name="objId"  />          
+            <Field global="YES" store="YES" index="NOT_ANALYZED" column="slidetext.slidetime" type="integer" name="propertyLow" />
+            <Field global="YES" store="YES" index="ANALYZED" column="slidetext.slidetext" type="text" name="propertyHigh" />
+            <Field global="YES" store="YES" index="NOT_ANALYZED" column="slidetext.episode_id" type="text" name="subItem" />
+            <Field global="NO" store="YES" index="NOT_ANALYZED" column="data.obj_id" type="integer" name="objId" />
         </DataSource>
         
     </Document>

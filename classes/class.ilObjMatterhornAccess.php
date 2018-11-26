@@ -58,11 +58,11 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
         global $DIC;
         $ilUser = $DIC->user();
         $ilAccess = $DIC->access();
-        
+
         if ($a_user_id == "") {
             $a_user_id = $ilUser->getId();
         }
-        
+
         switch ($a_permission) {
             case "visible":
             case "read":
@@ -71,7 +71,7 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
                 }
                 break;
         }
-        
+
         return true;
     }
 
@@ -82,9 +82,99 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
     {
         global $DIC;
         $ilDB = $DIC->database();
-        
+
         $set = $ilDB->query("SELECT is_online FROM rep_robj_xmh_data WHERE obj_id = " . $ilDB->quote($a_id, "integer"));
         $rec = $ilDB->fetchAssoc($set);
         return (boolean) $rec["is_online"];
+    }
+
+    private static function lookupMatterhornObjectForSeries($series_id)
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("class.ilMatterhornConfig.php");
+        $configObject = new ilMatterhornConfig();
+        return $configObject->lookupMatterhornObjectForSeries($series_id);
+    }
+
+    /**
+     * Check access rights to upload files
+     */
+    public static function checkEpisodeUploadAccess($obj_id)
+    {
+        global $DIC;
+        if (self::checkAccessObject($obj_id, "access", "upload")) {
+            return true;
+        }
+        // none of the checks above gives access
+        throw new Exception($DIC->language()->txt('msg_no_perm_access'), 403);
+    }
+
+    /**
+     * Check access rights of the requested file
+     *
+     * @param ilMatterhornEpisode $episode
+     * @param string $permission
+     * @throws Exception if user have no $permission access for the file of the episode
+     */
+    public static function checkEpisodeAccess($episode, $permission = "read")
+    {
+        global $DIC;
+        if (self::checkAccessObject(self::lookupMatterhornObjectForSeries($episode->getSeriesId()), $permission)) {
+            return;
+        }
+        // none of the checks above gives access
+        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
+    }
+
+    /**
+     * Check access rights of the requested preview of the file
+     *
+     * @param ilMatterhornEpisode $episode
+     * @throws Exception if user have no access rights for the preview
+     */
+    public static function checkPreviewAccess($episode)
+    {
+        self::checkFileAccess($episode);
+    }
+
+    /**
+     * Check access rights of the requested file
+     *
+     * @param ilMatterhornEpisode $episode
+     * @throws Exception if user have no access rights for the file
+     */
+    public static function checkFileAccess($episode)
+    {
+        global $DIC;
+        if (self::checkAccessObject(self::lookupMatterhornObjectForSeries($episode->getSeriesId()))) {
+            return;
+        }
+        // none of the checks above gives access
+        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
+    }
+
+    /**
+     * Check access rights for an object by its object id
+     *
+     * @param int $obj_id
+     *            object id
+     * @param string $permission
+     *            read/write
+     * @return boolean access given (true/false)
+     */
+    private static function checkAccessObject($obj_id, $permission = 'read', $cmd = 'view')
+    {
+        global $DIC;
+        $ilUser = $DIC->user();
+        $ilAccess = $DIC->access();
+
+        $obj_type = ilObject::_lookupType($obj_id);
+        $ref_ids = ilObject::_getAllReferences($obj_id);
+        foreach ($ref_ids as $ref_id) {
+            if ($ilAccess->checkAccessOfUser($ilUser->getId(), $permission, $cmd, $ref_id, $obj_type, $obj_id)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

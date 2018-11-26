@@ -83,7 +83,6 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
     public function getProperties()
     {
         global $DIC;
-        $ilUser = $DIC->user();
         $ilAccess = $DIC->access();
         
         $props = array();
@@ -98,8 +97,11 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
         }
         
         if ($ilAccess->checkAccess("write", "", $this->ref_id)) {
+            $this->plugin->includeClass("class.ilMatterhornConfig.php");
+            $configObject = new ilMatterhornConfig();
+            $series_id = $configObject->lookupSeriesForMatterhornObject($this->obj_id);
             $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
-            $onHoldEpisodes = ilOpencastAPI::getInstance()->getOnHoldEpisodes($this->obj_id);
+            $onHoldEpisodes = ilOpencastAPI::getInstance()->getOnHoldEpisodes($series_id);
             $count = count($onHoldEpisodes);
             if (0 < $count) {
                 $props[] = array(

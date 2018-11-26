@@ -8,8 +8,9 @@ class ilMatterhornEpisode
 {
 
     /**
+     * The Opencast series id, not the ilias object id
      *
-     * @var int
+     * @var string
      */
     private $series_id;
 
@@ -27,7 +28,7 @@ class ilMatterhornEpisode
 
     /**
      *
-     * @param int $series_id
+     * @param string $series_id
      * @param string $episode_id
      */
     public function __construct($series_id, $episode_id)
@@ -37,8 +38,9 @@ class ilMatterhornEpisode
     }
 
     /**
+     * The Opencast series id, not the ilias object id
      *
-     * @return int
+     * @return string
      */
     public function getSeriesId()
     {
@@ -53,19 +55,6 @@ class ilMatterhornEpisode
     {
         global $ilDB;
         return $ilDB->quote($this->getSeriesId(), "integer");
-    }
-
-    /**
-     * Adds Prefix to the SeriesId to match the Opencast Series Identifier for that Series.
-     *
-     * @return string
-     */
-    public function getOpencastSeriesId()
-    {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
-        $plugin->includeClass("class.ilMatterhornConfig.php");
-        $configObject = new ilMatterhornConfig();
-        return $configObject->getSeriesPrefix() . $this->getSeriesId();
     }
 
     /**
@@ -97,7 +86,7 @@ class ilMatterhornEpisode
             $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
             $plugin->includeClass("class.ilMatterhornConfig.php");
             $configObject = new ilMatterhornConfig();
-            $this->manifest = new SimpleXMLElement($configObject->getDistributionDirectory() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/manifest.xml', null, true);
+            $this->manifest = new SimpleXMLElement($configObject->getDistributionDirectory() . $this->getSeriesId() . '/' . $this->getEpisodeId() . '/manifest.xml', null, true);
         }
         return $this->manifest;
     }
@@ -176,7 +165,7 @@ class ilMatterhornEpisode
         if ($textcatalog) {
             $segments = array_slice(explode("/", $textcatalog["url"]), - 2);
             $configObject = new ilMatterhornConfig();
-            $segmentsxml = new SimpleXMLElement($configObject->getDistributionDirectory() . $this->getOpencastSeriesId() . '/' . $this->getEpisodeId() . '/' . $segments[0] . '/' . $segments[1], null, true);
+            $segmentsxml = new SimpleXMLElement($configObject->getDistributionDirectory() . $this->getSeriesId() . '/' . $this->getEpisodeId() . '/' . $segments[0] . '/' . $segments[1], null, true);
             $segments = array(
                 "segment" => array()
             );
@@ -191,7 +180,7 @@ class ilMatterhornEpisode
                 if (0 != strcmp('', $regmatches[2])) {
                     $sec = substr($regmatches[2], 0, - 1);
                 }
-                
+
                 $min = 0;
                 if (0 != strcmp('', $regmatches[1])) {
                     $min = substr($regmatches[1], 0, - 1);
@@ -203,7 +192,7 @@ class ilMatterhornEpisode
                         $text = $text . " " . (string) $textxml->Text;
                     }
                     if ($text != "") {
-                        $ilDB->manipulate("INSERT INTO rep_robj_xmh_slidetext (episode_id, series_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "integer") . ")");
+                        $ilDB->manipulate("INSERT INTO rep_robj_xmh_slidetext (episode_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "integer") . ")");
                     }
                 }
                 $currentidx ++;
@@ -226,8 +215,7 @@ class ilMatterhornEpisode
     private function removeTextFromDB()
     {
         global $ilDB;
-        
-        $ilDB->manipulate("DELETE FROM rep_robj_xmh_slidetext WHERE episode_id = " . $this->getQuoteEpisodeId() . " AND series_id  = " . $this->getQuoteSeriesId());
+        $ilDB->manipulate("DELETE FROM rep_robj_xmh_slidetext WHERE episode_id = " . $this->getQuoteEpisodeId());
     }
 
     public function deletescheduled()
@@ -247,7 +235,7 @@ class ilMatterhornEpisode
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         $editor = ilOpencastAPI::getInstance()->getEditor($this->getEpisodeId());
-        if ($this->getOpencastSeriesId() != (string) $editor->series->id) {
+        if ($this->getSeriesId() != (string) $editor->series->id) {
             throw new Exception("series id not the same", 500);
         }
         return $editor;

@@ -19,9 +19,9 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
     /**
      * test episode series id
      *
-     * @var int
+     * @var string
      */
-    private $series_id = 1234;
+    private $series_id = "8b8966ac-e5e4-11e8-9f32-f2801f1b9fd1";
 
     /**
      * test episode
@@ -58,7 +58,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
     public function testGetQuoteSeriesId()
     {
         $series_id = $this->episode->getQuoteSeriesId();
-        $this->assertEquals("" . $this->series_id, $series_id);
+        $this->assertEquals($this->series_id, $series_id);
     }
 
     public function testGetEpisodeId()

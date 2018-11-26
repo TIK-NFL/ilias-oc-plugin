@@ -35,6 +35,7 @@ class ilMatterhornSendfile
      *
      * @var string
      * @access private
+     * @deprecated
      */
     private $requestType;
 
@@ -68,6 +69,7 @@ class ilMatterhornSendfile
         }
         
         $this->plugin->includeClass("class.ilMatterhornConfig.php");
+        $this->plugin->includeClass("class.ilObjMatterhornAccess.php");
         $this->configObject = new ilMatterhornConfig();
         // debugging
         
@@ -88,7 +90,6 @@ class ilMatterhornSendfile
         // echo "CLIENT_WEB_DIR: " . CLIENT_WEB_DIR . "\n";
         // echo "disposition: " . $this->disposition . "\n";
         // echo "ckeck_ip: " . $this->check_ip . "\n";
-        // echo "requesttype: " . $this->requestType . "\n";
         // echo "</pre>";
         // var_dump($_SESSION);
         // exit();
@@ -110,7 +111,7 @@ class ilMatterhornSendfile
             if (0 == strcmp("/episode.json", $path)) {
                 $this->requestType = "episode";
                 $this->setID();
-                $this->checkEpisodeAccess();
+                ilObjMatterhornAccess::checkEpisodeAccess($this->episode);
                 $this->sendEpisode();
             } else if (0 == strcmp("/usertracking", $path)) {
                 $this->requestType = "usertracking";
@@ -118,7 +119,7 @@ class ilMatterhornSendfile
                 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                     switch ($this->params['type']) {
                         case "FOOTPRINT":
-                            $this->checkEpisodeAccess();
+                            ilObjMatterhornAccess::checkEpisodeAccess($this->episode);
                             $this->putUserTracking();
                             break;
                         case "VIEWS":
@@ -133,17 +134,17 @@ class ilMatterhornSendfile
             } else if (0 == strcmp("/usertracking/stats.json", $path)) {
                 $this->requestType = "stats";
                 $this->setID();
-                $this->checkEpisodeAccess();
+                ilObjMatterhornAccess::checkEpisodeAccess($this->episode);
                 $this->sendStats();
             } else if (0 == strcmp("/usertracking/footprint.json", $path)) {
                 $this->requestType = "footprint";
                 $this->setID();
-                $this->checkEpisodeAccess();
+                ilObjMatterhornAccess::checkEpisodeAccess($this->episode);
                 $this->sendFootprint();
             } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
                 $this->requestType = "statistic";
                 $this->setID();
-                $this->checkEpisodeAccess("write");
+                ilObjMatterhornAccess::checkEpisodeAccess($this->episode, "write");
                 $this->sendStatistic();
             } else if (0 == strcmp("/info/me.json", $path)) {
                 $this->requestType = "me";
@@ -160,13 +161,13 @@ class ilMatterhornSendfile
                 $subpath = urldecode(substr($path, strlen($clientId)));
                 $this->setIDFromPath($subpath);
                 
-                if (preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $subpath)) {
+                if (preg_match('/^[A-Za-z0-9-]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $subpath)) {
                     $this->requestType = "preview";
-                    $this->checkPreviewAccess();
+                    ilObjMatterhornAccess::checkPreviewAccess($this->episode);
                     $this->sendPreview($subpath);
                 } else {
                     $this->requestType = "file";
-                    $this->checkFileAccess();
+                    ilObjMatterhornAccess::checkFileAccess($this->episode);
                     $this->sendFile('distribution_directory', $subpath);
                 }
             }
@@ -176,18 +177,18 @@ class ilMatterhornSendfile
     }
 
     /**
-     * extract obj_id and episode id from the request param
+     * extract series_id and episode_id from the request param
      *
      * @throws Exception if the id have wrong syntax
      * @access private
      */
     private function setID()
     {
-        if (! preg_match('/^[0-9]+\/[A-Za-z0-9\-]+$/', $this->params['id'])) {
+        if (! preg_match('/^[A-Za-z0-9\-]+\/[A-Za-z0-9\-]+$/', $this->params['id'])) {
             throw new Exception("mediapackageId", 400);
         }
         $ids = explode('/', $this->params['id'], 2);
-        $series_id = intval($ids[0]);
+        $series_id = $ids[0];
         $episode_id = $ids[1];
         
         $this->plugin->includeClass("class.ilMatterhornEpisode.php");
@@ -206,14 +207,14 @@ class ilMatterhornSendfile
     {
         $ids = explode('/', $path, 3);
         
-        if (! preg_match('/^' . $this->configObject->getSeriesPrefix() . '[0-9]+$/', $ids[0])) {
+        if (! preg_match('/^[A-Za-z0-9\-]+$/', $ids[0])) {
             throw new Exception("", 400);
         }
         if (! preg_match('/^[A-Za-z0-9\-]+$/', $ids[1])) {
             throw new Exception("", 400);
         }
         
-        $series_id = intval(substr($ids[0], strlen($this->configObject->getSeriesPrefix())));
+        $series_id = $ids[0];
         $episode_id = $ids[1];
         
         $this->plugin->includeClass("class.ilMatterhornEpisode.php");
@@ -225,76 +226,13 @@ class ilMatterhornSendfile
      *
      * @return string the request type of this request
      * @access public
+     * @deprecated
      */
     public function getRequestType()
     {
         return $this->requestType;
     }
-
-    /**
-     * Check access rights of the requested file
-     *
-     * @param string $permission
-     * @throws Exception if user have no $permission access for the file
-     */
-    private function checkEpisodeAccess($permission = "read")
-    {
-        global $DIC;
-        if ($this->checkAccessObject($this->episode->getSeriesId(), $permission)) {
-            return;
-        }
-        // none of the checks above gives access
-        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
-    }
-
-    /**
-     * Check access rights of the requested preview of the file
-     *
-     * @throws Exception if user have no access rights for the preview
-     */
-    private function checkPreviewAccess()
-    {
-        $this->checkFileAccess();
-    }
-
-    /**
-     * Check access rights of the requested file
-     *
-     * @throws Exception if user have no access rights for the file
-     */
-    private function checkFileAccess()
-    {
-        global $DIC;
-        if ($this->checkAccessObject($this->episode->getSeriesId())) {
-            return;
-        }
-        // none of the checks above gives access
-        throw new Exception($DIC->language()->txt('msg_no_perm_read'), 403);
-    }
-
-    /**
-     * Check access rights for an object by its object id
-     *
-     * @param int $obj_id
-     *            object id
-     * @param string $permission
-     *            read/write
-     * @return boolean access given (true/false)
-     */
-    private function checkAccessObject($obj_id, $permission = 'read')
-    {
-        global $ilAccess, $ilUser;
-        
-        $obj_type = ilObject::_lookupType($obj_id);
-        $ref_ids = ilObject::_getAllReferences($obj_id);
-        foreach ($ref_ids as $ref_id) {
-            if ($ilAccess->checkAccessOfUser($ilUser->getId(), $permission, "view", $ref_id, $obj_type, $obj_id)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    
     /**
      * stores the usertracking data in the database
      */
@@ -575,7 +513,7 @@ class ilMatterhornSendfile
     {
         $urlsplit = explode('/', (string) $catalog->url);
         end($urlsplit);
-        $segmentsxml = new SimpleXMLElement($this->configObject->getDistributionDirectory() . $this->episode->getOpencastSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
+        $segmentsxml = new SimpleXMLElement($this->configObject->getDistributionDirectory() . $this->episode->getSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
         
         $segments = array(
             "segment" => array()
