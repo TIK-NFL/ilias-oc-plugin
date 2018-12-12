@@ -382,16 +382,16 @@ $ilDB->dropTableColumn('rep_robj_xmh_data', 'series');
 ?>
 <#19>
 <?php
-$ilDB->manipulate('UPDATE rep_robj_xmh_rel_ep SET series_id = concat(`ilias_xmh_`, series_id)');
+$ilDB->manipulate("UPDATE rep_robj_xmh_rel_ep SET series_id = concat('ilias_xmh_', series_id)");
 
 $ilDB->addTableColumn('rep_robj_xmh_data', 'series_id', array(
-    'type' => 'string',
+    'type' => 'text',
     'length' => 50,
-    'notnull' => false
+    'notnull' => true
 ));
-$ilDB->manipulate('UPDATE rep_robj_xmh_data SET series_id = concat(`ilias_xmh_`, obj_id)');
+$ilDB->manipulate("UPDATE rep_robj_xmh_data SET series_id = concat('ilias_xmh_', obj_id)");
 $ilDB->modifyTableColumn('rep_robj_xmh_data', 'series_id', array(
-    'type' => 'string',
+    'type' => 'text',
     'length' => 50,
     'notnull' => true
 ));
