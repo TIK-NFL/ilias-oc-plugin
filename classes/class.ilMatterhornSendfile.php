@@ -61,18 +61,18 @@ class ilMatterhornSendfile
         $this->params = array();
         $this->requestType = "none";
         $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
-        
+
         if ($method == 'GET') {
             parse_str($uri["query"], $this->params);
         } elseif ($method == 'PUT') {
             parse_str(file_get_contents("php://input"), $this->params);
         }
-        
+
         $this->plugin->includeClass("class.ilMatterhornConfig.php");
         $this->plugin->includeClass("class.ilObjMatterhornAccess.php");
         $this->configObject = new ilMatterhornConfig();
         // debugging
-        
+
         // echo "<pre>";
         // var_dump($uri);
         // echo "REQUEST_URI: " . $_SERVER["REQUEST_URI"] . "\n";
@@ -105,17 +105,17 @@ class ilMatterhornSendfile
     public function handleRequest($path)
     {
         ilLoggerFactory::getLogger('xmh')->debug("Request for:" . $path);
-        
+
         try {
             // check if it is a request for an episode
             if (0 == strcmp("/episode.json", $path)) {
                 $this->requestType = "episode";
-                $this->setID();
+                $this->setIDFromParameter();
                 ilObjMatterhornAccess::checkEpisodeAccess($this->episode);
                 $this->sendEpisode();
             } else if (0 == strcmp("/usertracking", $path)) {
                 $this->requestType = "usertracking";
-                $this->setID();
+                $this->setIDFromParameter();
                 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                     switch ($this->params['type']) {
                         case "FOOTPRINT":
@@ -133,17 +133,17 @@ class ilMatterhornSendfile
                 }
             } else if (0 == strcmp("/usertracking/stats.json", $path)) {
                 $this->requestType = "stats";
-                $this->setID();
+                $this->setIDFromParameter();
                 ilObjMatterhornAccess::checkEpisodeAccess($this->episode);
                 $this->sendStats();
             } else if (0 == strcmp("/usertracking/footprint.json", $path)) {
                 $this->requestType = "footprint";
-                $this->setID();
+                $this->setIDFromParameter();
                 ilObjMatterhornAccess::checkEpisodeAccess($this->episode);
                 $this->sendFootprint();
             } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
                 $this->requestType = "statistic";
-                $this->setID();
+                $this->setIDFromParameter();
                 ilObjMatterhornAccess::checkEpisodeAccess($this->episode, "write");
                 $this->sendStatistic();
             } else if (0 == strcmp("/info/me.json", $path)) {
@@ -153,22 +153,25 @@ class ilMatterhornSendfile
                 $this->requestType = "list";
                 $this->sendList();
             } else {
-                $clientId = "/" . CLIENT_ID . "/";
-                if (substr($path, 0, strlen($clientId)) != $clientId) {
+                $pathSegments = array_slice(array_map('urldecode', explode('/', $path)), 1);
+
+                if (! isset($pathSegments[0]) || $pathSegments[0] != CLIENT_ID) {
                     throw new Exception("Bad CLIENT_ID", 400);
                 }
-                
-                $subpath = urldecode(substr($path, strlen($clientId)));
-                $this->setIDFromPath($subpath);
-                
-                if (preg_match('/^[A-Za-z0-9-]+\/[A-Za-z0-9-]+\/preview(sbs|presentation|presenter).(mp4|webm)$/', $subpath)) {
+
+                if (! isset($pathSegments[1]) || ! isset($pathSegments[2])) {
+                    throw new Exception("Bad Request", 400);
+                }
+                $this->setID($pathSegments[1], $pathSegments[2]);
+
+                if (isset($pathSegments[3]) && preg_match('/^preview(sbs|presentation|presenter).(mp4|webm)$/', $pathSegments[3])) {
                     $this->requestType = "preview";
                     ilObjMatterhornAccess::checkPreviewAccess($this->episode);
-                    $this->sendPreview($subpath);
+                    $this->sendPreview($pathSegments[3]);
                 } else {
                     $this->requestType = "file";
                     ilObjMatterhornAccess::checkFileAccess($this->episode);
-                    $this->sendFile('distribution_directory', $subpath);
+                    $this->sendFile('distribution_directory', array_slice($pathSegments, 1));
                 }
             }
         } catch (Exception $e) {
@@ -179,44 +182,26 @@ class ilMatterhornSendfile
     /**
      * extract series_id and episode_id from the request param
      *
-     * @throws Exception if the id have wrong syntax
      * @access private
      */
-    private function setID()
+    private function setIDFromParameter()
     {
-        if (! preg_match('/^[A-Za-z0-9\-]+\/[A-Za-z0-9\-]+$/', $this->params['id'])) {
-            throw new Exception("mediapackageId", 400);
-        }
         $ids = explode('/', $this->params['id'], 2);
         $series_id = $ids[0];
         $episode_id = $ids[1];
-        
-        $this->plugin->includeClass("class.ilMatterhornEpisode.php");
-        $this->episode = new ilMatterhornEpisode($series_id, $episode_id);
+        $this->setID($series_id, $episode_id);
     }
 
     /**
-     * extract series_id and episode id from the path
+     * set the series_id and the episode_id
      *
-     * @param string $path
+     * @param string $series_id
+     * @param string $episode_id
      *
-     * @throws Exception if the id have wrong syntax
      * @access private
      */
-    private function setIDFromPath($path)
+    private function setID(string $series_id, string $episode_id)
     {
-        $ids = explode('/', $path, 3);
-        
-        if (! preg_match('/^[A-Za-z0-9\-]+$/', $ids[0])) {
-            throw new Exception("", 400);
-        }
-        if (! preg_match('/^[A-Za-z0-9\-]+$/', $ids[1])) {
-            throw new Exception("", 400);
-        }
-        
-        $series_id = $ids[0];
-        $episode_id = $ids[1];
-        
         $this->plugin->includeClass("class.ilMatterhornEpisode.php");
         $this->episode = new ilMatterhornEpisode($series_id, $episode_id);
     }
@@ -232,7 +217,7 @@ class ilMatterhornSendfile
     {
         return $this->requestType;
     }
-    
+
     /**
      * stores the usertracking data in the database
      */
@@ -242,10 +227,10 @@ class ilMatterhornSendfile
         $intime = intval($this->params['in']);
         $outtime = intval($this->params['out']);
         $user_id = $ilUser->getId();
-        
+
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
         ilMatterhornUserTracking::putUserTracking($user_id, $this->episode, $intime, $outtime);
-        
+
         header("HTTP/1.0 204 Stored");
     }
 
@@ -260,7 +245,7 @@ class ilMatterhornSendfile
         foreach ($statistic as $name => $value) {
             $content = array();
             $content['name'] = $name;
-            
+
             $content['type'] = "mapping";
             $content['key'] = "time";
             $content['value'] = "views";
@@ -269,17 +254,17 @@ class ilMatterhornSendfile
             $max = count($arrayKeys) == 0 ? 0 : max($arrayKeys);
             $mapping = array_fill(0, $max, 0);
             $content['mapping'] = array_replace($mapping, $value);
-            
+
             $data[] = $content;
         }
-        
+
         $infoarray = array();
         $infoarray['name'] = $this->episode->getTitle();
         $infoarray['episode_id'] = $this->episode->getEpisodeId();
         $infoarray['series_id'] = $this->episode->getSeriesId();
         $infoarray['duration'] = $this->episode->getDuration();
         $infoarray['data'] = $data;
-        
+
         $this->sendJSON($infoarray);
     }
 
@@ -290,7 +275,7 @@ class ilMatterhornSendfile
     {
         global $ilUser;
         $user_id = $ilUser->getId();
-        
+
         $response = array();
         $this->plugin->includeClass("class.ilMatterhornUserTracking.php");
         $response['footprints'] = ilMatterhornUserTracking::getFootprints($this->episode, $user_id);
@@ -352,13 +337,13 @@ class ilMatterhornSendfile
     private function sendEpisode()
     {
         $manifest = $this->episode->getManifest();
-        
+
         $episode = array();
         $episode['search-results'] = array(
             "total" => "1",
             "result" => array()
         );
-        
+
         $episode['search-results']["result"]["mediapackage"] = array();
         $attachments = array(
             "attachment" => array()
@@ -399,9 +384,9 @@ class ilMatterhornSendfile
         }
         // ilLoggerFactory::getLogger('xmh')->debug((string) $segmentxml->MediaTime->MediaDuration);
         // ilLoggerFactory::getLogger('xmh')->debug(print_r($previewrefs,true));
-        
+
         $episode['search-results']["result"]["mediapackage"]['attachments'] = $attachments;
-        
+
         $metadata = array(
             "catalog" => array()
         );
@@ -442,7 +427,7 @@ class ilMatterhornSendfile
             array_push($metadata['catalog'], $cat);
         }
         $episode['search-results']["result"]["mediapackage"]['metadata'] = $metadata;
-        
+
         $media = array(
             "track" => array()
         );
@@ -485,11 +470,11 @@ class ilMatterhornSendfile
             }
             array_push($media['track'], $trk);
         }
-        
+
         $episode['search-results']["result"]["mediapackage"]['media'] = $media;
         $episode['search-results']["result"]["mediapackage"]['duration'] = (string) $manifest['duration'];
         $episode['search-results']["result"]["mediapackage"]['id'] = (string) $manifest['id'];
-        
+
         $episode['search-results']["result"]['id'] = (string) $manifest['id'];
         $episode['search-results']["result"]['mediaType'] = "AudioVisual";
         $episode['search-results']["result"]["dcCreated"] = (string) $manifest['start'];
@@ -514,13 +499,13 @@ class ilMatterhornSendfile
         $urlsplit = explode('/', (string) $catalog->url);
         end($urlsplit);
         $segmentsxml = new SimpleXMLElement($this->configObject->getDistributionDirectory() . $this->episode->getSeriesId() . '/' . $this->episode->getEpisodeId() . '/' . prev($urlsplit) . '/' . end($urlsplit), null, true);
-        
+
         $segments = array(
             "segment" => array()
         );
         $currentidx = 0;
         $currenttime = 0;
-        
+
         foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
             $regmatches = array();
             preg_match("/PT(\d+M)?(\d+S)(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
@@ -543,7 +528,7 @@ class ilMatterhornSendfile
                 }
             }
             $segment['text'] = $text;
-            
+
             $segment['duration'] = ($min * 60 + $sec) * 1000 + $msec;
             $curmesc = $cursec = $curmin = $remainhour = 0;
             $curmsec = $currenttime % 1000;
@@ -552,7 +537,7 @@ class ilMatterhornSendfile
             $remainmin = intdiv($remainsec, 60);
             $curmin = $remainmin % 60;
             $remainhour = intdiv($remainmin, 60);
-            
+
             $format = "T%02d:%02d:%02d:%03d";
             $timecode = sprintf($format, $remainhour, $curmin, $cursec, $curmsec);
             $oldformat = "T%02d:%02d:%02d:0";
@@ -570,11 +555,11 @@ class ilMatterhornSendfile
                 $preview["$"] = (string) $attachment['url'];
                 $preview["ref"] = $regmatches[1];
             }
-            
+
             $previews = [];
             $previews["preview"] = $preview;
             $segment['previews'] = $previews;
-            
+
             $currentidx ++;
             $currenttime = $currenttime + $segment['duration'];
             array_push($segments['segment'], $segment);
@@ -634,11 +619,11 @@ class ilMatterhornSendfile
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("Starting normal get");
         }
-        
+
         header("Content-Range: bytes $start-$end/$size");
         header("Content-Length: " . $length);
         header('Accept-Ranges: bytes');
-        
+
         $buffer = 1024 * 8;
         while (! feof($fp) && ($p = ftell($fp)) <= $end) {
             ilLoggerFactory::getLogger('xmh')->debug("Loopstart " . $p . " Rest:" . ($end - $p) . " Buffer" . $buffer);
@@ -656,16 +641,15 @@ class ilMatterhornSendfile
         fclose($fp);
         ilLoggerFactory::getLogger('xmh')->debug("Done sending");
     }
-    
+
     /**
      *
-     * @param string $subpath
-     *            relative file path from ilias directory (without leading /)
+     * @param string $filename
+     *            file name from ilias directory (without leading /)
      */
-    private function sendPreview($subpath)
+    private function sendPreview(string $filename)
     {
-        $urlsplit = explode('/', $subpath);
-        $typesplit = explode('.', $urlsplit[2]);
+        $typesplit = explode('.', $filename);
         $requestedType = $typesplit[1];
         ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl requested type:' . $requestedType);
         $editor = $this->episode->getEditor();
@@ -678,7 +662,7 @@ class ilMatterhornSendfile
         if ($previewtrack == null) {
             throw new Exception("No Preview", 404);
         }
-        
+
         $relativeFilePath = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "", $previewtrack);
         $previewPath = "downloads/mh_default_org/internal/";
         $this->sendFile('mh_directory', $previewPath . $relativeFilePath);
@@ -691,11 +675,13 @@ class ilMatterhornSendfile
      *            the config name of the directory:
      *            * `distribution_directory`
      *            * `mh_directory`
-     * @param string $relativeFilePath
-     *            relative file path(without leading /)
+     * @param array $pathSegments
+     *            relative file path
      */
-    private function sendFile($directoryName, $relativeFilePath)
+    private function sendFile(string $directoryName, array $pathSegments)
     {
+        $relativeFilePath = implode('/', $pathSegments);
+
         switch ($directoryName) {
             case 'distribution_directory':
                 $realFile = $this->configObject->getDistributionDirectory() . "/$relativeFilePath";
@@ -711,7 +697,7 @@ class ilMatterhornSendfile
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
         $mime = ilMimeTypeUtil::lookupMimeType($realFile);
         header("Content-Type: " . $mime);
-        
+
         switch ($this->configObject->getXSendfileHeader()) {
             case ilMatterhornConfig::X_SENDFILE:
                 $header = "X-Sendfile: " . $realFile;
@@ -732,9 +718,9 @@ class ilMatterhornSendfile
     {
         $errorcode = $exception->getCode();
         $errortext = $exception->getMessage();
-        
+
         ilLoggerFactory::getLogger('xmh')->debug($errorcode . " " . $errortext);
-        
+
         http_response_code($errorcode);
         echo $errortext;
         exit();
