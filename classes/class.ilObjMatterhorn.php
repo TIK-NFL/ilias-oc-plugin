@@ -394,8 +394,8 @@ class ilObjMatterhorn extends ilObjectPlugin
             'Connection: Keep-Alive'
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $eventid . "/editor.json";
-        // ',"startTime":"00:00:02.818","endTime":"00:00:34.320","deleted":false}],'.
 
         $fields_string = '{"concat":{"segments":[{"start":' . (1000 * $trimin) . ',"end":' . (1000 * $trimout) . ',"deleted":false}],' . '"tracks":["' . implode('","', $keeptracks) . '"]},"workflow":"ilias-publish-after-cutting"}';
 

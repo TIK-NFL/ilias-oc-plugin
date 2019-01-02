@@ -51,16 +51,16 @@ class ilOpencastAPI
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
         $this->setAuthorization($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
         $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
         if ($response === FALSE) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
                 throw new Exception("error GET request: $url", 503);
             }
             throw new Exception("error GET request: $url $httpCode", 500);
-        } else if ($httpCode >= 400) {
-            throw new Exception("error GET request: $url $httpCode $response", 500);
         }
         return $response;
     }
@@ -77,24 +77,23 @@ class ilOpencastAPI
     private function post($url, $post, $returnHttpCode = false)
     {
         $post_string = http_build_query($post);
-        
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
         curl_setopt($ch, CURLOPT_POST, count($post));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
         $this->setAuthorization($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
             throw new Exception("error POST request: $url $post_string $httpCode", 500);
-        } else if ($httpCode >= 400) {
-            throw new Exception("error GET request: $url $post_string $httpCode $response", 500);
         }
-        
+
         if ($returnHttpCode) {
-            return curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            return $httpCode;
         }
         return $response;
     }
@@ -127,7 +126,7 @@ class ilOpencastAPI
         $url = "/series/";
         $series_id = 'ilias_xmh_' . $obj_id;
         $fields = $this->createPostFields($series_id, $title, $description, $obj_id, $refId);
-        //TODO use api
+        // TODO use api
         $this->post($url, $fields);
         return $series_id;
     }
@@ -143,6 +142,7 @@ class ilOpencastAPI
     }
 
     /**
+     *
      * @param string $series_id
      * @param string $title
      * @param string $description
@@ -153,7 +153,7 @@ class ilOpencastAPI
     public function updateSeries($series_id, $title, $description, $obj_id, $refId)
     {
         $url = "/series/";
-        
+
         $seriesxml = $this->getSeries($series_id);
         $xml = new SimpleXMLElement($seriesxml);
         $ns = "http://purl.org/dc/terms/";
@@ -173,7 +173,7 @@ class ilOpencastAPI
     {
         global $DIC;
         $ilUser = $DIC->user();
-        
+
         $userid = $ilUser->getLogin();
         if (null != $ilUser->getExternalAccount) {
             $userid = $ilUser->getExternalAccount();
@@ -251,27 +251,28 @@ class ilOpencastAPI
             'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id,
             'sort' => 'date:ASC'
         );
-        
+
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
-        
+
         $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
-        
+
         return $searchResult;
     }
 
     public function deleteschedule($workflowid)
     {
         $url = $this->configObject->getMatterhornServer() . '/admin-ng/event/' . $workflowid;
-        
+
         // open connection
         $ch = curl_init();
-        
+
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
         $this->setAuthorization($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         $curlret = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         ilLoggerFactory::getLogger('xmh')->debug("delete code: " . $httpCode);
@@ -293,13 +294,13 @@ class ilOpencastAPI
             'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $series_id,
             'sort' => 'date:ASC'
         );
-        
+
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
-        
+
         $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
-        
+
         if (is_array($searchResult)) {
             return $searchResult['results'];
         } else {
@@ -328,13 +329,13 @@ class ilOpencastAPI
                 '-capture'
             )
         );
-        
+
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
-        
+
         $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
-        
+
         return $searchResult;
     }
 
@@ -374,7 +375,7 @@ class ilOpencastAPI
     {
         $url = "/admin-ng/event/$episodeid/asset/media/media.json";
         ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
-        
+
         $curlret = $this->get($url);
         $mediajson = json_decode($curlret);
         if ($mediajson === false) {
