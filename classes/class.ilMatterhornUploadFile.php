@@ -26,6 +26,13 @@ class ilMatterhornUploadFile
     private $obj_id;
 
     /**
+     * the id of the opencast series
+     *
+     * @var string
+     */
+    private $series_id;
+
+    /**
      * the configuration for the matterhorn object
      *
      * @var ilMatterhornConfig
@@ -140,17 +147,13 @@ class ilMatterhornUploadFile
      */
     private function setID()
     {
-        // TODO series_id
-        $obj_id = $this->params['seriesid'];
-
-        if (! preg_match('/^[0-9]+$/', $obj_id)) {
-            throw new Exception($this->plugin->txt('series'), 404);
-        }
-        $this->obj_id = intval($obj_id);
+        $this->series_id = $this->params['seriesid'];
+        $this->obj_id = $this->configObject->lookupMatterhornObjectForSeries($this->series_id);
     }
 
     /**
      * Returns the type of request.
+     *
      * @deprecated
      */
     public function getRequestType()
@@ -176,7 +179,6 @@ class ilMatterhornUploadFile
     private function createEpisode()
     {
         $basedir = $this->plugin->getDirectory();
-        $series_id = $this->configObject->lookupSeriesForMatterhornObject($this->obj_id);
 
         // parameter checking
         $episodename = urldecode($this->params['episodename']);
@@ -203,7 +205,7 @@ class ilMatterhornUploadFile
         $result = $xpath->query('//dcterms:title');
         $result->item(0)->nodeValue = $episodename;
         $result = $xpath->query('//dcterms:isPartOf');
-        $result->item(0)->nodeValue = $series_id;
+        $result->item(0)->nodeValue = $this->series_id;
         $result = $xpath->query('//dcterms:recordDate');
         $result->item(0)->nodeValue = $datestring;
         $result = $xpath->query('//dcterms:created');
@@ -216,7 +218,7 @@ class ilMatterhornUploadFile
 
         // get the series xml for this mediapackage
         $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        $seriesxml = ilOpencastAPI::getInstance()->getSeries($series_id);
+        $seriesxml = ilOpencastAPI::getInstance()->getSeries($this->series_id);
 
         // create a new media package and fix start date
         $url = '/ingest/createMediaPackage';

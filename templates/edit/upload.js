@@ -72,7 +72,7 @@ function initUpload(iliasopencast) {
             });
 
             upload.uploadFile.on('click', function() {
-                if (upload.checkfieldscomplete) {
+                if (upload.checkfieldscomplete()) {
                     $.post(ils.uploadtarget + "/createEpisode", {
                         seriesid : ils.seriesid,
                         episodename : $('#iliasopencast_tracktitle').val(),
@@ -96,9 +96,9 @@ function initUpload(iliasopencast) {
                         });
                     });
                 } else {
-                    nothingToUpload.fadeIn();
+                    upload.nothingToUpload.fadeIn();
                     setTimeout(function() {
-                        nothingToUpload.fadeOut();
+                        upload.nothingToUpload.fadeOut();
                     }, 3000);
                 }
             });

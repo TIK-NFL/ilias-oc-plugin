@@ -53,12 +53,14 @@ class ilOpencastAPI
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         
         $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
                 throw new Exception("error GET request: $url", 503);
             }
             throw new Exception("error GET request: $url $httpCode", 500);
+        } else if ($httpCode >= 400) {
+            throw new Exception("error GET request: $url $httpCode $response", 500);
         }
         return $response;
     }
@@ -84,9 +86,11 @@ class ilOpencastAPI
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         
         $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             throw new Exception("error POST request: $url $post_string $httpCode", 500);
+        } else if ($httpCode >= 400) {
+            throw new Exception("error GET request: $url $post_string $httpCode $response", 500);
         }
         
         if ($returnHttpCode) {

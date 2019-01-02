@@ -680,7 +680,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $factory = $DIC->ui()->factory();
         
         $ilTabs->activateTab("manage");
-        $editbase = $this->getPlugin()->getDirectory() . "/templates/edit";
         $this->checkPermission("write");
         
         $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.js.html");
@@ -695,7 +694,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_DONE_UPLOADING", $this->getText("done_uploading"));
         $seriestpl->setVariable("TXT_UPLOAD_CANCELED", $this->getText("upload_canceled"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
-        $seriestpl->setVariable("SERIES_ID", $this->object->getId());
+        $seriestpl->setVariable("SERIES_ID", $this->object->getSeriesId());
         $seriestpl->setVariable("MANUAL_RELEASE", $this->object->getManualRelease());
         $seriestpl->parseCurrentBlock();
         $jsConfig = $seriestpl->get();
