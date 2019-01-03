@@ -18,7 +18,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'http://host.is.unset';
         }
-        
+
         return $retVal;
     }
 
@@ -33,7 +33,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'http://host.is.unset';
         }
-        
+
         return $retVal;
     }
 
@@ -48,7 +48,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'matterhorn_system_account';
         }
-        
+
         return $retVal;
     }
 
@@ -63,7 +63,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'CHANGE_ME';
         }
-        
+
         return $retVal;
     }
 
@@ -112,7 +112,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return '/dev/null';
         }
-        
+
         return $retVal;
     }
 
@@ -153,7 +153,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return '/dev/null';
         }
-        
+
         return $retVal;
     }
 
@@ -171,7 +171,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return $this->getMatterhornVersionOptions()[0];
         }
-        
+
         return $retVal;
     }
 
@@ -194,7 +194,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'default';
         }
-        
+
         return $retVal;
     }
 
@@ -204,13 +204,37 @@ class ilMatterhornConfig
     }
 
     /**
-     * Get the Prefix of series created by this plugin.
      *
-     * @return string the prefix
+     * @param string $series_id
+     * @return int $obj_id
      */
-    public function getSeriesPrefix()
+    public function lookupMatterhornObjectForSeries($series_id)
     {
-        return 'ilias_xmh_';
+        global $ilDB;
+        $result = $ilDB->query('SELECT obj_id FROM rep_robj_xmh_data WHERE series_id = ' . $ilDB->quote($series_id, 'text'));
+        if ($result->numRows() == 0) {
+            return false;
+        }
+        $record = $ilDB->fetchAssoc($result);
+
+        return intval($record['obj_id']);
+    }
+
+    /**
+     *
+     * @param int $obj_id
+     * @return string $series_id
+     */
+    public function lookupSeriesForMatterhornObject($obj_id)
+    {
+        global $ilDB;
+        $result = $ilDB->query('SELECT series_id FROM rep_robj_xmh_data WHERE obj_id = ' . $ilDB->quote($obj_id, 'integer'));
+        if ($result->numRows() == 0) {
+            return false;
+        }
+        $record = $ilDB->fetchAssoc($result);
+
+        return $record['series_id'];
     }
 
     /**
@@ -223,7 +247,7 @@ class ilMatterhornConfig
     private function setValue($key, $value)
     {
         global $ilDB;
-        
+
         if (! is_string($this->getValue($key))) {
             $ilDB->insert('rep_robj_xmh_config', array(
                 'cfgkey' => array(
@@ -269,7 +293,7 @@ class ilMatterhornConfig
             return false;
         }
         $record = $ilDB->fetchAssoc($result);
-        
+
         return (string) $record['cfgvalue'];
     }
 }
