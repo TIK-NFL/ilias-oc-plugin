@@ -94,13 +94,17 @@ class ilObjMatterhorn extends ilObjectPlugin
         $this->setType("xmh");
     }
 
+    protected function beforeCreate() {
+        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->checkOpencast();
+    }
+
     /**
      * Create object
      */
-    public function doCreate()
+    protected function doCreate()
     {
         global $ilDB;
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
         $new_series_id = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
 
         ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $new_series_id");

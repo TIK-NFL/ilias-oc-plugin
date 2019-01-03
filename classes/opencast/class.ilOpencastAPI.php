@@ -9,6 +9,8 @@ ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->
 class ilOpencastAPI
 {
 
+    const API_VERSION = "1.0.0";
+
     private static $instance = null;
 
     /**
@@ -55,6 +57,35 @@ class ilOpencastAPI
 
         $response = curl_exec($ch);
 
+        if ($response === FALSE) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if (! $httpCode) {
+                throw new Exception("error GET request: $url", 503);
+            }
+            throw new Exception("error GET request: $url $httpCode", 500);
+        }
+        return $response;
+    }
+
+    /**
+     * Do a GET Request of the given url on the Matterhorn Server with basic authorization
+     *
+     * @param string $url
+     * @throws Exception
+     * @return mixed
+     */
+    private function getAPI(string $url)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
+        $this->basicAuthentication($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Accept: application/" . self::API_VERSION . "+json"
+        ));
+
+        $response = curl_exec($ch);
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
@@ -119,6 +150,9 @@ class ilOpencastAPI
         $this->basicAuthentication($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Accept: application/" . self::API_VERSION . "+json"
+        ));
 
         $response = curl_exec($ch);
         if ($response === FALSE) {
@@ -151,6 +185,16 @@ class ilOpencastAPI
     private static function title($title, $id, $refId)
     {
         return "ILIAS-$id:$refId:$title";
+    }
+
+    public function checkOpencast()
+    {
+        try {
+            $versionInfo = json_decode($this->getAPI("/api/version"), true);
+            return in_array(self::API_VERSION, $versionInfo["versions"]);
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     /**
