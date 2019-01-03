@@ -739,7 +739,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             case 'upload':
                 $ilTabs->activateSubTab('upload');
                 
-                $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.html");
+                $seriestpl = $this->getPlugin()->getTemplate("default/tpl.upload.html");
                 $seriestpl->setCurrentBlock("upload");
                 $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
                 $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
