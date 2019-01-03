@@ -530,11 +530,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         $scheduled_episode = array(
             'title' => $event["title"],
-            'episode_id' => $event["id"],
-            'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event['id'])
+            'episode_id' => $event["identifier"],
+            'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event['identifier'])
         );
-        $scheduled_episode['startdate'] = $event['start_date'];
-        $scheduled_episode['stopdate'] = $event['end_date'];
+        $scheduled_episode['startdate'] = $event['start'];
+        $scheduled_episode['stopdate'] = $event['end'];//new api ????
         $scheduled_episode['location'] = $event['location'];
         return $scheduled_episode;
     }
@@ -597,10 +597,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         
         $scheduled_items = array();
         $scheduledEpisodes = $series->getScheduledEpisodes();
-        if (is_array($scheduledEpisodes) && 0 < $scheduledEpisodes['total']) {
-            foreach ($scheduledEpisodes['results'] as $event) {
-                $scheduled_items[] = $this->extractScheduledEpisode($event);
-            }
+        foreach ($scheduledEpisodes as $event) {
+            $scheduled_items[] = $this->extractScheduledEpisode($event);
         }
         usort($scheduled_items, array(
             $this,

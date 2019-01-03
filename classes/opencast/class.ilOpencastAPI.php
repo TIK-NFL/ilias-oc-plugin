@@ -45,11 +45,38 @@ class ilOpencastAPI
      * @throws Exception
      * @return mixed
      */
-    private function get($url)
+    private function get(string $url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
         $this->digestAuthentication($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
+        $response = curl_exec($ch);
+
+        if ($response === FALSE) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if (! $httpCode) {
+                throw new Exception("error GET request: $url", 503);
+            }
+            throw new Exception("error GET request: $url $httpCode", 500);
+        }
+        return $response;
+    }
+
+    /**
+     * Do a GET Request of the given url on the Matterhorn Server with basic authorization
+     *
+     * @param string $url
+     * @throws Exception
+     * @return mixed
+     */
+    private function getAPI(string $url)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
+        $this->basicAuthentication($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
 
@@ -74,7 +101,7 @@ class ilOpencastAPI
      * @throws Exception
      * @return mixed
      */
-    private function post($url, $post, $returnHttpCode = false)
+    private function post(string $url, array $post, bool $returnHttpCode = false)
     {
         $post_string = http_build_query($post);
 
@@ -107,7 +134,7 @@ class ilOpencastAPI
      * @throws Exception
      * @return mixed
      */
-    private function put($url, $post, $returnHttpCode = false)
+    private function put(string $url, array $post, bool $returnHttpCode = false)
     {
         $post_string = http_build_query($post);
 
@@ -283,10 +310,10 @@ class ilOpencastAPI
      *            series id
      * @return array the scheduled episodes for the series returned by opencast
      */
-    public function getScheduledEpisodes($series_id)
+    public function getScheduledEpisodes(string $series_id)
     {
-        $url = "/admin-ng/event/events.json";
-        /* $_GET Parameters to Send */
+        $url = "/api/events/";
+
         $params = array(
             'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id,
             'sort' => 'date:ASC'
@@ -295,13 +322,12 @@ class ilOpencastAPI
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
 
-        $curlret = $this->get($url);
-        $searchResult = json_decode($curlret, true);
+        $curlret = $this->getAPI($url);
 
-        return $searchResult;
+        return json_decode($curlret, true);
     }
 
-    public function delete($episodeid)
+    public function delete(string $episodeid)
     {
         $url = $this->configObject->getMatterhornServer() . "/api/events/$episodeid";
 
@@ -327,7 +353,7 @@ class ilOpencastAPI
      *            series id
      * @return array the episodes which are on hold for the series returned by matterhorn
      */
-    public function getOnHoldEpisodes($series_id)
+    public function getOnHoldEpisodes(string $series_id)
     {
         $url = "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
@@ -356,7 +382,7 @@ class ilOpencastAPI
      *            series id
      * @return array the episodes which are on hold for the series returned by matterhorn
      */
-    public function getProcessingEpisodes($series_id)
+    public function getProcessingEpisodes(string $series_id)
     {
         $url = "/workflow/instances.json";
         $params = array(
