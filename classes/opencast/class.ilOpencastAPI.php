@@ -51,8 +51,10 @@ class ilOpencastAPI
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
         $this->setAuthorization($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
         $response = curl_exec($ch);
+
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
@@ -75,22 +77,23 @@ class ilOpencastAPI
     private function post($url, $post, $returnHttpCode = false)
     {
         $post_string = http_build_query($post);
-        
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
         curl_setopt($ch, CURLOPT_POST, count($post));
         curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
         $this->setAuthorization($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
         $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             throw new Exception("error POST request: $url $post_string $httpCode", 500);
         }
-        
+
         if ($returnHttpCode) {
-            return curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            return $httpCode;
         }
         return $response;
     }
@@ -114,16 +117,18 @@ class ilOpencastAPI
      *
      * @param string $title
      * @param string $description
-     * @param integer $id
+     * @param integer $obj_id
      * @param integer $refId
-     * @return string the series dublin core XML document
+     * @return string the series id
      */
-    public function createSeries($title, $description, $id, $refId)
+    public function createSeries($title, $description, $obj_id, $refId)
     {
         $url = "/series/";
-        $fields = $this->createPostFields($title, $description, $id, $refId);
-        $seriesxml = (string) $this->post($url, $fields);
-        return $seriesxml;
+        $series_id = 'ilias_xmh_' . $obj_id;
+        $fields = $this->createPostFields($series_id, $title, $description, $obj_id, $refId);
+        // TODO use api
+        $this->post($url, $fields);
+        return $series_id;
     }
 
     private static function setChildren($xml, $name, $value, $ns)
@@ -138,20 +143,21 @@ class ilOpencastAPI
 
     /**
      *
+     * @param string $series_id
      * @param string $title
      * @param string $description
-     * @param integer $id
+     * @param integer $obj_id
      * @param integer $refId
      * @return integer the httpCode
      */
-    public function updateSeries($title, $description, $id, $refId)
+    public function updateSeries($series_id, $title, $description, $obj_id, $refId)
     {
         $url = "/series/";
-        
-        $seriesxml = $this->getSeries($id);
+
+        $seriesxml = $this->getSeries($series_id);
         $xml = new SimpleXMLElement($seriesxml);
         $ns = "http://purl.org/dc/terms/";
-        self::setChildren($xml, "title", self::title($title, $id, $refId), $ns);
+        self::setChildren($xml, "title", self::title($title, $obj_id, $refId), $ns);
         self::setChildren($xml, "description", $description, $ns);
         self::setChildren($xml, "modified", date("c"), $ns);
         $seriesxml = $xml->asXML();
@@ -167,7 +173,7 @@ class ilOpencastAPI
     {
         global $DIC;
         $ilUser = $DIC->user();
-        
+
         $userid = $ilUser->getLogin();
         if (null != $ilUser->getExternalAccount) {
             $userid = $ilUser->getExternalAccount();
@@ -180,13 +186,14 @@ class ilOpencastAPI
 
     /**
      *
+     * @param string $series_id
      * @param string $title
      * @param string $description
-     * @param integer $id
+     * @param integer $obj_id
      * @param integer $refId
      * @return string[]
      */
-    private function createPostFields($title, $description, $id, $refId)
+    private function createPostFields($series_id, $title, $description, $obj_id, $refId)
     {
         $fields = array(
             'series' => '<?xml version="1.0"?>
@@ -194,7 +201,7 @@ class ilOpencastAPI
   xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
   xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
 		
-  <dcterms:title xml:lang="en">' . self::title($title, $id, $refId) . '</dcterms:title>
+  <dcterms:title xml:lang="en">' . self::title($title, $obj_id, $refId) . '</dcterms:title>
   <dcterms:subject>
     </dcterms:subject>
   <dcterms:description xml:lang="en">' . $description . '</dcterms:description>
@@ -202,7 +209,7 @@ class ilOpencastAPI
     University of Stuttgart, Germany
     </dcterms:publisher>
   <dcterms:identifier>
-    ' . $this->configObject->getSeriesPrefix() . $id . '</dcterms:identifier>
+    ' . $series_id . '</dcterms:identifier>
   <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("c") . '</dcterms:modified>
   <dcterms:format xsi:type="dcterms:IMT">
     video/mp4
@@ -219,52 +226,53 @@ class ilOpencastAPI
     /**
      * Get the series dublin core
      *
-     * @param integer $id
+     * @param string $series_id
      * @return string the series dublin core XML document
      */
-    public function getSeries($id)
+    public function getSeries($series_id)
     {
-        $url = "/series/" . $this->configObject->getSeriesPrefix() . $id . ".xml";
+        $url = "/series/" . $series_id . ".xml";
         $seriesxml = (string) $this->get($url);
         return $seriesxml;
     }
 
     /**
-     * The scheduled information for the series returned by matterhorn
+     * The scheduled information for the series returned by opencast
      *
-     * @param integer $id
+     * @param string $series_id
      *            series id
-     * @return array the scheduled episodes for the series returned by matterhorn
+     * @return array the scheduled episodes for the series returned by opencast
      */
-    public function getScheduledEpisodes($id)
+    public function getScheduledEpisodes($series_id)
     {
         $url = "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $this->configObject->getSeriesPrefix() . $id,
+            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id,
             'sort' => 'date:ASC'
         );
-        
+
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
-        
+
         $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
-        
+
         return $searchResult;
     }
 
     public function deleteschedule($workflowid)
     {
         $url = $this->configObject->getMatterhornServer() . '/admin-ng/event/' . $workflowid;
-        
+
         // open connection
         $ch = curl_init();
-        
+
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
         $this->setAuthorization($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         $curlret = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         ilLoggerFactory::getLogger('xmh')->debug("delete code: " . $httpCode);
@@ -274,25 +282,25 @@ class ilOpencastAPI
     /**
      * Get the episodes which are on hold for given series
      *
-     * @param integer $id
+     * @param string $series_id
      *            series id
      * @return array the episodes which are on hold for the series returned by matterhorn
      */
-    public function getOnHoldEpisodes($id)
+    public function getOnHoldEpisodes($series_id)
     {
         $url = "/admin-ng/event/events.json";
         /* $_GET Parameters to Send */
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $this->configObject->getSeriesPrefix() . $id,
+            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $series_id,
             'sort' => 'date:ASC'
         );
-        
+
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
-        
+
         $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
-        
+
         if (is_array($searchResult)) {
             return $searchResult['results'];
         } else {
@@ -303,15 +311,15 @@ class ilOpencastAPI
     /**
      * Get the episodes which are on hold for the given series
      *
-     * @param integer $id
+     * @param string $series_id
      *            series id
      * @return array the episodes which are on hold for the series returned by matterhorn
      */
-    public function getProcessingEpisodes($id)
+    public function getProcessingEpisodes($series_id)
     {
         $url = "/workflow/instances.json";
         $params = array(
-            'seriesId' => $this->configObject->getSeriesPrefix() . $id,
+            'seriesId' => $series_id,
             'state' => array(
                 '-stopped',
                 'running'
@@ -321,13 +329,13 @@ class ilOpencastAPI
                 '-capture'
             )
         );
-        
+
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
-        
+
         $curlret = $this->get($url);
         $searchResult = json_decode($curlret, true);
-        
+
         return $searchResult;
     }
 
@@ -367,7 +375,7 @@ class ilOpencastAPI
     {
         $url = "/admin-ng/event/$episodeid/asset/media/media.json";
         ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
-        
+
         $curlret = $this->get($url);
         $mediajson = json_decode($curlret);
         if ($mediajson === false) {

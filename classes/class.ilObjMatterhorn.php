@@ -33,6 +33,13 @@ class ilObjMatterhorn extends ilObjectPlugin
 {
 
     /**
+     * The Opencast series id
+     *
+     * @var string
+     */
+    private $series_id;
+
+    /**
      * Stores the viewmode
      *
      * @var integer
@@ -63,6 +70,12 @@ class ilObjMatterhorn extends ilObjectPlugin
     private $lastfsInodeUpdate;
 
     /**
+     *
+     * @var ilMatterhornConfig
+     */
+    private $configObject;
+
+    /**
      * Constructor
      *
      * @access public
@@ -88,10 +101,10 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        $seriesxml = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
-        
-        ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $seriesxml");
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, is_online, viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
+        $new_series_id = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
+
+        ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $new_series_id");
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, series_id, is_online, viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote($new_series_id, "string") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
         $this->createMetaData();
     }
 
@@ -101,9 +114,10 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function doRead()
     {
         global $ilDB;
-        
+
         $set = $ilDB->query("SELECT * FROM rep_robj_xmh_data WHERE obj_id = " . $ilDB->quote($this->getId(), "integer"));
         while ($rec = $ilDB->fetchAssoc($set)) {
+            $this->setSeriesId($rec["series_id"]);
             $this->setOnline($rec["is_online"]);
             $this->setViewMode($rec["viewmode"]);
             $this->setManualRelease($rec["manualrelease"]);
@@ -119,8 +133,8 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         global $ilDB;
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        $httpCode = ilOpencastAPI::getInstance()->updateSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
-        
+        $httpCode = ilOpencastAPI::getInstance()->updateSeries($this->getSeriesId(), $this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
+
         ilLoggerFactory::getLogger('xmh')->info("Updated opencast object on server: $httpCode");
         if (204 == $httpCode) {
             $ilDB->manipulate("UPDATE rep_robj_xmh_data SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
@@ -135,47 +149,48 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function doDelete()
     {
         global $ilDB;
-        
+
         $this->getPlugin()->includeClass("class.ilMatterhornUserTracking.php");
-        
+
         foreach ($this->getReleasedEpisodeIds() as $episode_id) {
             ilMatterhornUserTracking::removeViews($this->getEpisode($episode_id));
         }
-        
-        $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep " . " WHERE series_id = " . $ilDB->quote($this->getId(), "text"));
-        
-        $ilDB->manipulate("DELETE FROM rep_robj_xmh_data WHERE " . " obj_id = " . $ilDB->quote($this->getId(), "integer"));
-    }
 
-    /**
-     *
-     * @return array
-     */
-    public function getSeriesInformationFromOpencast()
-    {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        $seriesxml = ilOpencastAPI::getInstance()->getSeries($this->getId());
-        $xml = new SimpleXMLElement($seriesxml);
-        $children = $xml->children("http://purl.org/dc/terms/");
-        $series = array(
-            "series" => $seriesxml,
-            "title" => (string) $children->title,
-            "description" => (string) $children->description,
-            "publisher" => (string) $children->publisher,
-            "identifier" => (string) $children->identifier
-        );
-        return $series;
+        $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep WHERE series_id = " . $ilDB->quote($this->getSeriesId(), "text"));
+
+        $ilDB->manipulate("DELETE FROM rep_robj_xmh_data WHERE obj_id = " . $ilDB->quote($this->getId(), "integer"));
+        
+        //The series is not deleted in opencast
     }
 
     //
     // Set/Get Methods for the properties
     //
-    
+
+    /**
+     * The Opencast series id associated with this ilias object.
+     *
+     * @param string $series_id
+     */
+    private function setSeriesId($series_id)
+    {
+        $this->series_id = $series_id;
+    }
+
+    /**
+     * The Opencast series id associated with this ilias object.
+     *
+     * @return string
+     */
+    public function getSeriesId()
+    {
+        return $this->series_id;
+    }
+
     /**
      * Set online
      *
-     * @param
-     *            boolean online
+     * @param boolean $a_val
      */
     public function setOnline($a_val)
     {
@@ -260,6 +275,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      *
      * @param int $a_val
      *            the timestamp of the last inode update
+     * @deprecated
      */
     public function setLastFSInodeUpdate($a_val)
     {
@@ -270,15 +286,26 @@ class ilObjMatterhorn extends ilObjectPlugin
      * Get lastfsInodeUpdate
      *
      * @return int the timestamp of the last inode update
+     * @deprecated
      */
     public function getLastFSInodeUpdate()
     {
-        $filename = $this->configObject->getDistributionDirectory() . $this->configObject->getSeriesPrefix() . $this->getId();
+        $filename = $this->configObject->getDistributionDirectory() . $this->getSeriesId();
         if (file_exists($filename)) {
             return filemtime($filename);
         }
         return - 1;
     }
+
+	/**
+	 *
+	 * @return ilMatterhornSeries
+	 */
+	public function getSeries()
+	{
+		$this->getPlugin()->includeClass("class.ilMatterhornSeries.php");
+		return new ilMatterhornSeries($this->getSeriesId());
+	}
 
     /**
      * checks if the $episodeId exists and returns the Episode object
@@ -290,7 +317,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         $this->getPlugin()->includeClass("class.ilMatterhornEpisode.php");
         if (preg_match('/^[0-9a-f\-]+/', $episodeId)) {
-            return new ilMatterhornEpisode($this->getId(), $episodeId);
+            return new ilMatterhornEpisode($this->getSeriesId(), $episodeId);
         }
         return null;
     }
@@ -302,7 +329,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      */
     public function getSearchResult()
     {
-        $basedir = $this->configObject->getDistributionDirectory() . $this->configObject->getSeriesPrefix() . $this->getId();
+        $basedir = $this->configObject->getDistributionDirectory() . $this->getSeriesId();
         $xmlstr = "<?xml version='1.0' standalone='yes'?>\n<results />";
         $resultcount = 0;
         $results = new SimpleXMLElement($xmlstr);
@@ -331,47 +358,14 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getReleasedEpisodeIds()
     {
         global $DIC;
-        
+
         $set = $DIC->database()->query("SELECT episode_id FROM rep_robj_xmh_rel_ep WHERE series_id = " . $DIC->database()
-            ->quote($this->getId(), "integer"));
+            ->quote($this->getSeriesId(), "integer"));
         $released = array();
         while ($rec = $DIC->database()->fetchAssoc($set)) {
             array_push($released, ($rec["episode_id"]));
         }
         return $released;
-    }
-
-    /**
-     * The scheduled information for this series returned by matterhorn
-     *
-     * @return array the scheduled episodes for this series returned by matterhorn
-     */
-    public function getScheduledEpisodes()
-    {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getScheduledEpisodes($this->getId());
-    }
-
-    /**
-     * Get the episodes which are on hold for this series
-     *
-     * @return array the episodes which are on hold for this series returned by matterhorn
-     */
-    public function getOnHoldEpisodes()
-    {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getOnHoldEpisodes($this->getId());
-    }
-
-    /**
-     * Get the episodes which are on hold for this series
-     *
-     * @return array the episodes which are on hold for this series returned by matterhorn
-     */
-    public function getProcessingEpisodes()
-    {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getProcessingEpisodes($this->getId());
     }
 
     /**
@@ -400,11 +394,11 @@ class ilObjMatterhorn extends ilObjectPlugin
             'Connection: Keep-Alive'
         ));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $eventid . "/editor.json";
-        // ',"startTime":"00:00:02.818","endTime":"00:00:34.320","deleted":false}],'.
-        
+
         $fields_string = '{"concat":{"segments":[{"start":' . (1000 * $trimin) . ',"end":' . (1000 * $trimout) . ',"deleted":false}],' . '"tracks":["' . implode('","', $keeptracks) . '"]},"workflow":"ilias-publish-after-cutting"}';
-        
+
         ilLoggerFactory::getLogger('xmh')->debug("FIELDSTRING:" . $fields_string);
         // set the url, number of POST vars, POST data
         curl_setopt($ch, CURLOPT_URL, $url);
