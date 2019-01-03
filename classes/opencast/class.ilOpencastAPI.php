@@ -3,6 +3,8 @@ ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->
 
 /**
  * All Communication with the Opencast server should be implemented in this class
+ * 
+ * Require Opencast API version 1.1.0 or higher
  *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
@@ -315,7 +317,7 @@ class ilOpencastAPI
         $url = "/api/events/";
 
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id, // TODO Does not work?
+            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id, // API version 1.1.0
             'sort' => 'date:ASC'
         );
 
@@ -358,7 +360,7 @@ class ilOpencastAPI
         $url = "/api/events/";
 
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $series_id, // TODO Does not work?
+            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $series_id, // API version 1.1.0
             'sort' => 'date:ASC'
         );
 

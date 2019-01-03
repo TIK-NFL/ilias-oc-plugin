@@ -1,7 +1,7 @@
 # ilias-oc
-An ILIAS Repository Object plugin for OpenCast 3.x
+An ILIAS Repository Object plugin for Opencast 6
 
-This plugin creates a tight ingration of Opencast 3.x(1.6 and 2.0 see older releases) and ILIAS.
+This plugin creates a tight intgration of Opencast 6(for older versions see older [releases](https://github.com/TIK-NFL/ilias-oc-plugin/releases)) and ILIAS.
 This plugin also requires to a workflow handler for Opencast, which enables distributing the files in a way that
 are usable by this plugin. This plugin is currently only available in the [Bitbucket Repo](https://bitbucket.org/pascalgrube/matterhorn/branch/distribution-ilias)
 and not part of the official Opencast Distribution.
