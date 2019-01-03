@@ -72,6 +72,36 @@ class ilMatterhornConfig
         $this->setValue('mh_digest_password', $a_password);
     }
 
+    public function getOpencastAPIUser()
+    {
+        $retVal = $this->getValue('oc_api_user');
+        if (! $retVal) {
+            return 'admin';
+        }
+        
+        return $retVal;
+    }
+
+    public function setOpencastAPIUser($a_user)
+    {
+        $this->setValue('oc_api_user', $a_user);
+    }
+
+    public function getOpencastAPIPassword()
+    {
+        $retVal = $this->getValue('oc_api_password');
+        if (! $retVal) {
+            return 'opencast';
+        }
+        
+        return $retVal;
+    }
+
+    public function setOpencastAPIPassword($a_password)
+    {
+        $this->setValue('oc_api_password', $a_password);
+    }
+
     /**
      *
      * @return string org.opencastproject.storage.dir
