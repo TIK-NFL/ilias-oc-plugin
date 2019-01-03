@@ -569,81 +569,6 @@ class ilMatterhornSendfile
 
     /**
      *
-     * @deprecated use XSendfile feature instead
-     * @param string $filename
-     */
-    public function sendData($filename)
-    {
-        $fp = fopen($filename, 'rb');
-        $size = filesize($filename); // File size
-        $length = $size; // Content length
-        $start = 0; // Start byte
-        $end = $size - 1; // End byte
-        if (isset($_SERVER['HTTP_RANGE'])) {
-            ilLoggerFactory::getLogger('xmh')->debug("Starting partial get");
-            $c_start = $start;
-            $c_end = $end;
-            list (, $range) = explode('=', $_SERVER['HTTP_RANGE'], 2);
-            if (strpos($range, ',') !== false) {
-                header('HTTP/1.1 416 Requested Range Not Satisfiable');
-                header("Content-Range: bytes */$size");
-                exit();
-            }
-            if ($range == '-') {
-                $c_start = $size - substr($range, 1);
-            } else {
-                $range = explode('-', $range);
-                $c_start = $range[0];
-                if (isset($range[1]) && is_numeric($range[1])) {
-                    $c_end = $range[1];
-                } else {
-                    if ($range[0] + 100 * 1024 - 1 < $size) {
-                        $c_end = $range[0] + 100 * 1024 - 1;
-                    } else {
-                        $c_end = $size;
-                    }
-                }
-            }
-            $c_end = ($c_end > $end) ? $end : $c_end;
-            if ($c_start > $c_end || $c_end >= $size) {
-                header('HTTP/1.1 416 Requested Range Not Satisfiable');
-                header("Content-Range: bytes */$size");
-                exit();
-            }
-            $start = $c_start;
-            $end = $c_end;
-            $length = $end - $start + 1;
-            $fppos = fseek($fp, $start);
-            ilLoggerFactory::getLogger('xmh')->debug($start . '-' . $end . ':' . $length . " FP POS:" . $fppos);
-            header('HTTP/1.1 206 Partial Content');
-        } else {
-            ilLoggerFactory::getLogger('xmh')->debug("Starting normal get");
-        }
-
-        header("Content-Range: bytes $start-$end/$size");
-        header("Content-Length: " . $length);
-        header('Accept-Ranges: bytes');
-
-        $buffer = 1024 * 8;
-        while (! feof($fp) && ($p = ftell($fp)) <= $end) {
-            ilLoggerFactory::getLogger('xmh')->debug("Loopstart " . $p . " Rest:" . ($end - $p) . " Buffer" . $buffer);
-            if ($p + $buffer > $end) {
-                $buffer = $end - $p + 1;
-            }
-            ilLoggerFactory::getLogger('xmh')->debug("Inloop " . $p . " Rest:" . ($end - $p) . " Buffer" . $buffer);
-            set_time_limit(0);
-            $content = fread($fp, $buffer);
-            ilLoggerFactory::getLogger('xmh')->debug("Contentlen " . strlen($content));
-            echo $content;
-            flush();
-        }
-        ilLoggerFactory::getLogger('xmh')->debug("Afterloop " . $p . " Rest:" . ($end - $p));
-        fclose($fp);
-        ilLoggerFactory::getLogger('xmh')->debug("Done sending");
-    }
-
-    /**
-     *
      * @param string $filename
      *            file name from ilias directory (without leading /)
      */
@@ -665,7 +590,7 @@ class ilMatterhornSendfile
 
         $relativeFilePath = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "", $previewtrack);
         $previewPath = "downloads/mh_default_org/internal/";
-        $this->sendFile('mh_directory', $previewPath . $relativeFilePath);
+        $this->sendFile('mh_directory', explode('/', $previewPath . $relativeFilePath));
     }
 
     /**
