@@ -315,7 +315,7 @@ class ilOpencastAPI
         $url = "/api/events/";
 
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id,
+            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id, // TODO Does not work?
             'sort' => 'date:ASC'
         );
 
@@ -355,24 +355,18 @@ class ilOpencastAPI
      */
     public function getOnHoldEpisodes(string $series_id)
     {
-        $url = "/admin-ng/event/events.json";
-        /* $_GET Parameters to Send */
+        $url = "/api/events/";
+
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $series_id,
+            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $series_id, // TODO Does not work?
             'sort' => 'date:ASC'
         );
 
         /* Update URL to container Query String of Paramaters */
-        $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
+        $url .= '?' . http_build_query($params);
 
-        $curlret = $this->get($url);
-        $searchResult = json_decode($curlret, true);
-
-        if (is_array($searchResult)) {
-            return $searchResult['results'];
-        } else {
-            return [];
-        }
+        $curlret = $this->getAPI($url);
+        return json_decode($curlret, true);
     }
 
     /**

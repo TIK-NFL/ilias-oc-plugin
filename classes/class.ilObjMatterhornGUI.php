@@ -544,7 +544,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $onhold_episode = array(
             'title' => $event["title"],
             'trimurl' => $this->getLinkForEpisodeUnescaped("showTrimEditor", (string) $event['id']),
-            'date' => $event["start_date"]
+            'date' => $event["start"]
         );
         return $onhold_episode;
     }
@@ -594,12 +594,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         foreach ($finished_episodes as $key => $value) {
             $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
-        
-        $scheduled_items = array();
         $scheduledEpisodes = $series->getScheduledEpisodes();
-        foreach ($scheduledEpisodes as $event) {
-            $scheduled_items[] = $this->extractScheduledEpisode($event);
-        }
+        $scheduled_items = array_map(array(
+            $this,
+            'extractScheduledEpisode'
+        ), $scheduledEpisodes);
+        
         usort($scheduled_items, array(
             $this,
             'sortbystartdate'
@@ -609,12 +609,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate(new ilDateTime($value["stopdate"], IL_CAL_DATETIME));
         }
         
-        $onhold_items = array();
         $onHoldEpisodes = $series->getOnHoldEpisodes();
-        foreach ($onHoldEpisodes as $event) {
-            $onhold_items[] = $this->extractOnholdEpisode($event);
-        }
-        
+        $onhold_items = array_map(array(
+            $this,
+            'extractOnholdEpisode'
+        ), $onHoldEpisodes);
+
         usort($onhold_items, array(
             $this,
             'sortbydate'
