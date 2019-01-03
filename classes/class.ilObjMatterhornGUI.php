@@ -325,7 +325,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $episode = $this->object->getEpisode($episodeId);
         
         if ($episode) {
-            $episode->deletescheduled();
+            $episode->delete();
             ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in deleteschedule:$episodeId");

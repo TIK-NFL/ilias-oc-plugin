@@ -301,22 +301,23 @@ class ilOpencastAPI
         return $searchResult;
     }
 
-    public function deleteschedule($workflowid)
+    public function delete($episodeid)
     {
-        $url = $this->configObject->getMatterhornServer() . '/admin-ng/event/' . $workflowid;
+        $url = $this->configObject->getMatterhornServer() . "/api/events/$episodeid";
 
         // open connection
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        $this->digestAuthentication($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $this->basicAuthentication($ch);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        $curlret = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        ilLoggerFactory::getLogger('xmh')->debug("delete code: " . $httpCode);
-        return $httpCode;
+        if (! curl_exec($ch)) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            ilLoggerFactory::getLogger('xmh')->debug("Failded to delete episode $episodeid  httpcode: $httpCode");
+            return false;
+        }
+        return true;
     }
 
     /**

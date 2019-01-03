@@ -227,11 +227,11 @@ class ilMatterhornEpisode
         $ilDB->manipulate("DELETE FROM rep_robj_xmh_slidetext WHERE episode_id = " . $this->getQuoteEpisodeId());
     }
 
-    public function deletescheduled()
+    public function delete()
     {
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        ilOpencastAPI::getInstance()->deleteschedule($this->getEpisodeId());
+        ilOpencastAPI::getInstance()->delete($this->getEpisodeId());
     }
 
     /**
