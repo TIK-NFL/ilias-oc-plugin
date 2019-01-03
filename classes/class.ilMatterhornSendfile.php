@@ -587,10 +587,10 @@ class ilMatterhornSendfile
         if ($previewtrack == null) {
             throw new Exception("No Preview", 404);
         }
+        $path = parse_url($previewtrack, PHP_URL_PATH);
 
-        $relativeFilePath = str_replace($this->configObject->getMatterhornEngageServer() . '/static/mh_default_org/internal/', "", $previewtrack);
-        $previewPath = "downloads/mh_default_org/internal/";
-        $this->sendFile('mh_directory', explode('/', $previewPath . $relativeFilePath));
+        $relativeFilePath = str_replace('/static/mh_default_org/internal/', 'downloads/mh_default_org/internal/', $path);
+        $this->sendFile('mh_directory', explode('/', $relativeFilePath));
     }
 
     /**
