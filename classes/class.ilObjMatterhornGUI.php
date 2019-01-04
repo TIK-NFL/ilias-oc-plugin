@@ -722,7 +722,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     $this->getText("recorddate"),
                     $this->getText("progress"),
                     $this->getText("running")
-                ));
+                ), "fixed");
                 
                 $onholdTable = $this->getTableWithId("iliasopencast_onholdtable", array(
                     $this->getText("title"),
@@ -791,7 +791,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      * @param $columns array
      * @return \ILIAS\UI\Component\Legacy\Legacy
      */
-    private function getTableWithId($id, $columns)
+    private function getTableWithId($id, $columns, $layout = "auto")
     {
         global $DIC;
         $tableTpl = $this->getPlugin()->getTemplate("default/tpl.empty_table.html");
@@ -802,6 +802,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         
         $tableTpl->setCurrentBlock("table");
+        $tableTpl->setVariable("TABLE_STYLE", "table-layout: $layout;");
         $tableTpl->setVariable("ID", $id);
         $tableTpl->parseCurrentBlock();
         return $DIC->ui()

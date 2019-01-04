@@ -3,13 +3,15 @@ ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->
 
 /**
  * All Communication with the Opencast server should be implemented in this class
- * 
+ *
  * Require Opencast API version 1.1.0 or higher
  *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
 class ilOpencastAPI
 {
+
+    const API_VERSION = "1.1.0";
 
     private static $instance = null;
 
@@ -81,9 +83,11 @@ class ilOpencastAPI
         $this->basicAuthentication($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Accept: application/" . self::API_VERSION . "+json"
+        ));
 
         $response = curl_exec($ch);
-
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
@@ -148,6 +152,9 @@ class ilOpencastAPI
         $this->basicAuthentication($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Accept: application/" . self::API_VERSION . "+json"
+        ));
 
         $response = curl_exec($ch);
         if ($response === FALSE) {
@@ -180,6 +187,16 @@ class ilOpencastAPI
     private static function title($title, $id, $refId)
     {
         return "ILIAS-$id:$refId:$title";
+    }
+
+    public function checkOpencast()
+    {
+        try {
+            $versionInfo = json_decode($this->getAPI("/api/version"), true);
+            return in_array(self::API_VERSION, $versionInfo["versions"]);
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -340,6 +357,10 @@ class ilOpencastAPI
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
         $this->basicAuthentication($ch);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Accept: application/" . self::API_VERSION . "+json"
+        ));
+
         if (! curl_exec($ch)) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             ilLoggerFactory::getLogger('xmh')->debug("Failded to delete episode $episodeid  httpcode: $httpCode");
