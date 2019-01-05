@@ -273,21 +273,10 @@ class ilOpencastAPI
      */
     public function updateSeries($series_id, $title, $description, $obj_id, $refId)
     {
-        $url = "/series/";
-
-        $seriesxml = $this->getSeries($series_id);
-        $xml = new SimpleXMLElement($seriesxml);
-        $ns = "http://purl.org/dc/terms/";
-        self::setChildren($xml, "title", self::title($title, $obj_id, $refId), $ns);
-        self::setChildren($xml, "description", $description, $ns);
-        self::setChildren($xml, "modified", date("c"), $ns);
-        $seriesxml = $xml->asXML();
-        $fields = array(
-            'series' => $seriesxml,
-            'acl' => $this->getAccessControl()
-        );
-        $httpCode = (integer) $this->post($url, $fields, true);
-        return $httpCode;
+        $this->setSeriesMetadata($series_id, array(
+            "title" => self::title($title, $obj_id, $refId),
+            "description" => $description
+        ));
     }
 
     private function getAccessControl()
@@ -508,6 +497,32 @@ class ilOpencastAPI
             throw new Exception("error loading media for episode " . $episodeid, 500);
         }
         return $mediajson;
+    }
+
+    /**
+     *
+     * @param string $seriesid
+     * @param array $metadata
+     * @param string $type
+     */
+    public function setSeriesMetadata($seriesid, $metadata, $type = "dublincore/series")
+    {
+        $url = "/api/series/$seriesid/metadata";
+        $query = http_build_query(array(
+            "type" => $type
+        ));
+        $adapter = array();
+        foreach ($metadata as $id => $value) {
+            $adapter[] = array(
+                "id" => $id,
+                "value" => $value
+            );
+        }
+
+        $post = array(
+            "metadata" => json_encode($adapter)
+        );
+        $this->put("$url?$query", $post);
     }
 
     /**
