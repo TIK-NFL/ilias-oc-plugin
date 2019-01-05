@@ -219,7 +219,7 @@ class ilMatterhornUploadFile
 
         // get the series xml for this mediapackage
         $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        $seriesxml = ilOpencastAPI::getInstance()->getSeries($this->series_id);
+        $seriesxml = ilOpencastAPI::getInstance()->getSeriesXML($this->series_id);
 
         // create a new media package and fix start date
         $url = '/ingest/createMediaPackage';

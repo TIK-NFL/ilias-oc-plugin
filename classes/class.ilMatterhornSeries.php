@@ -50,15 +50,12 @@ class ilMatterhornSeries
     {
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        //TODO new api
-        $seriesxml = ilOpencastAPI::getInstance()->getSeries($this->getSeriesId());
-        $xml = new SimpleXMLElement($seriesxml);
-        $children = $xml->children("http://purl.org/dc/terms/");
+        $series = ilOpencastAPI::getInstance()->getSeries($this->getSeriesId());
         $series = array(
-            "title" => (string) $children->title,
-            "description" => (string) $children->description,
-            "publisher" => (string) $children->publisher,
-            "identifier" => (string) $children->identifier
+            "title" => (string) $series["title"],
+            "description" => (string) $series["description"],
+            "publishers" => (array) $series["publishers"],
+            "identifier" => (string) $series["identifier"]
         );
         return $series;
     }

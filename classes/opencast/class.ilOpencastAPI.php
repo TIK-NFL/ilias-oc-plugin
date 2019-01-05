@@ -341,16 +341,28 @@ class ilOpencastAPI
     }
 
     /**
+     * Get the series with the default metadata catalog
+     *
+     * @param string $series_id
+     * @return array the series object form opencast
+     */
+    public function getSeries($series_id)
+    {
+        $url = "/api/series/$series_id";
+        return json_decode($this->getAPI($url));
+    }
+
+    /**
      * Get the series dublin core
      *
      * @param string $series_id
      * @return string the series dublin core XML document
+     * @deprecated
      */
-    public function getSeries($series_id)
+    public function getSeriesXML($series_id)
     {
-        $url = "/series/" . $series_id . ".xml";
-        $seriesxml = (string) $this->get($url);
-        return $seriesxml;
+        $url = "/series/$series_id.xml";
+        return (string) $this->get($url);
     }
 
     /**
