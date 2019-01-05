@@ -428,47 +428,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $DIC->tabs()->activateTab("content");
     }
 
-    private function extractProcessingEpisodes($workflow)
-    {
-        $totalops = 0.0;
-        $finished = 0;
-        $running = "Waiting";
-        
-        foreach ($workflow["operations"]["operation"] as $operation) {
-            // search for trim. If it will run, count only up to here if it is not finished yet, otherwise count from here
-            ilLoggerFactory::getLogger('xmh')->debug($operation["id"]);
-            $state = (string) $operation["state"];
-            if ($operation["id"] === "trim") {
-                if ($operation["if"] === "true") {
-                    if ($state === "SUCCEEDED") {
-                        $totalops = 0.0;
-                        $finished = 0;
-                    } else {
-                        break;
-                    }
-                }
-            }
-            $totalops += 1.0;
-            if ($state == "SKIPPED" || $state === "SUCCEEDED") {
-                $finished += 1.0;
-            }
-            
-            if ((string) $state == "RUNNING") {
-                $running = $operation["description"];
-            }
-        }
-        
-        $episode = array(
-            'title' => $workflow["mediapackage"]['title'],
-            'workflow_id' => $workflow['id'],
-            'date' => $workflow["mediapackage"]['start'],
-            'processdone' => $finished / $totalops * 100.0,
-            'processcount' => $finished . "/" . $totalops,
-            'running' => $running
-        );
-        return $episode;
-    }
-
     private function extractReleasedEpisodes($skipUnreleased = false)
     {
         $releasedEpisodeIds = $this->object->getReleasedEpisodeIds();
@@ -570,18 +529,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function getEpisodes()
     {
         $series = $this->object->getSeries();
-        $processingEpisodes = $series->getProcessingEpisodes();
-        $tempEpisodes = $processingEpisodes['workflows'];
-        $process_items = array();
-        if (is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']) {
-            if (1 == $tempEpisodes['totalCount']) {
-                $process_items[] = $this->extractProcessingEpisodes($tempEpisodes['workflow']);
-            } else {
-                foreach ($tempEpisodes['workflow'] as $workflow) {
-                    $process_items[] = $this->extractProcessingEpisodes($workflow);
-                }
-            }
-        }
+        $process_items = $series->getProcessingEpisodes();
+
         usort($process_items, array(
             $this,
             'sortbydate'
@@ -589,7 +538,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         foreach ($process_items as $key => $value) {
             $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
-        
+
         $finished_episodes = $this->extractReleasedEpisodes();
         foreach ($finished_episodes as $key => $value) {
             $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));

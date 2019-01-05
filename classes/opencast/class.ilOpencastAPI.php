@@ -344,7 +344,7 @@ class ilOpencastAPI
      * Get the series with the default metadata catalog
      *
      * @param string $series_id
-     * @return array the series object form opencast
+     * @return array the series object from opencast
      */
     public function getSeries($series_id)
     {
@@ -363,6 +363,18 @@ class ilOpencastAPI
     {
         $url = "/series/$series_id.xml";
         return (string) $this->get($url);
+    }
+
+    /**
+     * Get the episode with the default metadata catalog
+     *
+     * @param string $episode_id
+     * @return array the episode object from opencast
+     */
+    public function getEpisode($episode_id)
+    {
+        $url = "/api/events/$episode_id";
+        return json_decode($this->getAPI($url));
     }
 
     /**
@@ -436,34 +448,30 @@ class ilOpencastAPI
     }
 
     /**
-     * Get the episodes which are on hold for the given series
+     * Get the workflows of the given series which are in processing
      *
      * @param string $series_id
      *            series id
-     * @return array the episodes which are on hold for the series returned by matterhorn
+     * @return array the workfolws which are in processing for the series returned by opencast
      */
-    public function getProcessingEpisodes(string $series_id)
+    public function getActiveWorkflows(string $series_id)
     {
-        $url = "/workflow/instances.json";
+        $url = "/api/workflows";
         $params = array(
-            'seriesId' => $series_id,
-            'state' => array(
-                '-stopped',
-                'running'
-            ),
-            'op' => array(
-                '-schedule',
-                '-capture'
-            )
+            "filter" => self::filter(array(
+                "series_identifier" => $series_id,
+                "state" => "running",
+                "state_not" => "stopped",
+                "current_operation_not" => "schedule",
+                "current_operation_not" => "capture"
+            )),
+            "withoperations" => true
         );
 
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
+        $url .= '?' . http_build_query($params);
 
-        $curlret = $this->get($url);
-        $searchResult = json_decode($curlret, true);
-
-        return $searchResult;
+        $curlret = $this->getAPI($url);
+        return json_decode($curlret, true);
     }
 
     /**
@@ -561,5 +569,14 @@ class ilOpencastAPI
             "metadata" => json_encode($adapter)
         );
         $this->put("$url?$query", $post);
+    }
+
+    private static function filter(array $filter)
+    {
+        $filters = array();
+        foreach ($filter as $name => $value) {
+            $filters[] = "$name:$value";
+        }
+        return implode(',', $filters);
     }
 }
