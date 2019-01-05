@@ -267,11 +267,10 @@ class ilOpencastAPI
      * @param string $series_id
      * @param string $title
      * @param string $description
-     * @param integer $obj_id
-     * @param integer $refId
-     * @return integer the httpCode
+     * @param int $obj_id
+     * @param int $refId
      */
-    public function updateSeries($series_id, $title, $description, $obj_id, $refId)
+    public function updateSeries(string $series_id, string $title, string $description, int $obj_id, int $refId)
     {
         $this->setSeriesMetadata($series_id, array(
             "title" => self::title($title, $obj_id, $refId),
