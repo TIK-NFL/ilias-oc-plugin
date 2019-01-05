@@ -132,6 +132,42 @@ class ilOpencastAPI
     }
 
     /**
+     * Do a POST Request of the given url on the Opencast Server with basic authorization
+     *
+     * @param string $url
+     * @param array $post
+     * @param boolean $returnHttpCode
+     * @throws Exception
+     * @return mixed
+     */
+    private function postAPI(string $url, array $post, bool $returnHttpCode = false)
+    {
+        $post_string = http_build_query($post);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
+        curl_setopt($ch, CURLOPT_POST, count($post));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
+        $this->basicAuthentication($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Accept: application/" . self::API_VERSION . "+json"
+        ));
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($response === FALSE) {
+            throw new Exception("error POST request: $url $post_string $httpCode", 500);
+        }
+
+        if ($returnHttpCode) {
+            return $httpCode;
+        }
+        return $response;
+    }
+
+    /**
      * Do a PUT Request of the given url on the Opencast Server with Basic Authentication
      *
      * @param string $url
@@ -207,14 +243,13 @@ class ilOpencastAPI
      * @param integer $refId
      * @return string the series id
      */
-    public function createSeries($title, $description, $obj_id, $refId)
+    public function createSeries(string $title, string $description, $obj_id, $refId)
     {
-        $url = "/series/";
-        $series_id = 'ilias_xmh_' . $obj_id;
-        $fields = $this->createPostFields($series_id, $title, $description, $obj_id, $refId);
-        // TODO use api
-        $this->post($url, $fields);
-        return $series_id;
+        $url = "/api/series";
+        $fields = $this->createPostFields($title, $description, $obj_id, $refId);
+
+        $series = json_decode($this->postAPI($url, $fields));
+        return $series["identifier"];
     }
 
     private static function setChildren($xml, $name, $value, $ns)
@@ -264,10 +299,19 @@ class ilOpencastAPI
         if (null != $ilUser->getExternalAccount) {
             $userid = $ilUser->getExternalAccount();
         }
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security">
-								<ace><role>' . $userid . '</role><action>read</action><allow>true</allow></ace>
-								<ace><role>' . $userid . '</role><action>write</action><allow>true</allow></ace>
-						</acl>';
+
+        return json_encode(array(
+            array(
+                "role" => $userid,
+                "action" => "read",
+                "allow" => true
+            ),
+            array(
+                "role" => $userid,
+                "action" => "write",
+                "allow" => true
+            )
+        ));
     }
 
     /**
@@ -279,34 +323,32 @@ class ilOpencastAPI
      * @param integer $refId
      * @return string[]
      */
-    private function createPostFields($series_id, $title, $description, $obj_id, $refId)
+    private function createPostFields($title, $description, $obj_id, $refId)
     {
-        $fields = array(
-            'series' => '<?xml version="1.0"?>
-<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
-  xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
-		
-  <dcterms:title xml:lang="en">' . self::title($title, $obj_id, $refId) . '</dcterms:title>
-  <dcterms:subject>
-    </dcterms:subject>
-  <dcterms:description xml:lang="en">' . $description . '</dcterms:description>
-  <dcterms:publisher>
-    University of Stuttgart, Germany
-    </dcterms:publisher>
-  <dcterms:identifier>
-    ' . $series_id . '</dcterms:identifier>
-  <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("c") . '</dcterms:modified>
-  <dcterms:format xsi:type="dcterms:IMT">
-    video/mp4
-    </dcterms:format>
-  <oc:promoted>
-   	false
-  </oc:promoted>
-</dublincore>',
+        $metadata = array(
+            "title" => self::title($title, $obj_id, $refId),
+            "description" => $description,
+            "publishers" => array(
+                "University of Stuttgart, Germany"
+            )
+        );
+        $fields = array();
+        foreach ($metadata as $id => $value) {
+            $fields[] = array(
+                "id" => $id,
+                "value" => $value
+            );
+        }
+
+        return array(
+            'metadata' => json_encode(array(
+                array(
+                    "flavor" => "dublincore/series",
+                    "fields" => $fields
+                )
+            )),
             'acl' => $this->getAccessControl()
         );
-        return $fields;
     }
 
     /**
