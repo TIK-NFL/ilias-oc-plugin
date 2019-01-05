@@ -389,7 +389,10 @@ class ilOpencastAPI
         $url = "/api/events/";
 
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id, // API version 1.1.0
+            'filter' => self::filter(array(
+                "status" => "EVENTS.EVENTS.STATUS.SCHEDULED",
+                "series" => $series_id
+            )),
             'sort' => 'date:ASC'
         );
 
@@ -399,29 +402,6 @@ class ilOpencastAPI
         $curlret = $this->getAPI($url);
 
         return json_decode($curlret, true);
-    }
-
-    public function delete(string $episodeid)
-    {
-        $url = $this->configObject->getMatterhornServer() . "/api/events/$episodeid";
-
-        // open connection
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        $this->basicAuthentication($ch);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Accept: application/" . self::API_VERSION . "+json"
-        ));
-
-        if (! curl_exec($ch)) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            ilLoggerFactory::getLogger('xmh')->debug("Failded to delete episode $episodeid  httpcode: $httpCode");
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -436,7 +416,11 @@ class ilOpencastAPI
         $url = "/api/events/";
 
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $series_id, // API version 1.1.0
+            'filter' => filter(array(
+                "status" => "EVENTS.EVENTS.STATUS.PROCESSED",
+                "comments" => "OPEN",
+                "series" => $series_id
+            )),
             'sort' => 'date:ASC'
         );
 
@@ -472,6 +456,29 @@ class ilOpencastAPI
 
         $curlret = $this->getAPI($url);
         return json_decode($curlret, true);
+    }
+
+    public function delete(string $episodeid)
+    {
+        $url = $this->configObject->getMatterhornServer() . "/api/events/$episodeid";
+
+        // open connection
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        $this->basicAuthentication($ch);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Accept: application/" . self::API_VERSION . "+json"
+        ));
+
+        if (! curl_exec($ch)) {
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            ilLoggerFactory::getLogger('xmh')->debug("Failded to delete episode $episodeid  httpcode: $httpCode");
+            return false;
+        }
+        return true;
     }
 
     /**
