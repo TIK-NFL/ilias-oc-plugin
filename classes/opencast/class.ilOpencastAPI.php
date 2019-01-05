@@ -43,13 +43,14 @@ class ilOpencastAPI
     }
 
     /**
-     * Do a GET Request of the given url on the Matterhorn Server with authorization
+     * Do a GET Request of the given url on the Opencast Server with digest authorization
      *
      * @param string $url
      * @throws Exception
      * @return mixed
+     * @deprecated use the api
      */
-    private function get(string $url)
+    private function getDigest(string $url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
@@ -70,13 +71,13 @@ class ilOpencastAPI
     }
 
     /**
-     * Do a GET Request of the given url on the Matterhorn Server with basic authorization
+     * Do a GET Request of the given url on the Opencast Server with basic authorization
      *
      * @param string $url
      * @throws Exception
      * @return mixed
      */
-    private function getAPI(string $url)
+    private function get(string $url)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
@@ -99,39 +100,6 @@ class ilOpencastAPI
     }
 
     /**
-     * Do a POST Request of the given url on the Matterhorn Server with authorization
-     *
-     * @param string $url
-     * @param array $post
-     * @param boolean $returnHttpCode
-     * @throws Exception
-     * @return mixed
-     */
-    private function post(string $url, array $post, bool $returnHttpCode = false)
-    {
-        $post_string = http_build_query($post);
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
-        curl_setopt($ch, CURLOPT_POST, count($post));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
-        $this->digestAuthentication($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($response === FALSE) {
-            throw new Exception("error POST request: $url $post_string $httpCode", 500);
-        }
-
-        if ($returnHttpCode) {
-            return $httpCode;
-        }
-        return $response;
-    }
-
-    /**
      * Do a POST Request of the given url on the Opencast Server with basic authorization
      *
      * @param string $url
@@ -140,7 +108,7 @@ class ilOpencastAPI
      * @throws Exception
      * @return mixed
      */
-    private function postAPI(string $url, array $post, bool $returnHttpCode = false)
+    private function post(string $url, array $post, bool $returnHttpCode = false)
     {
         $post_string = http_build_query($post);
 
@@ -220,15 +188,16 @@ class ilOpencastAPI
         curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getOpencastAPIUser() . ':' . $this->configObject->getOpencastAPIPassword());
     }
 
-    private static function title($title, $id, $refId)
+    private static function title(string $title, int $id, int $refId)
     {
         return "ILIAS-$id:$refId:$title";
     }
 
     public function checkOpencast()
     {
+        $url = "/api/version";
         try {
-            $versionInfo = json_decode($this->getAPI("/api/version"), true);
+            $versionInfo = json_decode($this->get($url), true);
             return in_array(self::API_VERSION, $versionInfo["versions"]);
         } catch (Exception $e) {
             return false;
@@ -243,23 +212,13 @@ class ilOpencastAPI
      * @param integer $refId
      * @return string the series id
      */
-    public function createSeries(string $title, string $description, $obj_id, $refId)
+    public function createSeries(string $title, string $description, int $obj_id, int $refId)
     {
         $url = "/api/series";
         $fields = $this->createPostFields($title, $description, $obj_id, $refId);
 
-        $series = json_decode($this->postAPI($url, $fields));
+        $series = json_decode($this->post($url, $fields));
         return $series["identifier"];
-    }
-
-    private static function setChildren($xml, $name, $value, $ns)
-    {
-        $cc = $xml->children($ns);
-        if (isset($cc->$name)) {
-            $cc->$name = $value;
-        } else {
-            $xml->addChild($name, $value, $ns);
-        }
     }
 
     /**
@@ -311,7 +270,7 @@ class ilOpencastAPI
      * @param integer $refId
      * @return string[]
      */
-    private function createPostFields($title, $description, $obj_id, $refId)
+    private function createPostFields(string $title, string $description, int $obj_id, int $refId)
     {
         $metadata = array(
             "title" => self::title($title, $obj_id, $refId),
@@ -345,10 +304,10 @@ class ilOpencastAPI
      * @param string $series_id
      * @return array the series object from opencast
      */
-    public function getSeries($series_id)
+    public function getSeries(string $series_id)
     {
         $url = "/api/series/$series_id";
-        return json_decode($this->getAPI($url));
+        return json_decode($this->get($url));
     }
 
     /**
@@ -358,10 +317,10 @@ class ilOpencastAPI
      * @return string the series dublin core XML document
      * @deprecated
      */
-    public function getSeriesXML($series_id)
+    public function getSeriesXML(string $series_id)
     {
         $url = "/series/$series_id.xml";
-        return (string) $this->get($url);
+        return (string) $this->getDigest($url);
     }
 
     /**
@@ -370,10 +329,10 @@ class ilOpencastAPI
      * @param string $episode_id
      * @return array the episode object from opencast
      */
-    public function getEpisode($episode_id)
+    public function getEpisode(string $episode_id)
     {
         $url = "/api/events/$episode_id";
-        return json_decode($this->getAPI($url));
+        return json_decode($this->get($url));
     }
 
     /**
@@ -398,7 +357,7 @@ class ilOpencastAPI
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
 
-        $curlret = $this->getAPI($url);
+        $curlret = $this->get($url);
 
         return json_decode($curlret, true);
     }
@@ -426,7 +385,7 @@ class ilOpencastAPI
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
 
-        $curlret = $this->getAPI($url);
+        $curlret = $this->get($url);
         return json_decode($curlret, true);
     }
 
@@ -453,7 +412,7 @@ class ilOpencastAPI
 
         $url .= '?' . http_build_query($params);
 
-        $curlret = $this->getAPI($url);
+        $curlret = $this->get($url);
         return json_decode($curlret, true);
     }
 
@@ -488,12 +447,12 @@ class ilOpencastAPI
      * @throws Exception
      * @return mixed the decoded editor json from the admin ui
      */
-    public function getEditor($episodeid)
+    public function getEditor(string $episodeid)
     {
         $url = "/admin-ng/tools/$episodeid/editor.json";
         ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
         try {
-            $curlret = $this->get($url);
+            $curlret = $this->getDigest($url);
         } catch (Exception $e) {
             throw new Exception("error loading editor.json for episode " . $episodeid, 500, $e);
         }
@@ -511,13 +470,14 @@ class ilOpencastAPI
      *            string the id of the episode
      * @throws Exception
      * @return mixed the decoded media json from the admin ui
+     * @deprecated removed without replacement
      */
-    public function getMedia($episodeid)
+    public function getMedia(string $episodeid)
     {
         $url = "/admin-ng/event/$episodeid/asset/media/media.json";
         ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
 
-        $curlret = $this->get($url);
+        $curlret = $this->getDigest($url);
         $mediajson = json_decode($curlret);
         if ($mediajson === false) {
             throw new Exception("error loading media for episode " . $episodeid, 500);
@@ -531,7 +491,7 @@ class ilOpencastAPI
      * @param array $metadata
      * @param string $type
      */
-    public function setSeriesMetadata($seriesid, $metadata, $type = "dublincore/series")
+    public function setSeriesMetadata(string $seriesid, array $metadata, string $type = "dublincore/series")
     {
         $url = "/api/series/$seriesid/metadata";
         $query = http_build_query(array(
@@ -557,7 +517,7 @@ class ilOpencastAPI
      * @param array $metadata
      * @param string $type
      */
-    public function setEpisodeMetadata($episodeid, $metadata, $type = "dublincore/episode")
+    public function setEpisodeMetadata(string $episodeid, array $metadata, string $type = "dublincore/episode")
     {
         $url = "/api/events/$episodeid/metadata";
         $query = http_build_query(array(
