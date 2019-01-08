@@ -374,7 +374,7 @@ class ilOpencastAPI
         $url = "/api/events/";
 
         $params = array(
-            'filter' => filter(array(
+            'filter' => self::filter(array(
                 "status" => "EVENTS.EVENTS.STATUS.PROCESSED",
                 "comments" => "OPEN",
                 "series" => $series_id
