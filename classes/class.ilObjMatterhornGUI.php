@@ -901,7 +901,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
             $trimout = $hours * 3600 + $minutes * 60 + $seconds;
             
-            $this->object->trim($episode->getEpisodeId(), $keeptracks, $trimin, $trimout);
+            $episode->trim($keeptracks, $trimin, $trimout);
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {

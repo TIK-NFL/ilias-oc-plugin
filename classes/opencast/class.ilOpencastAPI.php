@@ -466,8 +466,8 @@ class ilOpencastAPI
     /**
      * Get the media objects json from admin-ng
      *
-     * @param
-     *            string the id of the episode
+     * @param string $episodeid
+     *            the id of the episode
      * @throws Exception
      * @return mixed the decoded media json from the admin ui
      * @deprecated removed without replacement
@@ -483,6 +483,60 @@ class ilOpencastAPI
             throw new Exception("error loading media for episode " . $episodeid, 500);
         }
         return $mediajson;
+    }
+
+    /**
+     * Trims the tracks of a episode
+     *
+     * @param string $eventid
+     *            the id of the episode
+     * @param array $keeptrack
+     *            the id of the tracks to be not removed
+     * @param float $trimin
+     *            the starttime of the new tracks
+     * @param float $trimout
+     *            the endtime of of the new tracks
+     */
+    public function trim(string $eventid, array $keeptracks, float $trimin, float $trimout)
+    {
+        // TODO use api
+        $url = "/admin-ng/tools/$eventid/editor.json";
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "X-Requested-Auth: Digest",
+            "X-Opencast-Matterhorn-Authorization: true",
+            'Content-Type: application/json',
+            'charset=UTF-8',
+            'Connection: Keep-Alive'
+        ));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
+        $json = array(
+            "concat" => array(
+                "segments" => array(
+                    array(
+                        "start" => (1000 * $trimin),
+                        "end" => (1000 * $trimout),
+                        "deleted" => false
+                    )
+                ),
+                "tracks" => $keeptracks,
+                "workflow" => "ilias-publish-after-cutting"
+            )
+        );
+        // set the url, number of POST vars, POST data
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($json));
+        $mp = curl_exec($ch);
+        if (! curl_errno($ch)) {
+            $info = curl_getinfo($ch);
+            ilLoggerFactory::getLogger('xmh')->debug('Successful request to ' . $info['url'] . ' in ' . $info['total_time']);
+        }
+        ilLoggerFactory::getLogger('xmh')->debug($mp);
     }
 
     /**

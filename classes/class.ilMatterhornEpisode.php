@@ -261,4 +261,21 @@ class ilMatterhornEpisode
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getMedia($this->getEpisodeId());
     }
+
+    /**
+     * Trims the tracks of this episode
+     *
+     * @param array $keeptrack
+     *            the id of the tracks to be not removed
+     * @param float $trimin
+     *            the starttime of the new tracks
+     * @param float $trimout
+     *            the endtime of of the new tracks
+     */
+    public function trim(array $keeptracks, float $trimin, float $trimout)
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        ilOpencastAPI::getInstance()->trim($this->getEpisodeId(), $keeptracks, $trimin, $trimout);
+    }
 }

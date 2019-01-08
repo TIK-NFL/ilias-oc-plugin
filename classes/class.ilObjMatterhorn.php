@@ -368,48 +368,4 @@ class ilObjMatterhorn extends ilObjectPlugin
         }
         return $released;
     }
-
-    /**
-     * Trims the tracks of a workflow
-     *
-     * @param Integer $eventid
-     *            the workflow id
-     * @param String $keeptrack
-     *            the id of the track to be removed
-     * @param Float $trimin
-     *            the start time of the new tracks
-     * @param Float $trimout
-     *            the endtime of the video
-     */
-    public function trim($eventid, $keeptracks, $trimin, $trimout)
-    {
-        // open connection
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true",
-            'Content-Type: application/json',
-            'charset=UTF-8',
-            'Connection: Keep-Alive'
-        ));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $eventid . "/editor.json";
-
-        $fields_string = '{"concat":{"segments":[{"start":' . (1000 * $trimin) . ',"end":' . (1000 * $trimout) . ',"deleted":false}],' . '"tracks":["' . implode('","', $keeptracks) . '"]},"workflow":"ilias-publish-after-cutting"}';
-
-        ilLoggerFactory::getLogger('xmh')->debug("FIELDSTRING:" . $fields_string);
-        // set the url, number of POST vars, POST data
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $fields_string);
-        $mp = curl_exec($ch);
-        if (! curl_errno($ch)) {
-            $info = curl_getinfo($ch);
-            ilLoggerFactory::getLogger('xmh')->debug('Successful request to ' . $info['url'] . ' in ' . $info['total_time']);
-        }
-        ilLoggerFactory::getLogger('xmh')->debug($mp);
-    }
 }
