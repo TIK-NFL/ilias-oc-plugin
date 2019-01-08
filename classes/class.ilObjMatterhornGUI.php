@@ -789,14 +789,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                         break;
                 }
             }
-            ilLoggerFactory::getLogger('xmh')->debug(print_r($worktracks, true));
-            foreach ($editor->previews as $preview) {
-                if (strpos($preview->uri, "composite.mp4") !== false) {
-                    $_SESSION["mhpreviewurlpreviewsbsmp4$id"] = $preview->uri;
-                } else {
-                    $_SESSION["mhpreviewurlpreviewsbsweb$id"] = $preview->uri;
-                }
-            }
             
             $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
             $trimview->setCurrentBlock("formstart");
@@ -837,9 +829,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             // if there are two tracks, there is also a sbs track. Otherwise use the only track present.
             $downloadurlmp4 = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . trim($editor->series->id) . "/$id/previewsbs.mp4";
-            $downloadurlwebm = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . trim($editor->series->id) . "/$id/previewsbs.webm";
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
-            $trimview->setVariable("DOWNLOAD_PREVIEW_URL_WEBM", $downloadurlwebm);
             
             $duration = $editor->duration;
             $trimview->setVariable("TRACKLENGTH", $duration / 1000);

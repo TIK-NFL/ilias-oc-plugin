@@ -11,7 +11,7 @@ ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->
 class ilOpencastAPI
 {
 
-    const API_VERSION = "1.1.0";
+    const API_VERSION = "v1.1.0";
 
     private static $instance = null;
 
