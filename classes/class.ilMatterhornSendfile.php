@@ -91,7 +91,6 @@ class ilMatterhornSendfile
         // echo "disposition: " . $this->disposition . "\n";
         // echo "ckeck_ip: " . $this->check_ip . "\n";
         // echo "</pre>";
-        // var_dump($_SESSION);
         // exit();
     }
 

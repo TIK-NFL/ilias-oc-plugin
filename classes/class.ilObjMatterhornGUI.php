@@ -842,14 +842,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                         break;
                 }
             }
-            ilLoggerFactory::getLogger('xmh')->debug(print_r($worktracks, true));
-            foreach ($editor->previews as $preview) {
-                if (strpos($preview->uri, "composite.mp4") !== false) {
-                    $_SESSION["mhpreviewurlpreviewsbsmp4$id"] = $preview->uri;
-                } else {
-                    $_SESSION["mhpreviewurlpreviewsbsweb$id"] = $preview->uri;
-                }
-            }
             
             $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
             $trimview->setCurrentBlock("formstart");
