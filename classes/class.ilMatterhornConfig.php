@@ -203,6 +203,21 @@ class ilMatterhornConfig
         $this->setValue('uploadworkflow', $value);
     }
 
+    public function getUploadWorkflowOptions()
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        return array_map(array(
+            $this,
+            "getIdentifier"
+        ), ilOpencastAPI::getInstance()->getWorkflowDefinition("upload"));
+    }
+
+    private function getIdentifier(array $workflowDefinition)
+    {
+        return $workflowDefinition["identifier"];
+    }
+
     /**
      *
      * @param string $series_id

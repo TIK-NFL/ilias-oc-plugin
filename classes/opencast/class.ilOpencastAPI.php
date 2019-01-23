@@ -422,6 +422,27 @@ class ilOpencastAPI
         );
 
         $url .= '?' . http_build_query($params);
+        $curlret = $this->get($url);
+        return json_decode($curlret, true);
+    }
+
+    /**
+     * Get the workflow definitions with the given tag
+     *
+     * @param string $tag
+     *            series id
+     * @return array the workflow definition returned by opencast
+     */
+    public function getWorkflowDefinition(string $tag)
+    {
+        $url = "/api/workflow-definition";
+        $params = array(
+            "filter" => self::filter(array(
+                "tag" => $tag
+            ))
+        );
+
+        $url .= '?' . http_build_query($params);
 
         $curlret = $this->get($url);
         return json_decode($curlret, true);

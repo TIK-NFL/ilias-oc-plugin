@@ -131,10 +131,9 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $matterhorn_version->setOptions($this->configObject->getMatterhornVersionOptions());
         
         // upload workflow
-        $uploadworkflow = new ilTextInputGUI($pl->txt('upload_workflow'), 'uploadworkflow');
+        $uploadworkflow = new ilSelectInputGUI($pl->txt('upload_workflow'), 'uploadworkflow');
         $uploadworkflow->setRequired(true);
-        $uploadworkflow->setMaxLength(100);
-        $uploadworkflow->setSize(100);
+        $uploadworkflow->setOptions($this->configObject->getUploadWorkflowOptions());
         $form->addItem($uploadworkflow);
         
         $form->addItem($matterhorn_version);
