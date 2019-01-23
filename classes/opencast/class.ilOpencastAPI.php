@@ -376,7 +376,6 @@ class ilOpencastAPI
         $params = array(
             'filter' => self::filter(array(
                 "status" => "EVENTS.EVENTS.STATUS.PROCESSED",
-                "comments" => "OPEN",
                 "series" => $series_id
             )),
             'sort' => 'date:ASC'
@@ -386,7 +385,19 @@ class ilOpencastAPI
         $url .= '?' . http_build_query($params);
 
         $curlret = $this->get($url);
-        return json_decode($curlret, true);
+        $episodes = json_decode($curlret, true);
+        return array_filter($episodes, array(
+            $this,
+            'isOnholdEpisode'
+        ));
+    }
+
+    private function isOnholdEpisode(array $episode)
+    {
+        if (in_array("ilias", $episode['publication_status'])) {
+            return false;
+        }
+        return true;
     }
 
     /**
