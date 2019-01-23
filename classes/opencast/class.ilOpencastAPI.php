@@ -435,7 +435,7 @@ class ilOpencastAPI
      */
     public function getWorkflowDefinition(string $tag)
     {
-        $url = "/api/workflow-definition";
+        $url = "/api/workflow-definitions";
         $params = array(
             "filter" => self::filter(array(
                 "tag" => $tag
