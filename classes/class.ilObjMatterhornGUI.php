@@ -498,11 +498,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         return $scheduled_episode;
     }
 
-    private function extractOnholdEpisode($event)
+    private function extractOnholdEpisode(array $event)
     {
         $onhold_episode = array(
             'title' => $event["title"],
-            'trimurl' => $this->getLinkForEpisodeUnescaped("showTrimEditor", (string) $event['id']),
+            'trimurl' => $this->getLinkForEpisodeUnescaped("showTrimEditor", (string) $event['identifier']),
             'date' => $event["start"]
         );
         return $onhold_episode;
@@ -514,7 +514,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      * @param string $id
      * @return string
      */
-    private function getLinkForEpisodeUnescaped($cmd, $id)
+    private function getLinkForEpisodeUnescaped(string $cmd, string $id)
     {
         global $DIC;
         $DIC->ctrl()->setParameterByClass("ilobjmatterhorngui", "id", $id);
