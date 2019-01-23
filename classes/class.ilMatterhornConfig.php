@@ -10,7 +10,7 @@ class ilMatterhornConfig
     /**
      * returns the hostname for the matterhorn server.
      *
-     * @return the hostname for the matterhorn server
+     * @return string the hostname for the matterhorn server
      */
     public function getMatterhornServer()
     {
@@ -18,7 +18,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'http://host.is.unset';
         }
-        
+
         return $retVal;
     }
 
@@ -33,7 +33,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'http://host.is.unset';
         }
-        
+
         return $retVal;
     }
 
@@ -48,7 +48,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'matterhorn_system_account';
         }
-        
+
         return $retVal;
     }
 
@@ -63,13 +63,43 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'CHANGE_ME';
         }
-        
+
         return $retVal;
     }
 
     public function setMatterhornPassword($a_password)
     {
         $this->setValue('mh_digest_password', $a_password);
+    }
+
+    public function getOpencastAPIUser()
+    {
+        $retVal = $this->getValue('oc_api_user');
+        if (! $retVal) {
+            return 'admin';
+        }
+        
+        return $retVal;
+    }
+
+    public function setOpencastAPIUser($a_user)
+    {
+        $this->setValue('oc_api_user', $a_user);
+    }
+
+    public function getOpencastAPIPassword()
+    {
+        $retVal = $this->getValue('oc_api_password');
+        if (! $retVal) {
+            return 'opencast';
+        }
+        
+        return $retVal;
+    }
+
+    public function setOpencastAPIPassword($a_password)
+    {
+        $this->setValue('oc_api_password', $a_password);
     }
 
     /**
@@ -82,7 +112,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return '/dev/null';
         }
-        
+
         return $retVal;
     }
 
@@ -123,7 +153,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return '/dev/null';
         }
-        
+
         return $retVal;
     }
 
@@ -141,7 +171,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return $this->getMatterhornVersionOptions()[0];
         }
-        
+
         return $retVal;
     }
 
@@ -164,7 +194,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'default';
         }
-        
+
         return $retVal;
     }
 
@@ -174,13 +204,37 @@ class ilMatterhornConfig
     }
 
     /**
-     * Get the Prefix of series created by this plugin.
      *
-     * @return string the prefix
+     * @param string $series_id
+     * @return int $obj_id
      */
-    public function getSeriesPrefix()
+    public function lookupMatterhornObjectForSeries($series_id)
     {
-        return 'ilias_xmh_';
+        global $ilDB;
+        $result = $ilDB->query('SELECT obj_id FROM rep_robj_xmh_data WHERE series_id = ' . $ilDB->quote($series_id, 'text'));
+        if ($result->numRows() == 0) {
+            return false;
+        }
+        $record = $ilDB->fetchAssoc($result);
+
+        return intval($record['obj_id']);
+    }
+
+    /**
+     *
+     * @param int $obj_id
+     * @return string $series_id
+     */
+    public function lookupSeriesForMatterhornObject($obj_id)
+    {
+        global $ilDB;
+        $result = $ilDB->query('SELECT series_id FROM rep_robj_xmh_data WHERE obj_id = ' . $ilDB->quote($obj_id, 'integer'));
+        if ($result->numRows() == 0) {
+            return false;
+        }
+        $record = $ilDB->fetchAssoc($result);
+
+        return $record['series_id'];
     }
 
     /**
@@ -193,7 +247,7 @@ class ilMatterhornConfig
     private function setValue($key, $value)
     {
         global $ilDB;
-        
+
         if (! is_string($this->getValue($key))) {
             $ilDB->insert('rep_robj_xmh_config', array(
                 'cfgkey' => array(
@@ -239,7 +293,7 @@ class ilMatterhornConfig
             return false;
         }
         $record = $ilDB->fetchAssoc($result);
-        
+
         return (string) $record['cfgvalue'];
     }
 }

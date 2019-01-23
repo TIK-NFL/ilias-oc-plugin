@@ -1,22 +1,35 @@
+"use strict";
 (function() {
 	$(document).ready(function() {
-		var myPlayer = videojs('mhpreviewvideo');
+		const myPlayer = videojs('mhpreviewvideo');
+		$('#trimin').keypress(function(event) {
+			const keyCode = (event.keyCode ? event.keyCode : event.which);
+	        if (keyCode == 13) {
+	            event.preventDefault();
+	            setIn(convertTimeToSec($('#trimin').val()));
+	        }
+		});
+		$('#trimout').keypress(function(event) {
+			const keyCode = (event.keyCode ? event.keyCode : event.which);
+	        if (keyCode == 13) {
+	            event.preventDefault();
+	            setOut(convertTimeToSec($('#trimout').val()));
+	        }
+		});
 		$('#settrimin').click(function() {
-			$('#trimin').val(convertSecToTime(myPlayer.currentTime().toFixed(0)));
-			$("#slider-range").slider("values", 0, myPlayer.currentTime().toFixed(0));
+			setIn(myPlayer.currentTime().toFixed(0));
 		});
 		$('#settrimout').click(function() {
-			$('#trimout').val(convertSecToTime(myPlayer.currentTime().toFixed(0)));
-			$("#slider-range").slider("values", 1, myPlayer.currentTime().toFixed(0));
+			setOut(myPlayer.currentTime().toFixed(0));
 		});
 		$('#playtrimin').click(function() {
-			time = convertTimeToSec($('#trimin').val());
+			const time = convertTimeToSec($('#trimin').val());
 			myPlayer.currentTime(time);
 			myPlayer.play();
 		});
 		$('#playtrimout').click(function() {
-			time = convertTimeToSec($('#trimout').val()) - 10;
-			pausetime = 11000;
+			let time = convertTimeToSec($('#trimout').val()) - 10;
+			let pausetime = 11000;
 			if (time < 0) {
 				pausetime = (11 + time) * 1000;
 				time = 0;
@@ -34,7 +47,7 @@
 			return $(this).val() == $('#righttrackflavor').data('preset');
 		}).prop('selected', true);
 		$("#lefttrack").change(function() {
-			var el = $("#lefttrackflavor");
+			const el = $("#lefttrackflavor");
 			if (el) {
 				if (!this.checked) {
 					el.hide();
@@ -44,7 +57,7 @@
 			}
 		});
 		$("#righttrack").change(function() {
-			var el = $("#righttrackflavor");
+			const el = $("#righttrackflavor");
 			if (el) {
 				if (!this.checked) {
 					el.hide();
@@ -53,25 +66,48 @@
 				}
 			}
 		});
+		$("#octrimbutton").click(function(e) {
+			if ($("#octrimbutton").hasClass("disabled")) {
+				e.preventDefault();
+			}
+		});
 		initSlider();
 	});
 
 	function initSlider() {
+		// Single Source of Truth for the trim values
+		// If you want to change the trim values set the slider values
 		$("#slider-range").slider({
 			range : true,
 			min : 0,
 			max : $("#slider-range").data('time'),
 			values : [ 0, $("#slider-range").data('time') ],
-			slide : refreshTimes,
-			change : refreshTimes
+			slide : handleSlide,
+			change : handleChange
 		});
 	}
+	
+	function handleChange() {
+		const values = $("#slider-range").slider("values");
+		refreshTimesFromSliderEvent(values);
+	}
+	
+	function handleSlide(event, {values}) {
+		refreshTimesFromSliderEvent(values);
+	}
+	
+	function setIn(time) {
+		$("#slider-range").slider("values", 0, time);
+	}
+	
+	function setOut(time) {
+		$("#slider-range").slider("values", 1, time);
+	}
 
-	function refreshTimes() {
-		var values = $("#slider-range").slider("values");
+	function refreshTimesFromSliderEvent(values) {
 		$('#trimin').val(convertSecToTime(values[0]));
 		$('#trimout').val(convertSecToTime(values[1]));
-		if (values[1] - values[0] == 0) {
+		if (values[0] >= values[1]) {
 			$('#octrimbutton').addClass("disabled")
 		} else {
 			$('#octrimbutton').removeClass("disabled")
@@ -79,16 +115,16 @@
 	}
 
 	function convertSecToTime(totalSec) {
-		var hours = parseInt(totalSec / 3600) % 24;
-		var minutes = parseInt(totalSec / 60) % 60;
-		var seconds = totalSec % 60;
-		var result = hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+		const hours = parseInt(totalSec / 3600) % 24;
+		const minutes = parseInt(totalSec / 60) % 60;
+		const seconds = totalSec % 60;
+		const result = hours + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
 		return result;
 	}
 
 	function convertTimeToSec(time) {
-		var ts = time.split(':'); // split it at the colons
-		var seconds = (+ts[0]) * 60 * 60 + (+ts[1]) * 60 + (+ts[2]);
-		return seconds;
+		const ts = time.split(':'); // split it at the colons
+		const seconds = (+ts[0]) * 60 * 60 + (+ts[1]) * 60 + (+ts[2]);
+		return isNaN(seconds) ? 0 : seconds;
 	}
 })();

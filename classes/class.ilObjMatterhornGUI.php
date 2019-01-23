@@ -243,7 +243,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     private function getPropertiesValues()
     {
-        $series = $this->object->getSeriesInformationFromOpencast();
+        $series = $this->object->getSeries()->getSeriesInformationFromOpencast();
         $values = array();
         $values["title"] = $this->object->getTitle();
         $values["desc"] = $series["description"];
@@ -380,7 +380,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setCurrentBlock($this->object->getDownload() ? "episodedownload" : "episode");
                 // ilLoggerFactory::getLogger('xmh')->debug("Adding: ".$item["title"]);
                 
-                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['opencast_id']);
                 $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
@@ -398,7 +398,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             $cards = array();
             foreach ($released_episodes as $item) {
-                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['mhid']);
+                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['opencast_id']);
                 $url = $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode");
                 
                 $image = $factory->image()->responsive($item["previewurl"], $this->getText("preview"));
@@ -460,7 +460,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         
         $episode = array(
             'title' => $workflow["mediapackage"]['title'],
-            'mhid' => $workflow['id'],
+            'workflow_id' => $workflow['id'],
             'date' => $workflow["mediapackage"]['start'],
             'processdone' => $finished / $totalops * 100.0,
             'processcount' => $finished . "/" . $totalops,
@@ -507,10 +507,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $episode = array(
                 "title" => (string) $value->title,
                 "date" => (string) $value['start'],
-                "mhid" => $this->obj_id . "/" . (string) $value['id'],
+                "opencast_id" => $this->object->getSeriesId() . "/" . (string) $value['id'],
                 "previewurl" => (string) $previewurl,
                 "downloadurl" => (string) $downloadurl,
-                "viewurl" => $this->getLinkForEpisodeUnescaped("showEpisode", $this->obj_id . "/" . (string) $value['id'])
+                "viewurl" => $this->getLinkForEpisodeUnescaped("showEpisode", $this->object->getSeriesId() . "/" . (string) $value['id'])
             );
             if ($this->object->getManualRelease()) {
                 $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", (string) $value['id']);
@@ -530,7 +530,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         $scheduled_episode = array(
             'title' => $event["title"],
-            'mhid' => $event["id"],
+            'episode_id' => $event["id"],
             'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event['id'])
         );
         $scheduled_episode['startdate'] = $event['start_date'];
@@ -569,7 +569,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     public function getEpisodes()
     {
-        $processingEpisodes = $this->object->getProcessingEpisodes();
+        $series = $this->object->getSeries();
+        $processingEpisodes = $series->getProcessingEpisodes();
         $tempEpisodes = $processingEpisodes['workflows'];
         $process_items = array();
         if (is_array($tempEpisodes) && 0 < $tempEpisodes['totalCount']) {
@@ -595,7 +596,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         
         $scheduled_items = array();
-        $scheduledEpisodes = $this->object->getScheduledEpisodes();
+        $scheduledEpisodes = $series->getScheduledEpisodes();
         if (is_array($scheduledEpisodes) && 0 < $scheduledEpisodes['total']) {
             foreach ($scheduledEpisodes['results'] as $event) {
                 $scheduled_items[] = $this->extractScheduledEpisode($event);
@@ -611,7 +612,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         
         $onhold_items = array();
-        $onHoldEpisodes = $this->object->getOnHoldEpisodes();
+        $onHoldEpisodes = $series->getOnHoldEpisodes();
         foreach ($onHoldEpisodes as $event) {
             $onhold_items[] = $this->extractOnholdEpisode($event);
         }
@@ -679,7 +680,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $factory = $DIC->ui()->factory();
         
         $ilTabs->activateTab("manage");
-        $editbase = $this->getPlugin()->getDirectory() . "/templates/edit";
         $this->checkPermission("write");
         
         $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.js.html");
@@ -694,7 +694,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_DONE_UPLOADING", $this->getText("done_uploading"));
         $seriestpl->setVariable("TXT_UPLOAD_CANCELED", $this->getText("upload_canceled"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
-        $seriestpl->setVariable("SERIES_ID", $this->object->getId());
+        $seriestpl->setVariable("SERIES_ID", $this->object->getSeriesId());
         $seriestpl->setVariable("MANUAL_RELEASE", $this->object->getManualRelease());
         $seriestpl->parseCurrentBlock();
         $jsConfig = $seriestpl->get();
@@ -724,7 +724,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     $this->getText("recorddate"),
                     $this->getText("progress"),
                     $this->getText("running")
-                ));
+                ), "fixed");
                 
                 $onholdTable = $this->getTableWithId("iliasopencast_onholdtable", array(
                     $this->getText("title"),
@@ -739,7 +739,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             case 'upload':
                 $ilTabs->activateSubTab('upload');
                 
-                $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.edit.html");
+                $seriestpl = $this->getPlugin()->getTemplate("default/tpl.upload.html");
                 $seriestpl->setCurrentBlock("upload");
                 $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
                 $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
@@ -793,7 +793,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      * @param $columns array
      * @return \ILIAS\UI\Component\Legacy\Legacy
      */
-    private function getTableWithId($id, $columns)
+    private function getTableWithId($id, $columns, $layout = "auto")
     {
         global $DIC;
         $tableTpl = $this->getPlugin()->getTemplate("default/tpl.empty_table.html");
@@ -804,6 +804,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         
         $tableTpl->setCurrentBlock("table");
+        $tableTpl->setVariable("TABLE_STYLE", "table-layout: $layout;");
         $tableTpl->setVariable("ID", $id);
         $tableTpl->parseCurrentBlock();
         return $DIC->ui()
@@ -816,7 +817,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     public function showTrimEditor()
     {
-        global $tpl, $ilTabs, $ilCtrl;
+        global $DIC;
+        $tpl = $DIC->ui()->mainTemplate();
+        $ilCtrl = $DIC->ctrl();
+        $factory = $DIC->ui()->factory();
         $this->checkPermission("write");
         $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
         $episode = $this->object->getEpisode($_GET["id"]);
@@ -838,20 +842,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                         break;
                 }
             }
-            ilLoggerFactory::getLogger('xmh')->debug(print_r($worktracks, true));
-            foreach ($editor->previews as $preview) {
-                if (strpos($preview->uri, "composite.mp4") !== false) {
-                    $_SESSION["mhpreviewurlpreviewsbsmp4$id"] = $preview->uri;
-                } else {
-                    $_SESSION["mhpreviewurlpreviewsbsweb$id"] = $preview->uri;
-                }
-            }
             
             $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
             $trimview->setCurrentBlock("formstart");
-            $trimview->setVariable("TXT_ILIAS_TRIM_EDITOR", $this->getText("ilias_trim_editor"));
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
-            $trimview->setVariable("TRACKTITLE", $mediapackage->title);
+            $trimview->setVariable("TRACKTITLE", $editor->title);
             $trimview->setVariable("INITJS", $trimbase);
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
             $trimview->setVariable("WFID", $id);
@@ -887,9 +882,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             // if there are two tracks, there is also a sbs track. Otherwise use the only track present.
             $downloadurlmp4 = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . trim($editor->series->id) . "/$id/previewsbs.mp4";
-            $downloadurlwebm = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . trim($editor->series->id) . "/$id/previewsbs.webm";
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
-            $trimview->setVariable("DOWNLOAD_PREVIEW_URL_WEBM", $downloadurlwebm);
             
             $duration = $editor->duration;
             $trimview->setVariable("TRACKLENGTH", $duration / 1000);
@@ -910,11 +903,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_OUTPOINT", $this->getText("outpoint"));
             $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d", $hours, $min, $sec));
             $trimview->parseCurrentBlock();
-            $tpl->setContent($trimview->get());
+            $editorHtml = $trimview->get();
+            $content = $factory->panel()->standard($this->getText("ilias_trim_editor"), $factory->legacy($editorHtml));
+            $html = $DIC->ui()
+                ->renderer()
+                ->render($content);
+            $tpl->setContent($html);
             $tpl->addCss("$trimbase/video-js/video-js.css");
             $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/jquery-ui.min.css");
             $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
-            $ilTabs->activateTab("manage");
+            $DIC->tabs()->activateTab("manage");
         } else {
             $ilCtrl->redirect($this, "editTrimProcess");
         }
@@ -925,9 +923,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $ilCtrl;
         $episode = $this->object->getEpisode($_POST["eventid"]);
         if ($episode) {
+            $title = (string) ilUtil::stripScriptHTML($_POST["tracktitle"]);
+            if ($title) {
+                $episode->setTitle($title);
+            }
             $editor = $episode->getEditor();
             ilLoggerFactory::getLogger('xmh')->debug("eventid " . print_r($editor, true));
-            // $mediapackagetitle = ilUtil::stripScriptHTML($_POST["tracktitle"]);
             $tracks = array();
             if (isset($_POST["lefttrack"])) {
                 $track = array();
@@ -970,6 +971,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function addInfoItems($info)
     {
         $info->addSection($this->getText("opencast_information"));
-        $info->addProperty($this->getText("series_id"), $this->configObject->getSeriesPrefix() . $this->object->getId());
+        $info->addProperty($this->getText("series_id"), $this->object->getSeriesId());
     }
 }

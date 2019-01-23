@@ -30,7 +30,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("class.ilMatterhornUserTracking.php");
         $plugin->includeClass("class.ilMatterhornEpisode.php");
-        $this->episode = new ilMatterhornEpisode(1234, $this->episode_id);
+        $this->episode = new ilMatterhornEpisode("8b8966ac-e5e4-11e8-9f32-f2801f1b9fd1", $this->episode_id);
     }
 
     /**

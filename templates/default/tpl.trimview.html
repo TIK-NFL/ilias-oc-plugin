@@ -5,16 +5,14 @@
 <script>
   videojs.options.flash.swf = "{INITJS}/video-js/video-js.swf"
 </script>
-<H2>{TXT_ILIAS_TRIM_EDITOR}</H2>
 <form action="{CMD_TRIM}" method="post">
 <input type="hidden" name="eventid" value="{WFID}" />
-<div class="container">
-<!--  <div class="row">
-    <div class="input-group">
-      <span class="input-group-addon" id="basic-addon1">{TXT_TRACK_TITLE}</span>
+  <div class="row">
+    <div class="col-md-12 form-group">
+      <span class="form-label" id="basic-addon1">{TXT_TRACK_TITLE}</span>
       <input type="text" class="form-control" aria-describedby="basic-addon1" name="tracktitle" value="{TRACKTITLE}">
     </div>
-  </div> -->
+  </div>
 <!-- END formstart -->  
 <!-- BEGIN dualstream -->  
   <div class="row">
@@ -23,12 +21,12 @@
   </div>
   <div class="row">
     <div class="col-md-6">    
-      <select id="lefttrackflavor" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
+      <select id="lefttrackflavor" class="form-control" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
         <option value="unset">{FLAVORUNSET}</option><option value="presenter/source">{FLAVORPRESENTER}</option><option value="presentation/source">{FLAVORPRESENTATION}</option>
       </select>  
     </div>
     <div class="col-md-6"><span class="pull-right">    
-      <select id="righttrackflavor" name="righttrackflavor" data-preset="{RIGHTTRACKTYPE}">
+      <select id="righttrackflavor" class="form-control" name="righttrackflavor" data-preset="{RIGHTTRACKTYPE}">
         <option value="unset">{FLAVORUNSET}</option><option value="presenter/source">{FLAVORPRESENTER}</option><option value="presentation/source">{FLAVORPRESENTATION}</option>
       </select>
     </span></div>
@@ -38,7 +36,7 @@
   <div class="row">
     <div class="col-md-6">    
       <input type="hidden" name="lefttrack" value="{LEFTTRACKID}">
-      <select id="lefttrackflavor" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
+      <select id="lefttrackflavor" class="form-control" name="lefttrackflavor" data-preset="{LEFTTRACKTYPE}">
         <option value="unset">{FLAVORUNSET}</option><option value="presenter/source">{FLAVORPRESENTER}</option><option value="presentation/source">{FLAVORPRESENTATION}</option>
       </select>  
     </div>
@@ -49,7 +47,6 @@
     <video id="mhpreviewvideo" class="center-block video-js vjs-default-skin"
       controls preload="auto" width="640" height="264"
       data-setup='{"inactivityTimeout": 0 }'>
-      <source src="{DOWNLOAD_PREVIEW_URL_WEBM}" type='video/webm' />
       <source src="{DOWNLOAD_PREVIEW_URL_MP4}" type='video/mp4' />
       <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
     </video>
@@ -64,11 +61,11 @@
 <!-- BEGIN formend -->  
   <div class="row top5">
     <div class="col-md-6">{TXT_INPOINT}</div>
-    <div class="col-md-6"><span class="pull-right">{TXT_OUTPOINT}</div>
+    <div class="col-md-6"><span class="pull-right">{TXT_OUTPOINT}</span></div>
   </div>
   <div class="row top5">
     <div class="col-md-6"><input name="trimin" value="0:00:00" id="trimin"><button id="settrimin" type="button" class="btn btn-default"><span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}</button></div>
-    <div class="col-md-6"><span class="pull-right"><input name="trimout" value="{TRACKLENGTH}" id="trimout" ><button id="settrimout" type="button" class="btn btn-default"><span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}</button></div>
+    <div class="col-md-6"><span class="pull-right"><input name="trimout" value="{TRACKLENGTH}" id="trimout" ><button id="settrimout" type="button" class="btn btn-default"><span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}</button></span></div>
   </div>
   <div class="row top5">
     <div class="col-md-6"><button type="button" class="btn btn-default" id="playtrimin"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_INPOINT}</button>
@@ -76,6 +73,6 @@
     <div class="col-md-6"><span class="pull-right"> <button type="button" class="btn btn-default" id="playtrimout"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_OUTPOINT}</button>   
     </span></div>
   </div>
-  <div class="row top5"><button type="submit" class="btn btn-primary" id="octrimbutton"><span class="glyphicon glyphicon-ok"></span> {TXT_CONTINUE}</button></div>
-</from>
+  <div class="row top5"><div class="col-md-12"><button type="submit" class="btn btn-primary" id="octrimbutton"><span class="glyphicon glyphicon-ok"></span> {TXT_CONTINUE}</button></div></div>
+</form>
 <!-- END formend -->  
