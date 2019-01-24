@@ -133,7 +133,14 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         // upload workflow
         $uploadworkflow = new ilSelectInputGUI($pl->txt('upload_workflow'), 'uploadworkflow');
         $uploadworkflow->setRequired(true);
-        $uploadworkflow->setOptions($this->configObject->getUploadWorkflowOptions());
+        $workflow = $this->configObject->getUploadWorkflowOptions();
+        if ($workflow === false) {
+            $workflow = array(
+                "oc_api_setup_required" => $pl->txt("oc_api_setup_required")
+            );
+        }
+        $uploadworkflow->setOptions();
+
         $form->addItem($uploadworkflow);
         
         $form->addItem($matterhorn_version);
