@@ -327,7 +327,7 @@ class ilOpencastAPI
      * Get the episode with the default metadata catalog
      *
      * @param string $episode_id
-     * @return array the episode object from opencast
+     * @return object the episode object from opencast
      */
     public function getEpisode(string $episode_id)
     {
@@ -418,7 +418,7 @@ class ilOpencastAPI
                 "current_operation_not" => "schedule",
                 "current_operation_not" => "capture"
             )),
-            "withoperations" => true
+            "withoperations" => "true"
         );
 
         $url .= '?' . http_build_query($params);

@@ -104,7 +104,6 @@ class ilMatterhornSeries
     private function extractProcessingEpisodes(array $workflow)
     {
         $operations = array();
-
         foreach ($workflow["operations"] as $operation) {
             // search for trim. If it will run, count only up to here if it is not finished yet, otherwise count from here
             if ($operation["operation"] === "trim" && $operation["if"] === "true") {
@@ -134,9 +133,9 @@ class ilMatterhornSeries
         $episode = ilOpencastAPI::getInstance()->getEpisode($workflow["event_identifier"]);
 
         return array(
-            'title' => $episode['title'],
+            'title' => $episode->title,
             'workflow_id' => $workflow['operation'],
-            'date' => $episode['start'],
+            'date' => $episode->start,
             'processdone' => $finished / ($totalops * 100.0),
             'processcount' => $finished . "/" . $totalops,
             'running' => $running
