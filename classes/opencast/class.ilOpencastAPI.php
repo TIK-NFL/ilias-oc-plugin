@@ -218,7 +218,7 @@ class ilOpencastAPI
         $fields = $this->createPostFields($title, $description, $obj_id, $refId);
 
         $series = json_decode($this->post($url, $fields));
-        return $series["identifier"];
+        return $series->identifier;
     }
 
     /**
@@ -275,9 +275,9 @@ class ilOpencastAPI
         $metadata = array(
             "title" => self::title($title, $obj_id, $refId),
             "description" => $description,
-            "publishers" => array(
-                "University of Stuttgart, Germany"
-            )
+//            "publishers" => array( TODO dont work
+//                "University of Stuttgart, Germany"
+//            )
         );
         $fields = array();
         foreach ($metadata as $id => $value) {
@@ -302,7 +302,7 @@ class ilOpencastAPI
      * Get the series with the default metadata catalog
      *
      * @param string $series_id
-     * @return array the series object from opencast
+     * @return object the series object from opencast
      */
     public function getSeries(string $series_id)
     {
@@ -478,6 +478,7 @@ class ilOpencastAPI
      *            the id of the episode
      * @throws Exception
      * @return mixed the decoded editor json from the admin ui
+     * @deprecated
      */
     public function getEditor(string $episodeid)
     {

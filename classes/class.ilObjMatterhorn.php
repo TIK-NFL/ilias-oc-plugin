@@ -105,7 +105,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     protected function doCreate()
     {
         global $ilDB;
-        $new_series_id = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
+        $new_series_id = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), 0);
 
         ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $new_series_id");
         $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, series_id, is_online, viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote($new_series_id, "string") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");

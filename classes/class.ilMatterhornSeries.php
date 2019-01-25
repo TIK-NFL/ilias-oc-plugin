@@ -52,10 +52,10 @@ class ilMatterhornSeries
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         $series = ilOpencastAPI::getInstance()->getSeries($this->getSeriesId());
         $series = array(
-            "title" => (string) $series["title"],
-            "description" => (string) $series["description"],
-            "publishers" => (array) $series["publishers"],
-            "identifier" => (string) $series["identifier"]
+            "title" => (string) $series->title,
+            "description" => (string) $series->description,
+            "publishers" => (array) $series->publishers,
+            "identifier" => (string) $series->identifier
         );
         return $series;
     }
