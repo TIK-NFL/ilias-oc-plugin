@@ -139,8 +139,6 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
                 "oc_api_setup_required" => $pl->txt("oc_api_setup_required")
             );
         }
-        $uploadworkflow->setOptions();
-
         $form->addItem($uploadworkflow);
         
         $form->addItem($matterhorn_version);
