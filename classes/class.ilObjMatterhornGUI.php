@@ -774,8 +774,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         if ($episode) {
             $id = $episode->getEpisodeId();
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
-            $editor = $episode->getEditor();
-            $previewtracks = array();
+            $episodeInfo = $episode->getEpisode();
             $worktracks = array();
             $media = $episode->getMedia();
             foreach ($media as $track) {
@@ -793,7 +792,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
             $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
-            $trimview->setVariable("TRACKTITLE", $editor->title);
+            $trimview->setVariable("TRACKTITLE", $episodeInfo->title);
             $trimview->setVariable("INITJS", $trimbase);
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
             $trimview->setVariable("WFID", $id);
@@ -828,10 +827,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             // if there are two tracks, there is also a sbs track. Otherwise use the only track present.
-            $downloadurlmp4 = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . trim($editor->series->id) . "/$id/previewsbs.mp4";
+            $downloadurlmp4 = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . $episodeInfo->is_part_of . "/$id/previewsbs.mp4";
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
             
-            $duration = $editor->duration;
+            $duration = $episodeInfo->duration;
             $trimview->setVariable("TRACKLENGTH", $duration / 1000);
             $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
@@ -874,24 +873,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             if ($title) {
                 $episode->setTitle($title);
             }
-            $editor = $episode->getEditor();
-            ilLoggerFactory::getLogger('xmh')->debug("eventid " . print_r($editor, true));
-            $tracks = array();
+            $keeptracks = [];
             if (isset($_POST["lefttrack"])) {
-                $track = array();
-                $track['id'] = ilUtil::stripScriptHTML($_POST["lefttrack"]);
-                $track['flavor'] = ilUtil::stripScriptHTML($_POST["lefttrackflavor"]);
-                array_push($tracks, $track);
+                $keeptracks[] = ilUtil::stripScriptHTML($_POST["lefttrack"]);
             }
             if (isset($_POST["righttrack"])) {
-                $track = array();
-                $track['id'] = ilUtil::stripScriptHTML($_POST["righttrack"]);
-                $track['flavor'] = ilUtil::stripScriptHTML($_POST["righttrackflavor"]);
-                array_push($tracks, $track);
-            }
-            $keeptracks = [];
-            foreach ($tracks as $track) {
-                array_push($keeptracks, $track['id']);
+                $keeptracks[] = ilUtil::stripScriptHTML($_POST["righttrack"]);
             }
             $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimin"]));
             list ($hours, $minutes, $seconds) = sscanf($str_time, "%d:%d:%d");

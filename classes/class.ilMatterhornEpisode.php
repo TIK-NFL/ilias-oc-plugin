@@ -238,6 +238,7 @@ class ilMatterhornEpisode
      * Get editor tool json from admin-ng for this episode
      *
      * @return mixed the decoded editor json from the admin ui
+     * @deprecated use getEpisode
      */
     public function getEditor()
     {
@@ -248,6 +249,18 @@ class ilMatterhornEpisode
             throw new Exception("series id not the same", 500);
         }
         return $editor;
+    }
+
+    /**
+     * Get Episode information from the Opencast API
+     *
+     * @return object the Opencast object from the api
+     */
+    public function getEpisode()
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getEpisode($this->getEpisodeId());
     }
 
     /**
