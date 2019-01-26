@@ -101,13 +101,13 @@ class ilMatterhornSeries
         ), $workflows);
     }
 
-    private function extractProcessingEpisodes(array $workflow)
+    private function extractProcessingEpisodes(stdClass $workflow)
     {
         $operations = array();
-        foreach ($workflow["operations"] as $operation) {
+        foreach ($workflow->operations as $operation) {
             // search for trim. If it will run, count only up to here if it is not finished yet, otherwise count from here
-            if ($operation["operation"] === "trim" && $operation["if"] === "true") {
-                if ($operation["state"] === "succeeded") {
+            if ($operation->operation === "trim" && $operation->if === "true") {
+                if ($operation->state === "succeeded") {
                     $operations = array();
                 } else {
                     break;
@@ -121,20 +121,20 @@ class ilMatterhornSeries
         $finished = 0;
         $running = "Waiting";
         foreach ($operations as $operation) {
-            $state = (string) $operation["state"];
+            $state = (string) $operation->state;
             if ($state == "skipped" || $state == "succeeded") {
                 $finished ++;
             }
 
             if ($state == "running") {
-                $running = $operation["description"];
+                $running = $operation->description;
             }
         }
-        $episode = ilOpencastAPI::getInstance()->getEpisode($workflow["event_identifier"]);
+        $episode = ilOpencastAPI::getInstance()->getEpisode($workflow->event_identifier);
 
         return array(
             'title' => $episode->title,
-            'workflow_id' => $workflow['operation'],
+            'workflow_id' => $workflow->operation,
             'date' => $episode->start,
             'processdone' => $finished / ($totalops * 100.0),
             'processcount' => $finished . "/" . $totalops,

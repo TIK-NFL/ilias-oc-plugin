@@ -405,7 +405,7 @@ class ilOpencastAPI
      *
      * @param string $series_id
      *            series id
-     * @return array the workfolws which are in processing for the series returned by opencast
+     * @return object the workfolws which are in processing for the series returned by opencast
      */
     public function getActiveWorkflows(string $series_id)
     {
@@ -423,7 +423,7 @@ class ilOpencastAPI
 
         $url .= '?' . http_build_query($params);
         $curlret = $this->get($url);
-        return json_decode($curlret, true);
+        return json_decode($curlret);
     }
 
     /**
