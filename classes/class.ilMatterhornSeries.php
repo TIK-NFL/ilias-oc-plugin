@@ -136,7 +136,7 @@ class ilMatterhornSeries
             'title' => $episode->title,
             'workflow_id' => $workflow->operation,
             'date' => $episode->start,
-            'processdone' => $finished / ($totalops * 100.0),
+            'processdone' => ($finished / $totalops) * 100,
             'processcount' => $finished . "/" . $totalops,
             'running' => $running
         );
