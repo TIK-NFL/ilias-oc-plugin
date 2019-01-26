@@ -46,7 +46,7 @@ class ilMatterhornConfig
     {
         $retVal = $this->getValue('mh_digest_user');
         if (! $retVal) {
-            return 'matterhorn_system_account';
+            return 'opencast_system_account';
         }
 
         return $retVal;
