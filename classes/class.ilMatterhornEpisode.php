@@ -267,6 +267,7 @@ class ilMatterhornEpisode
      * Get the media objects json from admin-ng for this episode
      *
      * @return mixed the media json from the admin ui
+     * @deprecated
      */
     public function getMedia()
     {

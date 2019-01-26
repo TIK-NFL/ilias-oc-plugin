@@ -43,6 +43,10 @@ include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 class ilObjMatterhornGUI extends ilObjectPluginGUI
 {
 
+    const QUERY_EPISODE_IDENTIFIER = "id";
+
+    const QUERY_MEDIAPACKAGE_ID = "id";
+
     /**
      * Initialisation
      */
@@ -282,7 +286,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function publish()
     {
         global $DIC;
-        $episodeId = $_GET["id"];
+        $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
         $episode = $this->object->getEpisode($episodeId);
         
@@ -304,7 +308,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function retract()
     {
         global $DIC;
-        $episodeId = $_GET["id"];
+        $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
         $episode = $this->object->getEpisode($episodeId);
         
@@ -320,7 +324,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function deletescheduled()
     {
         global $DIC;
-        $episodeId = $_GET["id"];
+        $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xmh')->debug("ID:$episodeId");
         $episode = $this->object->getEpisode($episodeId);
         
@@ -359,7 +363,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function showSeries()
     {
         global $DIC;
-        $ilCtrl = $DIC->ctrl();
         $tpl = $DIC->ui()->mainTemplate();
         $factory = $DIC->ui()->factory();
         
@@ -378,10 +381,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $seriestpl->parseCurrentBlock();
             foreach ($released_episodes as $item) {
                 $seriestpl->setCurrentBlock($this->object->getDownload() ? "episodedownload" : "episode");
-                // ilLoggerFactory::getLogger('xmh')->debug("Adding: ".$item["title"]);
-                
-                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['opencast_id']);
-                $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+                $seriestpl->setVariable("CMD_PLAYER", $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
                 $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
@@ -398,8 +398,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         } else {
             $cards = array();
             foreach ($released_episodes as $item) {
-                $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['opencast_id']);
-                $url = $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode");
+                $url = $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true);
                 
                 $image = $factory->image()->responsive($item["previewurl"], $this->getText("preview"));
                 $content = $factory->listing()->descriptive(array(
@@ -428,7 +427,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $DIC->tabs()->activateTab("content");
     }
 
-    private function extractReleasedEpisodes($skipUnreleased = false)
+    private function extractReleasedEpisodes(bool $skipUnreleased)
     {
         $releasedEpisodeIds = $this->object->getReleasedEpisodeIds();
         $episodes = array();
@@ -466,10 +465,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $episode = array(
                 "title" => (string) $value->title,
                 "date" => (string) $value['start'],
-                "opencast_id" => $this->object->getSeriesId() . "/" . (string) $value['id'],
+                "series_id" => $this->object->getSeriesId(),
+                "episode_id" => (string) $value['id'],
                 "previewurl" => (string) $previewurl,
                 "downloadurl" => (string) $downloadurl,
-                "viewurl" => $this->getLinkForEpisodeUnescaped("showEpisode", $this->object->getSeriesId() . "/" . (string) $value['id'])
+                "viewurl" => $this->getLinkForShowEpisode($this->object->getSeriesId(), $value['id'], false)
             );
             if ($this->object->getManualRelease()) {
                 $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", (string) $value['id']);
@@ -517,9 +517,25 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     private function getLinkForEpisodeUnescaped(string $cmd, string $id)
     {
         global $DIC;
-        $DIC->ctrl()->setParameterByClass("ilobjmatterhorngui", "id", $id);
+        $DIC->ctrl()->setParameterByClass("ilobjmatterhorngui", self::QUERY_EPISODE_IDENTIFIER, $id);
         $link = $DIC->ctrl()->getLinkTargetByClass("ilobjmatterhorngui", $cmd, "", false, false);
-        $DIC->ctrl()->clearParameterByClass("ilobjmatterhorngui", "id");
+        $DIC->ctrl()->clearParameterByClass("ilobjmatterhorngui", self::QUERY_EPISODE_IDENTIFIER);
+        return $link;
+    }
+
+    /**
+     *
+     * @param string $series_id
+     * @param string $episode_id
+     * @param bool $escaped
+     * @return string
+     */
+    private function getLinkForShowEpisode(string $series_id, string $episode_id, bool $escaped)
+    {
+        global $DIC;
+        $DIC->ctrl()->setParameterByClass("ilobjmatterhorngui", self::QUERY_MEDIAPACKAGE_ID, $series_id . "/" . $episode_id);
+        $link = $DIC->ctrl()->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode", "", false, $escaped);
+        $DIC->ctrl()->clearParameterByClass("ilobjmatterhorngui", self::QUERY_MEDIAPACKAGE_ID);
         return $link;
     }
 
@@ -539,7 +555,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
 
-        $finished_episodes = $this->extractReleasedEpisodes();
+        $finished_episodes = $this->extractReleasedEpisodes(false);
         foreach ($finished_episodes as $key => $value) {
             $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
         }
@@ -770,7 +786,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $factory = $DIC->ui()->factory();
         $this->checkPermission("write");
         $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
-        $episode = $this->object->getEpisode($_GET["id"]);
+        $episode = $this->object->getEpisode($_GET[self::QUERY_EPISODE_IDENTIFIER]);
         if ($episode) {
             $id = $episode->getEpisodeId();
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
