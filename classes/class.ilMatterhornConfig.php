@@ -165,29 +165,6 @@ class ilMatterhornConfig
         $this->setValue('distribution_directory', $value);
     }
 
-    public function getMatterhornVersion()
-    {
-        $retVal = $this->getValue('matterhorn_version');
-        if (! $retVal) {
-            return $this->getMatterhornVersionOptions()[0];
-        }
-
-        return $retVal;
-    }
-
-    public function setMatterhornVersion($value)
-    {
-        $this->setValue('matterhorn_version', $value);
-    }
-
-    public function getMatterhornVersionOptions()
-    {
-        return array(
-            '1.6',
-            '2.1'
-        );
-    }
-
     public function getUploadWorkflow()
     {
         $retVal = $this->getValue('uploadworkflow');

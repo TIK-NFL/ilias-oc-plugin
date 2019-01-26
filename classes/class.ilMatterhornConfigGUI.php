@@ -39,7 +39,6 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $values['mh_directory'] = $this->configObject->getMatterhornDirectory();
         $values['xsendfile_header'] = $this->configObject->getXSendfileHeader();
         $values['distribution_directory'] = $this->configObject->getDistributionDirectory();
-        $values['opencast_version'] = $this->configObject->getMatterhornVersion();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
         $form->setValuesByArray($values);
         $tpl->setContent($form->getHTML());
@@ -125,11 +124,6 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $distribution_directory->setSize(100);
         $form->addItem($distribution_directory);
         
-        // matterhorn version
-        $matterhorn_version = new ilSelectInputGUI($pl->txt('opencast_version'), 'opencast_version');
-        $matterhorn_version->setRequired(true);
-        $matterhorn_version->setOptions($this->configObject->getMatterhornVersionOptions());
-        
         // upload workflow
         $uploadworkflow = new ilSelectInputGUI($pl->txt('upload_workflow'), 'uploadworkflow');
         $uploadworkflow->setRequired(true);
@@ -142,7 +136,6 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $uploadworkflow->setOptions($workflow);
         $form->addItem($uploadworkflow);
         
-        $form->addItem($matterhorn_version);
         $form->addCommandButton('save', $lng->txt('save'));
         $form->setTitle($pl->txt('opencast_plugin_configuration'));
         $form->setFormAction($ilCtrl->getFormAction($this));
@@ -166,7 +159,6 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $mh_directory = $form->getInput('mh_directory');
             $xsendfile_header = $form->getInput('xsendfile_header');
             $distribution_directory = $form->getInput('distribution_directory');
-            $opencast_version = $form->getInput('opencast_version');
             $uploadworkflow = $form->getInput('uploadworkflow');
             
             $this->configObject->setMatterhornServer($mh_server);
@@ -178,7 +170,6 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $this->configObject->setMatterhornDirectory($mh_directory);
             $this->configObject->setXSendfileHeader($xsendfile_header);
             $this->configObject->setDistributionDirectory($distribution_directory);
-            $this->configObject->setMatterhornVersion($opencast_version);
             $this->configObject->setUploadWorkflow($uploadworkflow);
             
             ilUtil::sendSuccess($pl->txt('saving_invoked'), true);

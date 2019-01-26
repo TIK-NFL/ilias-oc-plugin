@@ -47,7 +47,6 @@ oc_api_password#:#Password of the Opencast API User
 xsendfile_header#:#Header for XSendfile-Feature
 distribution_directory#:#Distribution directory for ilias
 mh_directory#:#Base directory for Opencast (org.opencastproject.storage.dir)
-opencast_version#:#Opencast Version
 upload_workflow#:#Workflow for processing uploaded files
 oc_api_setup_required#:#Opencast API setup required
 saving_invoked#:#Save procedure has been executed
