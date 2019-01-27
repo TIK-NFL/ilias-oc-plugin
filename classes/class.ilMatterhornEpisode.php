@@ -264,10 +264,9 @@ class ilMatterhornEpisode
     }
 
     /**
-     * Get the media objects json from admin-ng for this episode
+     * Get the media objects json from opencast for this episode
      *
-     * @return mixed the media json from the admin ui
-     * @deprecated
+     * @return array the media json from the Opencast api
      */
     public function getMedia()
     {

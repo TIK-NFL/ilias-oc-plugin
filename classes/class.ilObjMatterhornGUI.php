@@ -493,7 +493,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event['identifier'])
         );
         $scheduled_episode['startdate'] = $event['start'];
-        $scheduled_episode['stopdate'] = $event['end'];//new api ????
+        $scheduled_episode['stopdate'] = $event['end'];//TODO new api ????
         $scheduled_episode['location'] = $event['location'];
         return $scheduled_episode;
     }
@@ -794,12 +794,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $worktracks = array();
             $media = $episode->getMedia();
             foreach ($media as $track) {
-                switch ($track->type) {
-                    case "presentation/source":
+                switch ($track->flavor) {
+                    case "presentation/delivery":
                         ilLoggerFactory::getLogger('xmh')->debug("Found presentation track");
                         $worktracks['presentation'] = $track;
                         break;
-                    case "presenter/source":
+                    case "presenter/delivery":
                         $worktracks['presenter'] = $track;
                         break;
                 }
@@ -819,10 +819,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
                 $presenterattributes = $worktracks['presenter'];
                 $trimview->setVariable("LEFTTRACKID", $presenterattributes->id);
-                $trimview->setVariable("LEFTTRACKTYPE", $presenterattributes->type);
+                $trimview->setVariable("LEFTTRACKTYPE", $presenterattributes->flavor);
                 $presentationattributes = $worktracks['presentation'];
                 $trimview->setVariable("RIGHTTRACKID", $presentationattributes->id);
-                $trimview->setVariable("RIGHTTRACKTYPE", $presentationattributes->type);
+                $trimview->setVariable("RIGHTTRACKTYPE", $presentationattributes->flavor);
                 $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
                 $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
                 $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));

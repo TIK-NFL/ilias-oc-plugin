@@ -1,4 +1,6 @@
 <?php
+use ILIAS\BackgroundTasks\Dependencies\Exceptions\Exception;
+
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
 
 /**
@@ -497,25 +499,35 @@ class ilOpencastAPI
     }
 
     /**
-     * Get the media objects json from admin-ng
+     * Get the media objects json from api
      *
      * @param string $episodeid
      *            the id of the episode
      * @throws Exception
-     * @return mixed the decoded media json from the admin ui
-     * @deprecated removed without replacement
+     * @return array the decoded media json from the api publication channel
      */
     public function getMedia(string $episodeid)
     {
-        $url = "/admin-ng/event/$episodeid/asset/media/media.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
+        $url = "/api/events/$episodeid";
+        $params = array(
+            "withpublications" => "true"
+        );
 
-        $curlret = $this->getDigest($url);
-        $mediajson = json_decode($curlret);
-        if ($mediajson === false) {
-            throw new Exception("error loading media for episode " . $episodeid, 500);
+        $url .= '?' . http_build_query($params);
+        $curlret = $this->get($url);
+        $publications = json_decode($curlret)->publications;
+
+        $apiPublication = null;
+        foreach ($publications as $publication) {
+            if ($publication->channel == "api") {
+                $apiPublication = $publication;
+            }
         }
-        return $mediajson;
+        if ($apiPublication == null) {
+            throw new Exception("no publication for $episodeid on the 'api' channel", 404);
+        }
+
+        return $apiPublication->media;
     }
 
     /**
