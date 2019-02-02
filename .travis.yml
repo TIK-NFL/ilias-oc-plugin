@@ -1,0 +1,12 @@
+language: php
+php:
+  - '7.0'
+
+services:
+  - docker
+
+before_install:
+  - docker pull legion2/ilias-test-docker
+
+test:
+  - docker run --name iliasdev -it -v "${PWD}:/var/www/html/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn" legion2/ilias-test-docker "install-plugin.sh xmh robj Repository Services Matterhorn; cd Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/; ./test.sh"
