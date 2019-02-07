@@ -39,7 +39,7 @@ class ilMatterhornSeries
     public function getQuoteSeriesId()
     {
         global $ilDB;
-        return $ilDB->quote($this->getSeriesId(), "string");
+        return $ilDB->quote($this->getSeriesId(), "text");
     }
 
     /**
