@@ -58,7 +58,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
     public function testGetQuoteSeriesId()
     {
         $series_id = $this->episode->getQuoteSeriesId();
-        $this->assertEquals($this->series_id, $series_id);
+        $this->assertEquals("'" . $this->series_id . "'", $series_id);
     }
 
     public function testGetEpisodeId()

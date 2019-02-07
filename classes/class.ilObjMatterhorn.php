@@ -364,7 +364,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         global $DIC;
 
         $set = $DIC->database()->query("SELECT episode_id FROM rep_robj_xmh_rel_ep WHERE series_id = " . $DIC->database()
-            ->quote($this->getSeriesId(), "integer"));
+            ->quote($this->getSeriesId(), "text"));
         $released = array();
         while ($rec = $DIC->database()->fetchAssoc($set)) {
             array_push($released, ($rec["episode_id"]));
