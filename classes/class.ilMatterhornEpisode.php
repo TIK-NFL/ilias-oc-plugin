@@ -54,7 +54,7 @@ class ilMatterhornEpisode
     public function getQuoteSeriesId()
     {
         global $ilDB;
-        return $ilDB->quote($this->getSeriesId(), "integer");
+        return $ilDB->quote($this->getSeriesId(), "text");
     }
 
     /**
