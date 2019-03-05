@@ -1,6 +1,4 @@
 <?php
-use ILIAS\BackgroundTasks\Dependencies\Exceptions\Exception;
-
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
 
 /**
