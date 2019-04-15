@@ -78,7 +78,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'admin';
         }
-        
+
         return $retVal;
     }
 
@@ -93,7 +93,7 @@ class ilMatterhornConfig
         if (! $retVal) {
             return 'opencast';
         }
-        
+
         return $retVal;
     }
 
@@ -181,7 +181,7 @@ class ilMatterhornConfig
     }
 
     /**
-     * 
+     *
      * @return array|boolean
      */
     public function getUploadWorkflowOptions()
@@ -204,6 +204,30 @@ class ilMatterhornConfig
     private function getIdentifier($workflowDefinition)
     {
         return (string) $workflowDefinition->identifier;
+    }
+
+    /**
+     * Get the Publisher used for creating new Opencast series or empty string if not specified.
+     *
+     * @return string the publisher
+     */
+    public function getPublisher()
+    {
+        $retVal = $this->getValue('publisher');
+        if (! $retVal) {
+            return '';
+        }
+
+        return $retVal;
+    }
+
+    /**
+     *
+     * @param string $publisher
+     */
+    public function setPublisher(string $publisher)
+    {
+        $this->set('publisher', $publisher);
     }
 
     /**

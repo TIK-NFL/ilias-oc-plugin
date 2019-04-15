@@ -171,10 +171,14 @@ class ilOpencastAPI
         $metadata = array(
             "title" => self::title($title, $obj_id, $refId),
             "description" => $description
-            // "publishers" => array( TODO dont work
-            // "University of Stuttgart, Germany"
-            // )
         );
+
+        $publisher = $this->configObject->getPublisher();
+        if ($publisher) {
+            $metadata["publisher"] = array(
+                $publisher
+            );
+        }
 
         return array(
             'metadata' => json_encode(array(

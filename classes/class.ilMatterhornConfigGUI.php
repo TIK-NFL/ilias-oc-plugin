@@ -40,6 +40,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $values['xsendfile_header'] = $this->configObject->getXSendfileHeader();
         $values['distribution_directory'] = $this->configObject->getDistributionDirectory();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
+        $values['publisher'] = $this->configObject->getPublisher();
         $form->setValuesByArray($values);
         $tpl->setContent($form->getHTML());
     }
@@ -136,6 +137,13 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $uploadworkflow->setOptions($workflow);
         $form->addItem($uploadworkflow);
         
+        // publisher
+        $publisher = new ilTextInputGUI($pl->txt('publisher'), 'publisher');
+        $publisher->setRequired(false);
+        $publisher->setMaxLength(100);
+        $publisher->setSize(100);
+        $form->addItem($publisher);
+        
         $form->addCommandButton('save', $lng->txt('save'));
         $form->setTitle($pl->txt('opencast_plugin_configuration'));
         $form->setFormAction($ilCtrl->getFormAction($this));
@@ -160,6 +168,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $xsendfile_header = $form->getInput('xsendfile_header');
             $distribution_directory = $form->getInput('distribution_directory');
             $uploadworkflow = $form->getInput('uploadworkflow');
+            $publisher = $form->getInput('publisher');
             
             $this->configObject->setMatterhornServer($mh_server);
             $this->configObject->setMatterhornEngageServer($mh_server_engage);
@@ -171,6 +180,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $this->configObject->setXSendfileHeader($xsendfile_header);
             $this->configObject->setDistributionDirectory($distribution_directory);
             $this->configObject->setUploadWorkflow($uploadworkflow);
+            $this->configObject->setPublisher($publisher);
             
             ilUtil::sendSuccess($pl->txt('saving_invoked'), true);
             $ilCtrl->redirect($this, 'configure');

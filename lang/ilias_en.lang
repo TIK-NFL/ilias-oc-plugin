@@ -49,6 +49,7 @@ distribution_directory#:#Distribution directory for ilias
 mh_directory#:#Base directory for Opencast (org.opencastproject.storage.dir)
 upload_workflow#:#Workflow for processing uploaded files
 oc_api_setup_required#:#Opencast API setup required
+oc_publisher#:#Publisher
 saving_invoked#:#Save procedure has been executed
 
 finished_recordings#:#Finished Recordings

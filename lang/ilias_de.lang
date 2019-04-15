@@ -49,6 +49,7 @@ xsendfile_header#:#Header f&uuml;r XSendfile-Feature
 distribution_directory#:#Ilias Verteilungsverzeichnis
 upload_workflow#:#Workflow zum Verarbeiten von Uploads
 oc_api_setup_required#:#Opencast API setup erforderlich
+oc_publisher#:#Herausgeber
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert
 
 finished_recordings#:#Fertige Aufzeichnungen
