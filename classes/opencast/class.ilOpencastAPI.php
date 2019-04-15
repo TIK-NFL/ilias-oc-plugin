@@ -246,9 +246,7 @@ class ilOpencastAPI
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
 
-        $curlret = $this->opencastRESTClient->get($url, false);
-
-        return json_decode($curlret, true); // TODO
+        return $this->opencastRESTClient->get($url);
     }
 
     /**
@@ -273,17 +271,16 @@ class ilOpencastAPI
         /* Update URL to container Query String of Paramaters */
         $url .= '?' . http_build_query($params);
 
-        $curlret = $this->opencastRESTClient->get($url, false);
-        $episodes = json_decode($curlret, true); // TODO
+        $episodes = $this->opencastRESTClient->get($url);
         return array_filter($episodes, array(
             $this,
             'isOnholdEpisode'
         ));
     }
 
-    private function isOnholdEpisode(array $episode)
+    private function isOnholdEpisode($episode)
     {
-        if (in_array("ilias", $episode['publication_status'])) {
+        if (in_array("ilias", $episode->publication_status)) {
             return false;
         }
         return true;
@@ -332,8 +329,7 @@ class ilOpencastAPI
 
         $url .= '?' . http_build_query($params);
 
-        $curlret = $this->opencastRESTClient->get($url, false);
-        return json_decode($curlret, true); // TODO
+        return $this->opencastRESTClient->get($url);
     }
 
     public function delete(string $episodeid)

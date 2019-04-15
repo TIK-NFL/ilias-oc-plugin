@@ -197,9 +197,13 @@ class ilMatterhornConfig
         return false;
     }
 
-    private function getIdentifier(array $workflowDefinition)
+    /**
+     *
+     * @return string
+     */
+    private function getIdentifier($workflowDefinition)
     {
-        return $workflowDefinition["identifier"];
+        return (string) $workflowDefinition->identifier;
     }
 
     /**

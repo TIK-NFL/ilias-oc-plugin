@@ -488,22 +488,22 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     private function extractScheduledEpisode($event)
     {
         $scheduled_episode = array(
-            'title' => $event["title"],
-            'episode_id' => $event["identifier"],
-            'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event['identifier'])
+            'title' => $event->title,
+            'episode_id' => $event->identifier,
+            'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event->identifier)
         );
-        $scheduled_episode['startdate'] = $event['start'];
-        $scheduled_episode['stopdate'] = $event['end'];//TODO new api ????
-        $scheduled_episode['location'] = $event['location'];
+        $scheduled_episode['startdate'] = $event->start;
+        $scheduled_episode['stopdate'] = $event->end;//TODO new api ????
+        $scheduled_episode['location'] = $event->location;
         return $scheduled_episode;
     }
 
-    private function extractOnholdEpisode(array $event)
+    private function extractOnholdEpisode($event)
     {
         $onhold_episode = array(
-            'title' => $event["title"],
-            'trimurl' => $this->getLinkForEpisodeUnescaped("showTrimEditor", (string) $event['identifier']),
-            'date' => $event["start"]
+            'title' => $event->title,
+            'trimurl' => $this->getLinkForEpisodeUnescaped("showTrimEditor", (string) $event->identifier),
+            'date' => $event->start
         );
         return $onhold_episode;
     }
