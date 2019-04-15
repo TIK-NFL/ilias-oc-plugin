@@ -401,3 +401,7 @@ $ilDB->addIndex('rep_robj_xmh_data', array(
 
 $ilDB->dropTableColumn('rep_robj_xmh_slidetext', 'series_id');
 ?>
+<#20>
+<?php
+$ilDB->dropTableColumn('rep_robj_xmh_data', 'fsinodupdate');
+?>

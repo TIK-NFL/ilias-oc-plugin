@@ -602,7 +602,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         
         $data = array();
-        $data['lastupdate'] = $this->getMHObject()->getLastFSInodeUpdate();
         $data['finished'] = $finished_episodes;
         $data['processing'] = $process_items;
         $data['onhold'] = $onhold_items;
