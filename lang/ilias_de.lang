@@ -81,9 +81,6 @@ none_onhold#:#Es gibt keine Aufnahmen, die geschnitten werden können
 msg_episode_send_to_triming#:#Die Aufnahme wurde erfolgreich zur Weiterverarbeitung geschickt
 msg_scheduling_deleted#:#Die geplante Aufzeichnung wurde erfolgreich gelöscht
 track_title#:#Titel der Aufzeichnung
-flavor_unset#:#Typ unbekannt
-flavor_presenter#:#Dozent
-flavor_presentation#:#Präsentation
 set_to_current_time#:#Jetzt setzen
 inpoint#:#Startpunkt
 outpoint#:#Endpunkt

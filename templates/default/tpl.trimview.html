@@ -13,20 +13,18 @@
       <input type="text" class="form-control" aria-describedby="basic-addon1" name="tracktitle" value="{TRACKTITLE}">
     </div>
   </div>
-<!-- END formstart -->  
-<!-- BEGIN dualstream -->  
+<!-- END formstart -->
+<!-- BEGIN dualstream -->
   <div class="row">
-    <div class="col-md-6">{TXT_LEFT_TRACK}<input type="checkbox" id="lefttrack" name="lefttrack" value="{LEFTTRACKID}" checked></div>
-    <div class="col-md-6"><span class="pull-right">{TXT_RIGHT_TRACK}<input type="checkbox" id="righttrack" name="righttrack" value="{RIGHTTRACKID}" checked></span></div>
+    <div class="col-md-6">{TXT_LEFT_TRACK}<input type="checkbox" id="lefttrack" name="lefttrack" checked></div>
+    <div class="col-md-6"><span class="pull-right">{TXT_RIGHT_TRACK}<input type="checkbox" id="righttrack" name="righttrack" checked></span></div>
   </div>
-<!-- END dualstream -->  
-<!-- BEGIN singlestream -->  
+<!-- END dualstream -->
+<!-- BEGIN singlestream -->
   <div class="row">
-    <div class="col-md-6">    
-      <input type="hidden" name="lefttrack" value="{LEFTTRACKID}">
-    </div>
+      <input type="hidden" name="singletrack" value="{SINGLETRACK}">
   </div>
-<!-- END singlestream -->  
+<!-- END singlestream -->
 <!-- BEGIN video -->  
   <div class="row">
     <video id="mhpreviewvideo" class="center-block video-js vjs-default-skin"

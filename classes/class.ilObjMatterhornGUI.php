@@ -793,18 +793,27 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $id = $episode->getEpisodeId();
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
             $episodeInfo = $episode->getEpisode();
-            $worktracks = array();
             $media = $episode->getMedia();
-            foreach ($media as $track) {
-                switch ($track->flavor) {
-                    case "presentation/delivery":
-                        ilLoggerFactory::getLogger('xmh')->debug("Found presentation track");
-                        $worktracks['presentation'] = $track;
-                        break;
-                    case "presenter/delivery":
-                        $worktracks['presenter'] = $track;
-                        break;
-                }
+            if (length($media) != 1) {
+                throw new Exception("something is wrong with media.");
+            }
+            $track = $media[0];
+            
+            $streamType = null;
+            switch ($track->flavor) {
+                case "presentation/preview":
+                    $streamType = "presentation";
+                    ilLoggerFactory::getLogger('xmh')->debug("Found presentation track");
+                    break;
+                case "presenter/preview":
+                    $streamType = "presenter";
+                    break;
+                case "composite/preview":
+                    $streamType = "dual";
+                    break;
+                default:
+                    throw new Exception("Unknown media flavor for preview: " . $track->flavor);
+                    break;
             }
             
             $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
@@ -815,40 +824,22 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
             $trimview->setVariable("WFID", $id);
             $trimview->parseCurrentBlock();
-            if (2 == count($worktracks)) {
+            if ($streamType == "dual") {
                 $trimview->setCurrentBlock("dualstream");
                 $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
                 $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
-                $presenterattributes = $worktracks['presenter'];
-                $trimview->setVariable("LEFTTRACKID", $presenterattributes->id);
-                $trimview->setVariable("LEFTTRACKTYPE", $presenterattributes->flavor);
-                $presentationattributes = $worktracks['presentation'];
-                $trimview->setVariable("RIGHTTRACKID", $presentationattributes->id);
-                $trimview->setVariable("RIGHTTRACKTYPE", $presentationattributes->flavor);
-                $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
-                $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
-                $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));
                 $trimview->parseCurrentBlock();
             } else {
-                $trackkeys = array_keys($worktracks);
-                $trackkey = $trackkeys[0];
                 $trimview->setCurrentBlock("singlestream");
-                $trimview->setVariable("TXT_LEFT_TRACK_SINGLE", $this->getText("left_side_single"));
-                $attributes = $worktracks[$trackkey];
-                $trimview->setVariable("LEFTTRACKID", $attributes->id);
-                $trimview->setVariable("LEFTTRACKTYPE", $attributes->flavor);
-                $trimview->setVariable("FLAVORUNSET", $this->getText("flavor_unset"));
-                $trimview->setVariable("FLAVORPRESENTER", $this->getText("flavor_presenter"));
-                $trimview->setVariable("FLAVORPRESENTATION", $this->getText("flavor_presentation"));
+                $trimview->setVariable("SINGLETRACK", $streamType);
                 $trimview->parseCurrentBlock();
             }
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
-            // if there are two tracks, there is also a sbs track. Otherwise use the only track present.
-            $downloadurlmp4 = $this->getPlugin()->getDirectory() . "/MHData/" . CLIENT_ID . "/" . $episodeInfo->is_part_of . "/$id/previewsbs.mp4";
+            $downloadurlmp4 = $track->url;
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
             
-            $duration = $episodeInfo->duration;
+            $duration = $track->duration;
             $trimview->setVariable("TRACKLENGTH", $duration / 1000);
             $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
@@ -893,10 +884,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
             $keeptracks = [];
             if (isset($_POST["lefttrack"])) {
-                $keeptracks[] = ilUtil::stripScriptHTML($_POST["lefttrack"]);
+                $keeptracks[] = "presenter";
             }
             if (isset($_POST["righttrack"])) {
-                $keeptracks[] = ilUtil::stripScriptHTML($_POST["righttrack"]);
+                $keeptracks[] = "presentation";
+            }
+            if (isset($_POST["singletrack"])) {
+                $keeptracks[] = (string) ilUtil::stripScriptHTML($_POST["singletrack"]);
             }
             $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimin"]));
             list ($hours, $minutes, $seconds) = sscanf($str_time, "%d:%d:%d");
