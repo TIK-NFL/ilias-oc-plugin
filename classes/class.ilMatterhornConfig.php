@@ -227,7 +227,7 @@ class ilMatterhornConfig
      */
     public function setPublisher(string $publisher)
     {
-        $this->set('publisher', $publisher);
+        $this->setValue('publisher', $publisher);
     }
 
     /**
