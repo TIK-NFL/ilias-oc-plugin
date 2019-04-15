@@ -56,3 +56,7 @@ For apache add the config:
 ```
 XSendFilePath ${distribution_directory}
 ```
+
+#### Publisher
+The publisher used to create new Opencast series, e.g. "University of Stuttgart, Germany".
+This value is optional.

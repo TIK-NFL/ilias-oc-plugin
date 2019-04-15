@@ -138,7 +138,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $form->addItem($uploadworkflow);
         
         // publisher
-        $publisher = new ilTextInputGUI($pl->txt('publisher'), 'publisher');
+        $publisher = new ilTextInputGUI($pl->txt('oc_publisher'), 'publisher');
         $publisher->setRequired(false);
         $publisher->setMaxLength(100);
         $publisher->setSize(100);
