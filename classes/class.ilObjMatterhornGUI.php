@@ -794,7 +794,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
             $episodeInfo = $episode->getEpisode();
             $media = $episode->getMedia();
-            if (length($media) != 1) {
+            if (count($media) != 1) {
                 throw new Exception("something is wrong with media.");
             }
             $track = $media[0];
