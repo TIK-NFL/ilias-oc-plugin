@@ -493,7 +493,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event->identifier)
         );
         $scheduled_episode['startdate'] = $event->start;
-        $scheduled_episode['stopdate'] = $event->end;//TODO new api ????
+        $scheduled_episode['duration'] = $event->duration;
         $scheduled_episode['location'] = $event->location;
         return $scheduled_episode;
     }
@@ -571,7 +571,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         ));
         foreach ($scheduled_items as $key => $value) {
             $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_DATETIME));
-            $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate(new ilDateTime($value["stopdate"], IL_CAL_DATETIME));
+            $stopDate = new ilDateTime($value["startdate"], IL_CAL_DATETIME);
+            $stopDate->increment(iLDateTime::MINUTE, $value["duration"] / 60000);
+            $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate($stopDate);
         }
         
         $onHoldEpisodes = $series->getOnHoldEpisodes();
