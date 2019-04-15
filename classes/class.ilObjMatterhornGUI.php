@@ -57,6 +57,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     }
 
     /**
+     * Get the ilObjMatterhorn for the GUI.
+     *
+     * @return ilObjMatterhorn
+     */
+    private function getMHObject()
+    {
+        return $this->object;
+    }
+
+    /**
      * Get type.
      */
     final public function getType()
@@ -247,14 +257,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     private function getPropertiesValues()
     {
-        $series = $this->object->getSeries()->getSeriesInformationFromOpencast();
+        $series = $this->getMHObject()->getSeries()->getSeriesInformationFromOpencast();
         $values = array();
-        $values["title"] = $this->object->getTitle();
+        $values["title"] = $this->getMHObject()->getTitle();
         $values["desc"] = $series["description"];
-        $values["online"] = $this->object->getOnline();
-        $values["viewMode"] = $this->object->getViewMode();
-        $values["manualRelease"] = $this->object->getManualRelease();
-        $values["download"] = $this->object->getDownload();
+        $values["online"] = $this->getMHObject()->getOnline();
+        $values["viewMode"] = $this->getMHObject()->getViewMode();
+        $values["manualRelease"] = $this->getMHObject()->getManualRelease();
+        $values["download"] = $this->getMHObject()->getDownload();
         return $values;
     }
 
@@ -268,13 +278,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         
         $form = $this->initPropertiesForm();
         if ($form->checkInput()) {
-            $this->object->setTitle($form->getInput("title"));
-            $this->object->setDescription($form->getInput("desc"));
-            $this->object->setOnline($form->getInput("online"));
-            $this->object->setViewMode($form->getInput("viewMode"));
-            $this->object->setManualRelease($form->getInput("manualRelease"));
-            $this->object->setDownload($form->getInput("download"));
-            $this->object->update();
+            $object = $this->getMHObject();
+            $object->setTitle($form->getInput("title"));
+            $object->setDescription($form->getInput("desc"));
+            $object->setOnline($form->getInput("online"));
+            $object->setViewMode($form->getInput("viewMode"));
+            $object->setManualRelease($form->getInput("manualRelease"));
+            $object->setDownload($form->getInput("download"));
+            $object->update();
             ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
             $DIC->ctrl()->redirect($this, "editProperties");
         }
@@ -288,7 +299,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
-        $episode = $this->object->getEpisode($episodeId);
+        $episode = $this->getMHObject()->getEpisode($episodeId);
         
         if ($episode) {
             try {
@@ -310,7 +321,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
-        $episode = $this->object->getEpisode($episodeId);
+        $episode = $this->getMHObject()->getEpisode($episodeId);
         
         if ($episode) {
             $episode->retract();
@@ -326,7 +337,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xmh')->debug("ID:$episodeId");
-        $episode = $this->object->getEpisode($episodeId);
+        $episode = $this->getMHObject()->getEpisode($episodeId);
         
         if ($episode) {
             $episode->delete();
@@ -369,23 +380,23 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $this->checkPermission("read");
         
         $released_episodes = $this->extractReleasedEpisodes(true);
-        if (! $this->object->getViewMode()) {
+        if (! $this->getMHObject()->getViewMode()) {
             $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.html", true, true);
-            $seriestpl->setCurrentBlock($this->object->getDownload() ? "headerdownload" : "header");
+            $seriestpl->setCurrentBlock($this->getMHObject()->getDownload() ? "headerdownload" : "header");
             $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
             $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
             $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
-            if ($this->object->getDownload()) {
+            if ($this->getMHObject()->getDownload()) {
                 $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
             }
             $seriestpl->parseCurrentBlock();
             foreach ($released_episodes as $item) {
-                $seriestpl->setCurrentBlock($this->object->getDownload() ? "episodedownload" : "episode");
+                $seriestpl->setCurrentBlock($this->getMHObject()->getDownload() ? "episodedownload" : "episode");
                 $seriestpl->setVariable("CMD_PLAYER", $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
                 $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
-                if ($this->object->getDownload()) {
+                if ($this->getMHObject()->getDownload()) {
                     $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
                     $seriestpl->setVariable("TXT_DOWNLOAD", $DIC->language()
                         ->txt("download"));
@@ -407,7 +418,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $sections = array(
                     $content
                 );
-                if ($this->object->getDownload()) {
+                if ($this->getMHObject()->getDownload()) {
                     $sections[] = $factory->link()->standard($DIC->language()
                         ->txt("download"), $item["downloadurl"]);
                 }
@@ -423,17 +434,17 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 ->render($deck);
             $tpl->setContent($html);
         }
-        $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
+        $tpl->setPermanentLink($this->getMHObject()->getType(), $this->getMHObject()->getRefId());
         $DIC->tabs()->activateTab("content");
     }
 
     private function extractReleasedEpisodes(bool $skipUnreleased)
     {
-        $releasedEpisodeIds = $this->object->getReleasedEpisodeIds();
+        $releasedEpisodeIds = $this->getMHObject()->getReleasedEpisodeIds();
         $episodes = array();
         
-        foreach ($this->object->getSearchResult()->mediapackage as $value) {
-            if ($skipUnreleased && $this->object->getManualRelease()) {
+        foreach ($this->getMHObject()->getSearchResult()->mediapackage as $value) {
+            if ($skipUnreleased && $this->getMHObject()->getManualRelease()) {
                 if (! in_array($value['id'], $releasedEpisodeIds)) {
                     continue;
                 }
@@ -465,13 +476,13 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $episode = array(
                 "title" => (string) $value->title,
                 "date" => (string) $value['start'],
-                "series_id" => $this->object->getSeriesId(),
+                "series_id" => $this->getMHObject()->getSeriesId(),
                 "episode_id" => (string) $value['id'],
                 "previewurl" => (string) $previewurl,
                 "downloadurl" => (string) $downloadurl,
-                "viewurl" => $this->getLinkForShowEpisode($this->object->getSeriesId(), $value['id'], false)
+                "viewurl" => $this->getLinkForShowEpisode($this->getMHObject()->getSeriesId(), $value['id'], false)
             );
-            if ($this->object->getManualRelease()) {
+            if ($this->getMHObject()->getManualRelease()) {
                 $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", (string) $value['id']);
                 $episode["txt_publish"] = $this->getText($published ? "retract" : "publish");
             }
@@ -544,7 +555,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     public function getEpisodes()
     {
-        $series = $this->object->getSeries();
+        $series = $this->getMHObject()->getSeries();
         $process_items = $series->getProcessingEpisodes();
 
         usort($process_items, array(
@@ -591,7 +602,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         }
         
         $data = array();
-        $data['lastupdate'] = $this->object->getLastFSInodeUpdate();
+        $data['lastupdate'] = $this->getMHObject()->getLastFSInodeUpdate();
         $data['finished'] = $finished_episodes;
         $data['processing'] = $process_items;
         $data['onhold'] = $onhold_items;
@@ -659,8 +670,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_DONE_UPLOADING", $this->getText("done_uploading"));
         $seriestpl->setVariable("TXT_UPLOAD_CANCELED", $this->getText("upload_canceled"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
-        $seriestpl->setVariable("SERIES_ID", $this->object->getSeriesId());
-        $seriestpl->setVariable("MANUAL_RELEASE", $this->object->getManualRelease());
+        $seriestpl->setVariable("SERIES_ID", $this->getMHObject()->getSeriesId());
+        $seriestpl->setVariable("MANUAL_RELEASE", $this->getMHObject()->getManualRelease());
         $seriestpl->parseCurrentBlock();
         $jsConfig = $seriestpl->get();
         ilLoggerFactory::getLogger('xmh')->debug($section);
@@ -673,7 +684,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     $this->getText("preview"),
                     $this->getText("date")
                 );
-                if ($this->object->getManualRelease()) {
+                if ($this->getMHObject()->getManualRelease()) {
                     $colums[] = $this->getText("action");
                 }
                 
@@ -788,7 +799,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $factory = $DIC->ui()->factory();
         $this->checkPermission("write");
         $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
-        $episode = $this->object->getEpisode($_GET[self::QUERY_EPISODE_IDENTIFIER]);
+        $episode = $this->getMHObject()->getEpisode($_GET[self::QUERY_EPISODE_IDENTIFIER]);
         if ($episode) {
             $id = $episode->getEpisodeId();
             ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
@@ -876,7 +887,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $ilCtrl;
-        $episode = $this->object->getEpisode($_POST["eventid"]);
+        $episode = $this->getMHObject()->getEpisode($_POST["eventid"]);
         if ($episode) {
             $title = (string) ilUtil::stripScriptHTML($_POST["tracktitle"]);
             if ($title) {
@@ -917,6 +928,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     public function addInfoItems($info)
     {
         $info->addSection($this->getText("opencast_information"));
-        $info->addProperty($this->getText("series_id"), $this->object->getSeriesId());
+        $info->addProperty($this->getText("series_id"), $this->getMHObject()->getSeriesId());
     }
 }
