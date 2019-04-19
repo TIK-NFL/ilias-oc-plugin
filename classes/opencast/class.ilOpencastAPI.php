@@ -217,6 +217,47 @@ class ilOpencastAPI
     }
 
     /**
+     *
+     * @param string $title
+     *            the title of the new created episode
+     * @param string $creator
+     *            the creator of the episode
+     * @param bool $flagForCutting
+     *            if true the cutting flag is set
+     * @param string $presentationfilePath
+     *            the path to the presentation track file, which is uploaded
+     * @return string the event id
+     */
+    public function createEpisode(string $title, string $creator, bool $flagForCutting, string $presentationfilePath)
+    {
+        $url = "/api/events";
+        $metadata = array(
+            "title" => $title,
+            "creator" => array(
+                $creator
+            )
+        );
+
+        $post = array(
+            'metadata' => json_encode(array(
+                array(
+                    "flavor" => "dublincore/episode",
+                    "fields" => self::values($metadata)
+                )
+            )),
+            'processing' => json_encode(array(
+                "workflow" => $this->configObject->getUploadWorkflow(),
+                "configuration" => array(
+                    "flagForCutting" => $flagForCutting ? "true" : "false"
+                )
+            )),
+            'presentation' => new CurlFile($presentationfilePath)
+        );
+        $episode = json_decode($this->opencastRESTClient->postMultipart($url, $post));
+        return $episode->identifier;
+    }
+
+    /**
      * Get the episode with the default metadata catalog
      *
      * @param string $episode_id

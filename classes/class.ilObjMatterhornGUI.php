@@ -20,6 +20,8 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
+use ILIAS\FileUpload\Location;
+
 include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 
 /**
@@ -46,6 +48,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     const QUERY_EPISODE_IDENTIFIER = "id";
 
     const QUERY_MEDIAPACKAGE_ID = "id";
+
+    const POST_EPISODENAME = "episodename";
+
+    const POST_PRESENTER = "presenter";
+
+    const POST_EPISODEDATETIME = "episodendatetime";
+
+    const POST_USETRIMEDITOR = "usetrimeditor";
+
+    const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp/';
 
     /**
      * Initialisation
@@ -665,24 +677,24 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $form->addItem($flag);
 
         // title
-        $ti = new ilTextInputGUI($this->txt("track_title"), "episodename");
+        $ti = new ilTextInputGUI($this->txt("track_title"), self::POST_EPISODENAME);
         $ti->setRequired(true);
         $form->addItem($ti);
 
         // presenter
-        $presenter = new ilTextInputGUI($this->txt("track_presenter"), "presenter");
+        $presenter = new ilTextInputGUI($this->txt("track_presenter"), self::POST_PRESENTER);
         $presenter->setRequired(false);
         $form->addItem($presenter);
 
         // TODO i18n
         // datetime
-        $datetime = new ilDateTimeInputGUI($this->txt("track_datetime"), "episodendatetime");
+        $datetime = new ilDateTimeInputGUI($this->txt("track_datetime"), self::POST_EPISODEDATETIME);
         $datetime->setShowTime(true);
         $datetime->setRequired(true);
         $form->addItem($datetime);
 
         // usetrimeditor
-        $usetrimeditor = new ilCheckboxInputGUI($this->txt("usetrimeditor"), "usetrimeditor");
+        $usetrimeditor = new ilCheckboxInputGUI($this->txt("usetrimeditor"), self::POST_USETRIMEDITOR);
         $form->addItem($usetrimeditor);
 
         $item = new ilFileStandardDropzoneInputGUI('Files', 'files');
@@ -771,26 +783,38 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 // Check for submission
                 if (isset($_POST['submitted']) && $_POST['submitted']) {
                     if ($form->checkInput()) {
-                        // We might also want to process and save other form data here
                         $upload = $DIC->upload();
                         // Check if this is a request to upload a file
                         if ($upload->hasUploads()) {
                             try {
                                 $upload->process();
-                                // We simulate a failing response for any uploaded PDF file
-                                $uploadedPDFs = array_filter($upload->getResults(), function ($uploadResult) {
-                                    /** @var $uploadResult \ILIAS\FileUpload\DTO\UploadResult */
-                                    return ($uploadResult->getMimeType() == 'application/pdf');
-                                });
-                                $uploadResult = count($uploadedPDFs) == 0;
+                                $filepath = uniqid("xmh_upload");
+                                $upload->moveFilesTo($filepath, Location::TEMPORARY);//TODO handle multipe files
+                                $title = $form->getInput(self::POST_EPISODENAME);
+                                $creator = $form->getInput(self::POST_PRESENTER);
+
+                                $datetime = $form->getInput(self::POST_EPISODEDATETIME);
+
+                                $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
+                                $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
+                                $absPath = self::ILIAS_TEMP_DIR . $filepath;
+                                ilOpencastAPI::getInstance()->createEpisode($title, $creator, $flagForCutting, $absPath);
+
                                 echo json_encode(array(
-                                    'success' => $uploadResult
+                                    'success' => true,
+                                    'message' => 'Successfully uploaded file'
                                 ));
                             } catch (Exception $e) {
                                 echo json_encode(array(
                                     'success' => false
                                 ));
                             }
+                            exit();
+                        } else {
+                            echo json_encode(array(
+                                'success' => false,
+                                'message' => 'No file Uploaded'
+                            ));
                             exit();
                         }
                     } else {
