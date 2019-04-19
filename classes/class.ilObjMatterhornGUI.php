@@ -646,6 +646,62 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $this->editEpisodes('scheduled');
     }
 
+    /**
+     * Init Upload form.
+     *
+     * @return ilPropertyFormGUI
+     */
+    private function initUploadForm()
+    {
+        global $DIC;
+
+        $form = new ilPropertyFormGUI();
+        // $form->setId('myUniqueFormId');
+        $form->setTitle($this->txt("add_new_episode"));
+
+        $form->setPreventDoubleSubmission(false);
+        $flag = new ilHiddenInputGUI('submitted');
+        $flag->setValue('1');
+        $form->addItem($flag);
+
+        // title
+        $ti = new ilTextInputGUI($this->txt("track_title"), "episodename");
+        $ti->setRequired(true);
+        $form->addItem($ti);
+
+        // presenter
+        $presenter = new ilTextInputGUI($this->txt("track_presenter"), "presenter");
+        $presenter->setRequired(false);
+        $form->addItem($presenter);
+
+        // TODO i18n
+        // datetime
+        $datetime = new ilDateTimeInputGUI($this->txt("track_datetime"), "episodendatetime");
+        $datetime->setShowTime(true);
+        $datetime->setRequired(true);
+        $form->addItem($datetime);
+
+        // usetrimeditor
+        $usetrimeditor = new ilCheckboxInputGUI($this->txt("usetrimeditor"), "usetrimeditor");
+        $form->addItem($usetrimeditor);
+
+        $item = new ilFileStandardDropzoneInputGUI('Files', 'files');
+        $item->setUploadUrl($form->getFormAction());
+        $item->setSuffixes([
+            'mp4',
+            'webm'
+        ]);
+        $item->setInfo('Allowed file types: ' . implode(', ', $item->getSuffixes()));
+        // $item->setDropzoneMessage('For the purpose of this demo, any PDF file will fail to upload');
+        $form->addItem($item);
+
+        $form->addCommandButton("editUpload", $this->txt("upload_file"));
+        $form->setFormAction($DIC->ctrl()
+            ->getFormAction($this));
+
+        return $form;
+    }
+
     private function editEpisodes($section)
     {
         global $DIC;
@@ -665,9 +721,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_NONE_ONHOLD", $this->getText("none_onhold"));
         $seriestpl->setVariable("TXT_NONE_SCHEDULED", $this->getText("none_scheduled"));
         $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));
-        $seriestpl->setVariable("TXT_UPLOADING", $this->getText("uploading"));
-        $seriestpl->setVariable("TXT_DONE_UPLOADING", $this->getText("done_uploading"));
-        $seriestpl->setVariable("TXT_UPLOAD_CANCELED", $this->getText("upload_canceled"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID", $this->getMHObject()->getSeriesId());
         $seriestpl->setVariable("MANUAL_RELEASE", $this->getMHObject()->getManualRelease());
@@ -713,29 +766,40 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 break;
             case 'upload':
                 $ilTabs->activateSubTab('upload');
-                
-                $seriestpl = $this->getPlugin()->getTemplate("default/tpl.upload.html");
-                $seriestpl->setCurrentBlock("upload");
-                $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
-                $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
-                $seriestpl->setVariable("TXT_TRACK_DATE", $this->getText("track_date"));
-                $seriestpl->setVariable("TXT_TRACK_TIME", $this->getText("track_time"));
-                $seriestpl->setVariable("TXT_SELECT_FILE", $this->getText("select_file"));
-                $seriestpl->setVariable("TXT_NO_FILES", $this->getText("no_files"));
-                $seriestpl->setVariable("TXT_UPLOAD_FILE", $this->getText("upload_file"));
-                $seriestpl->setVariable("TXT_CANCEL_UPLOAD", $this->getText("cancel_upload"));
-                $seriestpl->setVariable("TXT_TRIMEDITOR", $this->getText("usetrimeditor"));
-                $seriestpl->parseCurrentBlock();
-                
-                $content = $factory->panel()->standard($this->getText("add_new_episode"), $factory->legacy($seriestpl->get()));
-                $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-datepicker3.min.css"));
-                $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
-                $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
-                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/resumable.js");
-                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-datepicker.min.js");
-                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-timepicker.min.js");
-                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/upload.js");
-                $tpl->addOnLoadCode("initUpload(iliasopencast);");
+                $form = $this->initUploadForm();
+
+                // Check for submission
+                if (isset($_POST['submitted']) && $_POST['submitted']) {
+                    if ($form->checkInput()) {
+                        // We might also want to process and save other form data here
+                        $upload = $DIC->upload();
+                        // Check if this is a request to upload a file
+                        if ($upload->hasUploads()) {
+                            try {
+                                $upload->process();
+                                // We simulate a failing response for any uploaded PDF file
+                                $uploadedPDFs = array_filter($upload->getResults(), function ($uploadResult) {
+                                    /** @var $uploadResult \ILIAS\FileUpload\DTO\UploadResult */
+                                    return ($uploadResult->getMimeType() == 'application/pdf');
+                                });
+                                $uploadResult = count($uploadedPDFs) == 0;
+                                echo json_encode(array(
+                                    'success' => $uploadResult
+                                ));
+                            } catch (Exception $e) {
+                                echo json_encode(array(
+                                    'success' => false
+                                ));
+                            }
+                            exit();
+                        }
+                    } else {
+                        $form->setValuesByPost();
+                    }
+                    ilUtil::sendSuccess('Form processed successfully');
+                }
+
+                $content = $factory->legacy($form->getHTML());
                 break;
             case 'scheduled':
                 $ilTabs->activateSubTab('schedule');

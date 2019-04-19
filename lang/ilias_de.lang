@@ -93,16 +93,9 @@ running#:#Verarbeitungsschritt
 none_processing#:#Es gibt keine Aufnahmen, die aktuell vom Server verarbeitet werden
 add_new_episode#:#Eigene Aufzeichnung hochladen
 track_presenter#:#Name des Vortragenden
-track_date#:#Datum der Aufzeichnung
-track_time#:#Uhrzeit der Aufzeichnung
-select_file#:#Datei auswählen
+track_datetime#:#Datum und Uhrzeit der Aufzeichnung
 upload_file#:#Datei hochladen
 usetrimeditor#:#Video schneiden
-no_files#:#Bitte Datei zum Hochladen auswählen
-uploading#:#Hochladen...
-done_uploading#:#Hochladen erfolgreich
-upload_canceled#:#Hochladen abgebrochen
-cancel_upload#:#Hochladen abbrechen
 
 to_edit#:#Aufzeichnungen bereit zum Schneiden
 
