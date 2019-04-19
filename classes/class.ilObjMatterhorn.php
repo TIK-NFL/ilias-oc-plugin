@@ -299,6 +299,7 @@ class ilObjMatterhorn extends ilObjectPlugin
      * The series information returned by matterhorn
      *
      * @return array the episodes by matterhorn for the this series
+     * @deprecated to be removed
      */
     public function getSearchResult()
     {

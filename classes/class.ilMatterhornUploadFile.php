@@ -8,6 +8,7 @@
  * A class that contains the logic to send the individual chunks received onto Opencast
  *
  * @auther Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ * @deprecated use ilias Upload feature with the external api of opencast
  */
 class ilMatterhornUploadFile
 {
@@ -177,6 +178,9 @@ class ilMatterhornUploadFile
         return $ch;
     }
 
+    /**
+     * @deprecated this function use the internal api
+     */
     private function createEpisode()
     {
         $basedir = $this->plugin->getDirectory();

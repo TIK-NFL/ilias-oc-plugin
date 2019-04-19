@@ -19,7 +19,7 @@ class ilMatterhornSendfile
     /**
      *
      * @var ilMatterhornPlugin
-     * @access plublic
+     * @access public
      */
     public $plugin;
 
