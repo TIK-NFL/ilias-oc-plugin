@@ -189,21 +189,14 @@ class ilMatterhornConfig
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         if (ilOpencastAPI::getInstance()->checkOpencast()) {
-            return array_map(array(
-                $this,
-                "getIdentifier"
-            ), ilOpencastAPI::getInstance()->getWorkflowDefinition("upload"));
+            $workflowDefinitions = ilOpencastAPI::getInstance()->getWorkflowDefinition("upload");
+            $options = array();
+            foreach ($workflowDefinitions as $workflowDefinition) {
+                $options[$workflowDefinition->identifier] = $workflowDefinition->title;
+            }
+            return $options;
         }
         return false;
-    }
-
-    /**
-     *
-     * @return string
-     */
-    private function getIdentifier($workflowDefinition)
-    {
-        return (string) $workflowDefinition->identifier;
     }
 
     /**

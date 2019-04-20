@@ -138,7 +138,8 @@ class ilOpencastRESTClient
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
-            throw new Exception("error multipart POST request: $url $post $httpCode", 500);
+            $postinfo = print_r($post, true);
+            throw new Exception("error multipart POST request: $url $postinfo $httpCode", 500);
         }
 
         if ($returnHttpCode) {

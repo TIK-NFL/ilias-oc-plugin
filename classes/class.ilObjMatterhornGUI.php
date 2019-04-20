@@ -726,6 +726,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
         if ($form->checkInput()) {
             $upload = $DIC->upload();
+            $filesystem = $DIC->filesystem()->temp();
             if (! $upload->hasUploads()) {
                 echo json_encode(array(
                     'success' => false,
@@ -744,10 +745,18 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     ));
                     exit();
                 }
-                $file = $results[0];
-                $filename = uniqid($file->getName());
+                $file = current($results);
+                $filename = uniqid() . $file->getName();
                 $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $filename);
-                $filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $filename;
+                $filepath = self::UPLOAD_DIR . "/" . $filename;
+                // check if the file was store with the correct path
+                if (! $filesystem->has($filepath)) {
+                    echo json_encode(array(
+                        'success' => false,
+                        'message' => 'Cloud not store file'
+                    ));
+                    exit();
+                }
 
                 $title = $form->getInput(self::POST_EPISODENAME);
                 $creator = $form->getInput(self::POST_PRESENTER);
@@ -755,13 +764,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
 
                 $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
-                ilOpencastAPI::getInstance()->createEpisode($title, $creator, $flagForCutting, $filepath);
+                ilOpencastAPI::getInstance()->createEpisode($title, $creator, $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
+
+                $filesystem->delete($filepath);
 
                 echo json_encode(array(
                     'success' => true,
                     'message' => 'Successfully uploaded file'
                 ));
             } catch (Exception $e) {
+                ilLoggerFactory::getLogger('xmh')->debug("Exception while uploading to opencast: " . $e->getMessage());
                 echo json_encode(array(
                     'success' => false
                 ));
