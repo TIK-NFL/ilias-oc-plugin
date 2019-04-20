@@ -57,7 +57,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
     const POST_USETRIMEDITOR = "usetrimeditor";
 
-    const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp/';
+    const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp';
+
+    const UPLOAD_DIR = "xmh_upload";
 
     /**
      * Initialisation
@@ -668,7 +670,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         global $DIC;
 
         $form = new ilPropertyFormGUI();
-        // $form->setId('myUniqueFormId');
+        $form->setId('episode_upload');
         $form->setTitle($this->txt("add_new_episode"));
 
         $form->setPreventDoubleSubmission(false);
@@ -686,7 +688,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $presenter->setRequired(false);
         $form->addItem($presenter);
 
-        // TODO i18n
         // datetime
         $datetime = new ilDateTimeInputGUI($this->txt("track_datetime"), self::POST_EPISODEDATETIME);
         $datetime->setShowTime(true);
@@ -710,8 +711,65 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $form->addCommandButton("editUpload", $this->txt("upload_file"));
         $form->setFormAction($DIC->ctrl()
             ->getFormAction($this));
-
         return $form;
+    }
+
+    /**
+     * Handle a upload request from the form.
+     * Move the uploaded files to UPLOAD_DIR and upload them to opencast.
+     *
+     * @param ilPropertyFormGUI $form
+     *            the upload form
+     */
+    private function handleUpload(ilPropertyFormGUI $form)
+    {
+        global $DIC;
+        if ($form->checkInput()) {
+            $upload = $DIC->upload();
+            if (! $upload->hasUploads()) {
+                echo json_encode(array(
+                    'success' => false,
+                    'message' => 'No file uploaded'
+                ));
+                exit();
+            }
+
+            try {
+                $upload->process();
+                $results = $upload->getResults();
+                if (count($results) != 1) {
+                    echo json_encode(array(
+                        'success' => false,
+                        'message' => 'Only one file is supported'
+                    ));
+                    exit();
+                }
+                $file = $results[0];
+                $filename = uniqid($file->getName());
+                $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $filename);
+                $filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $filename;
+
+                $title = $form->getInput(self::POST_EPISODENAME);
+                $creator = $form->getInput(self::POST_PRESENTER);
+                $datetime = $form->getInput(self::POST_EPISODEDATETIME);
+                $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
+
+                $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
+                ilOpencastAPI::getInstance()->createEpisode($title, $creator, $flagForCutting, $filepath);
+
+                echo json_encode(array(
+                    'success' => true,
+                    'message' => 'Successfully uploaded file'
+                ));
+            } catch (Exception $e) {
+                echo json_encode(array(
+                    'success' => false
+                ));
+            }
+            exit();
+        } else {
+            $form->setValuesByPost();
+        }
     }
 
     private function editEpisodes($section)
@@ -782,45 +840,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
                 // Check for submission
                 if (isset($_POST['submitted']) && $_POST['submitted']) {
-                    if ($form->checkInput()) {
-                        $upload = $DIC->upload();
-                        // Check if this is a request to upload a file
-                        if ($upload->hasUploads()) {
-                            try {
-                                $upload->process();
-                                $filepath = uniqid("xmh_upload");
-                                $upload->moveFilesTo($filepath, Location::TEMPORARY);//TODO handle multipe files
-                                $title = $form->getInput(self::POST_EPISODENAME);
-                                $creator = $form->getInput(self::POST_PRESENTER);
-
-                                $datetime = $form->getInput(self::POST_EPISODEDATETIME);
-
-                                $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
-                                $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
-                                $absPath = self::ILIAS_TEMP_DIR . $filepath;
-                                ilOpencastAPI::getInstance()->createEpisode($title, $creator, $flagForCutting, $absPath);
-
-                                echo json_encode(array(
-                                    'success' => true,
-                                    'message' => 'Successfully uploaded file'
-                                ));
-                            } catch (Exception $e) {
-                                echo json_encode(array(
-                                    'success' => false
-                                ));
-                            }
-                            exit();
-                        } else {
-                            echo json_encode(array(
-                                'success' => false,
-                                'message' => 'No file Uploaded'
-                            ));
-                            exit();
-                        }
-                    } else {
-                        $form->setValuesByPost();
-                    }
-                    ilUtil::sendSuccess('Form processed successfully');
+                    $this->handleUpload($form);
                 }
 
                 $content = $factory->legacy($form->getHTML());
