@@ -222,20 +222,23 @@ class ilOpencastAPI
      *            the title of the new created episode
      * @param string $creator
      *            the creator of the episode
+     * @param string $series_id
+     *            the series id the created episode should be part of
      * @param bool $flagForCutting
      *            if true the cutting flag is set
      * @param string $presentationfilePath
      *            the path to the presentation track file, which is uploaded
      * @return string the event id
      */
-    public function createEpisode(string $title, string $creator, bool $flagForCutting, string $presentationfilePath)
+    public function createEpisode(string $title, string $creator, string $series_id, bool $flagForCutting, string $presentationfilePath)
     {
         $url = "/api/events";
         $metadata = array(
             "title" => $title,
             "creator" => array(
                 $creator
-            )
+            ),
+            "isPartOf" => $series_id
         );
 
         $post = array(
@@ -245,10 +248,12 @@ class ilOpencastAPI
                     "fields" => self::values($metadata)
                 )
             )),
+            'acl' => json_encode(array()),
             'processing' => json_encode(array(
                 "workflow" => $this->configObject->getUploadWorkflow(),
                 "configuration" => array(
-                    "flagForCutting" => $flagForCutting ? "true" : "false"
+                    "flagForCutting" => $flagForCutting ? "true" : "false",
+                    "straightToPublishing" => $flagForCutting ? "false" : "true"
                 )
             )),
             'presentation' => new CurlFile($presentationfilePath)

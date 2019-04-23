@@ -757,14 +757,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     ));
                     exit();
                 }
-
                 $title = $form->getInput(self::POST_EPISODENAME);
                 $creator = $form->getInput(self::POST_PRESENTER);
                 $datetime = $form->getInput(self::POST_EPISODEDATETIME);
                 $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
 
-                $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
-                ilOpencastAPI::getInstance()->createEpisode($title, $creator, $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
+                $this->getMHObject()
+                    ->getSeries()
+                    ->createEpisode($title, $creator, $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
 
                 $filesystem->delete($filepath);
 
