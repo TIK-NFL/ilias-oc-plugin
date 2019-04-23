@@ -222,6 +222,8 @@ class ilOpencastAPI
      *            the title of the new created episode
      * @param string $creator
      *            the creator of the episode
+     * @param string $startDate
+     *            the start date of the episode as ISO 8601 encoded string
      * @param string $series_id
      *            the series id the created episode should be part of
      * @param bool $flagForCutting
@@ -230,7 +232,7 @@ class ilOpencastAPI
      *            the path to the presentation track file, which is uploaded
      * @return string the event id
      */
-    public function createEpisode(string $title, string $creator, string $series_id, bool $flagForCutting, string $presentationfilePath)
+    public function createEpisode(string $title, string $creator, string $startDate, string $series_id, bool $flagForCutting, string $presentationfilePath)
     {
         $url = "/api/events";
         $metadata = array(
@@ -238,6 +240,7 @@ class ilOpencastAPI
             "creator" => array(
                 $creator
             ),
+            "startDate" => $startDate,
             "isPartOf" => $series_id
         );
 

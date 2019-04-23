@@ -759,12 +759,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
                 $title = $form->getInput(self::POST_EPISODENAME);
                 $creator = $form->getInput(self::POST_PRESENTER);
-                $datetime = $form->getInput(self::POST_EPISODEDATETIME);
+                $datetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
                 $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
 
                 $this->getMHObject()
                     ->getSeries()
-                    ->createEpisode($title, $creator, $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
+                    ->createEpisode($title, $creator, $datetime->get(IL_CAL_ISO_8601), $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
 
                 $filesystem->delete($filepath);
 
@@ -996,7 +996,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $tpl->setContent($html);
             $tpl->addCss("$trimbase/video-js/video-js.css");
             $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/jquery-ui.min.css");
-            $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
             $DIC->tabs()->activateTab("manage");
         } else {
             $ilCtrl->redirect($this, "editTrimProcess");
