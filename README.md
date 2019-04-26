@@ -59,7 +59,7 @@ XSendFilePath ${distribution_directory}
 
 #### Upload Workflow
 
-This workflow is used for uploads from ilias to opencast.
+This workflow is used for uploads from ilias to opencast and __MUST__ have the `upload` tag to be recognized by this plugin.
 The workflow __MUST__ support the configuration:
 - `flagForCutting` ["true", "false"]
 - `straightToPublishing` ["true", "false"]

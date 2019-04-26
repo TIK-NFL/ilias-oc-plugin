@@ -204,19 +204,6 @@ class ilOpencastAPI
     }
 
     /**
-     * Get the series dublin core
-     *
-     * @param string $series_id
-     * @return string the series dublin core XML document
-     * @deprecated
-     */
-    public function getSeriesXML(string $series_id)
-    {
-        $url = "/series/$series_id.xml";
-        return (string) $this->getDigest($url);
-    }
-
-    /**
      *
      * @param string $title
      *            the title of the new created episode

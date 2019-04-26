@@ -97,19 +97,6 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
     }
 
     /**
-     * Check access rights to upload files
-     */
-    public static function checkEpisodeUploadAccess($obj_id)
-    {
-        global $DIC;
-        if (self::checkAccessObject($obj_id, "access", "upload")) {
-            return true;
-        }
-        // none of the checks above gives access
-        throw new Exception($DIC->language()->txt('msg_no_perm_access'), 403);
-    }
-
-    /**
      * Check access rights of the requested file
      *
      * @param ilMatterhornEpisode $episode
