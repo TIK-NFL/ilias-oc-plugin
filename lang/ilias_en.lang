@@ -96,6 +96,7 @@ track_presenter#:#Presenter name
 track_datetime#:#Date and time of recording
 upload_file#:#Upload file
 usetrimeditor#:#Trim video
+msg_episode_uploaded#:#The recording was successfully uploaded and is processing
 
 to_edit#:#Episodes ready to be trimmmed
 

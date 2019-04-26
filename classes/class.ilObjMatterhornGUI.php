@@ -61,6 +61,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
     const UPLOAD_DIR = "xmh_upload";
 
+    const UPLOAD_SUFFIXES = [
+        'mp4',
+        'webm'
+    ];
+
     /**
      * Initialisation
      */
@@ -700,12 +705,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
         $item = new ilFileStandardDropzoneInputGUI('Files', 'files');
         $item->setUploadUrl($form->getFormAction());
-        $item->setSuffixes([
-            'mp4',
-            'webm'
-        ]);
+        $item->setSuffixes(self::UPLOAD_SUFFIXES);
         $item->setInfo('Allowed file types: ' . implode(', ', $item->getSuffixes()));
-        // $item->setDropzoneMessage('For the purpose of this demo, any PDF file will fail to upload');
         $form->addItem($item);
 
         $form->addCommandButton("editUpload", $this->txt("upload_file"));
@@ -724,6 +725,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     private function handleUpload(ilPropertyFormGUI $form)
     {
         global $DIC;
+        $ilCtrl = $DIC->ctrl();
         if ($form->checkInput()) {
             $upload = $DIC->upload();
             $filesystem = $DIC->filesystem()->temp();
@@ -768,10 +770,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
                 $filesystem->delete($filepath);
 
-                echo json_encode(array(
-                    'success' => true,
-                    'message' => 'Successfully uploaded file'
-                ));
+                ilUtil::sendSuccess($this->txt("msg_episode_uploaded"), true);
+                $ilCtrl->redirect($this, "editTrimProcess");
             } catch (Exception $e) {
                 ilLoggerFactory::getLogger('xmh')->debug("Exception while uploading to opencast: " . $e->getMessage());
                 echo json_encode(array(

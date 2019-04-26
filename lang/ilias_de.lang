@@ -96,6 +96,7 @@ track_presenter#:#Name des Vortragenden
 track_datetime#:#Datum und Uhrzeit der Aufzeichnung
 upload_file#:#Datei hochladen
 usetrimeditor#:#Video schneiden
+msg_episode_uploaded#:#Die Aufnahme wurde erfolgreich hochgeladen und wird verarbeitet
 
 to_edit#:#Aufzeichnungen bereit zum Schneiden
 
