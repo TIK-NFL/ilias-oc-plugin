@@ -414,7 +414,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("CMD_PLAYER", $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
-                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
+                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_ISO_8601)));
                 if ($this->getMHObject()->getDownload()) {
                     $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
                     $seriestpl->setVariable("TXT_DOWNLOAD", $DIC->language()
@@ -432,7 +432,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 
                 $image = $factory->image()->responsive($item["previewurl"], $this->getText("preview"));
                 $content = $factory->listing()->descriptive(array(
-                    $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME))
+                    $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_ISO_8601))
                 ));
                 $sections = array(
                     $content
@@ -582,12 +582,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             'sortbydate'
         ));
         foreach ($process_items as $key => $value) {
-            $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
+            $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
         }
 
         $finished_episodes = $this->extractReleasedEpisodes(false);
         foreach ($finished_episodes as $key => $value) {
-            $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
+            $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
         }
         $scheduledEpisodes = $series->getScheduledEpisodes();
         $scheduled_items = array_map(array(
@@ -600,8 +600,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             'sortbystartdate'
         ));
         foreach ($scheduled_items as $key => $value) {
-            $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_DATETIME));
-            $stopDate = new ilDateTime($value["startdate"], IL_CAL_DATETIME);
+            $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_ISO_8601));
+            $stopDate = new ilDateTime($value["startdate"], IL_CAL_ISO_8601);
             $stopDate->increment(iLDateTime::MINUTE, $value["duration"] / 60000);
             $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate($stopDate);
         }
@@ -617,7 +617,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             'sortbydate'
         ));
         foreach ($onhold_items as $key => $value) {
-            $onhold_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
+            $onhold_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
         }
         
         $data = array();
