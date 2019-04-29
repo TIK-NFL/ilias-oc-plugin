@@ -141,4 +141,14 @@ class ilMatterhornSeries
             'running' => $running
         );
     }
+
+    /**
+     * @see ilOpencastAPI#createEpisode()
+     */
+    public function createEpisode(string $title, string $creator, string $startDate, bool $flagForCutting, string $presentationfilePath)
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        ilOpencastAPI::getInstance()->createEpisode($title, $creator, $startDate, $this->series_id, $flagForCutting, $presentationfilePath);
+    }
 }

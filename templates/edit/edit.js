@@ -1,7 +1,7 @@
 function initEdit(iliasopencast) {
 
     iliasopencast.init = function() {
-        iliasopencast.templates = $.get(iliasopencast.settings.uploadtarget + "/../templates/edit/edit.html");
+        iliasopencast.templates = $.get(iliasopencast.settings.pluginbasedir + "/templates/edit/edit.html");
 
         iliasopencast.updateprocessing();
         window.setInterval(iliasopencast.updateprocessing, 5000);

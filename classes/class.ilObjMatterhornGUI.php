@@ -20,6 +20,8 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
+use ILIAS\FileUpload\Location;
+
 include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 
 /**
@@ -46,6 +48,23 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     const QUERY_EPISODE_IDENTIFIER = "id";
 
     const QUERY_MEDIAPACKAGE_ID = "id";
+
+    const POST_EPISODENAME = "episodename";
+
+    const POST_PRESENTER = "presenter";
+
+    const POST_EPISODEDATETIME = "episodendatetime";
+
+    const POST_USETRIMEDITOR = "usetrimeditor";
+
+    const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp';
+
+    const UPLOAD_DIR = "xmh_upload";
+
+    const UPLOAD_SUFFIXES = [
+        'mp4',
+        'webm'
+    ];
 
     /**
      * Initialisation
@@ -395,7 +414,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("CMD_PLAYER", $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
-                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
+                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_ISO_8601)));
                 if ($this->getMHObject()->getDownload()) {
                     $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
                     $seriestpl->setVariable("TXT_DOWNLOAD", $DIC->language()
@@ -413,7 +432,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 
                 $image = $factory->image()->responsive($item["previewurl"], $this->getText("preview"));
                 $content = $factory->listing()->descriptive(array(
-                    $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME))
+                    $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_ISO_8601))
                 ));
                 $sections = array(
                     $content
@@ -563,12 +582,12 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             'sortbydate'
         ));
         foreach ($process_items as $key => $value) {
-            $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
+            $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
         }
 
         $finished_episodes = $this->extractReleasedEpisodes(false);
         foreach ($finished_episodes as $key => $value) {
-            $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
+            $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
         }
         $scheduledEpisodes = $series->getScheduledEpisodes();
         $scheduled_items = array_map(array(
@@ -581,8 +600,8 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             'sortbystartdate'
         ));
         foreach ($scheduled_items as $key => $value) {
-            $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_DATETIME));
-            $stopDate = new ilDateTime($value["startdate"], IL_CAL_DATETIME);
+            $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_ISO_8601));
+            $stopDate = new ilDateTime($value["startdate"], IL_CAL_ISO_8601);
             $stopDate->increment(iLDateTime::MINUTE, $value["duration"] / 60000);
             $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate($stopDate);
         }
@@ -598,7 +617,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             'sortbydate'
         ));
         foreach ($onhold_items as $key => $value) {
-            $onhold_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_DATETIME));
+            $onhold_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
         }
         
         $data = array();
@@ -646,6 +665,125 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $this->editEpisodes('scheduled');
     }
 
+    /**
+     * Init Upload form.
+     *
+     * @return ilPropertyFormGUI
+     */
+    private function initUploadForm()
+    {
+        global $DIC;
+
+        $form = new ilPropertyFormGUI();
+        $form->setId('episode_upload');
+        $form->setTitle($this->txt("add_new_episode"));
+
+        $form->setPreventDoubleSubmission(false);
+        $flag = new ilHiddenInputGUI('submitted');
+        $flag->setValue('1');
+        $form->addItem($flag);
+
+        // title
+        $ti = new ilTextInputGUI($this->txt("track_title"), self::POST_EPISODENAME);
+        $ti->setRequired(true);
+        $form->addItem($ti);
+
+        // presenter
+        $presenter = new ilTextInputGUI($this->txt("track_presenter"), self::POST_PRESENTER);
+        $presenter->setRequired(false);
+        $form->addItem($presenter);
+
+        // datetime
+        $datetime = new ilDateTimeInputGUI($this->txt("track_datetime"), self::POST_EPISODEDATETIME);
+        $datetime->setShowTime(true);
+        $datetime->setRequired(true);
+        $form->addItem($datetime);
+
+        // usetrimeditor
+        $usetrimeditor = new ilCheckboxInputGUI($this->txt("usetrimeditor"), self::POST_USETRIMEDITOR);
+        $form->addItem($usetrimeditor);
+
+        $item = new ilFileStandardDropzoneInputGUI('Files', 'files');
+        $item->setUploadUrl($form->getFormAction());
+        $item->setSuffixes(self::UPLOAD_SUFFIXES);
+        $item->setInfo('Allowed file types: ' . implode(', ', $item->getSuffixes()));
+        $form->addItem($item);
+
+        $form->addCommandButton("editUpload", $this->txt("upload_file"));
+        $form->setFormAction($DIC->ctrl()
+            ->getFormAction($this));
+        return $form;
+    }
+
+    /**
+     * Handle a upload request from the form.
+     * Move the uploaded files to UPLOAD_DIR and upload them to opencast.
+     *
+     * @param ilPropertyFormGUI $form
+     *            the upload form
+     */
+    private function handleUpload(ilPropertyFormGUI $form)
+    {
+        global $DIC;
+        $ilCtrl = $DIC->ctrl();
+        if ($form->checkInput()) {
+            $upload = $DIC->upload();
+            $filesystem = $DIC->filesystem()->temp();
+            if (! $upload->hasUploads()) {
+                echo json_encode(array(
+                    'success' => false,
+                    'message' => 'No file uploaded'
+                ));
+                exit();
+            }
+
+            try {
+                $upload->process();
+                $results = $upload->getResults();
+                if (count($results) != 1) {
+                    echo json_encode(array(
+                        'success' => false,
+                        'message' => 'Only one file is supported'
+                    ));
+                    exit();
+                }
+                $file = current($results);
+                $filename = uniqid() . $file->getName();
+                $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $filename);
+                $filepath = self::UPLOAD_DIR . "/" . $filename;
+                // check if the file was store with the correct path
+                if (! $filesystem->has($filepath)) {
+                    echo json_encode(array(
+                        'success' => false,
+                        'message' => 'Cloud not store file'
+                    ));
+                    exit();
+                }
+                $title = $form->getInput(self::POST_EPISODENAME);
+                $creator = $form->getInput(self::POST_PRESENTER);
+                $datetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
+                $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
+
+                $this->getMHObject()
+                    ->getSeries()
+                    ->createEpisode($title, $creator, $datetime->get(IL_CAL_ISO_8601), $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
+
+                $filesystem->delete($filepath);
+
+                ilUtil::sendSuccess($this->txt("msg_episode_uploaded"), true);
+                $ilCtrl->redirect($this, "editTrimProcess");
+            } catch (Exception $e) {
+                ilLoggerFactory::getLogger('xmh')->debug("Exception while uploading to opencast: " . $e->getMessage());
+                echo json_encode(array(
+                    'success' => false
+                ));
+            }
+            exit();
+        } else {
+            $form->setValuesByPost();
+        }
+    }
+
     private function editEpisodes($section)
     {
         global $DIC;
@@ -665,9 +803,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_NONE_ONHOLD", $this->getText("none_onhold"));
         $seriestpl->setVariable("TXT_NONE_SCHEDULED", $this->getText("none_scheduled"));
         $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));
-        $seriestpl->setVariable("TXT_UPLOADING", $this->getText("uploading"));
-        $seriestpl->setVariable("TXT_DONE_UPLOADING", $this->getText("done_uploading"));
-        $seriestpl->setVariable("TXT_UPLOAD_CANCELED", $this->getText("upload_canceled"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID", $this->getMHObject()->getSeriesId());
         $seriestpl->setVariable("MANUAL_RELEASE", $this->getMHObject()->getManualRelease());
@@ -713,29 +848,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 break;
             case 'upload':
                 $ilTabs->activateSubTab('upload');
-                
-                $seriestpl = $this->getPlugin()->getTemplate("default/tpl.upload.html");
-                $seriestpl->setCurrentBlock("upload");
-                $seriestpl->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
-                $seriestpl->setVariable("TXT_TRACK_PRESENTER", $this->getText("track_presenter"));
-                $seriestpl->setVariable("TXT_TRACK_DATE", $this->getText("track_date"));
-                $seriestpl->setVariable("TXT_TRACK_TIME", $this->getText("track_time"));
-                $seriestpl->setVariable("TXT_SELECT_FILE", $this->getText("select_file"));
-                $seriestpl->setVariable("TXT_NO_FILES", $this->getText("no_files"));
-                $seriestpl->setVariable("TXT_UPLOAD_FILE", $this->getText("upload_file"));
-                $seriestpl->setVariable("TXT_CANCEL_UPLOAD", $this->getText("cancel_upload"));
-                $seriestpl->setVariable("TXT_TRIMEDITOR", $this->getText("usetrimeditor"));
-                $seriestpl->parseCurrentBlock();
-                
-                $content = $factory->panel()->standard($this->getText("add_new_episode"), $factory->legacy($seriestpl->get()));
-                $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-datepicker3.min.css"));
-                $tpl->addCss($this->plugin->getStyleSheetLocation("css/bootstrap-timepicker.min.css"));
-                $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
-                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/resumable.js");
-                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-datepicker.min.js");
-                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/bootstrap-timepicker.min.js");
-                $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/upload.js");
-                $tpl->addOnLoadCode("initUpload(iliasopencast);");
+                $form = $this->initUploadForm();
+
+                // Check for submission
+                if (isset($_POST['submitted']) && $_POST['submitted']) {
+                    $this->handleUpload($form);
+                }
+
+                $content = $factory->legacy($form->getHTML());
                 break;
             case 'scheduled':
                 $ilTabs->activateSubTab('schedule');
@@ -876,7 +996,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $tpl->setContent($html);
             $tpl->addCss("$trimbase/video-js/video-js.css");
             $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/jquery-ui.min.css");
-            $tpl->addCss($this->plugin->getStyleSheetLocation("css/xmh.css"));
             $DIC->tabs()->activateTab("manage");
         } else {
             $ilCtrl->redirect($this, "editTrimProcess");

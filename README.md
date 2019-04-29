@@ -57,6 +57,16 @@ For apache add the config:
 XSendFilePath ${distribution_directory}
 ```
 
+#### Upload Workflow
+
+This workflow is used for uploads from ilias to opencast and __MUST__ have the `upload` tag to be recognized by this plugin.
+The workflow __MUST__ support the configuration:
+- `flagForCutting` ["true", "false"]
+- `straightToPublishing` ["true", "false"]
+
+For cutting the workflow must create a single track preview with flavor "presentation/preview", "presenter/preview" or "composite/preview".
+This preview __MUST__ be published on the api channel.
+
 #### Publisher
 The publisher used to create new Opencast series, e.g. "University of Stuttgart, Germany".
 This value is optional.

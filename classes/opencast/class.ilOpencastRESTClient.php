@@ -80,6 +80,7 @@ class ilOpencastRESTClient
      *
      * @param string $url
      * @param array $post
+     *            this array gets url encoded
      * @param boolean $returnHttpCode
      * @throws Exception
      * @return mixed
@@ -103,6 +104,42 @@ class ilOpencastRESTClient
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
             throw new Exception("error POST request: $url $post_string $httpCode", 500);
+        }
+
+        if ($returnHttpCode) {
+            return $httpCode;
+        }
+        return $response;
+    }
+
+    /**
+     * Do a multipart POST Request of the given url on the Opencast Server with basic authorization
+     *
+     * @param string $url
+     * @param array $post
+     *            CURLOPT_POSTFIELDS
+     * @param boolean $returnHttpCode
+     * @throws Exception
+     * @return mixed
+     */
+    public function postMultipart(string $url, array $post, bool $returnHttpCode = false)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $this->opencastURL . $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        $this->basicAuthentication($ch);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            "Accept: application/" . self::API_VERSION . "+json"
+        ));
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        if ($response === FALSE) {
+            $postinfo = print_r($post, true);
+            throw new Exception("error multipart POST request: $url $postinfo $httpCode", 500);
         }
 
         if ($returnHttpCode) {

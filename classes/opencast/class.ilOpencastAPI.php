@@ -204,16 +204,52 @@ class ilOpencastAPI
     }
 
     /**
-     * Get the series dublin core
      *
+     * @param string $title
+     *            the title of the new created episode
+     * @param string $creator
+     *            the creator of the episode
+     * @param string $startDate
+     *            the start date of the episode as ISO 8601 encoded string
      * @param string $series_id
-     * @return string the series dublin core XML document
-     * @deprecated
+     *            the series id the created episode should be part of
+     * @param bool $flagForCutting
+     *            if true the cutting flag is set
+     * @param string $presentationfilePath
+     *            the path to the presentation track file, which is uploaded
+     * @return string the event id
      */
-    public function getSeriesXML(string $series_id)
+    public function createEpisode(string $title, string $creator, string $startDate, string $series_id, bool $flagForCutting, string $presentationfilePath)
     {
-        $url = "/series/$series_id.xml";
-        return (string) $this->getDigest($url);
+        $url = "/api/events";
+        $metadata = array(
+            "title" => $title,
+            "creator" => array(
+                $creator
+            ),
+            "startDate" => $startDate,
+            "isPartOf" => $series_id
+        );
+
+        $post = array(
+            'metadata' => json_encode(array(
+                array(
+                    "flavor" => "dublincore/episode",
+                    "fields" => self::values($metadata)
+                )
+            )),
+            'acl' => json_encode(array()),
+            'processing' => json_encode(array(
+                "workflow" => $this->configObject->getUploadWorkflow(),
+                "configuration" => array(
+                    "flagForCutting" => $flagForCutting ? "true" : "false",
+                    "straightToPublishing" => $flagForCutting ? "false" : "true"
+                )
+            )),
+            'presentation' => new CurlFile($presentationfilePath)
+        );
+        $episode = json_decode($this->opencastRESTClient->postMultipart($url, $post));
+        return $episode->identifier;
     }
 
     /**

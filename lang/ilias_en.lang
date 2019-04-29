@@ -93,16 +93,10 @@ running#:#Processing step
 none_processing#:#There are no recordings being processed on the server
 add_new_episode#:#Upload own recording
 track_presenter#:#Presenter name
-track_date#:#Date of recording
-track_time#:#Time of recording
-select_file#:#Select file
+track_datetime#:#Date and time of recording
 upload_file#:#Upload file
 usetrimeditor#:#Trim video
-no_files#:#Please select a file to upload
-uploading#:#Uploading...
-done_uploading#:#Done uploading
-upload_canceled#:#Upload canceled
-cancel_upload#:#Cancel upload
+msg_episode_uploaded#:#The recording was successfully uploaded and is processing
 
 to_edit#:#Episodes ready to be trimmmed
 
