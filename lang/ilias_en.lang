@@ -48,6 +48,7 @@ xsendfile_header#:#Header for XSendfile-Feature
 distribution_directory#:#Distribution directory for ilias
 mh_directory#:#Base directory for Opencast (org.opencastproject.storage.dir)
 upload_workflow#:#Workflow for processing uploaded files
+trim_workflow#:#Workflow for trimming with the plugin editor
 oc_api_setup_required#:#Opencast API setup required
 oc_publisher#:#Publisher
 saving_invoked#:#Save procedure has been executed

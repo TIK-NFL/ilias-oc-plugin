@@ -186,10 +186,43 @@ class ilMatterhornConfig
      */
     public function getUploadWorkflowOptions()
     {
+        return $this->getAvailableWorkflows("upload");
+    }
+
+    public function getTrimWorkflow()
+    {
+        $retVal = $this->getValue('trimworkflow');
+        if (! $retVal) {
+            return 'default';
+        }
+
+        return $retVal;
+    }
+
+    public function setTrimWorkflow($value)
+    {
+        $this->setValue('trimworkflow', $value);
+    }
+
+    /**
+     *
+     * @return array|boolean
+     */
+    public function getTrimWorkflowOptions()
+    {
+        return $this->getAvailableWorkflows("editor");
+    }
+
+    /**
+     *
+     * @return array|boolean
+     */
+    private function getAvailableWorkflows(string $tag)
+    {
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         if (ilOpencastAPI::getInstance()->checkOpencast()) {
-            $workflowDefinitions = ilOpencastAPI::getInstance()->getWorkflowDefinition("upload");
+            $workflowDefinitions = ilOpencastAPI::getInstance()->getWorkflowDefinition($tag);
             $options = array();
             foreach ($workflowDefinitions as $workflowDefinition) {
                 $options[$workflowDefinition->identifier] = $workflowDefinition->title;

@@ -40,6 +40,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $values['xsendfile_header'] = $this->configObject->getXSendfileHeader();
         $values['distribution_directory'] = $this->configObject->getDistributionDirectory();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
+        $values['trimworkflow'] = $this->configObject->getTrimWorkflow();
         $values['publisher'] = $this->configObject->getPublisher();
         $form->setValuesByArray($values);
         $tpl->setContent($form->getHTML());
@@ -136,7 +137,19 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         }
         $uploadworkflow->setOptions($workflow);
         $form->addItem($uploadworkflow);
-        
+
+        // trim workflow
+        $trimworkflow = new ilSelectInputGUI($pl->txt('trim_workflow'), 'trimworkflow');
+        $trimworkflow->setRequired(true);
+        $trimworkflows = $this->configObject->getTrimWorkflowOptions();
+        if ($trimworkflows === false) {
+            $trimworkflows = array(
+                "oc_api_setup_required" => $pl->txt("oc_api_setup_required")
+            );
+        }
+        $trimworkflow->setOptions($trimworkflows);
+        $form->addItem($trimworkflow);
+
         // publisher
         $publisher = new ilTextInputGUI($pl->txt('oc_publisher'), 'publisher');
         $publisher->setRequired(false);
@@ -168,6 +181,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $xsendfile_header = $form->getInput('xsendfile_header');
             $distribution_directory = $form->getInput('distribution_directory');
             $uploadworkflow = $form->getInput('uploadworkflow');
+            $trimworkflow = $form->getInput('trimworkflow');
             $publisher = $form->getInput('publisher');
             
             $this->configObject->setMatterhornServer($mh_server);
@@ -180,6 +194,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $this->configObject->setXSendfileHeader($xsendfile_header);
             $this->configObject->setDistributionDirectory($distribution_directory);
             $this->configObject->setUploadWorkflow($uploadworkflow);
+            $this->configObject->setTrimWorkflow($trimworkflow);
             $this->configObject->setPublisher($publisher);
             
             ilUtil::sendSuccess($pl->txt('saving_invoked'), true);

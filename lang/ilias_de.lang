@@ -47,7 +47,8 @@ oc_api_password#:#Passwort des Opencast API User
 mh_directory#:#Basisverzeichnis von Opencast (org.opencastproject.storage.dir)
 xsendfile_header#:#Header f&uuml;r XSendfile-Feature
 distribution_directory#:#Ilias Verteilungsverzeichnis
-upload_workflow#:#Workflow zum Verarbeiten von Uploads
+upload_workflow#:#Workflow zum verarbeiten von Uploads
+trim_workflow#:#Workflow zum verarbeiten für den integrierten Video-Editor
 oc_api_setup_required#:#Opencast API setup erforderlich
 oc_publisher#:#Herausgeber
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert

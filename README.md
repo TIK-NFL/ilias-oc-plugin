@@ -67,6 +67,15 @@ The workflow __MUST__ support the configuration:
 For cutting the workflow must create a single track preview with flavor "presentation/preview", "presenter/preview" or "composite/preview".
 This preview __MUST__ be published on the api channel.
 
+#### Trim Workflow
+
+This workflow is used for trim from the plugins trim editor.
+It __MUST__ have the `editor` tag to be recognized by this plugin.
+The workflow __MUST__ support the configuration:
+- `start` integer the start duration in seconds
+- `end` integer the end duration in seconds
+- `tracks` array the ids of the tracks to trim and publish
+
 #### Publisher
 The publisher used to create new Opencast series, e.g. "University of Stuttgart, Germany".
 This value is optional.
