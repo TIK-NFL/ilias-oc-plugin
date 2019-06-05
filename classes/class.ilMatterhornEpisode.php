@@ -76,28 +76,6 @@ class ilMatterhornEpisode
         return $ilDB->quote($this->getEpisodeId(), "text");
     }
 
-    /**
-     * Get the Duration of the episode in milliseconds as String
-     *
-     * @return string duration in milliseconds
-     */
-    public function getDuration()
-    {
-        $epsiode = $this->getEpisode();
-        return $epsiode->duration;
-    }
-
-    /**
-     * Get the title of the episode
-     *
-     * @return string
-     */
-    public function getTitle()
-    {
-        $epsiode = $this->getEpisode();
-        return $epsiode->title;
-    }
-
     public function setTitle($title)
     {
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
@@ -200,9 +178,9 @@ class ilMatterhornEpisode
     }
 
     /**
-     * Get Episode publications from the Opencast API
+     * Get Episode publication from the Opencast API
      *
-     * @return array the Opencast publications from the api
+     * @return object the Opencast api channel publication from the api or null
      */
     public function getPublication()
     {

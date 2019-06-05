@@ -203,13 +203,13 @@ class ilAPIController
                 )
             );
             if ($track->has_video) {
-                $trk['video'] = array();//TODO
-                $trk['video']['id'] = (string) $track->video['id'];//TODO
-                $trk['video']['resolution'] = (string) $track->video->resolution;//TODO
+                $trk['video'] = array();
+                $trk['video']['id'] = "video-1"; // TODO
+                $trk['video']['resolution'] = "100x100"; // TODO
             }
             if ($track->has_audio) {
-                $trk['audio'] = array();//TODO
-                $trk['audio']['id'] = (string) $track->audio['id'];//TODO
+                $trk['audio'] = array();
+                $trk['audio']['id'] = "audio-1"; // TODO
             }
             array_push($media['track'], $trk);
         }
@@ -365,11 +365,13 @@ class ilAPIController
             $data[] = $content;
         }
 
+        $episodeData = $episode->getEpisode();
+
         $infoarray = array();
-        $infoarray['name'] = $episode->getTitle();
+        $infoarray['name'] = $episodeData->title;
         $infoarray['episode_id'] = $episode->getEpisodeId();
         $infoarray['series_id'] = $episode->getSeriesId();
-        $infoarray['duration'] = $episode->getDuration();
+        $infoarray['duration'] = strval($episodeData->duration);
         $infoarray['data'] = $data;
 
         $this->sendJSON($infoarray);
