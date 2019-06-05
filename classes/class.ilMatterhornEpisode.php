@@ -77,30 +77,14 @@ class ilMatterhornEpisode
     }
 
     /**
-     *
-     * @return SimpleXMLElement
-     */
-    public function getManifest()
-    {
-        if (! $this->manifest) {
-            $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
-            $plugin->includeClass("class.ilMatterhornConfig.php");
-            $configObject = new ilMatterhornConfig();
-            $this->manifest = new SimpleXMLElement($configObject->getDistributionDirectory() . $this->getSeriesId() . '/' . $this->getEpisodeId() . '/manifest.xml', null, true);
-        }
-        return $this->manifest;
-    }
-
-    /**
      * Get the Duration of the episode in milliseconds as String
      *
      * @return string duration in milliseconds
      */
     public function getDuration()
     {
-        $manifest = $this->getManifest();
-        $duration = (string) $manifest['duration'];
-        return $duration;
+        $epsiode = $this->getEpisode();
+        return $epsiode->duration;
     }
 
     /**
@@ -110,9 +94,8 @@ class ilMatterhornEpisode
      */
     public function getTitle()
     {
-        $manifest = $this->getManifest();
-        $title = (string) $manifest->title;
-        return $title;
+        $epsiode = $this->getEpisode();
+        return $epsiode->title;
     }
 
     public function setTitle($title)
@@ -140,44 +123,15 @@ class ilMatterhornEpisode
     private function addTextToDB()
     {
         global $ilDB;
-        $manifest = $this->getManifest();
-        $textcatalog = null;
-        foreach ($manifest->metadata->catalog as $catalog) {
-            $cat = array();
-            if (isset($catalog['id'])) {
-                $cat['id'] = (string) $catalog['id'];
-            }
-            if (isset($catalog['type'])) {
-                $cat['type'] = (string) $catalog['type'];
-            }
-            if (isset($catalog['ref'])) {
-                $cat['ref'] = (string) $catalog['ref'];
-            }
-            if (isset($catalog->mimetype)) {
-                $cat['mimetype'] = (string) $catalog->mimetype;
-            }
-            if (isset($catalog->url)) {
-                $cat['url'] = (string) $catalog->url;
-            }
-            if (isset($catalog->tags)) {
-                $cat['tags'] = array(
-                    'tag' => array()
-                );
-                foreach ($catalog->tags->tag as $tag) {
-                    array_push($cat['tags']['tag'], (string) $tag);
-                }
-            }
-            if (isset($catalog['type']) && 0 == strcmp((string) $catalog['type'], 'mpeg-7/text')) {
-                $textcatalog = $cat;
+        $publication = $this->getPublication();
+        $textCatalogUrl = null;
+        foreach ($publication->metadata as $catalog) {
+            if (0 == strcmp($catalog->flavor, 'mpeg-7/text')) {
+                $textCatalogUrl = $catalog->url;
             }
         }
-        if ($textcatalog) {
-            $segments = array_slice(explode("/", $textcatalog["url"]), - 2);
-            $configObject = new ilMatterhornConfig();
-            $segmentsxml = new SimpleXMLElement($configObject->getDistributionDirectory() . $this->getSeriesId() . '/' . $this->getEpisodeId() . '/' . $segments[0] . '/' . $segments[1], null, true);
-            $segments = array(
-                "segment" => array()
-            );
+        if ($textCatalogUrl) {
+            $segmentsxml = new SimpleXMLElement($textCatalogUrl, null, true);
             $currentidx = 0;
             $currenttime = 0;
             foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
@@ -208,7 +162,6 @@ class ilMatterhornEpisode
                 $currenttime = $currenttime + $duration;
             }
         }
-        return $segments;
     }
 
     /**
@@ -244,6 +197,24 @@ class ilMatterhornEpisode
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getEpisode($this->getEpisodeId());
+    }
+
+    /**
+     * Get Episode publications from the Opencast API
+     *
+     * @return array the Opencast publications from the api
+     */
+    public function getPublication()
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        $publications = ilOpencastAPI::getInstance()->getEpisodePublications($this->getEpisodeId());
+        foreach ($publications as $publication) {
+            if ($publication->channel) {
+                return $publication;
+            }
+        }
+        return null;
     }
 
     /**

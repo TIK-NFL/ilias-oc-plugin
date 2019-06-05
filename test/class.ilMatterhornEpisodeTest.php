@@ -43,10 +43,10 @@ class ilMatterhornEpisodeTest extends PHPUnit_Framework_TestCase
             $this->episode_id
         ])
             ->setMethods([
-            'getManifest'
+            'getEpisode'
         ])
             ->getMock();
-        $this->episode->method('getManifest')->willReturn(new SimpleXMLElement($plugin->getDirectory() . '/test/TestManifest.xml', null, true));
+        $this->episode->method('getEpisode')->willReturn();//TODO
     }
 
     public function testGetSeriesId()
@@ -72,9 +72,6 @@ class ilMatterhornEpisodeTest extends PHPUnit_Framework_TestCase
         $episode_id = $this->episode->getQuoteEpisodeId();
         $this->assertEquals("'" . $this->episode_id . "'", $episode_id);
     }
-
-    public function testGetManifest()
-    {}
 
     public function testGetDuration()
     {

@@ -61,21 +61,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     private $download;
 
     /**
-     * Stores the last time the fs was checked for new updates
-     *
-     * @unused
-     *
-     * @var integer
-     */
-    private $lastfsInodeUpdate;
-
-    /**
-     *
-     * @var ilMatterhornConfig
-     */
-    private $configObject;
-
-    /**
      * Constructor
      *
      * @access public
@@ -83,7 +68,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function __construct($a_ref_id = 0)
     {
         parent::__construct($a_ref_id);
-        $this->configObject = new ilMatterhornConfig();
     }
 
     /**
@@ -150,7 +134,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     {
         global $ilDB;
 
-        $this->getPlugin()->includeClass("class.ilMatterhornUserTracking.php");
+        $this->getPlugin()->includeClass("api/class.ilMatterhornUserTracking.php");
 
         foreach ($this->getReleasedEpisodeIds() as $episode_id) {
             ilMatterhornUserTracking::removeViews($this->getEpisode($episode_id));
@@ -296,35 +280,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     }
 
     /**
-     * The series information returned by matterhorn
-     *
-     * @return array the episodes by matterhorn for the this series
-     * @deprecated to be removed
-     */
-    public function getSearchResult()
-    {
-        $basedir = $this->configObject->getDistributionDirectory() . $this->getSeriesId();
-        $xmlstr = "<?xml version='1.0' standalone='yes'?>\n<results />";
-        $resultcount = 0;
-        $results = new SimpleXMLElement($xmlstr);
-        $domresults = dom_import_simplexml($results);
-        if (file_exists($basedir) && $handle = opendir($basedir)) {
-            while (false !== ($entry = readdir($handle))) {
-                if ($entry != "." && $entry != ".." && file_exists($basedir . '/' . $entry . '/manifest.xml')) {
-                    $manifest = new SimpleXMLElement($basedir . '/' . $entry . '/manifest.xml', null, true);
-                    $dommanifest = dom_import_simplexml($manifest);
-                    $dommanifest = $domresults->ownerDocument->importNode($dommanifest, true);
-                    $domresults->appendChild($dommanifest);
-                    $resultcount ++;
-                }
-            }
-            closedir($handle);
-        }
-        $results->addAttribute("total", $resultcount);
-        return $results;
-    }
-
-    /**
      * Returns a list of the Episodes that have been made public available by the lecturer
      *
      * @return array containing the ids of the episodes that have been made public available.
@@ -332,7 +287,7 @@ class ilObjMatterhorn extends ilObjectPlugin
     public function getReleasedEpisodeIds()
     {
         global $DIC;
-
+        //TODO move to MatterhornSeries
         $set = $DIC->database()->query("SELECT episode_id FROM rep_robj_xmh_rel_ep WHERE series_id = " . $DIC->database()
             ->quote($this->getSeriesId(), "text"));
         $released = array();

@@ -462,47 +462,54 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $releasedEpisodeIds = $this->getMHObject()->getReleasedEpisodeIds();
         $episodes = array();
         
-        foreach ($this->getMHObject()->getSearchResult()->mediapackage as $value) {
+        foreach ($this->getMHObject()->getSeries()->getPublishedEpisodes() as $value) {
+            $published = in_array($value->identifier, $releasedEpisodeIds);
             if ($skipUnreleased && $this->getMHObject()->getManualRelease()) {
-                if (! in_array($value['id'], $releasedEpisodeIds)) {
+                if (!$published) {
                     continue;
                 }
             }
+            
+            $apiPublication = null;
+            foreach ($value->publications as $publication) {
+                if ($publication->channel == "api") {
+                    $apiPublication = $publication;
+                }
+            }
+            
             $previewurl = "unset";
-            foreach ($value->attachments->attachment as $attachment) {
-                if ('presentation/search+preview' == $attachment['type']) {
+            foreach ($apiPublication->attachments as $attachment) {
+                if ('presentation/search+preview' == $attachment->flavor) {
                     $previewurl = $attachment->url;
                     // prefer presentation/search+preview over presenter/search+preview
-                    break 1;
-                } elseif ('presenter/search+preview' == $attachment['type']) {
+                    break;
+                } else if ('presenter/search+preview' == $attachment->flavor) {
                     $previewurl = $attachment->url;
                     // continue searching for a presentation/search+preview
                 }
             }
             $downloadurl = "unset";
-            foreach ($value->media->track as $track) {
-                if ('composite/sbs' == $track['type']) {
+            foreach ($value->media as $track) {
+                if ('composite/sbs' == $track->flavor) {
                     $downloadurl = $track->url;
                     break;
                 }
-                if ('presentation/delivery' == $track['type'] && 'video/mp4' == $track->mimetype) {
+                if ('presentation/delivery' == $track->flavor && 'video/mp4' == $track->mimetype) {
                     $downloadurl = $track->url;
                 }
             }
             
-            $published = in_array($value['id'], $releasedEpisodeIds);
-            
             $episode = array(
-                "title" => (string) $value->title,
-                "date" => (string) $value['start'],
-                "series_id" => $this->getMHObject()->getSeriesId(),
-                "episode_id" => (string) $value['id'],
-                "previewurl" => (string) $previewurl,
-                "downloadurl" => (string) $downloadurl,
-                "viewurl" => $this->getLinkForShowEpisode($this->getMHObject()->getSeriesId(), $value['id'], false)
+                "title" => $value->title,
+                "date" => $value->start,
+                "series_id" => $value->is_part_of,
+                "episode_id" => $value->identifier,
+                "previewurl" => $previewurl,
+                "downloadurl" => $downloadurl,
+                "viewurl" => $this->getLinkForShowEpisode($this->getMHObject()->getSeriesId(), $value->identifier, false)
             );
             if ($this->getMHObject()->getManualRelease()) {
-                $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", (string) $value['id']);
+                $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", $value->identifier);
                 $episode["txt_publish"] = $this->getText($published ? "retract" : "publish");
             }
             $episodes[] = $episode;

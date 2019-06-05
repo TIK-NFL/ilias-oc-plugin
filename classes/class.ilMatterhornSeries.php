@@ -85,6 +85,18 @@ class ilMatterhornSeries
     }
 
     /**
+     * Get the episodes which are published for this series
+     *
+     * @return array the episodes which are published for this series returned by opencast
+     */
+    public function getPublishedEpisodes()
+    {
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
+        return ilOpencastAPI::getInstance()->getPublishedEpisodes($this->getSeriesId());
+    }
+
+    /**
      * Get the episodes which are on hold for this series
      *
      * @return array the episodes which are on hold for this series returned by opencast
@@ -143,6 +155,7 @@ class ilMatterhornSeries
     }
 
     /**
+     *
      * @see ilOpencastAPI#createEpisode()
      */
     public function createEpisode(string $title, string $creator, string $startDate, bool $flagForCutting, string $presentationfilePath)

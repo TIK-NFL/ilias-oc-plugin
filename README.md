@@ -18,28 +18,6 @@ The plugin folder __MUST__ be named 'Matterhorn'.
 
 ### Plugin-Configuration
 
-#### XSendfile header
-
-For nginx select `X-Accel-Redirect`.
-For apache select `X-Sendfile` and enable **mod_xsendfile**.
-
-#### Distribution directory
-
-This __MUST__ be the path were episodes are available after published in Opencast, so this plugin can serve them to users.
-
-For nginx add the config:
-```
-location /__ilias_xmh_distribution_directory__/ {
-   internal;
-   alias ${distribution_directory}/;
-}
-```
-
-For apache add the config:
-```
-XSendFilePath ${distribution_directory}
-```
-
 #### Upload Workflow
 
 This workflow is used for uploads from ilias to opencast and __MUST__ have the `upload` tag to be recognized by this plugin.

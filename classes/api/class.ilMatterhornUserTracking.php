@@ -23,7 +23,7 @@ class ilMatterhornUserTracking
     public static function putUserTracking($user_id, $episode, $intime, $outtime)
     {
         $view = self::getLastView($user_id, $episode->getEpisodeId());
-        
+
         if ($intime < 0) {
             // do nothing, if this is the first view of this episode from the user, -1 is added automatically
         } else {
@@ -43,7 +43,7 @@ class ilMatterhornUserTracking
                 }
             }
         }
-        
+
         self::addView($user_id, $episode->getEpisodeId(), $view);
     }
 
@@ -58,9 +58,9 @@ class ilMatterhornUserTracking
     private static function getLastView($user_id, $episode_id)
     {
         global $ilDB;
-        
+
         $query = $ilDB->query("SELECT id, intime, outtime FROM " . self::DATATABLE . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id DESC LIMIT 1");
-        
+
         if ($ilDB->numRows($query) == 0) {
             return [
                 "intime" => - 1,
@@ -83,7 +83,7 @@ class ilMatterhornUserTracking
     private static function addView($user_id, $episode_id, $view)
     {
         global $ilDB;
-        
+
         if (array_key_exists("id", $view)) {
             $sql = "UPDATE " . self::DATATABLE . " SET intime = " . $ilDB->quote($view["intime"], "integer") . ", outtime = " . $ilDB->quote($view["outtime"], "integer") . " WHERE id = " . $ilDB->quote($view["id"], "integer");
         } else {
@@ -104,13 +104,13 @@ class ilMatterhornUserTracking
         // TODO rechte
         // TODO video informationen manifest aus lesen
         $dataarray = [];
-        
+
         $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text"));
         if ($ilDB->numRows($query) > 0) {
             $users = array();
             while ($row = $ilDB->fetchAssoc($query)) {
                 $user_id = $row['user_id'];
-                
+
                 $users[$user_id][] = $row;
             }
             $data = array();
@@ -126,14 +126,14 @@ class ilMatterhornUserTracking
                         }
                     }
                 }
-                
+
                 foreach ($userviewdata as $time => $views) {
                     if (! array_key_exists($time, $data)) {
                         $data[$time] = $views;
                     } else {
                         $data[$time] += $views;
                     }
-                    
+
                     if (! array_key_exists($time, $useruniqueviewdata)) {
                         $useruniqueviewdata[$time] = 1;
                     } else {
@@ -141,7 +141,7 @@ class ilMatterhornUserTracking
                     }
                 }
             }
-            
+
             $dataarray['views'] = $data;
             $dataarray['unique_views'] = $useruniqueviewdata;
         }
@@ -159,7 +159,7 @@ class ilMatterhornUserTracking
     {
         global $ilDB;
         $array = array();
-        
+
         $query = $ilDB->query("SELECT intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text") . " AND user_id = " . $ilDB->quote($user_id, "integer"));
         if ($ilDB->numRows($query) > 0) {
             $userviewdata = array();
@@ -172,10 +172,10 @@ class ilMatterhornUserTracking
                     }
                 }
             }
-            
+
             ksort($userviewdata);
             $userviewdata[max(array_keys($userviewdata)) + 1] = 0;
-            
+
             $last = - 1;
             $footprint = array();
             foreach ($userviewdata as $i => $current) {
@@ -185,10 +185,10 @@ class ilMatterhornUserTracking
                         'views' => $current
                     ];
                 }
-                
+
                 $last = $current;
             }
-            
+
             $array['footprint'] = $footprint;
             $array['total'] = count($footprint);
         }
@@ -204,19 +204,19 @@ class ilMatterhornUserTracking
     public static function getViews($episode)
     {
         global $ilDB;
-        
+
         $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text") . " ORDER BY id ASC");
-        
+
         $viewsCount = 0;
-        
+
         if ($ilDB->numRows($query) > 0) {
             $users = array();
             while ($row = $ilDB->fetchAssoc($query)) {
                 $user_id = $row['user_id'];
-                
+
                 $users[$user_id][] = $row;
             }
-            
+
             foreach ($users as $user_id => $views) {
                 $userviews = 1;
                 $lastouttime = - 1;
@@ -229,7 +229,7 @@ class ilMatterhornUserTracking
                 $viewsCount += $userviews;
             }
         }
-        
+
         return $viewsCount;
     }
 
@@ -253,7 +253,7 @@ class ilMatterhornUserTracking
     public static function removeViews($episode)
     {
         global $ilDB;
-        
+
         $ilDB->manipulate("DELETE FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text"));
     }
 }

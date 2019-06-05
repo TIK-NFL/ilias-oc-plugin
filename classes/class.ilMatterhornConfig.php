@@ -2,11 +2,6 @@
 
 class ilMatterhornConfig
 {
-
-    const X_SENDFILE = 0;
-
-    const X_ACCEL_REDIRECT = 1;
-
     /**
      * returns the hostname for the matterhorn server.
      *
@@ -55,69 +50,6 @@ class ilMatterhornConfig
     public function setOpencastAPIPassword($a_password)
     {
         $this->setValue('oc_api_password', $a_password);
-    }
-
-    /**
-     *
-     * @return int
-     * @deprecated
-     */
-    public function getXSendfileHeader()
-    {
-        $retVal = intval($this->getValue('xsendfile_header'));
-        if (! $retVal) {
-            return self::X_SENDFILE;
-        }
-        return $retVal;
-    }
-
-    /**
-     *
-     * @deprecated
-     */
-    public function setXSendfileHeader($value)
-    {
-        $this->setValue('xsendfile_header', $value);
-    }
-
-    /**
-     *
-     * @return array
-     * @deprecated
-     */
-    public function getXSendfileHeaderOptions()
-    {
-        return array(
-            self::X_SENDFILE => 'X-Sendfile',
-            self::X_ACCEL_REDIRECT => 'X-Accel-Redirect'
-        );
-    }
-
-    /**
-     *
-     * @return string
-     * @deprecated
-     */
-    public function getDistributionDirectory()
-    {
-        $retVal = $this->getValue('distribution_directory');
-        if (! $retVal) {
-            return '/dev/null';
-        }
-
-        return $retVal;
-    }
-
-    /**
-     *
-     * @deprecated
-     */
-    public function setDistributionDirectory($value)
-    {
-        if (substr($value, - 1) != '/') {
-            $value = $value . '/';
-        }
-        $this->setValue('distribution_directory', $value);
     }
 
     public function getUploadWorkflow()

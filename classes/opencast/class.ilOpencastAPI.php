@@ -223,6 +223,18 @@ class ilOpencastAPI
     }
 
     /**
+     * Get the episode publications
+     *
+     * @param string $episode_id
+     * @return array the publications of the episode
+     */
+    public function getEpisodePublications(string $episode_id)
+    {
+        $url = "/api/events/$episode_id/publications";
+        return $this->opencastRESTClient->get($url);
+    }
+
+    /**
      * The scheduled information for the series returned by opencast
      *
      * @param string $series_id
@@ -252,7 +264,7 @@ class ilOpencastAPI
      *
      * @param string $series_id
      *            series id
-     * @return array the episodes which are on hold for the series returned by matterhorn
+     * @return array the episodes which are on hold for the series returned by opencast
      */
     public function getOnHoldEpisodes(string $series_id)
     {
@@ -278,10 +290,42 @@ class ilOpencastAPI
 
     private function isOnholdEpisode($episode)
     {
-        if (in_array("ilias", $episode->publication_status)) {
-            return false;
-        }
-        return true;
+        return ! in_array("ilias", $episode->publication_status); // TODO
+    }
+
+    /**
+     * Get the episodes which have a publication on the api channel for given series
+     *
+     * @param string $series_id
+     *            series id
+     * @return array the episodes which are published for the series returned by opencast
+     */
+    public function getPublishedEpisodes(string $series_id)
+    {
+        $url = "/api/events/";
+
+        $params = array(
+            'filter' => self::filter(array(
+                "status" => "EVENTS.EVENTS.STATUS.PROCESSED",
+                "series" => $series_id
+            )),
+            'sort' => 'date:ASC',
+            'withpublications' => "true"
+        );
+
+        /* Update URL to container Query String of Paramaters */
+        $url .= '?' . http_build_query($params);
+
+        $episodes = $this->opencastRESTClient->get($url);
+        return array_filter($episodes, array(
+            $this,
+            'isPublishedEpisode'
+        ));
+    }
+
+    private function isPublishedEpisode($episode)
+    {
+        return in_array("api", $episode->publication_status);
     }
 
     /**

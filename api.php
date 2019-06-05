@@ -1,5 +1,4 @@
 <?php
-/* Copyright (c) 1998-2010 ILIAS open source, Extended GPL, see docs/LICENSE */
 chdir("../../../../../../../../");
 
 // Prevent a general redirect to the login screen for anonymous users.
@@ -7,7 +6,7 @@ chdir("../../../../../../../../");
 // (see ilInitialisation::InitILIAS() for details)
 $_GET["baseClass"] = "ilStartUpGUI";
 
-$basename = "/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/MHData";
+$basename = "/Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/api.php";
 
 // Define a pseudo module to get a correct ILIAS_HTTP_PATH
 // (needed for links on the error page).
@@ -35,15 +34,15 @@ require_once "./Services/Utilities/classes/class.ilUtil.php";
 require_once "./Services/Object/classes/class.ilObject.php";
 require_once "./Services/MediaObjects/classes/class.ilObjMediaObject.php";
 
-require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/class.ilMatterhornSendfile.php";
+require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Matterhorn/classes/api/class.ilAPIController.php";
 
 $uri = parse_url($_SERVER['REQUEST_URI']);
 $method = $_SERVER['REQUEST_METHOD'];
 
-$sf = new ilMatterhornSendfile($uri, $method);
+$api = new ilAPIController($uri, $method);
 
 // get the requested file and its type
 $path = substr($uri["path"], strpos($uri["path"], $basename) + strlen($basename));
 
-$sf->handleRequest($path);
+$api->handleRequest($path);
 ?>
