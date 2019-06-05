@@ -1,5 +1,5 @@
 <?php
-chdir("../../../../../../../../");
+chdir("../../../../../../../");
 
 // Prevent a general redirect to the login screen for anonymous users.
 // The checker will show an error page with login link instead

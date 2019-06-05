@@ -75,7 +75,7 @@ class ilMatterhornSeries
     /**
      * Get the episodes which are on hold for this series
      *
-     * @return array the episodes which are on hold for this series returned by opencast
+     * @return array the episodes
      */
     public function getOnHoldEpisodes()
     {
@@ -85,11 +85,11 @@ class ilMatterhornSeries
     }
 
     /**
-     * Get the episodes which are published for this series
+     * Get the episodes which are ready to be published in ilias for this series
      *
-     * @return array the episodes which are published for this series returned by opencast
+     * @return array the episodes
      */
-    public function getPublishedEpisodes()
+    public function getReadyEpisodes()
     {
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");

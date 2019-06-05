@@ -398,7 +398,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         
         $this->checkPermission("read");
         
-        $released_episodes = $this->extractReleasedEpisodes(true);
+        $released_episodes = $this->getReadyEpisodes(true);
         if (! $this->getMHObject()->getViewMode()) {
             $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.html", true, true);
             $seriestpl->setCurrentBlock($this->getMHObject()->getDownload() ? "headerdownload" : "header");
@@ -457,21 +457,19 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $DIC->tabs()->activateTab("content");
     }
 
-    private function extractReleasedEpisodes(bool $skipUnreleased)
+    private function getReadyEpisodes(bool $onlyPublished)
     {
         $releasedEpisodeIds = $this->getMHObject()->getReleasedEpisodeIds();
         $episodes = array();
         
-        foreach ($this->getMHObject()->getSeries()->getPublishedEpisodes() as $value) {
-            $published = in_array($value->identifier, $releasedEpisodeIds);
-            if ($skipUnreleased && $this->getMHObject()->getManualRelease()) {
-                if (!$published) {
-                    continue;
-                }
+        foreach ($this->getMHObject()->getSeries()->getReadyEpisodes() as $readyEpisode) {
+            $published = in_array($readyEpisode->identifier, $releasedEpisodeIds);
+            if ($onlyPublished && !$published && $this->getMHObject()->getManualRelease()) {
+                continue;
             }
             
             $apiPublication = null;
-            foreach ($value->publications as $publication) {
+            foreach ($readyEpisode->publications as $publication) {
                 if ($publication->channel == "api") {
                     $apiPublication = $publication;
                 }
@@ -489,7 +487,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
             $downloadurl = "unset";
-            foreach ($value->media as $track) {
+            foreach ($apiPublication->media as $track) {
                 if ('composite/sbs' == $track->flavor) {
                     $downloadurl = $track->url;
                     break;
@@ -500,16 +498,16 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
             
             $episode = array(
-                "title" => $value->title,
-                "date" => $value->start,
-                "series_id" => $value->is_part_of,
-                "episode_id" => $value->identifier,
+                "title" => $readyEpisode->title,
+                "date" => $readyEpisode->start,
+                "series_id" => $readyEpisode->is_part_of,
+                "episode_id" => $readyEpisode->identifier,
                 "previewurl" => $previewurl,
                 "downloadurl" => $downloadurl,
-                "viewurl" => $this->getLinkForShowEpisode($this->getMHObject()->getSeriesId(), $value->identifier, false)
+                "viewurl" => $this->getLinkForShowEpisode($this->getMHObject()->getSeriesId(), $readyEpisode->identifier, false)
             );
             if ($this->getMHObject()->getManualRelease()) {
-                $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", $value->identifier);
+                $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", $readyEpisode->identifier);
                 $episode["txt_publish"] = $this->getText($published ? "retract" : "publish");
             }
             $episodes[] = $episode;
@@ -592,7 +590,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
         }
 
-        $finished_episodes = $this->extractReleasedEpisodes(false);
+        $finished_episodes = $this->getReadyEpisodes(false);
         foreach ($finished_episodes as $key => $value) {
             $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
         }
