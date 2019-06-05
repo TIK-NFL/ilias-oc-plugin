@@ -27,51 +27,6 @@ class ilMatterhornConfig
         $this->setValue('mh_server', $a_server);
     }
 
-    public function getMatterhornEngageServer()
-    {
-        $retVal = $this->getValue('mh_server_engage');
-        if (! $retVal) {
-            return 'http://host.is.unset';
-        }
-
-        return $retVal;
-    }
-
-    public function setMatterhornEngageServer($a_server)
-    {
-        $this->setValue('mh_server_engage', $a_server);
-    }
-
-    public function getMatterhornUser()
-    {
-        $retVal = $this->getValue('mh_digest_user');
-        if (! $retVal) {
-            return 'opencast_system_account';
-        }
-
-        return $retVal;
-    }
-
-    public function setMatterhornUser($a_user)
-    {
-        $this->setValue('mh_digest_user', $a_user);
-    }
-
-    public function getMatterhornPassword()
-    {
-        $retVal = $this->getValue('mh_digest_password');
-        if (! $retVal) {
-            return 'CHANGE_ME';
-        }
-
-        return $retVal;
-    }
-
-    public function setMatterhornPassword($a_password)
-    {
-        $this->setValue('mh_digest_password', $a_password);
-    }
-
     public function getOpencastAPIUser()
     {
         $retVal = $this->getValue('oc_api_user');
@@ -104,26 +59,8 @@ class ilMatterhornConfig
 
     /**
      *
-     * @return string org.opencastproject.storage.dir
-     */
-    public function getMatterhornDirectory()
-    {
-        $retVal = $this->getValue('mh_directory');
-        if (! $retVal) {
-            return '/dev/null';
-        }
-
-        return $retVal;
-    }
-
-    public function setMatterhornDirectory($a_filesdir)
-    {
-        $this->setValue('mh_directory', $a_filesdir);
-    }
-
-    /**
-     *
      * @return int
+     * @deprecated
      */
     public function getXSendfileHeader()
     {
@@ -134,11 +71,20 @@ class ilMatterhornConfig
         return $retVal;
     }
 
+    /**
+     *
+     * @deprecated
+     */
     public function setXSendfileHeader($value)
     {
         $this->setValue('xsendfile_header', $value);
     }
 
+    /**
+     *
+     * @return array
+     * @deprecated
+     */
     public function getXSendfileHeaderOptions()
     {
         return array(
@@ -147,6 +93,11 @@ class ilMatterhornConfig
         );
     }
 
+    /**
+     *
+     * @return string
+     * @deprecated
+     */
     public function getDistributionDirectory()
     {
         $retVal = $this->getValue('distribution_directory');
@@ -157,6 +108,10 @@ class ilMatterhornConfig
         return $retVal;
     }
 
+    /**
+     *
+     * @deprecated
+     */
     public function setDistributionDirectory($value)
     {
         if (substr($value, - 1) != '/') {

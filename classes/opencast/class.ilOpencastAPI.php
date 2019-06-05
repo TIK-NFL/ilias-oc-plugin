@@ -48,48 +48,6 @@ class ilOpencastAPI
         return self::$instance;
     }
 
-    /**
-     * Do a GET Request of the given url on the Opencast Server with digest authorization
-     *
-     * @param string $url
-     * @throws Exception
-     * @return mixed
-     * @deprecated use the api
-     */
-    private function getDigest(string $url)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
-        $this->digestAuthentication($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-
-        $response = curl_exec($ch);
-
-        if ($response === FALSE) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            if (! $httpCode) {
-                throw new Exception("error GET request: $url", 503);
-            }
-            throw new Exception("error GET request: $url $httpCode", 500);
-        }
-        return $response;
-    }
-
-    /**
-     *
-     * @deprecated
-     */
-    private function digestAuthentication($ch)
-    {
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-    }
-
     private static function title(string $title, int $id, int $refId)
     {
         return "ILIAS-$id:$refId:$title";
@@ -377,31 +335,6 @@ class ilOpencastAPI
         $url = "/api/events/$episodeid";
 
         $this->opencastRESTClient->delete($url);
-    }
-
-    /**
-     * Get editor tool json from admin-ng
-     *
-     * @param string $episodeid
-     *            the id of the episode
-     * @throws Exception
-     * @return mixed the decoded editor json from the admin ui
-     * @deprecated
-     */
-    public function getEditor(string $episodeid)
-    {
-        $url = "/admin-ng/tools/$episodeid/editor.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
-        try {
-            $curlret = $this->getDigest($url);
-        } catch (Exception $e) {
-            throw new Exception("error loading editor.json for episode " . $episodeid, 500, $e);
-        }
-        $editorjson = json_decode($curlret);
-        if ($editorjson === false) {
-            throw new Exception("error loading editor.json for episode " . $episodeid, 500);
-        }
-        return $editorjson;
     }
 
     /**

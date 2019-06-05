@@ -31,12 +31,8 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $form = $this->initConfigurationForm();
         $values = array();
         $values['mh_server'] = $this->configObject->getMatterhornServer();
-        $values['mh_server_engage'] = $this->configObject->getMatterhornEngageServer();
-        $values['mh_digest_user'] = $this->configObject->getMatterhornUser();
-        $values['mh_digest_password'] = $this->configObject->getMatterhornPassword();
         $values['oc_api_user'] = $this->configObject->getOpencastAPIUser();
         $values['oc_api_password'] = $this->configObject->getOpencastAPIPassword();
-        $values['mh_directory'] = $this->configObject->getMatterhornDirectory();
         $values['xsendfile_header'] = $this->configObject->getXSendfileHeader();
         $values['distribution_directory'] = $this->configObject->getDistributionDirectory();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
@@ -54,78 +50,50 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
     public function initConfigurationForm()
     {
         global $lng, $ilCtrl;
-        
+
         $pl = $this->getPluginObject();
-        
+
         $pl->includeClass("class.ilMatterhornConfig.php");
-        
+
         $this->configObject = new ilMatterhornConfig();
-        
+
         include_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
         $form = new ilPropertyFormGUI();
-        
+
         // mh server
         $mh_server = new ilTextInputGUI($pl->txt('mh_server'), 'mh_server');
         $mh_server->setRequired(true);
         $mh_server->setMaxLength(100);
         $mh_server->setSize(100);
         $form->addItem($mh_server);
-        
-        // mh engage server
-        $mh_server_engage = new ilTextInputGUI($pl->txt('mh_server_engage'), 'mh_server_engage');
-        $mh_server_engage->setRequired(true);
-        $mh_server_engage->setMaxLength(100);
-        $mh_server_engage->setSize(100);
-        $form->addItem($mh_server_engage);
-        
-        // mh digest user
-        $mh_digest_user = new ilTextInputGUI($pl->txt('mh_digest_user'), 'mh_digest_user');
-        $mh_digest_user->setRequired(true);
-        $mh_digest_user->setMaxLength(100);
-        $mh_digest_user->setSize(100);
-        $form->addItem($mh_digest_user);
-        
-        // mh digest password
-        $mh_digest_password = new ilTextInputGUI($pl->txt('mh_digest_password'), 'mh_digest_password');
-        $mh_digest_password->setRequired(true);
-        $mh_digest_password->setMaxLength(100);
-        $mh_digest_password->setSize(100);
-        $form->addItem($mh_digest_password);
-        
+
         // oc api user
         $oc_api_user = new ilTextInputGUI($pl->txt('oc_api_user'), 'oc_api_user');
         $oc_api_user->setRequired(true);
         $oc_api_user->setMaxLength(100);
         $oc_api_user->setSize(100);
         $form->addItem($oc_api_user);
-        
+
         // oc api password
         $oc_api_password = new ilTextInputGUI($pl->txt('oc_api_password'), 'oc_api_password');
         $oc_api_password->setRequired(true);
         $oc_api_password->setMaxLength(100);
         $oc_api_password->setSize(100);
         $form->addItem($oc_api_password);
-        
-        // mh directory
-        $mh_directory = new ilTextInputGUI($pl->txt('mh_directory'), 'mh_directory');
-        $mh_directory->setRequired(true);
-        $mh_directory->setMaxLength(100);
-        $mh_directory->setSize(100);
-        $form->addItem($mh_directory);
-        
+
         // xsendfile header
         $xsendfile_header = new ilSelectInputGUI($pl->txt('xsendfile_header'), 'xsendfile_header');
         $xsendfile_header->setRequired(true);
         $xsendfile_header->setOptions($this->configObject->getXSendfileHeaderOptions());
         $form->addItem($xsendfile_header);
-        
+
         // distribution directory
         $distribution_directory = new ilTextInputGUI($pl->txt('distribution_directory'), 'distribution_directory');
         $distribution_directory->setRequired(true);
         $distribution_directory->setMaxLength(100);
         $distribution_directory->setSize(100);
         $form->addItem($distribution_directory);
-        
+
         // upload workflow
         $uploadworkflow = new ilSelectInputGUI($pl->txt('upload_workflow'), 'uploadworkflow');
         $uploadworkflow->setRequired(true);
@@ -156,47 +124,39 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $publisher->setMaxLength(100);
         $publisher->setSize(100);
         $form->addItem($publisher);
-        
+
         $form->addCommandButton('save', $lng->txt('save'));
         $form->setTitle($pl->txt('opencast_plugin_configuration'));
         $form->setFormAction($ilCtrl->getFormAction($this));
-        
+
         return $form;
     }
 
     public function save()
     {
         global $tpl, $ilCtrl;
-        
+
         $pl = $this->getPluginObject();
         $form = $this->initConfigurationForm();
         if ($form->checkInput()) {
             $mh_server = $form->getInput('mh_server');
-            $mh_server_engage = $form->getInput('mh_server_engage');
-            $mh_digest_user = $form->getInput('mh_digest_user');
-            $mh_digest_password = $form->getInput('mh_digest_password');
             $oc_api_user = $form->getInput('oc_api_user');
             $oc_api_password = $form->getInput('oc_api_password');
-            $mh_directory = $form->getInput('mh_directory');
             $xsendfile_header = $form->getInput('xsendfile_header');
             $distribution_directory = $form->getInput('distribution_directory');
             $uploadworkflow = $form->getInput('uploadworkflow');
             $trimworkflow = $form->getInput('trimworkflow');
             $publisher = $form->getInput('publisher');
-            
+
             $this->configObject->setMatterhornServer($mh_server);
-            $this->configObject->setMatterhornEngageServer($mh_server_engage);
-            $this->configObject->setMatterhornUser($mh_digest_user);
-            $this->configObject->setMatterhornPassword($mh_digest_password);
             $this->configObject->setOpencastAPIUser($oc_api_user);
             $this->configObject->setOpencastAPIPassword($oc_api_password);
-            $this->configObject->setMatterhornDirectory($mh_directory);
             $this->configObject->setXSendfileHeader($xsendfile_header);
             $this->configObject->setDistributionDirectory($distribution_directory);
             $this->configObject->setUploadWorkflow($uploadworkflow);
             $this->configObject->setTrimWorkflow($trimworkflow);
             $this->configObject->setPublisher($publisher);
-            
+
             ilUtil::sendSuccess($pl->txt('saving_invoked'), true);
             $ilCtrl->redirect($this, 'configure');
         } else {

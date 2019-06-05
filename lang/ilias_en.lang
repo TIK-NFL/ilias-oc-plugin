@@ -39,14 +39,10 @@ offline#:#Offline
 online#:#Online
 opencast_plugin_configuration#:#Opencast plugin configuration
 mh_server#:#Base URL of the Opencast Server
-mh_server_engage#:#Base URL of the Opencast Engage Server
-mh_digest_user#:#Username of the Opencast Digest User
-mh_digest_password#:#Password of the Opencast Digest User
 oc_api_user#:#Username of the Opencast API User
 oc_api_password#:#Password of the Opencast API User
 xsendfile_header#:#Header for XSendfile-Feature
 distribution_directory#:#Distribution directory for ilias
-mh_directory#:#Base directory for Opencast (org.opencastproject.storage.dir)
 upload_workflow#:#Workflow for processing uploaded files
 trim_workflow#:#Workflow for trimming with the plugin editor
 oc_api_setup_required#:#Opencast API setup required

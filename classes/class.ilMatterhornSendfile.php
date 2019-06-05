@@ -12,6 +12,7 @@
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  * @author Fred Neumann <fred.neumann@fim.uni-erlangen.de>
  * @version $Id: class.ilWebAccessChecker.php 50013 2014-05-13 16:20:01Z akill $
+ * @deprecated
  */
 class ilMatterhornSendfile
 {
@@ -163,15 +164,9 @@ class ilMatterhornSendfile
                 }
                 $this->setID($pathSegments[1], $pathSegments[2]);
 
-                if (isset($pathSegments[3]) && preg_match('/^preview(sbs|presentation|presenter).(mp4|webm)$/', $pathSegments[3])) {
-                    $this->requestType = "preview";
-                    ilObjMatterhornAccess::checkPreviewAccess($this->episode);
-                    $this->sendPreview($pathSegments[3]);
-                } else {
-                    $this->requestType = "file";
-                    ilObjMatterhornAccess::checkFileAccess($this->episode);
-                    $this->sendFile('distribution_directory', array_slice($pathSegments, 1));
-                }
+                $this->requestType = "file";
+                ilObjMatterhornAccess::checkFileAccess($this->episode);
+                $this->sendFile('distribution_directory', array_slice($pathSegments, 1));
             }
         } catch (Exception $e) {
             $this->sendError($e);
@@ -567,38 +562,11 @@ class ilMatterhornSendfile
     }
 
     /**
-     *
-     * @param string $filename
-     *            file name from ilias directory (without leading /)
-     */
-    private function sendPreview(string $filename)
-    {
-        $typesplit = explode('.', $filename);
-        $requestedType = $typesplit[1];
-        ilLoggerFactory::getLogger('xmh')->debug('mhpreviewurl requested type:' . $requestedType);
-        $editor = $this->episode->getEditor();
-        $previewtrack = null;
-        foreach ($editor->previews as $preview) {
-            if (strpos($preview->uri, $requestedType)) {
-                $previewtrack = $preview->uri;
-            }
-        }
-        if ($previewtrack == null) {
-            throw new Exception("No Preview", 404);
-        }
-        $path = parse_url($previewtrack, PHP_URL_PATH);
-
-        $relativeFilePath = str_replace('/static/mh_default_org/internal/', 'downloads/mh_default_org/internal/', $path);
-        $this->sendFile('mh_directory', explode('/', $relativeFilePath));
-    }
-
-    /**
      * Send the requested file as if directly delivered from the web server.
      *
      * @param string $directoryName
      *            the config name of the directory:
      *            * `distribution_directory`
-     *            * `mh_directory`
      * @param array $pathSegments
      *            relative file path
      */
@@ -611,12 +579,8 @@ class ilMatterhornSendfile
                 $realFile = $this->configObject->getDistributionDirectory() . "/$relativeFilePath";
                 $xAccelAlias = "/__ilias_xmh_distribution_directory__/";
                 break;
-            case 'mh_directory':
-                $realFile = $this->configObject->getMatterhornDirectory() . "/$relativeFilePath";
-                $xAccelAlias = "/__ilias_xmh_mh_directory__/";
-                break;
             default:
-                new Exception("Directory name '$directoryName' is unknow.", 500);
+                throw new Exception("Directory name '$directoryName' is unknow.", 500);
         }
         include_once ("./Services/Utilities/classes/class.ilMimeTypeUtil.php");
         $mime = ilMimeTypeUtil::lookupMimeType($realFile);

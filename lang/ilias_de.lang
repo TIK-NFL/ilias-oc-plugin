@@ -39,12 +39,8 @@ offline#:#Offline
 online#:#Online
 opencast_plugin_configuration#:#Opencast-Plugin-Konfiguration
 mh_server#:#Basis-URL des Opencast Server
-mh_server_engage#:#Basis-URL des Opencast Engage Server
-mh_digest_user#:#Benutzername des Opencast Digest User
-mh_digest_password#:#Passwort des Opencast Digest User
 oc_api_user#:#Benutzername des Opencast API User
 oc_api_password#:#Passwort des Opencast API User
-mh_directory#:#Basisverzeichnis von Opencast (org.opencastproject.storage.dir)
 xsendfile_header#:#Header f&uuml;r XSendfile-Feature
 distribution_directory#:#Ilias Verteilungsverzeichnis
 upload_workflow#:#Workflow zum verarbeiten von Uploads
