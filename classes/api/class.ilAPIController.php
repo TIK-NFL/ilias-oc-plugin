@@ -149,7 +149,7 @@ class ilAPIController
                 'id' => $attachment->id,
                 'type' => $attachment->flavor,
                 'ref' => $attachment->ref,
-                'mimetype' => $attachment->mimetype,
+                'mimetype' => $attachment->mediatype,
                 'url' => $attachment->url, // TODO sign
                 'tags' => array(
                     'tag' => $attachment->tags
@@ -172,7 +172,7 @@ class ilAPIController
             $cat = array(
                 'id' => $catalog->id,
                 'type' => $catalog->flavor,
-                'mimetype' => $catalog->mimetype,
+                'mimetype' => $catalog->mediatype,
                 'url' => $catalog->url, // TODO sign
                 'tags' => array(
                     'tag' => $catalog->tags
@@ -195,7 +195,7 @@ class ilAPIController
             $trk = array(
                 'id' => $track->id,
                 'type' => $track->flavor,
-                'mimetype' => $track->mimetype,
+                'mimetype' => $track->mediatype,
                 'url' => $track->url, // TODO sign
                 'duration' => $track->duration, // TODO data type int/string?
                 'tags' => array(
