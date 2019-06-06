@@ -223,15 +223,21 @@ class ilOpencastAPI
     }
 
     /**
-     * Get the episode publications
+     * Get the episode publication for a channel
      *
      * @param string $episode_id
-     * @return array the publications of the episode
+     * @return object the publication of the episode or null if there is no publication for the channel
      */
-    public function getEpisodePublications(string $episode_id)
+    public function getEpisodePublication(string $episode_id, string $channel = "api")
     {
         $url = "/api/events/$episode_id/publications";
-        return $this->opencastRESTClient->get($url);
+        $publications = $this->opencastRESTClient->get($url);
+        foreach ($publications as $publication) {
+            if ($publication->channel == $channel) {
+                return $publication;
+            }
+        }
+        return null;
     }
 
     /**
@@ -379,38 +385,6 @@ class ilOpencastAPI
         $url = "/api/events/$episodeid";
 
         $this->opencastRESTClient->delete($url);
-    }
-
-    /**
-     * Get the media objects json from api
-     *
-     * @param string $episodeid
-     *            the id of the episode
-     * @throws Exception
-     * @return array the decoded media json from the api publication channel
-     */
-    public function getMedia(string $episodeid)
-    {
-        $url = "/api/events/$episodeid";
-        $params = array(
-            "withpublications" => "true"
-        );
-
-        $url .= '?' . http_build_query($params);
-        $episode = $this->opencastRESTClient->get($url);
-        $publications = $episode->publications;
-
-        $apiPublication = null;
-        foreach ($publications as $publication) {
-            if ($publication->channel == "api") {
-                $apiPublication = $publication;
-            }
-        }
-        if ($apiPublication == null) {
-            throw new Exception("no publication for $episodeid on the 'api' channel", 404);
-        }
-
-        return $apiPublication->media;
     }
 
     /**

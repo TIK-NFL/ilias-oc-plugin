@@ -186,13 +186,7 @@ class ilMatterhornEpisode
     {
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        $publications = ilOpencastAPI::getInstance()->getEpisodePublications($this->getEpisodeId());
-        foreach ($publications as $publication) {
-            if ($publication->channel) {
-                return $publication;
-            }
-        }
-        return null;
+        return ilOpencastAPI::getInstance()->getEpisodePublication($this->getEpisodeId());
     }
 
     /**
@@ -202,9 +196,11 @@ class ilMatterhornEpisode
      */
     public function getMedia()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getMedia($this->getEpisodeId());
+        $publication =  $this->getPublication();
+        if ($publication == null) {
+            throw new Exception("no publication for $episodeid on the 'api' channel", 404);
+        }
+        return $publication->media;
     }
 
     /**
