@@ -932,10 +932,19 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             if (count($media) != 1) {
                 throw new Exception("something is wrong with media.");
             }
-            $track = $media[0];
+            $previewTrack = null;
+            foreach ($media as $track) {
+                if (in_array("preview",$track->tags)) {
+                    $previewTrack = $track;
+                    break;
+                }
+            }
+            if ($previewTrack == null) {
+                throw new Exception("There is no preview Track.");
+            }
             
             $streamType = null;
-            switch ($track->flavor) {
+            switch ($previewTrack->flavor) {
                 case "presentation/preview":
                     $streamType = "presentation";
                     ilLoggerFactory::getLogger('xmh')->debug("Found presentation track");
@@ -947,7 +956,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     $streamType = "dual";
                     break;
                 default:
-                    throw new Exception("Unknown media flavor for preview: " . $track->flavor);
+                    throw new Exception("Unknown media flavor for preview: " . $previewTrack->flavor);
                     break;
             }
             
@@ -971,10 +980,10 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
-            $downloadurlmp4 = $track->url;
+            $downloadurlmp4 = $previewTrack->url;
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
             
-            $duration = $track->duration;
+            $duration = $previewTrack->duration;
             $trimview->setVariable("TRACKLENGTH", $duration / 1000);
             $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
