@@ -197,19 +197,19 @@ class ilAPIController
                 'type' => $track->flavor,
                 'mimetype' => $track->mediatype,
                 'url' => $track->url, // TODO sign
-                'duration' => $track->duration, // TODO data type int/string?
+                'duration' => $track->duration,
                 'tags' => array(
                     'tag' => $track->tags
                 )
             );
             if ($track->has_video) {
                 $trk['video'] = array();
-                $trk['video']['id'] = "video-1"; // TODO
-                $trk['video']['resolution'] = "100x100"; // TODO
+                $trk['video']['id'] = "video-1";
+                $trk['video']['resolution'] = $track->width."x".$track->height;
             }
             if ($track->has_audio) {
                 $trk['audio'] = array();
-                $trk['audio']['id'] = "audio-1"; // TODO
+                $trk['audio']['id'] = "audio-1";
             }
             array_push($media['track'], $trk);
         }
@@ -228,7 +228,7 @@ class ilAPIController
                     "dcExtent" => 0, // TODO
                     "dcTitle" => $episodeData->title,
                     "dcIsPartOf" => $episodeData->is_part_of,
-                    // TODO "dcCreator" => $episodeData->,
+                    "dcCreator" => $episodeData->presenter,
                     "mediapackage" => array(
                         'attachments' => $attachments,
                         'metadata' => $metadata, // TODO reqired?
