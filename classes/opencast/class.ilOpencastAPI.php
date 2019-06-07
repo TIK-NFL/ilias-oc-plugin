@@ -283,7 +283,8 @@ class ilOpencastAPI
                 "status" => "EVENTS.EVENTS.STATUS.PROCESSED",
                 "series" => $series_id
             )),
-            'sort' => 'date:ASC'
+            'sort' => 'date:ASC',
+            'withpublications' => "true"
         );
 
         /* Update URL to container Query String of Paramaters */
