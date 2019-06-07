@@ -2,11 +2,11 @@
 include_once './Services/Component/classes/class.ilPluginConfigGUI.php';
 
 /**
- * Matterhorn configuration user interface class.
+ * Opencast configuration user interface class.
  *
- * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ * @author Per Pascal Seeland <pascal.seeland@tik.uni-stuttgart.de>
  */
-class ilMatterhornConfigGUI extends ilPluginConfigGUI
+class ilOpencastConfigGUI extends ilPluginConfigGUI
 {
 
     /**
@@ -30,7 +30,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         global $tpl;
         $form = $this->initConfigurationForm();
         $values = array();
-        $values['mh_server'] = $this->configObject->getMatterhornServer();
+        $values['mh_server'] = $this->configObject->getOpencastServer();
         $values['oc_api_user'] = $this->configObject->getOpencastAPIUser();
         $values['oc_api_password'] = $this->configObject->getOpencastAPIPassword();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
@@ -51,9 +51,9 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
 
         $pl = $this->getPluginObject();
 
-        $pl->includeClass("class.ilMatterhornConfig.php");
+        $pl->includeClass("class.ilOpencastConfig.php");
 
-        $this->configObject = new ilMatterhornConfig();
+        $this->configObject = new ilOpencastConfig();
 
         include_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
         $form = new ilPropertyFormGUI();
@@ -131,7 +131,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $trimworkflow = $form->getInput('trimworkflow');
             $publisher = $form->getInput('publisher');
 
-            $this->configObject->setMatterhornServer($mh_server);
+            $this->configObject->setOpencastServer($mh_server);
             $this->configObject->setOpencastAPIUser($oc_api_user);
             $this->configObject->setOpencastAPIPassword($oc_api_password);
             $this->configObject->setUploadWorkflow($uploadworkflow);

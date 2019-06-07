@@ -4,7 +4,7 @@
  * 
  * @group needInstalledILIAS
  */
-class ilMatterhornEpisodeTest extends PHPUnit_Framework_TestCase
+class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
 {
 
     protected $backupGlobals = FALSE;
@@ -26,7 +26,7 @@ class ilMatterhornEpisodeTest extends PHPUnit_Framework_TestCase
     /**
      * test episode
      *
-     * @var ilMatterhornEpisode
+     * @var ilOpencastEpisode
      */
     private $episode;
 
@@ -34,10 +34,10 @@ class ilMatterhornEpisodeTest extends PHPUnit_Framework_TestCase
     {
         include_once ("./Services/PHPUnit/classes/class.ilUnitUtil.php");
         ilUnitUtil::performInitialisation();
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
-        $plugin->includeClass("class.ilMatterhornEpisode.php");
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
+        $plugin->includeClass("class.ilOpencastEpisode.php");
         
-        $this->episode = $this->getMockBuilder(ilMatterhornEpisode::class)
+        $this->episode = $this->getMockBuilder(ilOpencastEpisode::class)
             ->setConstructorArgs([
             $this->series_id,
             $this->episode_id
@@ -91,7 +91,7 @@ class ilMatterhornEpisodeTest extends PHPUnit_Framework_TestCase
         
         $this->episode->publish();
         
-        $query = $ilDB->query("SELECT episode_id, series_id FROM rep_robj_xmh_rel_ep WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
+        $query = $ilDB->query("SELECT episode_id, series_id FROM rep_robj_xoc_rel_ep WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
         $this->assertEquals(1, $ilDB->numRows($query));
     }
 
@@ -103,7 +103,7 @@ class ilMatterhornEpisodeTest extends PHPUnit_Framework_TestCase
         
         $this->episode->retract();
         
-        $query = $ilDB->query("SELECT episode_id, series_id FROM rep_robj_xmh_rel_ep WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
+        $query = $ilDB->query("SELECT episode_id, series_id FROM rep_robj_xoc_rel_ep WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
         $this->assertEquals(0, $ilDB->numRows($query));
     }
 

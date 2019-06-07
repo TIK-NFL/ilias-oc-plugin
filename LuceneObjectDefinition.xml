@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ObjectDefinition xmlns:xi="http://www.w3.org/2001/XInclude" type="xmh">
+<ObjectDefinition xmlns:xi="http://www.w3.org/2001/XInclude" type="xoc">
     <Document type="default">
         <xi:include href="../../../../../../../Services/Object/LuceneDataSource.xml" />
         <xi:include href="../../../../../../../Services/Tagging/LuceneDataSource.xml" />
@@ -9,7 +9,7 @@
         <DataSource type="JDBC" action="append">
             <Query>
                 SELECT data.obj_id, slidetext.episode_id, slidetext.slidetime, slidetext.slidetext
-                FROM rep_robj_xmh_slidetext slidetext, rep_robj_xmh_rel_ep rel, rep_robj_xmh_data data
+                FROM rep_robj_xoc_slidetext slidetext, rep_robj_xoc_rel_ep rel, rep_robj_xoc_data data
                 WHERE data.series_id = rel.series_id AND rel.episode_id = slidetext.episode_id AND data.obj_id IN (?)
             </Query>
             <Param format="list" type="int" value="objId" />
@@ -18,7 +18,5 @@
             <Field global="YES" store="YES" index="NOT_ANALYZED" column="slidetext.episode_id" type="text" name="subItem" />
             <Field global="NO" store="YES" index="NOT_ANALYZED" column="data.obj_id" type="integer" name="objId" />
         </DataSource>
-        
     </Document>
-    
 </ObjectDefinition>

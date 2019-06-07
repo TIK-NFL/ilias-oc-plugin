@@ -23,7 +23,7 @@
 include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
 
 /**
- * ListGUI implementation for Matterhorn object plugin.
+ * ListGUI implementation for Opencast object plugin.
  * This one
  * handles the presentation in container items (categories, courses, ...)
  * together with the corresponding ...Access class.
@@ -31,9 +31,9 @@ include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
  * PLEASE do not create instances of larger classes here. Use the
  * ...Access class to get DB data and keep it small.
  *
- * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ * @author Per Pascal Seeland <pascal.seeland@tik.uni-stuttgart.de>
  */
-class ilObjMatterhornListGUI extends ilObjectPluginListGUI
+class ilObjOpencastListGUI extends ilObjectPluginListGUI
 {
 
     /**
@@ -41,7 +41,7 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
      */
     public function initType()
     {
-        $this->setType("xmh");
+        $this->setType("xoc");
     }
 
     /**
@@ -49,7 +49,7 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
      */
     public function getGuiClass()
     {
-        return "ilObjMatterhornGUI";
+        return "ilObjOpencastGUI";
     }
 
     /**
@@ -84,22 +84,22 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
     {
         global $DIC;
         $ilAccess = $DIC->access();
-        
+
         $props = array();
-        
-        $this->plugin->includeClass("class.ilObjMatterhornAccess.php");
-        if (! ilObjMatterhornAccess::checkOnline($this->obj_id)) {
+
+        $this->plugin->includeClass("class.ilObjOpencastAccess.php");
+        if (! ilObjOpencastAccess::checkOnline($this->obj_id)) {
             $props[] = array(
                 "alert" => true,
                 "property" => $this->txt("status"),
                 "value" => $this->txt("offline")
             );
         }
-        
+
         if ($ilAccess->checkAccess("write", "", $this->ref_id)) {
-            $this->plugin->includeClass("class.ilMatterhornConfig.php");
-            $configObject = new ilMatterhornConfig();
-            $series_id = $configObject->lookupSeriesForMatterhornObject($this->obj_id);
+            $this->plugin->includeClass("class.ilOpencastConfig.php");
+            $configObject = new ilOpencastConfig();
+            $series_id = $configObject->lookupSeriesForOpencastObject($this->obj_id);
             $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
             $onHoldEpisodes = ilOpencastAPI::getInstance()->getOnHoldEpisodes($series_id);
             $count = count($onHoldEpisodes);
@@ -111,7 +111,7 @@ class ilObjMatterhornListGUI extends ilObjectPluginListGUI
                 );
             }
         }
-        
+
         return $props;
     }
 }

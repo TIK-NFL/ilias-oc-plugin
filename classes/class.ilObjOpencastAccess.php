@@ -23,14 +23,14 @@
 include_once ("./Services/Repository/classes/class.ilObjectPluginAccess.php");
 
 /**
- * Access/Condition checking for Matterhorn object
+ * Access/Condition checking for Opencast object
  *
- * Please do not create instances of large application classes (like ilObjMatterhorn)
+ * Please do not create instances of large application classes (like ilObjOpencast)
  * Write small methods within this class to determin the status.
  *
- * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ * @author Per Pascal Seeland <pascal.seeland@tik.uni-stuttgart.de>
  */
-class ilObjMatterhornAccess extends ilObjectPluginAccess
+class ilObjOpencastAccess extends ilObjectPluginAccess
 {
 
     /**
@@ -66,7 +66,7 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
         switch ($a_permission) {
             case "visible":
             case "read":
-                if (! ilObjMatterhornAccess::checkOnline($a_obj_id) && ! $ilAccess->checkAccessOfUser($a_user_id, "write", "", $a_ref_id)) {
+                if (! ilObjOpencastAccess::checkOnline($a_obj_id) && ! $ilAccess->checkAccessOfUser($a_user_id, "write", "", $a_ref_id)) {
                     return false;
                 }
                 break;
@@ -83,30 +83,30 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
         global $DIC;
         $ilDB = $DIC->database();
 
-        $set = $ilDB->query("SELECT is_online FROM rep_robj_xmh_data WHERE obj_id = " . $ilDB->quote($a_id, "integer"));
+        $set = $ilDB->query("SELECT is_online FROM rep_robj_xoc_data WHERE obj_id = " . $ilDB->quote($a_id, "integer"));
         $rec = $ilDB->fetchAssoc($set);
         return (boolean) $rec["is_online"];
     }
 
-    private static function lookupMatterhornObjectForSeries($series_id)
+    private static function lookupOpencastObjectForSeries($series_id)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
-        $plugin->includeClass("class.ilMatterhornConfig.php");
-        $configObject = new ilMatterhornConfig();
-        return $configObject->lookupMatterhornObjectForSeries($series_id);
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
+        $plugin->includeClass("class.ilOpencastConfig.php");
+        $configObject = new ilOpencastConfig();
+        return $configObject->lookupOpencastObjectForSeries($series_id);
     }
 
     /**
      * Check access rights of the requested file
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      * @param string $permission
      * @throws Exception if user have no $permission access for the file of the episode
      */
     public static function checkEpisodeAccess($episode, $permission = "read")
     {
         global $DIC;
-        if (self::checkAccessObject(self::lookupMatterhornObjectForSeries($episode->getSeriesId()), $permission)) {
+        if (self::checkAccessObject(self::lookupOpencastObjectForSeries($episode->getSeriesId()), $permission)) {
             return;
         }
         // none of the checks above gives access
@@ -116,7 +116,7 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
     /**
      * Check access rights of the requested preview of the file
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      * @throws Exception if user have no access rights for the preview
      */
     public static function checkPreviewAccess($episode)
@@ -127,13 +127,13 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
     /**
      * Check access rights of the requested file
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      * @throws Exception if user have no access rights for the file
      */
     public static function checkFileAccess($episode)
     {
         global $DIC;
-        if (self::checkAccessObject(self::lookupMatterhornObjectForSeries($episode->getSeriesId()))) {
+        if (self::checkAccessObject(self::lookupOpencastObjectForSeries($episode->getSeriesId()))) {
             return;
         }
         // none of the checks above gives access

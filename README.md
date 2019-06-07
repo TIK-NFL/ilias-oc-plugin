@@ -1,10 +1,9 @@
 # ilias-oc
 An ILIAS Repository Object plugin for Opencast 6
 
-This plugin creates a tight intgration of Opencast 6(for older versions see older [releases](https://github.com/TIK-NFL/ilias-oc-plugin/releases)) and ILIAS.
-This plugin also requires to a workflow handler for Opencast, which enables distributing the files in a way that
-are usable by this plugin. This plugin is currently only available in the [Github Repo](https://github.com/pascalseeland/opencast)
-and not part of the official Opencast Distribution.
+This plugin creates a tight intgration of Opencast 6 and ILIAS.
+This plugin also requires a workflow handler for Opencast, which enables distributing the files in a way that are usable by this plugin.
+This plugin is available in the [Github Repo](https://github.com/pascalseeland/opencast).
 
 ## Installation
 
@@ -12,11 +11,11 @@ __REQUIRED__ Databases: MySQL/MariaDB
 
 It __MUST__ be installed into `Customizing/global/plugins/Services/Repository/RepositoryObject/`.
 
-The plugin folder __MUST__ be named 'Matterhorn'.
+The plugin folder __MUST__ be named `Opencast`.
 
 ## Configuration
 
-### Plugin-Configuration
+### Plugin
 
 #### Upload Workflow
 
@@ -40,3 +39,8 @@ The workflow __MUST__ support the configuration:
 #### Publisher
 The publisher used to create new Opencast series, e.g. "University of Stuttgart, Germany".
 This value is optional.
+
+### Opencast
+
+#### URL Signing
+TODO

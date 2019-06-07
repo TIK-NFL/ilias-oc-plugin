@@ -4,7 +4,7 @@
  * 
  * @group needInstalledILIAS
  */
-class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
+class ilOpencastUserTrackingTest extends PHPUnit_Framework_TestCase
 {
 
     protected $backupGlobals = FALSE;
@@ -19,7 +19,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
     /**
      * test episode
      *
-     * @var ilMatterhornEpisode
+     * @var ilOpencastEpisode
      */
     private $episode;
 
@@ -27,10 +27,10 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
     {
         include_once ("./Services/PHPUnit/classes/class.ilUnitUtil.php");
         ilUnitUtil::performInitialisation();
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
-        $plugin->includeClass("api/class.ilMatterhornUserTracking.php");
-        $plugin->includeClass("class.ilMatterhornEpisode.php");
-        $this->episode = new ilMatterhornEpisode("8b8966ac-e5e4-11e8-9f32-f2801f1b9fd1", $this->episode_id);
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
+        $plugin->includeClass("api/class.ilOpencastUserTracking.php");
+        $plugin->includeClass("class.ilOpencastEpisode.php");
+        $this->episode = new ilOpencastEpisode("8b8966ac-e5e4-11e8-9f32-f2801f1b9fd1", $this->episode_id);
     }
 
     /**
@@ -43,14 +43,14 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
         $user_id = $ilUser->getId();
         $episode = $this->episode;
         
-        ilMatterhornUserTracking::putUserTracking($user_id, $episode, 0, 10);
-        ilMatterhornUserTracking::putUserTracking($user_id, $episode, 10, 20);
-        ilMatterhornUserTracking::putUserTracking($user_id, $episode, 20, 30);
-        ilMatterhornUserTracking::putUserTracking($user_id, $episode, 40, 50);
+        ilOpencastUserTracking::putUserTracking($user_id, $episode, 0, 10);
+        ilOpencastUserTracking::putUserTracking($user_id, $episode, 10, 20);
+        ilOpencastUserTracking::putUserTracking($user_id, $episode, 20, 30);
+        ilOpencastUserTracking::putUserTracking($user_id, $episode, 40, 50);
         
-        ilMatterhornUserTracking::putUserTracking($user_id, $episode, 0, 10);
-        ilMatterhornUserTracking::putUserTracking($user_id, $episode, 0, 10);
-        ilMatterhornUserTracking::putUserTracking($user_id, $episode, 30, 40);
+        ilOpencastUserTracking::putUserTracking($user_id, $episode, 0, 10);
+        ilOpencastUserTracking::putUserTracking($user_id, $episode, 0, 10);
+        ilOpencastUserTracking::putUserTracking($user_id, $episode, 30, 40);
     }
 
     public function testPutUserTracking()
@@ -59,7 +59,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
         
         $user_id = $ilUser->getId();
         
-        $query = $ilDB->query("SELECT intime, outtime FROM " . ilMatterhornUserTracking::DATATABLE . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($this->episode_id, "text"));
+        $query = $ilDB->query("SELECT intime, outtime FROM " . ilOpencastUserTracking::DATATABLE . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($this->episode_id, "text"));
         
         $result = $ilDB->fetchAssoc($query);
         $this->assertEquals(0, $result['intime']);
@@ -84,7 +84,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
 
     public function testGetStatisticFromVideo()
     {
-        $result = ilMatterhornUserTracking::getStatisticFromVideo($this->episode);
+        $result = ilOpencastUserTracking::getStatisticFromVideo($this->episode);
         
         $this->assertEquals(3, $result['views'][0]);
         $this->assertEquals(1, $result['views'][1]);
@@ -105,7 +105,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
         
         $user_id = $ilUser->getId();
         
-        $result = ilMatterhornUserTracking::getFootprints($this->episode, $user_id);
+        $result = ilOpencastUserTracking::getFootprints($this->episode, $user_id);
         
         $this->assertEquals(0, $result['footprint'][0]['position']);
         $this->assertEquals(3, $result['footprint'][0]['views']);
@@ -121,7 +121,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
 
     public function testGetViews()
     {
-        $result = ilMatterhornUserTracking::getViews($this->episode);
+        $result = ilOpencastUserTracking::getViews($this->episode);
         $this->assertEquals(3, $result);
     }
 
@@ -130,7 +130,7 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
         global $ilUser;
         
         $user_id = $ilUser->getId();
-        $result = ilMatterhornUserTracking::getLastSecondViewed($this->episode, $user_id);
+        $result = ilOpencastUserTracking::getLastSecondViewed($this->episode, $user_id);
         $this->assertEquals(40, $result);
     }
 
@@ -139,6 +139,6 @@ class ilMatterhornUserTrackingTest extends PHPUnit_Framework_TestCase
      */
     public function restoreDataBase()
     {
-        ilMatterhornUserTracking::removeViews($this->episode);
+        ilOpencastUserTracking::removeViews($this->episode);
     }
 }

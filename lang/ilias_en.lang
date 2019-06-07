@@ -3,21 +3,21 @@
 //
 
 <!-- language file start -->
-obj_xmh#:#Opencast object
-objs_xmh#:#Opencast objects
-obj_xmh_duplicate#:#Copy
-objs_xmh_duplicate#:#Copy Opencast object
-obj_xmh_select#:#Select Opencast object
-xmh_add#:#Add Opencast object
-xmh_new#:#New Opencast object
-xmh_read#:#Read access to Opencast object
-xmh_write#:#Edit Opencast object
-xmh_delete#:#Delete Opencast object
-xmh_visible#:#Opencast object is visible
-xmh_edit_permission#:#Change permission settings
-grp_create_xmh#:#Create Opencast object
-crs_create_xmh#:#Create Opencast object
-fold_create_xmh#:#Create Opencast object
+obj_xoc#:#Opencast object
+objs_xoc#:#Opencast objects
+obj_xoc_duplicate#:#Copy
+objs_xoc_duplicate#:#Copy Opencast object
+obj_xoc_select#:#Select Opencast object
+xoc_add#:#Add Opencast object
+xoc_new#:#New Opencast object
+xoc_read#:#Read access to Opencast object
+xoc_write#:#Edit Opencast object
+xoc_delete#:#Delete Opencast object
+xoc_visible#:#Opencast object is visible
+xoc_edit_permission#:#Change permission settings
+grp_create_xoc#:#Create Opencast object
+crs_create_xoc#:#Create Opencast object
+fold_create_xoc#:#Create Opencast object
 content#:#Content
 manage#:#Manage Episodes
 viewmode#:#Use compact episode overview

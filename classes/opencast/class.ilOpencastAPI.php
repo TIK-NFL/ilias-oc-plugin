@@ -1,6 +1,6 @@
 <?php
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('opencast/class.ilOpencastRESTClient.php');
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('opencast/class.ilOpencastRESTClient.php');
 
 /**
  * All Communication with the Opencast server should be implemented in this class
@@ -18,7 +18,7 @@ class ilOpencastAPI
 
     /**
      *
-     * @var ilMatterhornConfig
+     * @var ilOpencastConfig
      */
     private $configObject;
 
@@ -33,8 +33,8 @@ class ilOpencastAPI
      */
     private function __construct()
     {
-        $this->configObject = new ilMatterhornConfig();
-        $this->opencastRESTClient = new ilOpencastRESTClient($this->configObject->getMatterhornServer(), $this->configObject->getOpencastAPIUser(), $this->configObject->getOpencastAPIPassword());
+        $this->configObject = new ilOpencastConfig();
+        $this->opencastRESTClient = new ilOpencastRESTClient($this->configObject->getOpencastServer(), $this->configObject->getOpencastAPIUser(), $this->configObject->getOpencastAPIPassword());
     }
 
     /**

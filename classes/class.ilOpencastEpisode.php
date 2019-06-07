@@ -4,7 +4,7 @@
  *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
-class ilMatterhornEpisode
+class ilOpencastEpisode
 {
 
     /**
@@ -78,7 +78,7 @@ class ilMatterhornEpisode
 
     public function setTitle($title)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
             "title" => $title
@@ -91,7 +91,7 @@ class ilMatterhornEpisode
     public function publish()
     {
         global $DIC;
-        $affected_rows = $DIC->database()->manipulate("INSERT INTO rep_robj_xmh_rel_ep (episode_id, series_id) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . ") ON DUPLICATE KEY UPDATE episode_id = episode_id");
+        $affected_rows = $DIC->database()->manipulate("INSERT INTO rep_robj_xoc_rel_ep (episode_id, series_id) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . ") ON DUPLICATE KEY UPDATE episode_id = episode_id");
         if ($affected_rows != 1) {
             throw new Exception("Episode " . $this->episode_id . " already published!");
         }
@@ -133,7 +133,7 @@ class ilMatterhornEpisode
                         $text = $text . " " . (string) $textxml->Text;
                     }
                     if ($text != "") {
-                        $ilDB->manipulate("INSERT INTO rep_robj_xmh_slidetext (episode_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "integer") . ")");
+                        $ilDB->manipulate("INSERT INTO rep_robj_xoc_slidetext (episode_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "integer") . ")");
                     }
                 }
                 $currentidx ++;
@@ -148,19 +148,19 @@ class ilMatterhornEpisode
     public function retract()
     {
         global $ilDB;
-        $ilDB->manipulate("DELETE FROM rep_robj_xmh_rel_ep WHERE episode_id=" . $this->getQuoteEpisodeId() . " AND series_id=" . $this->getQuoteSeriesId());
+        $ilDB->manipulate("DELETE FROM rep_robj_xoc_rel_ep WHERE episode_id=" . $this->getQuoteEpisodeId() . " AND series_id=" . $this->getQuoteSeriesId());
         $this->removeTextFromDB();
     }
 
     private function removeTextFromDB()
     {
         global $ilDB;
-        $ilDB->manipulate("DELETE FROM rep_robj_xmh_slidetext WHERE episode_id = " . $this->getQuoteEpisodeId());
+        $ilDB->manipulate("DELETE FROM rep_robj_xoc_slidetext WHERE episode_id = " . $this->getQuoteEpisodeId());
     }
 
     public function delete()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->delete($this->getEpisodeId());
     }
@@ -172,7 +172,7 @@ class ilMatterhornEpisode
      */
     public function getEpisode()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getEpisode($this->getEpisodeId());
     }
@@ -184,7 +184,7 @@ class ilMatterhornEpisode
      */
     public function getPublication()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getEpisodePublication($this->getEpisodeId());
     }
@@ -196,7 +196,7 @@ class ilMatterhornEpisode
      */
     public function getMedia()
     {
-        $publication =  $this->getPublication();
+        $publication = $this->getPublication();
         if ($publication == null) {
             throw new Exception("no publication for $episodeid on the 'api' channel", 404);
         }
@@ -215,7 +215,7 @@ class ilMatterhornEpisode
      */
     public function trim(array $keeptracks, float $trimin, float $trimout)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->trim($this->getEpisodeId(), $keeptracks, $trimin, $trimout);
     }

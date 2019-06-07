@@ -35,14 +35,14 @@ include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
  * - GUI classes used by this class are ilPermissionGUI (provides the rbac
  * screens) and ilInfoScreenGUI (handles the info screen).
  *
- * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
+ * @author Per Pascal Seeland <pascal.seeland@tik.uni-stuttgart.de>
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  *
- * @ilCtrl_isCalledBy ilObjMatterhornGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
- * @ilCtrl_Calls ilObjMatterhornGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI
- * @ilCtrl_Calls ilObjMatterhornGUI: ilCommonActionDispatcherGUI
+ * @ilCtrl_isCalledBy ilObjOpencastGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
+ * @ilCtrl_Calls ilObjOpencastGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI
+ * @ilCtrl_Calls ilObjOpencastGUI: ilCommonActionDispatcherGUI
  */
-class ilObjMatterhornGUI extends ilObjectPluginGUI
+class ilObjOpencastGUI extends ilObjectPluginGUI
 {
 
     const QUERY_EPISODE_IDENTIFIER = "id";
@@ -59,7 +59,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
 
     const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp';
 
-    const UPLOAD_DIR = "xmh_upload";
+    const UPLOAD_DIR = "xoc_upload";
 
     const UPLOAD_SUFFIXES = [
         'mp4',
@@ -71,14 +71,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     protected function afterConstructor()
     {
-        $this->getPlugin()->includeClass("class.ilMatterhornConfig.php");
-        $this->configObject = new ilMatterhornConfig();
+        $this->getPlugin()->includeClass("class.ilOpencastConfig.php");
+        $this->configObject = new ilOpencastConfig();
     }
 
     /**
-     * Get the ilObjMatterhorn for the GUI.
+     * Get the ilObjOpencast for the GUI.
      *
-     * @return ilObjMatterhorn
+     * @return ilObjOpencast
      */
     private function getMHObject()
     {
@@ -90,7 +90,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
      */
     final public function getType()
     {
-        return "xmh";
+        return "xoc";
     }
 
     /**
@@ -195,7 +195,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         
         switch ($a_tab) {
             case "manage":
-                ilLoggerFactory::getLogger('xmh')->debug("setting subtabs");
+                ilLoggerFactory::getLogger('xoc')->debug("setting subtabs");
                 $ilTabs->addSubTab("finishedepisodes", $this->txt('finished_recordings'), $ilCtrl->getLinkTarget($this, 'editFinishedEpisodes'));
                 $ilTabs->addSubTab("processtrim", $this->txt('processtrim'), $ilCtrl->getLinkTarget($this, 'editTrimProcess'));
                 $ilTabs->addSubTab("schedule", $this->txt('scheduled_recordings'), $ilCtrl->getLinkTarget($this, 'editSchedule'));
@@ -317,7 +317,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
-        ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
+        ilLoggerFactory::getLogger('xoc')->debug("ID:" . $episodeId);
         $episode = $this->getMHObject()->getEpisode($episodeId);
         
         if ($episode) {
@@ -330,7 +330,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 }
             }
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:" . $episode);
+            ilLoggerFactory::getLogger('xoc')->debug("ID does not match in publish episode:" . $episode);
         }
         $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
@@ -339,14 +339,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
-        ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
+        ilLoggerFactory::getLogger('xoc')->debug("ID:" . $episodeId);
         $episode = $this->getMHObject()->getEpisode($episodeId);
         
         if ($episode) {
             $episode->retract();
             ilUtil::sendSuccess($this->txt("msg_episode_retracted"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in retract episode:" . $episodeId);
+            ilLoggerFactory::getLogger('xoc')->debug("ID does not match in retract episode:" . $episodeId);
         }
         $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
@@ -355,14 +355,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
-        ilLoggerFactory::getLogger('xmh')->debug("ID:$episodeId");
+        ilLoggerFactory::getLogger('xoc')->debug("ID:$episodeId");
         $episode = $this->getMHObject()->getEpisode($episodeId);
         
         if ($episode) {
             $episode->delete();
             ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match in deleteschedule:$episodeId");
+            ilLoggerFactory::getLogger('xoc')->debug("ID does not match in deleteschedule:$episodeId");
         }
         $DIC->ctrl()->redirect($this, "editSchedule");
     }
@@ -561,9 +561,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     private function getLinkForEpisodeUnescaped(string $cmd, string $id)
     {
         global $DIC;
-        $DIC->ctrl()->setParameterByClass("ilobjmatterhorngui", self::QUERY_EPISODE_IDENTIFIER, $id);
-        $link = $DIC->ctrl()->getLinkTargetByClass("ilobjmatterhorngui", $cmd, "", false, false);
-        $DIC->ctrl()->clearParameterByClass("ilobjmatterhorngui", self::QUERY_EPISODE_IDENTIFIER);
+        $DIC->ctrl()->setParameterByClass("ilobjopencastgui", self::QUERY_EPISODE_IDENTIFIER, $id);
+        $link = $DIC->ctrl()->getLinkTargetByClass("ilobjopencastgui", $cmd, "", false, false);
+        $DIC->ctrl()->clearParameterByClass("ilobjopencastgui", self::QUERY_EPISODE_IDENTIFIER);
         return $link;
     }
 
@@ -577,9 +577,9 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     private function getLinkForShowEpisode(string $series_id, string $episode_id, bool $escaped)
     {
         global $DIC;
-        $DIC->ctrl()->setParameterByClass("ilobjmatterhorngui", self::QUERY_MEDIAPACKAGE_ID, $series_id . "/" . $episode_id);
-        $link = $DIC->ctrl()->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode", "", false, $escaped);
-        $DIC->ctrl()->clearParameterByClass("ilobjmatterhorngui", self::QUERY_MEDIAPACKAGE_ID);
+        $DIC->ctrl()->setParameterByClass("ilobjopencastgui", self::QUERY_MEDIAPACKAGE_ID, $series_id . "/" . $episode_id);
+        $link = $DIC->ctrl()->getLinkTargetByClass("ilobjopencastgui", "showEpisode", "", false, $escaped);
+        $DIC->ctrl()->clearParameterByClass("ilobjopencastgui", self::QUERY_MEDIAPACKAGE_ID);
         return $link;
     }
 
@@ -787,7 +787,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 ilUtil::sendSuccess($this->txt("msg_episode_uploaded"), true);
                 $ilCtrl->redirect($this, "editTrimProcess");
             } catch (Exception $e) {
-                ilLoggerFactory::getLogger('xmh')->debug("Exception while uploading to opencast: " . $e->getMessage());
+                ilLoggerFactory::getLogger('xoc')->debug("Exception while uploading to opencast: " . $e->getMessage());
                 echo json_encode(array(
                     'success' => false
                 ));
@@ -822,7 +822,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("MANUAL_RELEASE", $this->getMHObject()->getManualRelease());
         $seriestpl->parseCurrentBlock();
         $jsConfig = $seriestpl->get();
-        ilLoggerFactory::getLogger('xmh')->debug($section);
+        ilLoggerFactory::getLogger('xoc')->debug($section);
         switch ($section) {
             case 'finished':
                 $ilTabs->activateSubTab('finishedepisodes');
@@ -935,7 +935,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
         $episode = $this->getMHObject()->getEpisode($_GET[self::QUERY_EPISODE_IDENTIFIER]);
         if ($episode) {
             $id = $episode->getEpisodeId();
-            ilLoggerFactory::getLogger('xmh')->debug("Trimming episode: $id");
+            ilLoggerFactory::getLogger('xoc')->debug("Trimming episode: $id");
             $episodeInfo = $episode->getEpisode();
             $media = $episode->getMedia();
             if (count($media) != 1) {
@@ -956,7 +956,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             switch ($previewTrack->flavor) {
                 case "presentation/preview":
                     $streamType = "presentation";
-                    ilLoggerFactory::getLogger('xmh')->debug("Found presentation track");
+                    ilLoggerFactory::getLogger('xoc')->debug("Found presentation track");
                     break;
                 case "presenter/preview":
                     $streamType = "presenter";
@@ -1056,7 +1056,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         } else {
-            ilLoggerFactory::getLogger('xmh')->debug("ID does not match an episode:" . $_POST["eventid"]);
+            ilLoggerFactory::getLogger('xoc')->debug("ID does not match an episode:" . $_POST["eventid"]);
         }
         $ilCtrl->redirect($this, "editTrimProcess");
     }

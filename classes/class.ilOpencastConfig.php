@@ -1,13 +1,14 @@
 <?php
 
-class ilMatterhornConfig
+class ilOpencastConfig
 {
+
     /**
-     * returns the hostname for the matterhorn server.
+     * returns the hostname for the Opencast server.
      *
-     * @return string the hostname for the matterhorn server
+     * @return string the hostname for the Opencast server
      */
-    public function getMatterhornServer()
+    public function getOpencastServer()
     {
         $retVal = $this->getValue('mh_server');
         if (! $retVal) {
@@ -17,7 +18,7 @@ class ilMatterhornConfig
         return $retVal;
     }
 
-    public function setMatterhornServer($a_server)
+    public function setOpencastServer($a_server)
     {
         $this->setValue('mh_server', $a_server);
     }
@@ -106,7 +107,7 @@ class ilMatterhornConfig
      */
     private function getAvailableWorkflows(string $tag)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         if (ilOpencastAPI::getInstance()->checkOpencast()) {
             $workflowDefinitions = ilOpencastAPI::getInstance()->getWorkflowDefinition($tag);
@@ -148,10 +149,10 @@ class ilMatterhornConfig
      * @param string $series_id
      * @return int $obj_id
      */
-    public function lookupMatterhornObjectForSeries($series_id)
+    public function lookupOpencastObjectForSeries($series_id)
     {
         global $ilDB;
-        $result = $ilDB->query('SELECT obj_id FROM rep_robj_xmh_data WHERE series_id = ' . $ilDB->quote($series_id, 'text'));
+        $result = $ilDB->query('SELECT obj_id FROM rep_robj_xoc_data WHERE series_id = ' . $ilDB->quote($series_id, 'text'));
         if ($result->numRows() == 0) {
             return false;
         }
@@ -165,10 +166,10 @@ class ilMatterhornConfig
      * @param int $obj_id
      * @return string $series_id
      */
-    public function lookupSeriesForMatterhornObject($obj_id)
+    public function lookupSeriesForOpencastObject($obj_id)
     {
         global $ilDB;
-        $result = $ilDB->query('SELECT series_id FROM rep_robj_xmh_data WHERE obj_id = ' . $ilDB->quote($obj_id, 'integer'));
+        $result = $ilDB->query('SELECT series_id FROM rep_robj_xoc_data WHERE obj_id = ' . $ilDB->quote($obj_id, 'integer'));
         if ($result->numRows() == 0) {
             return false;
         }
@@ -189,7 +190,7 @@ class ilMatterhornConfig
         global $ilDB;
 
         if (! is_string($this->getValue($key))) {
-            $ilDB->insert('rep_robj_xmh_config', array(
+            $ilDB->insert('rep_robj_xoc_config', array(
                 'cfgkey' => array(
                     'text',
                     $key
@@ -200,7 +201,7 @@ class ilMatterhornConfig
                 )
             ));
         } else {
-            $ilDB->update('rep_robj_xmh_config', array(
+            $ilDB->update('rep_robj_xoc_config', array(
                 'cfgkey' => array(
                     'text',
                     $key
@@ -228,7 +229,7 @@ class ilMatterhornConfig
     private function getValue($key)
     {
         global $ilDB;
-        $result = $ilDB->query('SELECT cfgvalue FROM rep_robj_xmh_config WHERE cfgkey = ' . $ilDB->quote($key, 'text'));
+        $result = $ilDB->query('SELECT cfgvalue FROM rep_robj_xoc_config WHERE cfgkey = ' . $ilDB->quote($key, 'text'));
         if ($result->numRows() == 0) {
             return false;
         }

@@ -10,14 +10,14 @@ class ilAPIController
 
     /**
      *
-     * @var ilMatterhornPlugin
+     * @var ilOpencastPlugin
      */
     private $plugin;
 
     /**
-     * the configuration for the matterhorn object
+     * the configuration for the Opencast plugin
      *
-     * @var ilMatterhornConfig
+     * @var ilOpencastConfig
      */
     private $configObject;
 
@@ -33,7 +33,7 @@ class ilAPIController
     public function __construct($uri, $method)
     {
         $this->params = array();
-        $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
 
         if ($method == 'GET') {
             parse_str($uri["query"], $this->params);
@@ -41,9 +41,9 @@ class ilAPIController
             parse_str(file_get_contents("php://input"), $this->params);
         }
 
-        $this->plugin->includeClass("class.ilMatterhornConfig.php");
-        $this->plugin->includeClass("class.ilObjMatterhornAccess.php");
-        $this->configObject = new ilMatterhornConfig();
+        $this->plugin->includeClass("class.ilOpencastConfig.php");
+        $this->plugin->includeClass("class.ilObjOpencastAccess.php");
+        $this->configObject = new ilOpencastConfig();
     }
 
     /**
@@ -55,20 +55,20 @@ class ilAPIController
      */
     public function handleRequest($path)
     {
-        ilLoggerFactory::getLogger('xmh')->debug("Request for:" . $path);
+        ilLoggerFactory::getLogger('xoc')->debug("Request for:" . $path);
 
         try {
             // check if it is a request for an episode
             if (0 == strcmp("/episode.json", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
-                ilObjMatterhornAccess::checkEpisodeAccess($epsiode);
+                ilObjOpencastAccess::checkEpisodeAccess($epsiode);
                 $this->sendEpisode($epsiode);
             } else if (0 == strcmp("/usertracking", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
                 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                     switch ($this->params['type']) {
                         case "FOOTPRINT":
-                            ilObjMatterhornAccess::checkEpisodeAccess($epsiode);
+                            ilObjOpencastAccess::checkEpisodeAccess($epsiode);
                             $this->putUserTracking($epsiode);
                             break;
                         case "VIEWS":
@@ -82,15 +82,15 @@ class ilAPIController
                 }
             } else if (0 == strcmp("/usertracking/stats.json", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
-                ilObjMatterhornAccess::checkEpisodeAccess($epsiode);
+                ilObjOpencastAccess::checkEpisodeAccess($epsiode);
                 $this->sendStats($epsiode);
             } else if (0 == strcmp("/usertracking/footprint.json", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
-                ilObjMatterhornAccess::checkEpisodeAccess($epsiode);
+                ilObjOpencastAccess::checkEpisodeAccess($epsiode);
                 $this->sendFootprint($epsiode);
             } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
-                ilObjMatterhornAccess::checkEpisodeAccess($epsiode, "write");
+                ilObjOpencastAccess::checkEpisodeAccess($epsiode, "write");
                 $this->sendStatistic($epsiode);
             } else if (0 == strcmp("/info/me.json", $path)) {
                 $this->sendMe();
@@ -107,7 +107,7 @@ class ilAPIController
     /**
      * extract series_id and episode_id from the request param
      *
-     * @return ilMatterhornEpisode
+     * @return ilOpencastEpisode
      */
     private function getEpisodeFromParameter()
     {
@@ -122,20 +122,20 @@ class ilAPIController
      *
      * @param string $series_id
      * @param string $episode_id
-     * @return ilMatterhornEpisode
+     * @return ilOpencastEpisode
      */
     private function getEpisode(string $series_id, string $episode_id)
     {
-        $this->plugin->includeClass("class.ilMatterhornEpisode.php");
-        return new ilMatterhornEpisode($series_id, $episode_id);
+        $this->plugin->includeClass("class.ilOpencastEpisode.php");
+        return new ilOpencastEpisode($series_id, $episode_id);
     }
 
     /**
      * Send the requested eposide.json
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      */
-    private function sendEpisode(ilMatterhornEpisode $episodeObject)
+    private function sendEpisode(ilOpencastEpisode $episodeObject)
     {
         $episodeData = $episodeObject->getEpisode();
         $publication = $episodeObject->getPublication();
@@ -161,8 +161,8 @@ class ilAPIController
             }
             array_push($attachments['attachment'], $att);
         }
-        // ilLoggerFactory::getLogger('xmh')->debug((string) $segmentxml->MediaTime->MediaDuration);
-        // ilLoggerFactory::getLogger('xmh')->debug(print_r($previewrefs,true));
+        // ilLoggerFactory::getLogger('xoc')->debug((string) $segmentxml->MediaTime->MediaDuration);
+        // ilLoggerFactory::getLogger('xoc')->debug(print_r($previewrefs,true));
 
         $metadata = array(
             "catalog" => array()
@@ -324,17 +324,17 @@ class ilAPIController
     /**
      * stores the usertracking data in the database
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      */
-    private function putUserTracking(ilMatterhornEpisode $episode)
+    private function putUserTracking(ilOpencastEpisode $episode)
     {
         global $ilUser;
         $intime = intval($this->params['in']);
         $outtime = intval($this->params['out']);
         $user_id = $ilUser->getId();
 
-        $this->plugin->includeClass("api/class.ilMatterhornUserTracking.php");
-        ilMatterhornUserTracking::putUserTracking($user_id, $episode, $intime, $outtime);
+        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
+        ilOpencastUserTracking::putUserTracking($user_id, $episode, $intime, $outtime);
 
         header("HTTP/1.0 204 Stored");
     }
@@ -342,12 +342,12 @@ class ilAPIController
     /**
      * send the Statistic overview for the episode as json.
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      */
-    private function sendStatistic(ilMatterhornEpisode $episode)
+    private function sendStatistic(ilOpencastEpisode $episode)
     {
-        $this->plugin->includeClass("api/class.ilMatterhornUserTracking.php");
-        $statistic = ilMatterhornUserTracking::getStatisticFromVideo($episode);
+        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
+        $statistic = ilOpencastUserTracking::getStatisticFromVideo($episode);
         $data = array();
         foreach ($statistic as $name => $value) {
             $content = array();
@@ -380,30 +380,30 @@ class ilAPIController
     /**
      * send Footprints for the user
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      */
-    private function sendFootprint(ilMatterhornEpisode $episode)
+    private function sendFootprint(ilOpencastEpisode $episode)
     {
         global $ilUser;
         $user_id = $ilUser->getId();
 
         $response = array();
-        $this->plugin->includeClass("api/class.ilMatterhornUserTracking.php");
-        $response['footprints'] = ilMatterhornUserTracking::getFootprints($episode, $user_id);
-        $response['last'] = ilMatterhornUserTracking::getLastSecondViewed($episode, $user_id);
+        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
+        $response['footprints'] = ilOpencastUserTracking::getFootprints($episode, $user_id);
+        $response['last'] = ilOpencastUserTracking::getLastSecondViewed($episode, $user_id);
         $this->sendJSON($response);
     }
 
     /**
      * send Statistics like views
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      */
-    private function sendStats(ilMatterhornEpisode $episode)
+    private function sendStats(ilOpencastEpisode $episode)
     {
         $response = array();
-        $this->plugin->includeClass("api/class.ilMatterhornUserTracking.php");
-        $views = ilMatterhornUserTracking::getViews($episode);
+        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
+        $views = ilOpencastUserTracking::getViews($episode);
         $response['stats'] = [
             'views' => $views
         ];
@@ -415,8 +415,8 @@ class ilAPIController
      */
     private function sendMe()
     {
-        $this->plugin->includeClass("api/class.ilMatterhornInfo.php");
-        $info = new ilMatterhornInfo();
+        $this->plugin->includeClass("api/class.ilOpencastInfo.php");
+        $info = new ilOpencastInfo();
         $response = $info->getMyInfo();
         $this->sendJSON($response);
     }
@@ -426,8 +426,8 @@ class ilAPIController
      */
     private function sendList()
     {
-        $this->plugin->includeClass("api/class.ilMatterhornInfo.php");
-        $info = new ilMatterhornInfo();
+        $this->plugin->includeClass("api/class.ilOpencastInfo.php");
+        $info = new ilOpencastInfo();
         $response = $info->listPlugins();
         $this->sendJSON($response);
     }
@@ -454,7 +454,7 @@ class ilAPIController
         $errorcode = $exception->getCode();
         $errortext = $exception->getMessage();
 
-        ilLoggerFactory::getLogger('xmh')->debug($errorcode . " " . $errortext);
+        ilLoggerFactory::getLogger('xoc')->debug($errorcode . " " . $errortext);
 
         http_response_code($errorcode);
         echo $errortext;

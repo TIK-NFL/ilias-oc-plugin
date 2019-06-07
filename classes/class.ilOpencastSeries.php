@@ -4,7 +4,7 @@
  *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
-class ilMatterhornSeries
+class ilOpencastSeries
 {
 
     /**
@@ -48,7 +48,7 @@ class ilMatterhornSeries
      */
     public function getSeriesInformationFromOpencast()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         $series = ilOpencastAPI::getInstance()->getSeries($this->getSeriesId());
         $series = array(
@@ -67,7 +67,7 @@ class ilMatterhornSeries
      */
     public function getScheduledEpisodes()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getScheduledEpisodes($this->getSeriesId());
     }
@@ -79,7 +79,7 @@ class ilMatterhornSeries
      */
     public function getOnHoldEpisodes()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getOnHoldEpisodes($this->getSeriesId());
     }
@@ -91,7 +91,7 @@ class ilMatterhornSeries
      */
     public function getReadyEpisodes()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getReadyEpisodes($this->getSeriesId());
     }
@@ -103,7 +103,7 @@ class ilMatterhornSeries
      */
     public function getProcessingEpisodes()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         $workflows = ilOpencastAPI::getInstance()->getActiveWorkflows($this->getSeriesId());
 
@@ -160,7 +160,7 @@ class ilMatterhornSeries
      */
     public function createEpisode(string $title, string $creator, string $startDate, bool $flagForCutting, string $presentationfilePath)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
+        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->createEpisode($title, $creator, $startDate, $this->series_id, $flagForCutting, $presentationfilePath);
     }

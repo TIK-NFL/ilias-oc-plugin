@@ -3,17 +3,17 @@
 /**
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
-class ilMatterhornUserTracking
+class ilOpencastUserTracking
 {
 
-    const DATATABLE = 'rep_robj_xmh_views';
+    const DATATABLE = 'rep_robj_xoc_views';
 
     /**
      * Adds User-Tracking Data to Database
      *
      * @param int $user_id
      *            the user id for the tracking data
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      *            the video that has been viewed
      * @param int $intime
      *            the start of the time periode of the view
@@ -95,7 +95,7 @@ class ilMatterhornUserTracking
     /**
      * Get the statistics form a video, includes view count for 10 sec Intervals of the video
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      * @return array
      */
     public static function getStatisticFromVideo($episode)
@@ -151,7 +151,7 @@ class ilMatterhornUserTracking
     /**
      * Get the Footprints form a video, user
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      * @param int $user_id
      * @return array
      */
@@ -198,7 +198,7 @@ class ilMatterhornUserTracking
     /**
      * Get the Views for a video
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      * @return int
      */
     public static function getViews($episode)
@@ -236,7 +236,7 @@ class ilMatterhornUserTracking
     /**
      * Get the seconds of the last view from this video from this user
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      * @param int $user_id
      * @return int seconds
      */
@@ -248,7 +248,7 @@ class ilMatterhornUserTracking
     /**
      * Delete all Views for the specified episode_id
      *
-     * @param ilMatterhornEpisode $episode
+     * @param ilOpencastEpisode $episode
      */
     public static function removeViews($episode)
     {

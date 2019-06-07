@@ -25,8 +25,8 @@ $fields = array(
     )
 );
 
-$ilDB->createTable("rep_robj_xmh_data", $fields);
-$ilDB->addPrimaryKey("rep_robj_xmh_data", array(
+$ilDB->createTable("rep_robj_xoc_data", $fields);
+$ilDB->addPrimaryKey("rep_robj_xoc_data", array(
     "id"
 ));
 ?>
@@ -46,14 +46,14 @@ $fields = array(
     )
 );
 
-$ilDB->createTable("rep_robj_xmh_config", $fields);
-$ilDB->addPrimaryKey("rep_robj_xmh_config", array(
+$ilDB->createTable("rep_robj_xoc_config", $fields);
+$ilDB->addPrimaryKey("rep_robj_xoc_config", array(
     "cfgkey"
 ));
 ?>
 <#3>
 <?php
-$ilDB->addTableColumn('rep_robj_xmh_data', 'lectureid', array(
+$ilDB->addTableColumn('rep_robj_xoc_data', 'lectureid', array(
     'type' => 'text',
     'length' => 20,
     'fixed' => false,
@@ -63,7 +63,7 @@ $ilDB->addTableColumn('rep_robj_xmh_data', 'lectureid', array(
 <#4>
 <#5>
 <?php
-$ilDB->addTableColumn('rep_robj_xmh_data', 'viewmode', array(
+$ilDB->addTableColumn('rep_robj_xoc_data', 'viewmode', array(
     'type' => 'integer',
     'length' => 1,
     'notnull' => false,
@@ -72,7 +72,7 @@ $ilDB->addTableColumn('rep_robj_xmh_data', 'viewmode', array(
 ?>
 <#6>
 <?php
-$ilDB->addTableColumn('rep_robj_xmh_data', 'manualrelease', array(
+$ilDB->addTableColumn('rep_robj_xoc_data', 'manualrelease', array(
     'type' => 'integer',
     'length' => 1,
     'notnull' => false,
@@ -96,17 +96,17 @@ $fields = array(
     )
 );
 
-$ilDB->createTable("rep_robj_xmh_rel_ep", $fields);
-$ilDB->addPrimaryKey("rep_robj_xmh_rel_ep", array(
+$ilDB->createTable("rep_robj_xoc_rel_ep", $fields);
+$ilDB->addPrimaryKey("rep_robj_xoc_rel_ep", array(
     "episode_id"
 ));
-$ilDB->addIndex("rep_robj_xmh_rel_ep", array(
+$ilDB->addIndex("rep_robj_xoc_rel_ep", array(
     "series_id"
 ), 'ser');
 ?>
 <#8>
 <?php
-$ilDB->addTableColumn('rep_robj_xmh_data', 'fsinodupdate', array(
+$ilDB->addTableColumn('rep_robj_xoc_data', 'fsinodupdate', array(
     'type' => 'integer',
     'length' => 8,
     'notnull' => false,
@@ -116,13 +116,13 @@ $ilDB->addTableColumn('rep_robj_xmh_data', 'fsinodupdate', array(
 <#9>
 <?php
 
-$ilDB->modifyTableColumn('rep_robj_xmh_data', 'manualrelease', array(
+$ilDB->modifyTableColumn('rep_robj_xoc_data', 'manualrelease', array(
     'type' => 'integer',
     'length' => 1,
     'notnull' => true,
     'default' => 0
 ));
-$ilDB->modifyTableColumn('rep_robj_xmh_data', 'fsinodupdate', array(
+$ilDB->modifyTableColumn('rep_robj_xoc_data', 'fsinodupdate', array(
     'type' => 'integer',
     'length' => 8,
     'notnull' => true,
@@ -131,7 +131,7 @@ $ilDB->modifyTableColumn('rep_robj_xmh_data', 'fsinodupdate', array(
 ?>
 <#10>
 <?php
-$ilDB->addTableColumn('rep_robj_xmh_data', 'download', array(
+$ilDB->addTableColumn('rep_robj_xoc_data', 'download', array(
     'type' => 'integer',
     'length' => 8,
     'notnull' => false,
@@ -140,7 +140,7 @@ $ilDB->addTableColumn('rep_robj_xmh_data', 'download', array(
 ?>
 <#11>
 <?php
-$ilDB->renameTableColumn('rep_robj_xmh_data', 'id', 'obj_id');
+$ilDB->renameTableColumn('rep_robj_xoc_data', 'id', 'obj_id');
 ?>
 <#12>
 <#13>
@@ -171,8 +171,8 @@ $fields = array(
     )
 );
 
-$ilDB->createTable("rep_robj_xmh_slidetext", $fields);
-$ilDB->addPrimaryKey("rep_robj_xmh_slidetext", array(
+$ilDB->createTable("rep_robj_xoc_slidetext", $fields);
+$ilDB->addPrimaryKey("rep_robj_xoc_slidetext", array(
     "episode_id",
     "slidetime"
 ));
@@ -214,9 +214,9 @@ $fields = array(
     )
 );
 
-$ilDB->createTable("rep_robj_xmh_usrtrack", $fields);
+$ilDB->createTable("rep_robj_xoc_usrtrack", $fields);
 // ignore that ILIAS does wont to have an extra autoinc table. This will only work in mysql, but I don't care about Oracle.
-$ilDB->manipulate(" ALTER TABLE rep_robj_xmh_usrtrack MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
+$ilDB->manipulate(" ALTER TABLE rep_robj_xoc_usrtrack MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
 
 ?>
 <#15>
@@ -250,13 +250,13 @@ $fields = array(
     )
 );
 
-const viewsTable = 'rep_robj_xmh_views';
+const viewsTable = 'rep_robj_xoc_views';
 
 $ilDB->createTable(viewsTable, $fields);
 $ilDB->manipulate(" ALTER TABLE " . viewsTable . " MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key; ");
 
-ilLoggerFactory::getLogger('xmh')->info("Convert data from rep_robj_xmh_usrtrack table to rep_robj_xmh_views table data");
-$tempTable = 'rep_robj_xmh_usrtrack';
+ilLoggerFactory::getLogger('xoc')->info("Convert data from rep_robj_xoc_usrtrack table to rep_robj_xoc_views table data");
+$tempTable = 'rep_robj_xoc_usrtrack';
 $blocksize = 10000;
 
 function getLastView($user_id, $episode_id)
@@ -297,10 +297,10 @@ while ($query = $ilDB->query($sqlSelect)) {
     $rowsNum = $ilDB->numRows($query);
     
     if ($rowsNum === 0) {
-        ilLoggerFactory::getLogger('xmh')->info($paredRows . ' rows parsed');
+        ilLoggerFactory::getLogger('xoc')->info($paredRows . ' rows parsed');
         break;
     }
-    ilLoggerFactory::getLogger('xmh')->info('Parsing ' . $rowsNum . ' rows. ' . $paredRows . ' rows parsed');
+    ilLoggerFactory::getLogger('xoc')->info('Parsing ' . $rowsNum . ' rows. ' . $paredRows . ' rows parsed');
     
     $videos = array();
     
@@ -356,14 +356,14 @@ while ($query = $ilDB->query($sqlSelect)) {
     $paredRows += $rowsNum;
 }
 
-// delete rep_robj_xmh_usrtrack table
-$ilDB->dropTable("rep_robj_xmh_usrtrack");
+// delete rep_robj_xoc_usrtrack table
+$ilDB->dropTable("rep_robj_xoc_usrtrack");
 ?>
 <#16>
 <?php
-$ilDB->manipulate('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('distribution_directory', 'text') . ' WHERE cfgkey = ' . $ilDB->quote('xsendfile_basedir', 'text'));
-$ilDB->manipulate('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('mh_directory', 'text') . ', cfgvalue = REPLACE(cfgvalue, "/files", "") WHERE cfgkey = ' . $ilDB->quote('mh_files_directory', 'text'));
-$ilDB->modifyTableColumn('rep_robj_xmh_slidetext', 'slidetime', array(
+$ilDB->manipulate('UPDATE rep_robj_xoc_config SET cfgkey = ' . $ilDB->quote('distribution_directory', 'text') . ' WHERE cfgkey = ' . $ilDB->quote('xsendfile_basedir', 'text'));
+$ilDB->manipulate('UPDATE rep_robj_xoc_config SET cfgkey = ' . $ilDB->quote('mh_directory', 'text') . ', cfgvalue = REPLACE(cfgvalue, "/files", "") WHERE cfgkey = ' . $ilDB->quote('mh_files_directory', 'text'));
+$ilDB->modifyTableColumn('rep_robj_xoc_slidetext', 'slidetime', array(
     'type' => 'integer',
     'length' => 8,
     'notnull' => true
@@ -371,37 +371,37 @@ $ilDB->modifyTableColumn('rep_robj_xmh_slidetext', 'slidetime', array(
 ?>
 <#17>
 <?php
-$ilDB->manipulate("ALTER TABLE rep_robj_xmh_config CHANGE `cfgkey` `cfgkey` VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;");
-$ilDB->manipulate('UPDATE rep_robj_xmh_config SET cfgkey = ' . $ilDB->quote('distribution_directory', 'text') . ' WHERE cfgkey = ' . $ilDB->quote('distribution_direto', 'text'));
+$ilDB->manipulate("ALTER TABLE rep_robj_xoc_config CHANGE `cfgkey` `cfgkey` VARCHAR(30) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL;");
+$ilDB->manipulate('UPDATE rep_robj_xoc_config SET cfgkey = ' . $ilDB->quote('distribution_directory', 'text') . ' WHERE cfgkey = ' . $ilDB->quote('distribution_direto', 'text'));
 ?>
 <#18>
 <?php
-$ilDB->dropTableColumn('rep_robj_xmh_data', 'mhretval');
-$ilDB->dropTableColumn('rep_robj_xmh_data', 'lectureid');
-$ilDB->dropTableColumn('rep_robj_xmh_data', 'series');
+$ilDB->dropTableColumn('rep_robj_xoc_data', 'mhretval');
+$ilDB->dropTableColumn('rep_robj_xoc_data', 'lectureid');
+$ilDB->dropTableColumn('rep_robj_xoc_data', 'series');
 ?>
 <#19>
 <?php
-$ilDB->manipulate("UPDATE rep_robj_xmh_rel_ep SET series_id = concat('ilias_xmh_', series_id)");
+$ilDB->manipulate("UPDATE rep_robj_xoc_rel_ep SET series_id = concat('ilias_xoc_', series_id)");
 
-$ilDB->addTableColumn('rep_robj_xmh_data', 'series_id', array(
+$ilDB->addTableColumn('rep_robj_xoc_data', 'series_id', array(
     'type' => 'text',
     'length' => 50,
     'notnull' => true
 ));
-$ilDB->manipulate("UPDATE rep_robj_xmh_data SET series_id = concat('ilias_xmh_', obj_id)");
-$ilDB->modifyTableColumn('rep_robj_xmh_data', 'series_id', array(
+$ilDB->manipulate("UPDATE rep_robj_xoc_data SET series_id = concat('ilias_xoc_', obj_id)");
+$ilDB->modifyTableColumn('rep_robj_xoc_data', 'series_id', array(
     'type' => 'text',
     'length' => 50,
     'notnull' => true
 ));
-$ilDB->addIndex('rep_robj_xmh_data', array(
+$ilDB->addIndex('rep_robj_xoc_data', array(
     'series_id'
 ), 'ser');
 
-$ilDB->dropTableColumn('rep_robj_xmh_slidetext', 'series_id');
+$ilDB->dropTableColumn('rep_robj_xoc_slidetext', 'series_id');
 ?>
 <#20>
 <?php
-$ilDB->dropTableColumn('rep_robj_xmh_data', 'fsinodupdate');
+$ilDB->dropTableColumn('rep_robj_xoc_data', 'fsinodupdate');
 ?>

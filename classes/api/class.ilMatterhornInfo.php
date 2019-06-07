@@ -4,7 +4,7 @@
  * 
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
-class ilMatterhornInfo
+class ilOpencastInfo
 {
 
     /**
@@ -41,7 +41,7 @@ class ilMatterhornInfo
      */
     public function listPlugins()
     {
-        $staticPluginsList = ilPlugin::_getDirectory(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn') . "/templates/theodul/manager/list.json";
+        $staticPluginsList = ilPlugin::_getDirectory(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast') . "/templates/theodul/manager/list.json";
         $json = json_decode(file_get_contents($staticPluginsList));
 
         return $json;
