@@ -36,7 +36,7 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
         ilUnitUtil::performInitialisation();
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("class.ilOpencastEpisode.php");
-        
+
         $this->episode = $this->getMockBuilder(ilOpencastEpisode::class)
             ->setConstructorArgs([
             $this->series_id,
@@ -46,7 +46,7 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
             'getEpisode'
         ])
             ->getMock();
-        $this->episode->method('getEpisode')->willReturn();//TODO
+        $this->episode->method('getEpisode')->willReturn(json_decode(file_get_contents("episode.json")));
     }
 
     public function testGetSeriesId()
@@ -71,18 +71,6 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
     {
         $episode_id = $this->episode->getQuoteEpisodeId();
         $this->assertEquals("'" . $this->episode_id . "'", $episode_id);
-    }
-
-    public function testGetDuration()
-    {
-        $duration = $this->episode->getDuration();
-        $this->assertEquals("40032", $duration);
-    }
-
-    public function testGetTitle()
-    {
-        $title = $this->episode->getTitle();
-        $this->assertEquals("test video", $title);
     }
 
     public function testPublish()

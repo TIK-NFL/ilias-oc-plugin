@@ -1,0 +1,33 @@
+{
+	"identifier": "28b408e5-da79-4737-ba1c-5567d76a3cb6",
+	"creator": "Opencast Project Administrator",
+	"presenter": [
+		"Some presenter"
+	],
+	"created": "2019-06-07T07:06:03Z",
+	"is_part_of": "8b8966ac-e5e4-11e8-9f32-f2801f1b9fd1",
+	"subjects": [],
+	"start": "2019-06-07T07:06:03Z",
+	"description": "this is a test video",
+	"language": "eng",
+	"source": "",
+	"title": "test video",
+	"processing_state": "SUCCEEDED",
+	"duration": 0,
+	"license": "",
+	"archive_version": 4,
+	"contributor": [
+		"Max Kraut"
+	],
+	"series": "Some Series",
+	"has_previews": true,
+	"location": "",
+	"rightsholder": "",
+	"publication_status": [
+		"internal",
+		"engage-player",
+		"api",
+		"oaipmh-default"
+	],
+	"status": "EVENTS.EVENTS.STATUS.PROCESSED"
+}
