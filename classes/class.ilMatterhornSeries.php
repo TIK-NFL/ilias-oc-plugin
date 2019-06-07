@@ -93,7 +93,7 @@ class ilMatterhornSeries
     {
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn');
         $plugin->includeClass("opencast/class.ilOpencastAPI.php");
-        return ilOpencastAPI::getInstance()->getPublishedEpisodes($this->getSeriesId());
+        return ilOpencastAPI::getInstance()->getReadyEpisodes($this->getSeriesId());
     }
 
     /**

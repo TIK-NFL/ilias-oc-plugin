@@ -14,6 +14,8 @@ class ilOpencastAPI
 
     private static $instance = null;
 
+    const API_PUBLICATION_CHANNEL = "api";
+
     /**
      *
      * @var ilMatterhornConfig
@@ -228,7 +230,7 @@ class ilOpencastAPI
      * @param string $episode_id
      * @return object the publication of the episode or null if there is no publication for the channel
      */
-    public function getEpisodePublication(string $episode_id, string $channel = "api")
+    public function getEpisodePublication(string $episode_id, string $channel = self::API_PUBLICATION_CHANNEL)
     {
         $url = "/api/events/$episode_id/publications";
         $publications = $this->opencastRESTClient->get($url);
@@ -296,17 +298,17 @@ class ilOpencastAPI
 
     private function isOnholdEpisode($episode)
     {
-        return ! in_array("ilias", $episode->publication_status); // TODO
+        return ! $this->isReadyEpisode($episode);
     }
 
     /**
-     * Get the episodes which have a publication on the api channel for given series
+     * Get the episodes which have a publication on the api channel and non preview tracks for given series
      *
      * @param string $series_id
      *            series id
      * @return array the episodes which are published for the series returned by opencast
      */
-    public function getPublishedEpisodes(string $series_id)
+    public function getReadyEpisodes(string $series_id)
     {
         $url = "/api/events/";
 
@@ -325,13 +327,31 @@ class ilOpencastAPI
         $episodes = $this->opencastRESTClient->get($url);
         return array_filter($episodes, array(
             $this,
-            'isPublishedEpisode'
+            'isReadyEpisode'
         ));
     }
 
-    private function isPublishedEpisode($episode)
+    private function isReadyEpisode($episode)
     {
-        return in_array("api", $episode->publication_status);
+        if (! in_array(self::API_PUBLICATION_CHANNEL, $episode->publication_status)) {
+            return false;
+        }
+
+        $apiPublication = null;
+        foreach ($episode->publications as $publication) {
+            if ($publication->channel == self::API_PUBLICATION_CHANNEL) {
+                $apiPublication = $publication;
+            }
+        }
+        if ($apiPublication == null) {
+            return false;
+        }
+
+        $nonPreviewTracks = array_filter($apiPublication->media, function ($track) {
+            return ! in_array("preview", $track->tags);
+        });
+
+        return count($nonPreviewTracks) > 0;
     }
 
     /**

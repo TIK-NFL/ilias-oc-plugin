@@ -461,22 +461,25 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         $releasedEpisodeIds = $this->getMHObject()->getReleasedEpisodeIds();
         $episodes = array();
-        
-        foreach ($this->getMHObject()->getSeries()->getReadyEpisodes() as $readyEpisode) {
+
+        foreach ($this->getMHObject()
+            ->getSeries()
+            ->getReadyEpisodes() as $readyEpisode) {
             $published = in_array($readyEpisode->identifier, $releasedEpisodeIds);
-            if ($onlyPublished && !$published && $this->getMHObject()->getManualRelease()) {
+            if ($onlyPublished && ! $published && $this->getMHObject()->getManualRelease()) {
                 continue;
             }
-            
+
             $apiPublication = null;
             foreach ($readyEpisode->publications as $publication) {
                 if ($publication->channel == "api") {
                     $apiPublication = $publication;
                 }
             }
-            
-            $previewurl = "unset";
+
+            $previewurl = null;
             foreach ($apiPublication->attachments as $attachment) {
+                //TODO check flavors
                 if ('presentation/search+preview' == $attachment->flavor) {
                     $previewurl = $attachment->url;
                     // prefer presentation/search+preview over presenter/search+preview
@@ -486,8 +489,14 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     // continue searching for a presentation/search+preview
                 }
             }
-            $downloadurl = "unset";
-            foreach ($apiPublication->media as $track) {
+
+            $nonPreviewTracks = array_filter($apiPublication->media, function ($track) {
+                return ! in_array("preview", $track->tags);
+            });
+
+            $downloadurl = null;
+            foreach ($nonPreviewTracks as $track) {
+                //TODO check flavors
                 if ('composite/sbs' == $track->flavor) {
                     $downloadurl = $track->url;
                     break;
