@@ -271,10 +271,11 @@ class ilObjOpencast extends ilObjectPlugin
 	}
 
     /**
-     * checks if the $episodeId exists and returns the Episode object
+     * Get the episode object from id
      *
      * @param string $episodeId
      * @return ilOpencastEpisode
+     * @throws InvalidArgumentException
      */
     public function getEpisode($episodeId)
     {
@@ -282,7 +283,7 @@ class ilObjOpencast extends ilObjectPlugin
         if (preg_match('/^[0-9a-f\-]+/', $episodeId)) {
             return new ilOpencastEpisode($this->getSeriesId(), $episodeId);
         }
-        return null;
+        throw new InvalidArgumentException();
     }
 
     /**

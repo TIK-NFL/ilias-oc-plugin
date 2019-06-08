@@ -76,6 +76,21 @@ class ilOpencastEpisode
         return $ilDB->quote($this->getEpisodeId(), "text");
     }
 
+    /**
+     * Check if the episode exists in Opencast and is part of the correct series
+     *
+     * @return boolean
+     */
+    public function exists()
+    {
+        try {
+            $episode = ilOpencastAPI::getInstance()->getEpisode($this->episode_id);
+            return $episode->part_of == $this->series_id;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
     public function setTitle($title)
     {
         ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(

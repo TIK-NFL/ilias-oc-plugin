@@ -67,8 +67,6 @@ class ilAPIController
      */
     public function handleRequest($path)
     {
-        ilLoggerFactory::getLogger('xoc')->debug("Request for:" . $path);
-
         try {
             // check if it is a request for an episode
             if (0 == strcmp("/episode.json", $path)) {
@@ -172,8 +170,6 @@ class ilAPIController
             }
             array_push($attachments['attachment'], $att);
         }
-        // ilLoggerFactory::getLogger('xoc')->debug((string) $segmentxml->MediaTime->MediaDuration);
-        // ilLoggerFactory::getLogger('xoc')->debug(print_r($previewrefs,true));
 
         $metadata = array(
             "catalog" => array()

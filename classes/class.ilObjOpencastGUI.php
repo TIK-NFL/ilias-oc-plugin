@@ -196,7 +196,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         
         switch ($a_tab) {
             case "manage":
-                ilLoggerFactory::getLogger('xoc')->debug("setting subtabs");
                 $ilTabs->addSubTab("finishedepisodes", $this->txt('finished_recordings'), $ilCtrl->getLinkTarget($this, 'editFinishedEpisodes'));
                 $ilTabs->addSubTab("processtrim", $this->txt('processtrim'), $ilCtrl->getLinkTarget($this, 'editTrimProcess'));
                 $ilTabs->addSubTab("schedule", $this->txt('scheduled_recordings'), $ilCtrl->getLinkTarget($this, 'editSchedule'));
@@ -318,10 +317,9 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     {
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
-        ilLoggerFactory::getLogger('xoc')->debug("ID:" . $episodeId);
         $episode = $this->getOCObject()->getEpisode($episodeId);
         
-        if ($episode) {
+        if ($episode->exists()) {
             try {
                 $episode->publish();
                 ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
@@ -330,8 +328,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                     throw $e;
                 }
             }
-        } else {
-            ilLoggerFactory::getLogger('xoc')->debug("ID does not match in publish episode:" . $episode);
         }
         $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
@@ -340,15 +336,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     {
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
-        ilLoggerFactory::getLogger('xoc')->debug("ID:" . $episodeId);
         $episode = $this->getOCObject()->getEpisode($episodeId);
-        
-        if ($episode) {
-            $episode->retract();
-            ilUtil::sendSuccess($this->txt("msg_episode_retracted"), true);
-        } else {
-            ilLoggerFactory::getLogger('xoc')->debug("ID does not match in retract episode:" . $episodeId);
-        }
+
+        $episode->retract();
+        ilUtil::sendSuccess($this->txt("msg_episode_retracted"), true);
         $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
 
@@ -356,14 +347,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     {
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
-        ilLoggerFactory::getLogger('xoc')->debug("ID:$episodeId");
         $episode = $this->getOCObject()->getEpisode($episodeId);
-        
-        if ($episode) {
+        if ($episode->exists()) {
             $episode->delete();
             ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
-        } else {
-            ilLoggerFactory::getLogger('xoc')->debug("ID does not match in deleteschedule:$episodeId");
         }
         $DIC->ctrl()->redirect($this, "editSchedule");
     }
@@ -823,7 +810,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("MANUAL_RELEASE", $this->getOCObject()->getManualRelease());
         $seriestpl->parseCurrentBlock();
         $jsConfig = $seriestpl->get();
-        ilLoggerFactory::getLogger('xoc')->debug($section);
         switch ($section) {
             case 'finished':
                 $ilTabs->activateSubTab('finishedepisodes');
@@ -934,12 +920,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $this->checkPermission("write");
         $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
         $episode = $this->getOCObject()->getEpisode($_GET[self::QUERY_EPISODE_IDENTIFIER]);
-        if ($episode) {
-            $id = $episode->getEpisodeId();
-            ilLoggerFactory::getLogger('xoc')->debug("Trimming episode: $id");
+        if ($episode->exists()) {
             $episodeInfo = $episode->getEpisode();
             $media = $episode->getMedia();
-            if (count($media) != 1) {
+            if (count($media) != 1) {//TODO
                 throw new Exception("something is wrong with media.");
             }
             $previewTrack = null;
@@ -957,7 +941,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             switch ($previewTrack->flavor) {
                 case "presentation/preview":
                     $streamType = "presentation";
-                    ilLoggerFactory::getLogger('xoc')->debug("Found presentation track");
                     break;
                 case "presenter/preview":
                     $streamType = "presenter";
@@ -976,7 +959,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $trimview->setVariable("TRACKTITLE", $episodeInfo->title);
             $trimview->setVariable("INITJS", $trimbase);
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
-            $trimview->setVariable("WFID", $id);
+            $trimview->setVariable("WFID", $episode->getEpisodeId());
             $trimview->parseCurrentBlock();
             if ($streamType == "dual") {
                 $trimview->setCurrentBlock("dualstream");
@@ -1030,7 +1013,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     {
         global $ilCtrl;
         $episode = $this->getOCObject()->getEpisode($_POST["eventid"]);
-        if ($episode) {
+        if ($episode->exists()) {
             $title = (string) ilUtil::stripScriptHTML($_POST["tracktitle"]);
             if ($title) {
                 $episode->setTitle($title);
@@ -1056,8 +1039,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $episode->trim($keeptracks, $trimin, $trimout);
             
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
-        } else {
-            ilLoggerFactory::getLogger('xoc')->debug("ID does not match an episode:" . $_POST["eventid"]);
         }
         $ilCtrl->redirect($this, "editTrimProcess");
     }
