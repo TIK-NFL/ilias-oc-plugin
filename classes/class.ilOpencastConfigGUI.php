@@ -30,7 +30,7 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
         global $tpl;
         $form = $this->initConfigurationForm();
         $values = array();
-        $values['mh_server'] = $this->configObject->getOpencastServer();
+        $values['oc_server'] = $this->configObject->getOpencastServer();
         $values['oc_api_user'] = $this->configObject->getOpencastAPIUser();
         $values['oc_api_password'] = $this->configObject->getOpencastAPIPassword();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
@@ -58,12 +58,12 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
         include_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
         $form = new ilPropertyFormGUI();
 
-        // mh server
-        $mh_server = new ilTextInputGUI($pl->txt('mh_server'), 'mh_server');
-        $mh_server->setRequired(true);
-        $mh_server->setMaxLength(100);
-        $mh_server->setSize(100);
-        $form->addItem($mh_server);
+        // oc server
+        $oc_server = new ilTextInputGUI($pl->txt('oc_server'), 'oc_server');
+        $oc_server->setRequired(true);
+        $oc_server->setMaxLength(100);
+        $oc_server->setSize(100);
+        $form->addItem($oc_server);
 
         // oc api user
         $oc_api_user = new ilTextInputGUI($pl->txt('oc_api_user'), 'oc_api_user');
@@ -124,14 +124,14 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
         $pl = $this->getPluginObject();
         $form = $this->initConfigurationForm();
         if ($form->checkInput()) {
-            $mh_server = $form->getInput('mh_server');
+            $oc_server = $form->getInput('oc_server');
             $oc_api_user = $form->getInput('oc_api_user');
             $oc_api_password = $form->getInput('oc_api_password');
             $uploadworkflow = $form->getInput('uploadworkflow');
             $trimworkflow = $form->getInput('trimworkflow');
             $publisher = $form->getInput('publisher');
 
-            $this->configObject->setOpencastServer($mh_server);
+            $this->configObject->setOpencastServer($oc_server);
             $this->configObject->setOpencastAPIUser($oc_api_user);
             $this->configObject->setOpencastAPIPassword($oc_api_password);
             $this->configObject->setUploadWorkflow($uploadworkflow);

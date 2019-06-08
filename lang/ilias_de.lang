@@ -38,7 +38,7 @@ status#:#Status
 offline#:#Offline
 online#:#Online
 opencast_plugin_configuration#:#Opencast-Plugin-Konfiguration
-mh_server#:#Basis-URL des Opencast Server
+oc_server#:#Basis-URL des Opencast Server
 oc_api_user#:#Benutzername des Opencast API User
 oc_api_password#:#Passwort des Opencast API User
 xsendfile_header#:#Header f&uuml;r XSendfile-Feature

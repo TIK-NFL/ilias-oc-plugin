@@ -80,7 +80,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      *
      * @return ilObjOpencast
      */
-    private function getMHObject()
+    private function getOCObject()
     {
         return $this->object;
     }
@@ -276,14 +276,14 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      */
     private function getPropertiesValues()
     {
-        $series = $this->getMHObject()->getSeries()->getSeriesInformationFromOpencast();
+        $series = $this->getOCObject()->getSeries()->getSeriesInformationFromOpencast();
         $values = array();
-        $values["title"] = $this->getMHObject()->getTitle();
+        $values["title"] = $this->getOCObject()->getTitle();
         $values["desc"] = $series["description"];
-        $values["online"] = $this->getMHObject()->getOnline();
-        $values["viewMode"] = $this->getMHObject()->getViewMode();
-        $values["manualRelease"] = $this->getMHObject()->getManualRelease();
-        $values["download"] = $this->getMHObject()->getDownload();
+        $values["online"] = $this->getOCObject()->getOnline();
+        $values["viewMode"] = $this->getOCObject()->getViewMode();
+        $values["manualRelease"] = $this->getOCObject()->getManualRelease();
+        $values["download"] = $this->getOCObject()->getDownload();
         return $values;
     }
 
@@ -297,7 +297,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         
         $form = $this->initPropertiesForm();
         if ($form->checkInput()) {
-            $object = $this->getMHObject();
+            $object = $this->getOCObject();
             $object->setTitle($form->getInput("title"));
             $object->setDescription($form->getInput("desc"));
             $object->setOnline($form->getInput("online"));
@@ -318,7 +318,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xoc')->debug("ID:" . $episodeId);
-        $episode = $this->getMHObject()->getEpisode($episodeId);
+        $episode = $this->getOCObject()->getEpisode($episodeId);
         
         if ($episode) {
             try {
@@ -340,7 +340,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xoc')->debug("ID:" . $episodeId);
-        $episode = $this->getMHObject()->getEpisode($episodeId);
+        $episode = $this->getOCObject()->getEpisode($episodeId);
         
         if ($episode) {
             $episode->retract();
@@ -356,7 +356,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         ilLoggerFactory::getLogger('xoc')->debug("ID:$episodeId");
-        $episode = $this->getMHObject()->getEpisode($episodeId);
+        $episode = $this->getOCObject()->getEpisode($episodeId);
         
         if ($episode) {
             $episode->delete();
@@ -399,23 +399,23 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $this->checkPermission("read");
         
         $released_episodes = $this->getReadyEpisodes(true);
-        if (! $this->getMHObject()->getViewMode()) {
+        if (! $this->getOCObject()->getViewMode()) {
             $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.html", true, true);
-            $seriestpl->setCurrentBlock($this->getMHObject()->getDownload() ? "headerdownload" : "header");
+            $seriestpl->setCurrentBlock($this->getOCObject()->getDownload() ? "headerdownload" : "header");
             $seriestpl->setVariable("TXT_TITLE", $this->getText("title"));
             $seriestpl->setVariable("TXT_PREVIEW", $this->getText("preview"));
             $seriestpl->setVariable("TXT_DATE", $this->getText("date"));
-            if ($this->getMHObject()->getDownload()) {
+            if ($this->getOCObject()->getDownload()) {
                 $seriestpl->setVariable("TXT_ACTION", $this->getText("action"));
             }
             $seriestpl->parseCurrentBlock();
             foreach ($released_episodes as $item) {
-                $seriestpl->setCurrentBlock($this->getMHObject()->getDownload() ? "episodedownload" : "episode");
+                $seriestpl->setCurrentBlock($this->getOCObject()->getDownload() ? "episodedownload" : "episode");
                 $seriestpl->setVariable("CMD_PLAYER", $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
                 $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_ISO_8601)));
-                if ($this->getMHObject()->getDownload()) {
+                if ($this->getOCObject()->getDownload()) {
                     $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
                     $seriestpl->setVariable("TXT_DOWNLOAD", $DIC->language()
                         ->txt("download"));
@@ -437,7 +437,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $sections = array(
                     $content
                 );
-                if ($this->getMHObject()->getDownload()) {
+                if ($this->getOCObject()->getDownload()) {
                     $sections[] = $factory->link()->standard($DIC->language()
                         ->txt("download"), $item["downloadurl"]);
                 }
@@ -453,20 +453,20 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 ->render($deck);
             $tpl->setContent($html);
         }
-        $tpl->setPermanentLink($this->getMHObject()->getType(), $this->getMHObject()->getRefId());
+        $tpl->setPermanentLink($this->getOCObject()->getType(), $this->getOCObject()->getRefId());
         $DIC->tabs()->activateTab("content");
     }
 
     private function getReadyEpisodes(bool $onlyPublished)
     {
-        $releasedEpisodeIds = $this->getMHObject()->getReleasedEpisodeIds();
+        $releasedEpisodeIds = $this->getOCObject()->getReleasedEpisodeIds();
         $episodes = array();
 
-        foreach ($this->getMHObject()
+        foreach ($this->getOCObject()
             ->getSeries()
             ->getReadyEpisodes() as $readyEpisode) {
             $published = in_array($readyEpisode->identifier, $releasedEpisodeIds);
-            if ($onlyPublished && ! $published && $this->getMHObject()->getManualRelease()) {
+            if ($onlyPublished && ! $published && $this->getOCObject()->getManualRelease()) {
                 continue;
             }
 
@@ -513,9 +513,9 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 "episode_id" => $readyEpisode->identifier,
                 "previewurl" => $previewurl,
                 "downloadurl" => $downloadurl,
-                "viewurl" => $this->getLinkForShowEpisode($this->getMHObject()->getSeriesId(), $readyEpisode->identifier, false)
+                "viewurl" => $this->getLinkForShowEpisode($this->getOCObject()->getSeriesId(), $readyEpisode->identifier, false)
             );
-            if ($this->getMHObject()->getManualRelease()) {
+            if ($this->getOCObject()->getManualRelease()) {
                 $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", $readyEpisode->identifier);
                 $episode["txt_publish"] = $this->getText($published ? "retract" : "publish");
             }
@@ -588,7 +588,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      */
     public function getEpisodes()
     {
-        $series = $this->getMHObject()->getSeries();
+        $series = $this->getOCObject()->getSeries();
         $process_items = $series->getProcessingEpisodes();
 
         usort($process_items, array(
@@ -778,7 +778,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $datetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
                 $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
 
-                $this->getMHObject()
+                $this->getOCObject()
                     ->getSeries()
                     ->createEpisode($title, $creator, $datetime->get(IL_CAL_ISO_8601), $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
 
@@ -818,8 +818,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_NONE_SCHEDULED", $this->getText("none_scheduled"));
         $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
-        $seriestpl->setVariable("SERIES_ID", $this->getMHObject()->getSeriesId());
-        $seriestpl->setVariable("MANUAL_RELEASE", $this->getMHObject()->getManualRelease());
+        $seriestpl->setVariable("SERIES_ID", $this->getOCObject()->getSeriesId());
+        $seriestpl->setVariable("MANUAL_RELEASE", $this->getOCObject()->getManualRelease());
         $seriestpl->parseCurrentBlock();
         $jsConfig = $seriestpl->get();
         ilLoggerFactory::getLogger('xoc')->debug($section);
@@ -832,7 +832,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                     $this->getText("preview"),
                     $this->getText("date")
                 );
-                if ($this->getMHObject()->getManualRelease()) {
+                if ($this->getOCObject()->getManualRelease()) {
                     $colums[] = $this->getText("action");
                 }
                 
@@ -932,7 +932,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $factory = $DIC->ui()->factory();
         $this->checkPermission("write");
         $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
-        $episode = $this->getMHObject()->getEpisode($_GET[self::QUERY_EPISODE_IDENTIFIER]);
+        $episode = $this->getOCObject()->getEpisode($_GET[self::QUERY_EPISODE_IDENTIFIER]);
         if ($episode) {
             $id = $episode->getEpisodeId();
             ilLoggerFactory::getLogger('xoc')->debug("Trimming episode: $id");
@@ -1028,7 +1028,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $ilCtrl;
-        $episode = $this->getMHObject()->getEpisode($_POST["eventid"]);
+        $episode = $this->getOCObject()->getEpisode($_POST["eventid"]);
         if ($episode) {
             $title = (string) ilUtil::stripScriptHTML($_POST["tracktitle"]);
             if ($title) {
@@ -1069,6 +1069,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     public function addInfoItems($info)
     {
         $info->addSection($this->getText("opencast_information"));
-        $info->addProperty($this->getText("series_id"), $this->getMHObject()->getSeriesId());
+        $info->addProperty($this->getText("series_id"), $this->getOCObject()->getSeriesId());
     }
 }

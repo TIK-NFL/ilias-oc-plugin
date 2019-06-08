@@ -3,6 +3,22 @@
 class ilOpencastConfig
 {
 
+    const CONFIG_KEY_OPENCAST_SERVER = "oc_server";
+
+    const CONFIG_KEY_OPENCAST_API_USER = "oc_api_user";
+
+    const CONFIG_KEY_OPENCAST_API_PASSWORD = "oc_api_password";
+
+    const CONFIG_KEY_UPLOAD_WORKFLOW = "uploadworkflow";
+
+    const CONFIG_KEY_TRIM_WORKFLOW = "trimworkflow";
+
+    const CONFIG_KEY_PUBLISHER = "publisher";
+
+    const DATABASE_TABLE_CONFIG = "rep_robj_xoc_config";
+
+    const DATABASE_TABLE_DATA = "rep_robj_xoc_data";
+
     /**
      * returns the hostname for the Opencast server.
      *
@@ -10,7 +26,7 @@ class ilOpencastConfig
      */
     public function getOpencastServer()
     {
-        $retVal = $this->getValue('mh_server');
+        $retVal = $this->getValue(self::CONFIG_KEY_OPENCAST_SERVER);
         if (! $retVal) {
             return 'http://host.is.unset';
         }
@@ -20,12 +36,12 @@ class ilOpencastConfig
 
     public function setOpencastServer($a_server)
     {
-        $this->setValue('mh_server', $a_server);
+        $this->setValue(self::CONFIG_KEY_OPENCAST_SERVER, $a_server);
     }
 
     public function getOpencastAPIUser()
     {
-        $retVal = $this->getValue('oc_api_user');
+        $retVal = $this->getValue(self::CONFIG_KEY_OPENCAST_API_USER);
         if (! $retVal) {
             return 'admin';
         }
@@ -35,12 +51,12 @@ class ilOpencastConfig
 
     public function setOpencastAPIUser($a_user)
     {
-        $this->setValue('oc_api_user', $a_user);
+        $this->setValue(self::CONFIG_KEY_OPENCAST_API_USER, $a_user);
     }
 
     public function getOpencastAPIPassword()
     {
-        $retVal = $this->getValue('oc_api_password');
+        $retVal = $this->getValue(self::CONFIG_KEY_OPENCAST_API_PASSWORD);
         if (! $retVal) {
             return 'opencast';
         }
@@ -50,12 +66,12 @@ class ilOpencastConfig
 
     public function setOpencastAPIPassword($a_password)
     {
-        $this->setValue('oc_api_password', $a_password);
+        $this->setValue(self::CONFIG_KEY_OPENCAST_API_PASSWORD, $a_password);
     }
 
     public function getUploadWorkflow()
     {
-        $retVal = $this->getValue('uploadworkflow');
+        $retVal = $this->getValue(self::CONFIG_KEY_UPLOAD_WORKFLOW);
         if (! $retVal) {
             return 'default';
         }
@@ -65,7 +81,7 @@ class ilOpencastConfig
 
     public function setUploadWorkflow($value)
     {
-        $this->setValue('uploadworkflow', $value);
+        $this->setValue(self::CONFIG_KEY_UPLOAD_WORKFLOW, $value);
     }
 
     /**
@@ -79,7 +95,7 @@ class ilOpencastConfig
 
     public function getTrimWorkflow()
     {
-        $retVal = $this->getValue('trimworkflow');
+        $retVal = $this->getValue(self::CONFIG_KEY_TRIM_WORKFLOW);
         if (! $retVal) {
             return 'default';
         }
@@ -89,7 +105,7 @@ class ilOpencastConfig
 
     public function setTrimWorkflow($value)
     {
-        $this->setValue('trimworkflow', $value);
+        $this->setValue(self::CONFIG_KEY_TRIM_WORKFLOW, $value);
     }
 
     /**
@@ -127,7 +143,7 @@ class ilOpencastConfig
      */
     public function getPublisher()
     {
-        $retVal = $this->getValue('publisher');
+        $retVal = $this->getValue(self::CONFIG_KEY_PUBLISHER);
         if (! $retVal) {
             return '';
         }
@@ -141,7 +157,7 @@ class ilOpencastConfig
      */
     public function setPublisher(string $publisher)
     {
-        $this->setValue('publisher', $publisher);
+        $this->setValue(self::CONFIG_KEY_PUBLISHER, $publisher);
     }
 
     /**
@@ -149,10 +165,10 @@ class ilOpencastConfig
      * @param string $series_id
      * @return int $obj_id
      */
-    public function lookupOpencastObjectForSeries($series_id)
+    public function lookupOpencastObjectForSeries(string $series_id)
     {
         global $ilDB;
-        $result = $ilDB->query('SELECT obj_id FROM rep_robj_xoc_data WHERE series_id = ' . $ilDB->quote($series_id, 'text'));
+        $result = $ilDB->query('SELECT obj_id FROM ' . self::DATABASE_TABLE_DATA . ' WHERE series_id = ' . $ilDB->quote($series_id, 'text'));
         if ($result->numRows() == 0) {
             return false;
         }
@@ -169,7 +185,7 @@ class ilOpencastConfig
     public function lookupSeriesForOpencastObject($obj_id)
     {
         global $ilDB;
-        $result = $ilDB->query('SELECT series_id FROM rep_robj_xoc_data WHERE obj_id = ' . $ilDB->quote($obj_id, 'integer'));
+        $result = $ilDB->query('SELECT series_id FROM ' . self::DATABASE_TABLE_DATA . ' WHERE obj_id = ' . $ilDB->quote($obj_id, 'integer'));
         if ($result->numRows() == 0) {
             return false;
         }
@@ -180,17 +196,15 @@ class ilOpencastConfig
 
     /**
      *
-     * @param
-     *            $key
-     * @param
-     *            $value
+     * @param string $key
+     * @param string $value
      */
-    private function setValue($key, $value)
+    private function setValue(string $key, string $value)
     {
         global $ilDB;
 
         if (! is_string($this->getValue($key))) {
-            $ilDB->insert('rep_robj_xoc_config', array(
+            $ilDB->insert(self::DATABASE_TABLE_CONFIG, array(
                 'cfgkey' => array(
                     'text',
                     $key
@@ -201,7 +215,7 @@ class ilOpencastConfig
                 )
             ));
         } else {
-            $ilDB->update('rep_robj_xoc_config', array(
+            $ilDB->update(self::DATABASE_TABLE_CONFIG, array(
                 'cfgkey' => array(
                     'text',
                     $key
@@ -221,15 +235,14 @@ class ilOpencastConfig
 
     /**
      *
-     * @param
-     *            $key
-     *            
+     * @param string $key
+     *
      * @return bool|string
      */
-    private function getValue($key)
+    private function getValue(string $key)
     {
         global $ilDB;
-        $result = $ilDB->query('SELECT cfgvalue FROM rep_robj_xoc_config WHERE cfgkey = ' . $ilDB->quote($key, 'text'));
+        $result = $ilDB->query('SELECT cfgvalue FROM ' . self::DATABASE_TABLE_CONFIG . ' WHERE cfgkey = ' . $ilDB->quote($key, 'text'));
         if ($result->numRows() == 0) {
             return false;
         }
