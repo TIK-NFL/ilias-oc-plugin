@@ -1,8 +1,8 @@
 <?php
-
 namespace TIK_NFL\ilias_oc_plugin\opencast;
 
 use Exception;
+use ilLoggerFactory;
 
 /**
  * This class implements the basic REST client to connect to a Opencast server using the api endpoint
@@ -68,6 +68,7 @@ class ilOpencastRESTClient
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
+                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
                 throw new Exception("error GET request: $url", 503);
             }
             throw new Exception("error GET request: $url $httpCode", 500);
@@ -107,6 +108,10 @@ class ilOpencastRESTClient
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
+            if (! $httpCode) {
+                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                throw new Exception("error POST request: $url $post_string", 503);
+            }
             throw new Exception("error POST request: $url $post_string $httpCode", 500);
         }
 
@@ -143,6 +148,10 @@ class ilOpencastRESTClient
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
             $postinfo = print_r($post, true);
+            if (! $httpCode) {
+                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                throw new Exception("error multipart POST request: $url $postinfo", 503);
+            }
             throw new Exception("error multipart POST request: $url $postinfo $httpCode", 500);
         }
 
@@ -180,6 +189,10 @@ class ilOpencastRESTClient
         $response = curl_exec($ch);
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if (! $httpCode) {
+                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                throw new Exception("error PUT request: $url $post_string", 503);
+            }
             throw new Exception("error PUT request: $url $post_string $httpCode", 500);
         }
 
@@ -217,6 +230,10 @@ class ilOpencastRESTClient
         $response = curl_exec($ch);
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if (! $httpCode) {
+                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                throw new Exception("error DELETE request: $url $post_string", 503);
+            }
             throw new Exception("error DELETE request: $url $post_string $httpCode", 500);
         }
 
