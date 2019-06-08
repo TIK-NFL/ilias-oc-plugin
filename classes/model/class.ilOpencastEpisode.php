@@ -85,7 +85,7 @@ class ilOpencastEpisode
     {
         try {
             $episode = ilOpencastAPI::getInstance()->getEpisode($this->episode_id);
-            return $episode->part_of == $this->series_id;
+            return $episode->is_part_of == $this->series_id;
         } catch (Exception $e) {
             return false;
         }
