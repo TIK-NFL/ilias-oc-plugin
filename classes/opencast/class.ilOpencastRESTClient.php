@@ -1,5 +1,9 @@
 <?php
 
+namespace TIK_NFL\ilias_oc_plugin\opencast;
+
+use Exception;
+
 /**
  * This class implements the basic REST client to connect to a Opencast server using the api endpoint
  *

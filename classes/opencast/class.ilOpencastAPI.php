@@ -1,4 +1,10 @@
 <?php
+
+namespace TIK_NFL\ilias_oc_plugin\opencast;
+
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use ilPlugin;
+
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('opencast/class.ilOpencastRESTClient.php');
 
@@ -206,7 +212,7 @@ class ilOpencastAPI
                     "straightToPublishing" => $flagForCutting ? "false" : "true"
                 )
             )),
-            'presentation' => new CurlFile($presentationfilePath)
+            'presentation' => new \CurlFile($presentationfilePath)
         );
         $episode = json_decode($this->opencastRESTClient->postMultipart($url, $post));
         return $episode->identifier;

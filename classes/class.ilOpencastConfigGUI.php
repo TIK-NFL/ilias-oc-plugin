@@ -1,4 +1,6 @@
 <?php
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+
 include_once './Services/Component/classes/class.ilPluginConfigGUI.php';
 
 /**

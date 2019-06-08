@@ -20,6 +20,9 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
+
 include_once ("./Services/Repository/classes/class.ilObjectPluginAccess.php");
 
 /**

@@ -1,7 +1,10 @@
 <?php
+namespace TIK_NFL\ilias_oc_plugin\api;
+
+use ilPlugin;
 
 /**
- * 
+ *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
 class ilOpencastInfo

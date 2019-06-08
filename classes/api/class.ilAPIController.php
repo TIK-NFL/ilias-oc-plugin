@@ -1,4 +1,13 @@
 <?php
+namespace TIK_NFL\ilias_oc_plugin\api;
+
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
+use ilLoggerFactory;
+use ilObjOpencastAccess;
+use ilOpencastPlugin;
+use ilPlugin;
+use Exception;
 
 /**
  * simple REST API for the video player
@@ -43,6 +52,9 @@ class ilAPIController
 
         $this->plugin->includeClass("class.ilOpencastConfig.php");
         $this->plugin->includeClass("class.ilObjOpencastAccess.php");
+        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
+        $this->plugin->includeClass("model/class.ilOpencastEpisode.php");
+        $this->plugin->includeClass("api/class.ilOpencastInfo.php");
         $this->configObject = new ilOpencastConfig();
     }
 
@@ -126,7 +138,6 @@ class ilAPIController
      */
     private function getEpisode(string $series_id, string $episode_id)
     {
-        $this->plugin->includeClass("class.ilOpencastEpisode.php");
         return new ilOpencastEpisode($series_id, $episode_id);
     }
 
@@ -205,7 +216,7 @@ class ilAPIController
             if ($track->has_video) {
                 $trk['video'] = array();
                 $trk['video']['id'] = "video-1";
-                $trk['video']['resolution'] = $track->width."x".$track->height;
+                $trk['video']['resolution'] = $track->width . "x" . $track->height;
             }
             if ($track->has_audio) {
                 $trk['audio'] = array();
@@ -252,7 +263,7 @@ class ilAPIController
      */
     private function convertSegment(string $url, array $previewrefs)
     {
-        $segmentsxml = new SimpleXMLElement($url, null, true);
+        $segmentsxml = new \SimpleXMLElement($url, null, true);
 
         $segments = array(
             "segment" => array()
@@ -333,7 +344,6 @@ class ilAPIController
         $outtime = intval($this->params['out']);
         $user_id = $ilUser->getId();
 
-        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
         ilOpencastUserTracking::putUserTracking($user_id, $episode, $intime, $outtime);
 
         header("HTTP/1.0 204 Stored");
@@ -346,7 +356,6 @@ class ilAPIController
      */
     private function sendStatistic(ilOpencastEpisode $episode)
     {
-        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
         $statistic = ilOpencastUserTracking::getStatisticFromVideo($episode);
         $data = array();
         foreach ($statistic as $name => $value) {
@@ -388,7 +397,6 @@ class ilAPIController
         $user_id = $ilUser->getId();
 
         $response = array();
-        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
         $response['footprints'] = ilOpencastUserTracking::getFootprints($episode, $user_id);
         $response['last'] = ilOpencastUserTracking::getLastSecondViewed($episode, $user_id);
         $this->sendJSON($response);
@@ -402,7 +410,6 @@ class ilAPIController
     private function sendStats(ilOpencastEpisode $episode)
     {
         $response = array();
-        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
         $views = ilOpencastUserTracking::getViews($episode);
         $response['stats'] = [
             'views' => $views
@@ -415,7 +422,6 @@ class ilAPIController
      */
     private function sendMe()
     {
-        $this->plugin->includeClass("api/class.ilOpencastInfo.php");
         $info = new ilOpencastInfo();
         $response = $info->getMyInfo();
         $this->sendJSON($response);
@@ -426,7 +432,6 @@ class ilAPIController
      */
     private function sendList()
     {
-        $this->plugin->includeClass("api/class.ilOpencastInfo.php");
         $info = new ilOpencastInfo();
         $response = $info->listPlugins();
         $this->sendJSON($response);

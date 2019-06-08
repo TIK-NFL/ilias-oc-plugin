@@ -1,4 +1,10 @@
 <?php
+namespace TIK_NFL\ilias_oc_plugin\model;
+
+use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
+use ilPlugin;
+use stdClass;
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass("opencast/class.ilOpencastAPI.php");
 
 /**
  *
@@ -48,8 +54,6 @@ class ilOpencastSeries
      */
     public function getSeriesInformationFromOpencast()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         $series = ilOpencastAPI::getInstance()->getSeries($this->getSeriesId());
         $series = array(
             "title" => (string) $series->title,
@@ -67,8 +71,6 @@ class ilOpencastSeries
      */
     public function getScheduledEpisodes()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getScheduledEpisodes($this->getSeriesId());
     }
 
@@ -79,8 +81,6 @@ class ilOpencastSeries
      */
     public function getOnHoldEpisodes()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getOnHoldEpisodes($this->getSeriesId());
     }
 
@@ -91,8 +91,6 @@ class ilOpencastSeries
      */
     public function getReadyEpisodes()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getReadyEpisodes($this->getSeriesId());
     }
 
@@ -103,8 +101,6 @@ class ilOpencastSeries
      */
     public function getProcessingEpisodes()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         $workflows = ilOpencastAPI::getInstance()->getActiveWorkflows($this->getSeriesId());
 
         return array_map(array(
@@ -160,8 +156,6 @@ class ilOpencastSeries
      */
     public function createEpisode(string $title, string $creator, string $startDate, bool $flagForCutting, string $presentationfilePath)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->createEpisode($title, $creator, $startDate, $this->series_id, $flagForCutting, $presentationfilePath);
     }
 }

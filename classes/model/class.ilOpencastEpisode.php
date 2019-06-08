@@ -1,4 +1,10 @@
 <?php
+namespace TIK_NFL\ilias_oc_plugin\model;
+
+use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
+use ilPlugin;
+use Exception;
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass("opencast/class.ilOpencastAPI.php");
 
 /**
  *
@@ -19,12 +25,6 @@ class ilOpencastEpisode
      * @var string
      */
     private $episode_id;
-
-    /**
-     *
-     * @var SimpleXMLElement
-     */
-    private $manifest;
 
     /**
      *
@@ -78,8 +78,6 @@ class ilOpencastEpisode
 
     public function setTitle($title)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
             "title" => $title
         ));
@@ -109,7 +107,7 @@ class ilOpencastEpisode
             }
         }
         if ($textCatalogUrl) {
-            $segmentsxml = new SimpleXMLElement($textCatalogUrl, null, true);
+            $segmentsxml = new \SimpleXMLElement($textCatalogUrl, null, true);
             $currentidx = 0;
             $currenttime = 0;
             foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
@@ -160,8 +158,6 @@ class ilOpencastEpisode
 
     public function delete()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->delete($this->getEpisodeId());
     }
 
@@ -172,8 +168,6 @@ class ilOpencastEpisode
      */
     public function getEpisode()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getEpisode($this->getEpisodeId());
     }
 
@@ -184,8 +178,6 @@ class ilOpencastEpisode
      */
     public function getPublication()
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->getEpisodePublication($this->getEpisodeId());
     }
 
@@ -198,7 +190,7 @@ class ilOpencastEpisode
     {
         $publication = $this->getPublication();
         if ($publication == null) {
-            throw new Exception("no publication for $episodeid on the 'api' channel", 404);
+            throw new Exception("no publication for " . $this->episode_id . " on the 'api' channel", 404);
         }
         return $publication->media;
     }
@@ -215,8 +207,6 @@ class ilOpencastEpisode
      */
     public function trim(array $keeptracks, float $trimin, float $trimout)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->trim($this->getEpisodeId(), $keeptracks, $trimin, $trimout);
     }
 }

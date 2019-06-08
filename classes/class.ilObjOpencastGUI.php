@@ -21,6 +21,7 @@
  +-----------------------------------------------------------------------------+
  */
 use ILIAS\FileUpload\Location;
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
 include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 

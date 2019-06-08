@@ -4,6 +4,8 @@
  * 
  * @group needInstalledILIAS
  */
+use TIK_NFL\ilias_oc_plugin\api\ilOpencastUserTracking;
+
 class ilOpencastUserTrackingTest extends PHPUnit_Framework_TestCase
 {
 
@@ -29,7 +31,7 @@ class ilOpencastUserTrackingTest extends PHPUnit_Framework_TestCase
         ilUnitUtil::performInitialisation();
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
         $plugin->includeClass("api/class.ilOpencastUserTracking.php");
-        $plugin->includeClass("class.ilOpencastEpisode.php");
+        $plugin->includeClass("model/class.ilOpencastEpisode.php");
         $this->episode = new ilOpencastEpisode("8b8966ac-e5e4-11e8-9f32-f2801f1b9fd1", $this->episode_id);
     }
 

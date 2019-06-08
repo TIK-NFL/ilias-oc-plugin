@@ -20,6 +20,12 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
+
+use TIK_NFL\ilias_oc_plugin\api\ilOpencastUserTracking;
+use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
+use TIK_NFL\ilias_oc_plugin\model\ilOpencastSeries;
+use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
+
 require_once 'Services/Repository/classes/class.ilObjectPlugin.php';
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 
@@ -260,7 +266,7 @@ class ilObjOpencast extends ilObjectPlugin
 	 */
 	public function getSeries()
 	{
-		$this->getPlugin()->includeClass("class.ilOpencastSeries.php");
+		$this->getPlugin()->includeClass("model/class.ilOpencastSeries.php");
 		return new ilOpencastSeries($this->getSeriesId());
 	}
 
@@ -272,7 +278,7 @@ class ilObjOpencast extends ilObjectPlugin
      */
     public function getEpisode($episodeId)
     {
-        $this->getPlugin()->includeClass("class.ilOpencastEpisode.php");
+        $this->getPlugin()->includeClass("model/class.ilOpencastEpisode.php");
         if (preg_match('/^[0-9a-f\-]+/', $episodeId)) {
             return new ilOpencastEpisode($this->getSeriesId(), $episodeId);
         }

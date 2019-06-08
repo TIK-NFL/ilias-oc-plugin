@@ -1,6 +1,10 @@
 <?php
+namespace TIK_NFL\ilias_oc_plugin\api;
+
+use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 
 /**
+ *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
 class ilOpencastUserTracking

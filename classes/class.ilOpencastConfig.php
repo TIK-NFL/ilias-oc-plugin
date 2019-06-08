@@ -1,5 +1,14 @@
 <?php
+namespace TIK_NFL\ilias_oc_plugin;
 
+use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
+use ilPlugin;
+
+/**
+ * Configuration manager, stores and loads the configuration
+ *
+ * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
+ */
 class ilOpencastConfig
 {
 
