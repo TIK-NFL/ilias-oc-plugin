@@ -189,7 +189,7 @@ class ilOpencastAPI
     public function createEpisode(string $title, string $creator, DateTime $startDate, string $series_id, bool $flagForCutting, string $presentationfilePath)
     {
         $url = "/api/events";
-        $startDate->setTimezone("UTC");
+        $startDate->setTimezone(new \DateTimeZone("UTC"));
         $metadata = array(
             "title" => $title,
             "creator" => array(
