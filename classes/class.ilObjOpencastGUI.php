@@ -919,14 +919,14 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $ilCtrl = $DIC->ctrl();
         $factory = $DIC->ui()->factory();
         $this->checkPermission("write");
-        $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
+
         $episode = $this->getOCObject()->getEpisode($_GET[self::QUERY_EPISODE_IDENTIFIER]);
         if ($episode->exists()) {
             $episodeInfo = $episode->getEpisode();
             $media = $episode->getMedia();
             $previewTrack = null;
             foreach ($media as $track) {
-                if (in_array("preview",$track->tags)) {
+                if (in_array("preview", $track->tags)) {
                     $previewTrack = $track;
                     break;
                 }
@@ -955,9 +955,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
             $trimview->setVariable("TRACKTITLE", $episodeInfo->title);
-            $trimview->setVariable("INITJS", $trimbase);
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
-            $trimview->setVariable("WFID", $episode->getEpisodeId());
+            $trimview->setVariable("EPISODE_ID", $episode->getEpisodeId());
             $trimview->parseCurrentBlock();
             if ($streamType == "dual") {
                 $trimview->setCurrentBlock("dualstream");
@@ -999,7 +998,13 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 ->renderer()
                 ->render($content);
             $tpl->setContent($html);
-            $tpl->addCss("$trimbase/video-js/video-js.css");
+
+            $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
+            $tpl->addJavaScript("$trimbase/trim.js");
+            $tpl->addJavaScript("$trimbase/video-js-7.5.4/video.min.js");
+            $tpl->addJavaScript("$trimbase/video-js-7.5.4/lang/en.js");
+            $tpl->addJavaScript("$trimbase/video-js-7.5.4/lang/de.js");
+            $tpl->addCss("$trimbase/video-js-7.5.4/video-js.min.css");
             $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/jquery-ui.min.css");
             $DIC->tabs()->activateTab("manage");
         } else {
@@ -1010,7 +1015,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     public function trimEpisode()
     {
         global $ilCtrl;
-        $episode = $this->getOCObject()->getEpisode($_POST["eventid"]);
+        $episode = $this->getOCObject()->getEpisode($_POST["episode_id"]);
         if ($episode->exists()) {
             $title = (string) ilUtil::stripScriptHTML($_POST["tracktitle"]);
             if ($title) {

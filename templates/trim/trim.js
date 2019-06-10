@@ -1,7 +1,7 @@
 "use strict";
 (function() {
 	$(document).ready(function() {
-		const myPlayer = videojs('mhpreviewvideo');
+		const myPlayer = videojs('ocpreviewvideo');
 		$('#trimin').keypress(function(event) {
 			const keyCode = (event.keyCode ? event.keyCode : event.which);
 	        if (keyCode == 13) {

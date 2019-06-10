@@ -176,8 +176,8 @@ class ilOpencastAPI
      *            the title of the new created episode
      * @param string $creator
      *            the creator of the episode
-     * @param string $startDate
-     *            the start date of the episode as ISO 8601 encoded string
+     * @param DateTime $startDate
+     *            the start date of the episode
      * @param string $series_id
      *            the series id the created episode should be part of
      * @param bool $flagForCutting

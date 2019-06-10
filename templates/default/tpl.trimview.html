@@ -1,12 +1,6 @@
-<!-- BEGIN formstart -->  
-<script data-main="{INITJS}/trim" src="{INITJS}/trim.js"></script>
-<script src="{INITJS}/video-js/video.js"></script>
-
-<script>
-  videojs.options.flash.swf = "{INITJS}/video-js/video-js.swf"
-</script>
-<form action="{CMD_TRIM}" method="post">
-<input type="hidden" name="eventid" value="{WFID}" />
+<!-- BEGIN formstart -->
+<form id="trim-form" action="{CMD_TRIM}" method="post">
+<input type="hidden" name="episode_id" value="{EPISODE_ID}" />
   <div class="row">
     <div class="col-md-12 form-group">
       <span class="form-label" id="basic-addon1">{TXT_TRACK_TITLE}</span>
@@ -27,11 +21,11 @@
 <!-- END singlestream -->
 <!-- BEGIN video -->  
   <div class="row">
-    <video id="mhpreviewvideo" class="center-block video-js vjs-default-skin"
+    <video id="ocpreviewvideo" class="center-block video-js vjs-default-skin"
       controls preload="auto" width="640" height="264"
       data-setup='{"inactivityTimeout": 0 }'>
       <source src="{DOWNLOAD_PREVIEW_URL_MP4}" type='video/mp4' />
-      <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="http://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+      <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
     </video>
   </div>
   <div class="row">
