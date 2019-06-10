@@ -2,6 +2,7 @@
 namespace TIK_NFL\ilias_oc_plugin\model;
 
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
+use DateTime;
 use ilPlugin;
 use stdClass;
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass("opencast/class.ilOpencastAPI.php");
@@ -154,7 +155,7 @@ class ilOpencastSeries
      *
      * @see ilOpencastAPI#createEpisode()
      */
-    public function createEpisode(string $title, string $creator, string $startDate, bool $flagForCutting, string $presentationfilePath)
+    public function createEpisode(string $title, string $creator, DateTime $startDate, bool $flagForCutting, string $presentationfilePath)
     {
         ilOpencastAPI::getInstance()->createEpisode($title, $creator, $startDate, $this->series_id, $flagForCutting, $presentationfilePath);
     }

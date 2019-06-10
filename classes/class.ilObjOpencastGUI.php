@@ -763,12 +763,13 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 }
                 $title = $form->getInput(self::POST_EPISODENAME);
                 $creator = $form->getInput(self::POST_PRESENTER);
-                $datetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
+                $ildatetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
+                $datetime = new DateTime($ildatetime->get(IL_CAL_ISO_8601));
                 $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
 
                 $this->getOCObject()
                     ->getSeries()
-                    ->createEpisode($title, $creator, $datetime->get(IL_CAL_ISO_8601), $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
+                    ->createEpisode($title, $creator, $datetime, $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
 
                 $filesystem->delete($filepath);
 
@@ -923,9 +924,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         if ($episode->exists()) {
             $episodeInfo = $episode->getEpisode();
             $media = $episode->getMedia();
-            if (count($media) != 1) {//TODO
-                throw new Exception("something is wrong with media.");
-            }
             $previewTrack = null;
             foreach ($media as $track) {
                 if (in_array("preview",$track->tags)) {

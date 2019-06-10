@@ -3,6 +3,7 @@
 namespace TIK_NFL\ilias_oc_plugin\opencast;
 
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use DateTime;
 use ilPlugin;
 
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
@@ -185,7 +186,7 @@ class ilOpencastAPI
      *            the path to the presentation track file, which is uploaded
      * @return string the event id
      */
-    public function createEpisode(string $title, string $creator, string $startDate, string $series_id, bool $flagForCutting, string $presentationfilePath)
+    public function createEpisode(string $title, string $creator, DateTime $startDate, string $series_id, bool $flagForCutting, string $presentationfilePath)
     {
         $url = "/api/events";
         $metadata = array(
@@ -193,7 +194,8 @@ class ilOpencastAPI
             "creator" => array(
                 $creator
             ),
-            "startDate" => $startDate,
+            "startDate" => $startDate->format("Y-m-d"),
+            "startTime" => $startDate->format("H:i:sP"),
             "isPartOf" => $series_id
         );
 
@@ -207,7 +209,7 @@ class ilOpencastAPI
             'acl' => json_encode(array()),
             'processing' => json_encode(array(
                 "workflow" => $this->configObject->getUploadWorkflow(),
-                "configuration" => array(
+                "configuration" => array(//TODO
                     "flagForCutting" => $flagForCutting ? "true" : "false",
                     "straightToPublishing" => $flagForCutting ? "false" : "true"
                 )
