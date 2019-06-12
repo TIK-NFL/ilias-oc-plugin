@@ -582,42 +582,45 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     public function getEpisodes()
     {
         $series = $this->getOCObject()->getSeries();
-        $process_items = $series->getProcessingEpisodes();
 
+        $process_items = $series->getProcessingEpisodes();
         usort($process_items, 'self::sortByStartdate');
-        foreach ($process_items as $process) {
+        $process_items = array_map(function ($process) {
             $process["startdate"] = ilDatePresentation::formatDate(new ilDateTime($process["startdate"], IL_CAL_ISO_8601));
-        }
+            return $process;
+        }, $process_items);
 
         $finished_episodes = $this->getReadyEpisodes(false);
         usort($finished_episodes, 'self::sortByStartdate');
-        foreach ($finished_episodes as $finished) {
+        $finished_episodes = array_map(function ($finished) {
             $finished["startdate"] = ilDatePresentation::formatDate(new ilDateTime($finished["startdate"], IL_CAL_ISO_8601));
-        }
+            return $finished;
+        }, $finished_episodes);
+
         $scheduledEpisodes = $series->getScheduledEpisodes();
         $scheduled_items = array_map(array(
             $this,
             'extractScheduledEpisode'
         ), $scheduledEpisodes);
-        
         usort($scheduled_items, 'self::sortByStartdate');
-        foreach ($scheduled_items as $scheduled) {
+        $scheduled_items = array_map(function ($scheduled) {
             $scheduled["startdate"] = ilDatePresentation::formatDate(new ilDateTime($scheduled["startdate"], IL_CAL_ISO_8601));
             $stopDate = new ilDateTime($scheduled["startdate"], IL_CAL_ISO_8601);
             $stopDate->increment(iLDateTime::MINUTE, $scheduled["duration"] / 60000);
             $scheduled["stopdate"] = ilDatePresentation::formatDate($stopDate);
-        }
-        
+            return $scheduled;
+        }, $scheduled_items);
+
         $onHoldEpisodes = $series->getOnHoldEpisodes();
         $onhold_items = array_map(array(
             $this,
             'extractOnholdEpisode'
         ), $onHoldEpisodes);
-
         usort($onhold_items, 'self::sortByStartdate');
-        foreach ($onhold_items as $value) {
-            $value["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_ISO_8601));
-        }
+        $onhold_items = array_map(function ($onhold) {
+            $onhold["startdate"] = ilDatePresentation::formatDate(new ilDateTime($onhold["startdate"], IL_CAL_ISO_8601));
+            return $onhold;
+        }, $onhold_items);
 
         $data = array(
             'finished' => $finished_episodes,
