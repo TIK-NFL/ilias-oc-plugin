@@ -46,11 +46,11 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
         ])
             ->setMethods([
             'getEpisode',
-            'getPublicaton'
+            'getPublication'
         ])
             ->getMock();
         $this->episode->method('getEpisode')->willReturn(json_decode(file_get_contents($plugin->getDirectory() . "/test/episode.json")));
-        $this->episode->method('getPublicaton')->willReturn(json_decode(file_get_contents($plugin->getDirectory() . "/test/publications.json"))[1]);
+        $this->episode->method('getPublication')->willReturn(json_decode(file_get_contents($plugin->getDirectory() . "/test/publications.json"))[1]);
     }
 
     public function testGetSeriesId()
