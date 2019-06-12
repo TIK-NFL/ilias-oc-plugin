@@ -39,7 +39,7 @@ require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/
 $uri = parse_url($_SERVER['REQUEST_URI']);
 $method = $_SERVER['REQUEST_METHOD'];
 
-$api = new ilAPIController($uri, $method);
+$api = new \TIK_NFL\ilias_oc_plugin\api\ilAPIController($uri, $method);
 
 // get the requested file and its type
 $path = substr($uri["path"], strpos($uri["path"], $basename) + strlen($basename));
