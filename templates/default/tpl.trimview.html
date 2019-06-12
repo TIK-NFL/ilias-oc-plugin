@@ -1,55 +1,68 @@
 <!-- BEGIN formstart -->
-<form id="trim-form" action="{CMD_TRIM}" method="post">
-<input type="hidden" name="episode_id" value="{EPISODE_ID}" />
-  <div class="row">
-    <div class="col-md-12 form-group">
-      <span class="form-label" id="basic-addon1">{TXT_TRACK_TITLE}</span>
-      <input type="text" class="form-control" aria-describedby="basic-addon1" name="tracktitle" value="{TRACKTITLE}">
+<form id="trim-form" class="form-horizontal" action="{CMD_TRIM}" method="post">
+  <input type="hidden" id="episode_id" value="{EPISODE_ID}" />
+  <input type="hidden" id="inputStreamType" value="{INPUTSTREAMTYPE}">
+  <div class="form-group">
+    <label for="episodetitle" class="col-sm-3 control-label">{TXT_TRACK_TITLE}<span class="asterisk">*</span></label>
+    <div class="col-sm-9">
+      <input type="text" class="form-control" id="episodetitle" value="{TRACKTITLE}" required>
     </div>
   </div>
 <!-- END formstart -->
 <!-- BEGIN dualstream -->
-  <div class="row">
-    <div class="col-md-6">{TXT_LEFT_TRACK}<input type="checkbox" id="lefttrack" name="lefttrack" checked></div>
-    <div class="col-md-6"><span class="pull-right">{TXT_RIGHT_TRACK}<input type="checkbox" id="righttrack" name="righttrack" checked></span></div>
+  <div class="form-group">
+    <div class="col-sm-6">{TXT_LEFT_TRACK}<input type="checkbox" id="lefttrack" checked></div>
+    <div class="col-sm-6"><span class="pull-right">{TXT_RIGHT_TRACK}<input type="checkbox" id="righttrack" checked></span></div>
   </div>
 <!-- END dualstream -->
-<!-- BEGIN singlestream -->
-  <div class="row">
-      <input type="hidden" name="singletrack" value="{SINGLETRACK}">
-  </div>
-<!-- END singlestream -->
 <!-- BEGIN video -->  
-  <div class="row">
-    <video id="ocpreviewvideo" class="center-block video-js vjs-default-skin"
-      controls preload="auto" width="640" height="264"
-      data-setup='{"inactivityTimeout": 0 }'>
-      <source src="{DOWNLOAD_PREVIEW_URL_MP4}" type='video/mp4' />
-      <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
-    </video>
-  </div>
-  <div class="row">
-    <div class="col-md-6">    
-      <a href="{DOWNLOAD_PREVIEW_URL_MP4}" download>{TXT_DOWNLOAD_PREVIEW}</a>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <video id="ocpreviewvideo" class="center-block video-js vjs-default-skin"
+        controls preload="auto" width="640" height="264"
+        data-setup='{"inactivityTimeout": 0, "fluid": true }'>
+        <source src="{DOWNLOAD_PREVIEW_URL_MP4}" type='video/mp4' />
+        <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
+      </video>
     </div>
   </div>
-  <div class="row top5"><div class="col-md-12">    <div id="slider-range" data-time="{TRACKLENGTH}"></div></div></div>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <div id="slider-range" data-time="{TRACKLENGTH}"></div>
+    </div>
+  </div>
 <!-- END video -->  
 <!-- BEGIN formend -->  
-  <div class="row top5">
-    <div class="col-md-6">{TXT_INPOINT}</div>
-    <div class="col-md-6"><span class="pull-right">{TXT_OUTPOINT}</span></div>
-  </div>
-  <div class="row top5">
-    <div class="col-md-6"><input name="trimin" value="0:00:00" id="trimin"><button id="settrimin" type="button" class="btn btn-default"><span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}</button></div>
-    <div class="col-md-6"><span class="pull-right"><input name="trimout" value="{TRACKLENGTH}" id="trimout" ><button id="settrimout" type="button" class="btn btn-default"><span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}</button></span></div>
-  </div>
-  <div class="row top5">
-    <div class="col-md-6"><button type="button" class="btn btn-default" id="playtrimin"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_INPOINT}</button>
+  <div class="form-group">
+    <div class="col-sm-6">
+      <div>
+        <div>{TXT_INPOINT}</div>
+        <div class="input-group">
+          <input value="0:00:00" id="trimin">
+          <button id="settrimin" type="button" class="btn btn-default">
+            <span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}
+          </button>
+        </div>
+        <button type="button" class="btn btn-default" id="playtrimin"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_INPOINT}</button>
+      </div>
     </div>
-    <div class="col-md-6"><span class="pull-right"> <button type="button" class="btn btn-default" id="playtrimout"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_OUTPOINT}</button>   
-    </span></div>
+    <div class="col-sm-6 pull-right">
+      <div class="pull-right">
+        <div>{TXT_OUTPOINT}</div>
+        <div class="input-group">
+          <input value="{TRACKLENGTH}" id="trimout" >
+          <button id="settrimout" type="button" class="btn btn-default">
+            {TXT_SET_TO_CURRENT_TIME}
+          </button>
+        </div>
+        <button type="button" class="btn btn-default" id="playtrimout"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_OUTPOINT}</button>
+      </div>
+    </div>
   </div>
-  <div class="row top5"><div class="col-md-12"><button type="submit" class="btn btn-primary" id="octrimbutton"><span class="glyphicon glyphicon-ok"></span> {TXT_CONTINUE}</button></div></div>
+  <div class="form-group">
+    <div class="col-sm-12">
+      <button type="submit" class="btn btn-primary" id="octrimbutton"><span class="glyphicon glyphicon-ok"></span> {TXT_CONTINUE}</button>
+    </div>
+  </div>
 </form>
 <!-- END formend -->  

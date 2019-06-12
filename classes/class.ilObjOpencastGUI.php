@@ -67,6 +67,16 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         'webm'
     ];
 
+    const STREAM_TYPE_DUAL = "dual";
+
+    const STREAM_TYPE_PRESENTER = "presenter";
+
+    const STREAM_TYPE_PRESENTATION = "presentation";
+
+    const TRACK_TYPE_PRENETER = "presenter";
+
+    const TRACK_TYPE_PRESENTATION = "presentation";
+
     /**
      * Initialisation
      */
@@ -934,45 +944,42 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             if ($previewTrack == null) {
                 throw new Exception("There is no preview Track.");
             }
-            
+
             $streamType = null;
             switch ($previewTrack->flavor) {
                 case "presentation/preview":
-                    $streamType = "presentation";
+                    $streamType = self::STREAM_TYPE_PRESENTATION;
                     break;
                 case "presenter/preview":
-                    $streamType = "presenter";
+                    $streamType = self::STREAM_TYPE_PRESENTER;
                     break;
                 case "composite/preview":
-                    $streamType = "dual";
+                    $streamType = self::STREAM_TYPE_DUAL;
                     break;
                 default:
                     throw new Exception("Unknown media flavor for preview: " . $previewTrack->flavor);
                     break;
             }
-            
+
             $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
             $trimview->setCurrentBlock("formstart");
             $trimview->setVariable("TXT_TRACK_TITLE", $this->getText("track_title"));
             $trimview->setVariable("TRACKTITLE", $episodeInfo->title);
             $trimview->setVariable("CMD_TRIM", $ilCtrl->getFormAction($this, "trimEpisode"));
             $trimview->setVariable("EPISODE_ID", $episode->getEpisodeId());
+            $trimview->setVariable("INPUTSTREAMTYPE", $streamType);
             $trimview->parseCurrentBlock();
             if ($streamType == "dual") {
                 $trimview->setCurrentBlock("dualstream");
                 $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
                 $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
                 $trimview->parseCurrentBlock();
-            } else {
-                $trimview->setCurrentBlock("singlestream");
-                $trimview->setVariable("SINGLETRACK", $streamType);
-                $trimview->parseCurrentBlock();
             }
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             $downloadurlmp4 = $previewTrack->url;
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
-            
+
             $duration = $previewTrack->duration;
             $trimview->setVariable("TRACKLENGTH", $duration / 1000);
             $trimview->parseCurrentBlock();
@@ -1014,36 +1021,36 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
     public function trimEpisode()
     {
-        global $ilCtrl;
+        global $DIC;
+
         $episode = $this->getOCObject()->getEpisode($_POST["episode_id"]);
         if ($episode->exists()) {
-            $title = (string) ilUtil::stripScriptHTML($_POST["tracktitle"]);
-            if ($title) {
-                $episode->setTitle($title);
-            }
+            $episode->setTitle($_POST["episodetitle"]);
+
+            $outputStreamType = $_POST["outputStreamType"];
             $keeptracks = [];
-            if (isset($_POST["lefttrack"])) {
-                $keeptracks[] = "presenter";
+            switch ($outputStreamType) {
+                case self::STREAM_TYPE_PRESENTATION:
+                    $keeptracks[] = self::TRACK_TYPE_PRESENTATION;
+                    break;
+                case self::STREAM_TYPE_PRESENTER:
+                    $keeptracks[] = self::TRACK_TYPE_PRENETER;
+                    break;
+                case self::STREAM_TYPE_DUAL:
+                    $keeptracks[] = self::TRACK_TYPE_PRESENTATION;
+                    $keeptracks[] = self::TRACK_TYPE_PRENETER;
+                    break;
+                default:
+                    throw new Exception("Invalid Output Stream Type", 400);
             }
-            if (isset($_POST["righttrack"])) {
-                $keeptracks[] = "presentation";
-            }
-            if (isset($_POST["singletrack"])) {
-                $keeptracks[] = (string) ilUtil::stripScriptHTML($_POST["singletrack"]);
-            }
-            $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimin"]));
-            list ($hours, $minutes, $seconds) = sscanf($str_time, "%d:%d:%d");
-            $trimin = $hours * 3600 + $minutes * 60 + $seconds;
-            
-            $str_time = preg_replace("/^([\d]{1,2})\:([\d]{2})$/", "00:$1:$2", ilUtil::stripScriptHTML($_POST["trimout"]));
-            sscanf($str_time, "%d:%d:%d", $hours, $minutes, $seconds);
-            $trimout = $hours * 3600 + $minutes * 60 + $seconds;
-            
+            $trimin =  intval($_POST["trimin"]);
+            $trimout =  intval($_POST["trimout"]);
+
             $episode->trim($keeptracks, $trimin, $trimout);
-            
+
             ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
         }
-        $ilCtrl->redirect($this, "editTrimProcess");
+        $DIC->ctrl()->redirect($this, "editTrimProcess");
     }
 
     public function getText($a_text)
