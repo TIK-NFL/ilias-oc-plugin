@@ -90,14 +90,14 @@
 			this.refreshTimesFromSliderEvent(values);
 		}
 
-		onsubmitForm(event, form) {
+		onsubmitForm(event) {
 			event.preventDefault();
-			if (this.validateForm(form)) {
-				this.sendTrimData(form);
+			if (this.validateForm()) {
+				this.sendTrimData();
 			}
 		}
 
-		validateForm(form) {
+		validateForm() {
 			if (this.getIn() >= this.getOut()) {
 				return false;
 			}
@@ -115,8 +115,8 @@
 			return true;
 		}
 
-		sendTrimData(form) {
-			const url = form.getAttribute("action");
+		sendTrimData() {
+			const url = this.elementForm.getAttribute("action");
 			const headers = new Headers();
 			headers.set('Accept', 'application/json');
 
