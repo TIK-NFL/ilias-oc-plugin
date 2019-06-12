@@ -102,8 +102,10 @@
 				return false;
 			}
 
-			if (!this.elementKeepLeftTrack.prop('checked') && !this.elementKeepRightTrack.prop('checked')) {
-				return false;
+			if (this.inputStreamType == "dual") {
+				if (!this.elementKeepLeftTrack.prop('checked') && !this.elementKeepRightTrack.prop('checked')) {
+					return false;
+				}
 			}
 
 			if (!$("#episodetitle").val()) {
@@ -149,8 +151,8 @@
 			};
 
 			this.elementSubmitButton.disabled = true;
-			fetch(url, fetchOptions).then((response) => {
-				const json = await response.json()
+			fetch(url, fetchOptions).then(async response => {
+				const json = await response.json();
 				if (json.redirect_url) {
 					window.location.replace(json.redirect_url);
 				}
@@ -158,8 +160,8 @@
 		}
 
 		refreshTimesFromSliderEvent(values) {
-			this.elementTrimIn.val(convertSecToTime(values[0]));
-			this.elementTrimOut.val(convertSecToTime(values[1]));
+			this.elementTrimIn.val(TrimForm.convertSecToTime(values[0]));
+			this.elementTrimOut.val(TrimForm.convertSecToTime(values[1]));
 		}
 
 		static convertSecToTime(totalSec) {
