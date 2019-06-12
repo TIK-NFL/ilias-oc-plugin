@@ -5,6 +5,7 @@
  * @group needInstalledILIAS
  */
 use TIK_NFL\ilias_oc_plugin\api\ilOpencastUserTracking;
+use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 
 class ilOpencastUserTrackingTest extends PHPUnit_Framework_TestCase
 {
