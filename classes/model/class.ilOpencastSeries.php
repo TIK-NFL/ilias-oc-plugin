@@ -144,7 +144,7 @@ class ilOpencastSeries
         return array(
             'title' => $episode->title,
             'workflow_id' => $workflow->operation,
-            'date' => $episode->start,
+            'startdate' => $episode->start,
             'processdone' => ($finished / $totalops) * 100,
             'processcount' => $finished . "/" . $totalops,
             'running' => $running

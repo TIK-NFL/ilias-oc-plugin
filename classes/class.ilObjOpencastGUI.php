@@ -334,7 +334,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $episode->publish();
                 ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
             } catch (Exception $e) {
-                if (strpos($e->getMessage(), "already published") == false) {
+                if (!strpos($e->getMessage(), "already published")) {
                     throw $e;
                 }
             }
@@ -397,6 +397,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $this->checkPermission("read");
         
         $released_episodes = $this->getReadyEpisodes(true);
+        usort($released_episodes, 'self::sortByStartdate');
         if (! $this->getOCObject()->getViewMode()) {
             $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.html", true, true);
             $seriestpl->setCurrentBlock($this->getOCObject()->getDownload() ? "headerdownload" : "header");
@@ -412,7 +413,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $seriestpl->setVariable("CMD_PLAYER", $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true));
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
-                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_ISO_8601)));
+                $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["startdate"], IL_CAL_ISO_8601)));
                 if ($this->getOCObject()->getDownload()) {
                     $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
                     $seriestpl->setVariable("TXT_DOWNLOAD", $DIC->language()
@@ -430,7 +431,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 
                 $image = $factory->image()->responsive($item["previewurl"], $this->getText("preview"));
                 $content = $factory->listing()->descriptive(array(
-                    $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_ISO_8601))
+                    $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["startdate"], IL_CAL_ISO_8601))
                 ));
                 $sections = array(
                     $content
@@ -506,7 +507,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             
             $episode = array(
                 "title" => $readyEpisode->title,
-                "date" => $readyEpisode->start,
+                "startdate" => $readyEpisode->start,
                 "series_id" => $readyEpisode->is_part_of,
                 "episode_id" => $readyEpisode->identifier,
                 "previewurl" => $previewurl,
@@ -520,34 +521,28 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $episodes[] = $episode;
         }
         
-        usort($episodes, array(
-            $this,
-            'sortbydate'
-        ));
         return $episodes;
     }
 
     private function extractScheduledEpisode($event)
     {
-        $scheduled_episode = array(
+        return array(
             'title' => $event->title,
             'episode_id' => $event->identifier,
-            'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event->identifier)
+            'deletescheduledurl' => $this->getLinkForEpisodeUnescaped("deletescheduled", (string) $event->identifier),
+            'startdate' => $event->start,
+            'duration' => $event->duration,
+            'location' => $event->location
         );
-        $scheduled_episode['startdate'] = $event->start;
-        $scheduled_episode['duration'] = $event->duration;
-        $scheduled_episode['location'] = $event->location;
-        return $scheduled_episode;
     }
 
     private function extractOnholdEpisode($event)
     {
-        $onhold_episode = array(
+        return array(
             'title' => $event->title,
             'trimurl' => $this->getLinkForEpisodeUnescaped("showTrimEditor", (string) $event->identifier),
-            'date' => $event->start
+            'startdate' => $event->start
         );
-        return $onhold_episode;
     }
 
     /**
@@ -589,17 +584,15 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $series = $this->getOCObject()->getSeries();
         $process_items = $series->getProcessingEpisodes();
 
-        usort($process_items, array(
-            $this,
-            'sortbydate'
-        ));
-        foreach ($process_items as $key => $value) {
-            $process_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
+        usort($process_items, 'self::sortByStartdate');
+        foreach ($process_items as $process) {
+            $process["startdate"] = ilDatePresentation::formatDate(new ilDateTime($process["startdate"], IL_CAL_ISO_8601));
         }
 
         $finished_episodes = $this->getReadyEpisodes(false);
-        foreach ($finished_episodes as $key => $value) {
-            $finished_episodes[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
+        usort($finished_episodes, 'self::sortByStartdate');
+        foreach ($finished_episodes as $finished) {
+            $finished["startdate"] = ilDatePresentation::formatDate(new ilDateTime($finished["startdate"], IL_CAL_ISO_8601));
         }
         $scheduledEpisodes = $series->getScheduledEpisodes();
         $scheduled_items = array_map(array(
@@ -607,15 +600,12 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             'extractScheduledEpisode'
         ), $scheduledEpisodes);
         
-        usort($scheduled_items, array(
-            $this,
-            'sortbystartdate'
-        ));
-        foreach ($scheduled_items as $key => $value) {
-            $scheduled_items[$key]["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_ISO_8601));
-            $stopDate = new ilDateTime($value["startdate"], IL_CAL_ISO_8601);
-            $stopDate->increment(iLDateTime::MINUTE, $value["duration"] / 60000);
-            $scheduled_items[$key]["stopdate"] = ilDatePresentation::formatDate($stopDate);
+        usort($scheduled_items, 'self::sortByStartdate');
+        foreach ($scheduled_items as $scheduled) {
+            $scheduled["startdate"] = ilDatePresentation::formatDate(new ilDateTime($scheduled["startdate"], IL_CAL_ISO_8601));
+            $stopDate = new ilDateTime($scheduled["startdate"], IL_CAL_ISO_8601);
+            $stopDate->increment(iLDateTime::MINUTE, $scheduled["duration"] / 60000);
+            $scheduled["stopdate"] = ilDatePresentation::formatDate($stopDate);
         }
         
         $onHoldEpisodes = $series->getOnHoldEpisodes();
@@ -624,19 +614,18 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             'extractOnholdEpisode'
         ), $onHoldEpisodes);
 
-        usort($onhold_items, array(
-            $this,
-            'sortbydate'
-        ));
-        foreach ($onhold_items as $key => $value) {
-            $onhold_items[$key]["date"] = ilDatePresentation::formatDate(new ilDateTime($value["date"], IL_CAL_ISO_8601));
+        usort($onhold_items, 'self::sortByStartdate');
+        foreach ($onhold_items as $value) {
+            $value["startdate"] = ilDatePresentation::formatDate(new ilDateTime($value["startdate"], IL_CAL_ISO_8601));
         }
-        
-        $data = array();
-        $data['finished'] = $finished_episodes;
-        $data['processing'] = $process_items;
-        $data['onhold'] = $onhold_items;
-        $data['scheduled'] = $scheduled_items;
+
+        $data = array(
+            'finished' => $finished_episodes,
+            'processing' => $process_items,
+            'onhold' => $onhold_items,
+            'scheduled' => $scheduled_items
+        );
+
         header('Vary: Accept');
         header('Content-type: application/json');
         echo json_encode($data);
@@ -644,37 +633,31 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         exit();
     }
 
-    private function sortbydate($a, $b, $field = "date")
+    private static function sortByStartdate(array $a, array $b)
     {
-        if ($a[$field] == $b[$field]) {
-            return 0;
-        }
-        return ($a[$field] > $b[$field]) ? - 1 : 1;
-    }
-
-    private function sortbystartdate($a, $b)
-    {
-        return $this->sortbydate($a, $b, "startdate");
+        $date1 = strtotime($a["startdate"]);
+        $date2 = strtotime($b["startdate"]);
+        return $date2 - $date1;
     }
 
     public function editFinishedEpisodes()
     {
-        $this->editEpisodes('finished');
+        $this->showEditEpisodes('finished');
     }
 
     public function editTrimProcess()
     {
-        $this->editEpisodes('trimprocess');
+        $this->showEditEpisodes('trimprocess');
     }
 
     public function editUpload()
     {
-        $this->editEpisodes('upload');
+        $this->showEditEpisodes('upload');
     }
 
     public function editSchedule()
     {
-        $this->editEpisodes('scheduled');
+        $this->showEditEpisodes('scheduled');
     }
 
     /**
@@ -797,7 +780,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         }
     }
 
-    private function editEpisodes($section)
+    private function showEditEpisodes(string $section)
     {
         global $DIC;
         $ilTabs = $DIC->tabs();
@@ -900,7 +883,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      * @param $columns array
      * @return \ILIAS\UI\Component\Legacy\Legacy
      */
-    private function getTableWithId($id, $columns, $layout = "auto")
+    private function getTableWithId(string $id, array $columns, string $layout = "auto")
     {
         global $DIC;
         $tableTpl = $this->getPlugin()->getTemplate("default/tpl.empty_table.html");
@@ -1053,7 +1036,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $DIC->ctrl()->redirect($this, "editTrimProcess");
     }
 
-    public function getText($a_text)
+    public function getText(string $a_text)
     {
         return $this->txt($a_text);
     }

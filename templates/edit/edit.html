@@ -7,7 +7,7 @@
 {{#episodes}}
 <tr>
  <td class="std">{{title}}</td>
- <td class="std">{{date}}</td>
+ <td class="std">{{startdate}}</td>
  <td class="std"><div class="progress"><div class="active progress-bar progress-bar-striped progress-bar-success" role="progressbar" style="width:{{processdone}}%">{{processcount}}</div></div></td>
  <td class="std">{{running}}</td>
 </tr>
@@ -23,7 +23,7 @@
 <tr>
  <td class="std"><a href="{{viewurl}}">{{title}}</a></td>
  <td class="std"><a href="{{viewurl}}"><img src="{{previewurl}}" /></a></td>
- <td class="std">{{date}}</td>
+ <td class="std">{{startdate}}</td>
  {{#manualRelease}}<td><a class="btn btn-default" href="{{publishurl}}">{{txt_publish}}</a></td>{{/manualRelease}}
 </tr>
 {{/episodes}}
@@ -37,7 +37,7 @@
 {{#episodes}}
 <tr>
  <td class="std"><a href="{{trimurl}}">{{title}}</a></td>
- <td class="std">{{date}}</td>
+ <td class="std">{{startdate}}</td>
 </tr>
 {{/episodes}}
 {{/onhold}}
