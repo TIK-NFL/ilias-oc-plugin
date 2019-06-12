@@ -3,9 +3,9 @@
   <input type="hidden" id="episode_id" value="{EPISODE_ID}" />
   <input type="hidden" id="inputStreamType" value="{INPUTSTREAMTYPE}">
   <div class="form-group">
-    <div class="col-md-12 form-group">
-      <span class="form-label" id="basic-addon1">{TXT_TRACK_TITLE}</span>
-      <input type="text" class="form-control" aria-describedby="basic-addon1" id="episodetitle" value="{TRACKTITLE}">
+    <label for="episodetitle" class="col-sm-3 control-label">{TXT_TRACK_TITLE}<span class="asterisk">*</span></label>
+    <div class="col-sm-9">
+      <input type="text" class="form-control" id="episodetitle" value="{TRACKTITLE}" required>
     </div>
   </div>
 <!-- END formstart -->
@@ -35,33 +35,29 @@
 <!-- END video -->  
 <!-- BEGIN formend -->  
   <div class="form-group">
-    <div class="col-sm-6">{TXT_INPOINT}</div>
-    <div class="col-sm-6"><span class="pull-right">{TXT_OUTPOINT}</span></div>
-  </div>
-  <div class="form-group">
     <div class="col-sm-6">
-      <div class="input-group">
-        <input value="0:00:00" id="trimin">
-        <button id="settrimin" type="button" class="btn btn-default">
-          <span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}
-        </button>
+      <div>
+        <div>{TXT_INPOINT}</div>
+        <div class="input-group">
+          <input value="0:00:00" id="trimin">
+          <button id="settrimin" type="button" class="btn btn-default">
+            <span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}
+          </button>
+        </div>
+        <button type="button" class="btn btn-default" id="playtrimin"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_INPOINT}</button>
       </div>
     </div>
-    <div class="col-sm-6 text-right">
-      <div class="input-group">
-        <input value="{TRACKLENGTH}" id="trimout" >
-        <button id="settrimout" type="button" class="btn btn-default">
-          {TXT_SET_TO_CURRENT_TIME}
-        </button>
+    <div class="col-sm-6 pull-right">
+      <div class="pull-right">
+        <div>{TXT_OUTPOINT}</div>
+        <div class="input-group pull-right">
+          <input value="{TRACKLENGTH}" id="trimout" >
+          <button id="settrimout" type="button" class="btn btn-default">
+            {TXT_SET_TO_CURRENT_TIME}
+          </button>
+        </div>
+        <button type="button" class="btn btn-default" id="playtrimout"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_OUTPOINT}</button>
       </div>
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="col-sm-6">
-      <button type="button" class="btn btn-default" id="playtrimin"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_INPOINT}</button>
-    </div>
-    <div class="col-sm-6 text-right">
-      <button type="button" class="btn btn-default" id="playtrimout"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_OUTPOINT}</button>
     </div>
   </div>
   <div class="form-group">
