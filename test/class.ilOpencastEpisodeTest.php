@@ -37,7 +37,7 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
         include_once ("./Services/PHPUnit/classes/class.ilUnitUtil.php");
         ilUnitUtil::performInitialisation();
         $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("class.ilOpencastEpisode.php");
+        $plugin->includeClass("model/class.ilOpencastEpisode.php");
 
         $this->episode = $this->getMockBuilder(ilOpencastEpisode::class)
             ->setConstructorArgs([
