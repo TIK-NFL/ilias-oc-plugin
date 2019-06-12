@@ -45,10 +45,12 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
             $this->episode_id
         ])
             ->setMethods([
-            'getEpisode'
+            'getEpisode',
+            'getPublicaton'
         ])
             ->getMock();
-        $this->episode->method('getEpisode')->willReturn(json_decode(file_get_contents("episode.json")));
+        $this->episode->method('getEpisode')->willReturn(json_decode(file_get_contents($plugin->getDirectory() . "/test/episode.json")));
+        $this->episode->method('getPublicaton')->willReturn(json_decode(file_get_contents($plugin->getDirectory() . "/test/publications.json"))[1]);
     }
 
     public function testGetSeriesId()
@@ -78,9 +80,9 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
     public function testPublish()
     {
         global $ilDB;
-        
+
         $this->episode->publish();
-        
+
         $query = $ilDB->query("SELECT episode_id, series_id FROM rep_robj_xoc_rel_ep WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
         $this->assertEquals(1, $ilDB->numRows($query));
     }
@@ -88,16 +90,17 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
     public function testRetract()
     {
         global $ilDB;
-        
+
         $this->episode->publish();
-        
+
         $this->episode->retract();
-        
+
         $query = $ilDB->query("SELECT episode_id, series_id FROM rep_robj_xoc_rel_ep WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
         $this->assertEquals(0, $ilDB->numRows($query));
     }
 
     /**
+     *
      * @after
      */
     public function restoreDataBase()
