@@ -127,8 +127,7 @@ class ilOpencastEpisode
             $currenttime = 0;
             foreach ($segmentsxml->Description->MultimediaContent->Video->TemporalDecomposition->VideoSegment as $segmentxml) {
                 $regmatches = array();
-                // preg_match("/PT(\d+M)?(\d+S)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
-                preg_match("/PT(\d+M)?(\d+S)?(\d+)?(0)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
+                preg_match("/PT(\d+M)?(\d+S)?(\d+)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
                 $ms = $regmatches[3];
                 $sec = 0;
                 if (0 != strcmp('', $regmatches[2])) {
@@ -150,7 +149,7 @@ class ilOpencastEpisode
                     }
                 }
                 $currentidx ++;
-                $currenttime = $currenttime + $duration;
+                $currenttime += $duration;
             }
         }
     }
