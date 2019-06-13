@@ -22,6 +22,7 @@
  */
 use ILIAS\FileUpload\Location;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastUtil;
 
 include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 
@@ -452,7 +453,9 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 ->render($deck);
             $tpl->setContent($html);
         }
-        $tpl->setPermanentLink($this->getOCObject()->getType(), $this->getOCObject()->getRefId());
+        $tpl->setPermanentLink($this->getOCObject()
+            ->getType(), $this->getOCObject()
+            ->getRefId());
         $DIC->tabs()->activateTab("content");
     }
 
@@ -476,35 +479,14 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 }
             }
 
-            $previewurl = null;
-            foreach ($apiPublication->attachments as $attachment) {
-                //TODO check flavors
-                if ('presentation/search+preview' == $attachment->flavor) {
-                    $previewurl = $attachment->url;
-                    // prefer presentation/search+preview over presenter/search+preview
-                    break;
-                } else if ('presenter/search+preview' == $attachment->flavor) {
-                    $previewurl = $attachment->url;
-                    // continue searching for a presentation/search+preview
-                }
-            }
+            $previewurl = ilOpencastUtil::getSearchPreviewURL($apiPublication->attachments);
 
             $nonPreviewTracks = array_filter($apiPublication->media, function ($track) {
                 return ! in_array("preview", $track->tags);
             });
 
-            $downloadurl = null;
-            foreach ($nonPreviewTracks as $track) {
-                //TODO check flavors
-                if ('composite/sbs' == $track->flavor) {
-                    $downloadurl = $track->url;
-                    break;
-                }
-                if ('presentation/delivery' == $track->flavor && 'video/mp4' == $track->mimetype) {
-                    $downloadurl = $track->url;
-                }
-            }
-            
+            $downloadurl = ilOpencastUtil::getTrackDownloadURL($nonPreviewTracks);
+
             $episode = array(
                 "title" => $readyEpisode->title,
                 "startdate" => $readyEpisode->start,
