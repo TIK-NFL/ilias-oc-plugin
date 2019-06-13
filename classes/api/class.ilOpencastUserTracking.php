@@ -24,7 +24,7 @@ class ilOpencastUserTracking
      * @param int $outtime
      *            the end of time period of the view
      */
-    public static function putUserTracking($user_id, $episode, $intime, $outtime)
+    public static function putUserTracking(int $user_id, ilOpencastEpisode $episode, int $intime, int $outtime)
     {
         $view = self::getLastView($user_id, $episode->getEpisodeId());
 
@@ -59,7 +59,7 @@ class ilOpencastUserTracking
      * @return array view
      * @access private
      */
-    private static function getLastView($user_id, $episode_id)
+    private static function getLastView(int $user_id, string $episode_id)
     {
         global $ilDB;
 
@@ -84,7 +84,7 @@ class ilOpencastUserTracking
      * @param array $view
      * @access private
      */
-    private static function addView($user_id, $episode_id, $view)
+    private static function addView(int $user_id, string $episode_id, array $view)
     {
         global $ilDB;
 
@@ -102,14 +102,13 @@ class ilOpencastUserTracking
      * @param ilOpencastEpisode $episode
      * @return array
      */
-    public static function getStatisticFromVideo($episode)
+    public static function getStatisticFromVideo(ilOpencastEpisode $episode)
     {
         global $ilDB;
-        // TODO rechte
         // TODO video informationen manifest aus lesen
         $dataarray = [];
 
-        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text"));
+        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $episode->getQuoteEpisodeId());
         if ($ilDB->numRows($query) > 0) {
             $users = array();
             while ($row = $ilDB->fetchAssoc($query)) {
@@ -159,12 +158,12 @@ class ilOpencastUserTracking
      * @param int $user_id
      * @return array
      */
-    public static function getFootprints($episode, $user_id)
+    public static function getFootprints(ilOpencastEpisode $episode, int $user_id)
     {
         global $ilDB;
         $array = array();
 
-        $query = $ilDB->query("SELECT intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text") . " AND user_id = " . $ilDB->quote($user_id, "integer"));
+        $query = $ilDB->query("SELECT intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $episode->getQuoteEpisodeId() . " AND user_id = " . $ilDB->quote($user_id, "integer"));
         if ($ilDB->numRows($query) > 0) {
             $userviewdata = array();
             while ($view = $ilDB->fetchAssoc($query)) {
@@ -205,7 +204,7 @@ class ilOpencastUserTracking
      * @param ilOpencastEpisode $episode
      * @return int
      */
-    public static function getViews($episode)
+    public static function getViews(ilOpencastEpisode $episode)
     {
         global $ilDB;
 
@@ -244,7 +243,7 @@ class ilOpencastUserTracking
      * @param int $user_id
      * @return int seconds
      */
-    public static function getLastSecondViewed($episode, $user_id)
+    public static function getLastSecondViewed(ilOpencastEpisode $episode, int $user_id)
     {
         return self::getLastView($user_id, $episode->getEpisodeId())['outtime'];
     }
@@ -254,10 +253,10 @@ class ilOpencastUserTracking
      *
      * @param ilOpencastEpisode $episode
      */
-    public static function removeViews($episode)
+    public static function removeViews(ilOpencastEpisode $episode)
     {
         global $ilDB;
 
-        $ilDB->manipulate("DELETE FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text"));
+        $ilDB->manipulate("DELETE FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $episode->getQuoteEpisodeId());
     }
 }
