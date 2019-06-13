@@ -17,24 +17,18 @@ class ilOpencastInfo
      */
     public function getMyInfo()
     {
-        $json = array();
-
-        $jsonUser = array();
-        $jsonUser["username"] = "anonymous";
-        $json["user"] = $jsonUser;
-
-        $roles = array();
-        $roles[] = "ROLE_ANONYMOUS";
-        $json["rules"] = $roles;
-
-        $jsonOrg = array();
-        $jsonOrg["id"] = "mh_default_org";
-        $jsonOrg["name"] = "Opencast Project";
-        $jsonOrg["adminRole"] = "ROLE_ADMIN";
-        $jsonOrg["anonymousRole"] = "ROLE_ANONYMOUS";
-        $json["org"] = $jsonOrg;
-
-        return $json;
+        return array(
+            "username" => "anonymous",
+            "roles" => array(
+                "ROLE_ANONYMOUS"
+            ),
+            "org" => array(
+                "id" => "mh_default_org",
+                "name" => "Opencast Project",
+                "adminRole" => "ROLE_ADMIN",
+                "anonymousRole" => "ROLE_ANONYMOUS"
+            )
+        );
     }
 
     /**
@@ -45,8 +39,6 @@ class ilOpencastInfo
     public function listPlugins()
     {
         $staticPluginsList = ilPlugin::_getDirectory(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast') . "/templates/theodul/manager/list.json";
-        $json = json_decode(file_get_contents($staticPluginsList));
-
-        return $json;
+        return json_decode(file_get_contents($staticPluginsList));
     }
 }
