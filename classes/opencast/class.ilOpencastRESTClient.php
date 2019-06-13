@@ -80,11 +80,7 @@ class ilOpencastRESTClient
             }
             throw new Exception("error GET request: $url $queryString $httpCode", 500);
         }
-
-        if ($json) {
-            return json_decode($response);
-        }
-        return $response;
+        return json_decode($response);
     }
 
     /**
