@@ -1,7 +1,7 @@
 # ilias-oc
-An ILIAS Repository Object plugin for Opencast 6
+An ILIAS Repository Object plugin for Opencast 5 and newer.
 
-This plugin creates a tight intgration of Opencast 6 and ILIAS.
+This plugin creates a tight integration of Opencast and ILIAS.
 This plugin also requires a workflow handler for Opencast, which enables distributing the files in a way that are usable by this plugin.
 This plugin is available in the [Github Repo](https://github.com/pascalseeland/opencast).
 
@@ -65,5 +65,5 @@ The user need the following roles:
 Create this user in Opencast and enter it in the plugin configuration.
 
 #### URL Signing
-[Opencast Stream Security](https://docs.opencast.org/develop/admin/configuration/stream-security/)
-TODO
+In order to use URL signing the [Opencast Stream Security](https://docs.opencast.org/develop/admin/configuration/stream-security/) must be enabled.
+Follow the Opencast documentation to do so.

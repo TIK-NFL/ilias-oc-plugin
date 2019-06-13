@@ -45,18 +45,25 @@ class ilOpencastRESTClient
     }
 
     /**
-     * Do a GET Request of the given url on the Opencast Server with basic authorization
+     * Do a GET Request of the given url on the Opencast server with basic authorization
      *
      * @param string $url
-     * @param bool $json
-     *            should the response be decoded from json into an php object
+     * @param array $query
+     *            this array gets url encoded
      * @throws Exception
      * @return mixed
      */
-    public function get(string $url, bool $json = true)
+    public function get(string $url, array $query = null)
     {
+        $queryString = "null";
+        if ($query) {
+            $queryString = http_build_query($query);
+            $requestURL = $this->opencastURL . "$url?$queryString";
+        } else {
+            $requestURL = $this->opencastURL . $url;
+        }
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->opencastURL . $url);
+        curl_setopt($ch, CURLOPT_URL, $requestURL);
         $this->basicAuthentication($ch);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
@@ -69,9 +76,9 @@ class ilOpencastRESTClient
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
                 ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
-                throw new Exception("error GET request: $url", 503);
+                throw new Exception("error GET request: $url $queryString", 503);
             }
-            throw new Exception("error GET request: $url $httpCode", 500);
+            throw new Exception("error GET request: $url $queryString $httpCode", 500);
         }
 
         if ($json) {

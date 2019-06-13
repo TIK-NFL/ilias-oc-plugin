@@ -159,7 +159,7 @@ class ilAPIController
                 'type' => $attachment->flavor,
                 'ref' => $attachment->ref,
                 'mimetype' => $attachment->mediatype,
-                'url' => $attachment->url, // TODO sign
+                'url' => $attachment->url,
                 'tags' => array(
                     'tag' => $attachment->tags
                 )
@@ -180,7 +180,7 @@ class ilAPIController
                 'id' => $catalog->id,
                 'type' => $catalog->flavor,
                 'mimetype' => $catalog->mediatype,
-                'url' => $catalog->url, // TODO sign
+                'url' => $catalog->url,
                 'tags' => array(
                     'tag' => $catalog->tags
                 )
@@ -203,7 +203,7 @@ class ilAPIController
                 'id' => $track->id,
                 'type' => $track->flavor,
                 'mimetype' => $track->mediatype,
-                'url' => $track->url, // TODO sign
+                'url' => $track->url,
                 'duration' => $track->duration,
                 'tags' => array(
                     'tag' => $track->tags

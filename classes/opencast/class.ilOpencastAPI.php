@@ -235,7 +235,11 @@ class ilOpencastAPI
     public function getEpisodePublication(string $episode_id, string $channel = self::API_PUBLICATION_CHANNEL)
     {
         $url = "/api/events/$episode_id/publications";
-        $publications = $this->opencastRESTClient->get($url);
+        $params = array(
+            "sign" => "true"
+        );
+
+        $publications = $this->opencastRESTClient->get($url, $params);
         foreach ($publications as $publication) {
             if ($publication->channel == $channel) {
                 return $publication;
@@ -263,10 +267,7 @@ class ilOpencastAPI
             'sort' => 'date:ASC'
         );
 
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . http_build_query($params);
-
-        return $this->opencastRESTClient->get($url);
+        return $this->opencastRESTClient->get($url, $params);
     }
 
     /**
@@ -286,13 +287,11 @@ class ilOpencastAPI
                 "series" => $series_id
             )),
             'sort' => 'date:ASC',
-            'withpublications' => "true"
+            'withpublications' => "true",
+            'sign' => "true"
         );
 
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . http_build_query($params);
-
-        $episodes = $this->opencastRESTClient->get($url);
+        $episodes = $this->opencastRESTClient->get($url, $params);
         return array_filter($episodes, array(
             $this,
             'isOnholdEpisode'
@@ -321,20 +320,15 @@ class ilOpencastAPI
                 "series" => $series_id
             )),
             'sort' => 'date:ASC',
-            'withpublications' => "true"
+            'withpublications' => "true",
+            'sign' => "true"
         );
 
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . http_build_query($params);
-
-        $episodes = $this->opencastRESTClient->get($url);
-        return array_filter($episodes, array(
-            $this,
-            'isReadyEpisode'
-        ));
+        $episodes = $this->opencastRESTClient->get($url, $params);
+        return array_filter($episodes, 'self::isReadyEpisode');
     }
 
-    private function isReadyEpisode($episode)
+    private static function isReadyEpisode($episode)
     {
         if (! in_array(self::API_PUBLICATION_CHANNEL, $episode->publication_status)) {
             return false;
@@ -378,8 +372,7 @@ class ilOpencastAPI
             "withoperations" => "true"
         );
 
-        $url .= '?' . http_build_query($params);
-        return $this->opencastRESTClient->get($url);
+        return $this->opencastRESTClient->get($url, $params);
     }
 
     /**
@@ -398,9 +391,7 @@ class ilOpencastAPI
             ))
         );
 
-        $url .= '?' . http_build_query($params);
-
-        return $this->opencastRESTClient->get($url);
+        return $this->opencastRESTClient->get($url, $params);
     }
 
     public function delete(string $episodeid)
