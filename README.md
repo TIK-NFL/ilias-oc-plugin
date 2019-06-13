@@ -41,6 +41,29 @@ The publisher used to create new Opencast series, e.g. "University of Stuttgart,
 This value is optional.
 
 ### Opencast
+An Opencast Service with enabled external API is required.
+The servers external API must be accessible by Ilias and the Ilias users directly.
+
+Currently the minimum required API version is `v1.1.0` (Opencast 5.x).
+
+#### API User
+To access the [API of Opencast](https://docs.opencast.org/develop/admin/configuration/external-api/) from Ilias an authorized user is required.
+The user need the following roles:
+- `ROLE_API`
+- `ROLE_API_EVENTS_CREATE`
+- `ROLE_API_EVENTS_VIEW`
+- `ROLE_API_EVENTS_DELETE`
+- `ROLE_API_EVENTS_METADATA_EDIT`
+- `ROLE_API_EVENTS_PUBLICATIONS_VIEW`
+- `ROLE_API_SERIES_CREATE`
+- `ROLE_API_SERIES_VIEW`
+- `ROLE_API_SERIES_METADATA_EDIT`
+- `ROLE_API_WORKFLOW_INSTANCE_CREATE`
+- `ROLE_API_WORKFLOW_INSTANCE_VIEW`
+- `ROLE_API_WORKFLOW_DEFINITION_VIEW`
+
+Create this user in Opencast and enter it in the plugin configuration.
 
 #### URL Signing
+[Opencast Stream Security](https://docs.opencast.org/develop/admin/configuration/stream-security/)
 TODO

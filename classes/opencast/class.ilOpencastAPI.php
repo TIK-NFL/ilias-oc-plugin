@@ -1,11 +1,9 @@
 <?php
-
 namespace TIK_NFL\ilias_oc_plugin\opencast;
 
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use DateTime;
 use ilPlugin;
-
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('opencast/class.ilOpencastRESTClient.php');
 
@@ -102,22 +100,16 @@ class ilOpencastAPI
 
     private function getAccessControl()
     {
-        global $DIC;
-        $ilUser = $DIC->user();
-
-        $userid = $ilUser->getLogin();
-        if (null != $ilUser->getExternalAccount) {
-            $userid = $ilUser->getExternalAccount();
-        }
+        $userRole = "ROLE_USER_" . strtoupper($this->configObject->getOpencastAPIUser());
 
         return json_encode(array(
             array(
-                "role" => $userid,
+                "role" => $userRole,
                 "action" => "read",
                 "allow" => true
             ),
             array(
-                "role" => $userid,
+                "role" => $userRole,
                 "action" => "write",
                 "allow" => true
             )
@@ -207,10 +199,10 @@ class ilOpencastAPI
                     "fields" => self::values($metadata)
                 )
             )),
-            'acl' => json_encode(array()),
+            'acl' => $this->getAccessControl(),
             'processing' => json_encode(array(
                 "workflow" => $this->configObject->getUploadWorkflow(),
-                "configuration" => array(//TODO
+                "configuration" => array( // TODO
                     "flagForCutting" => $flagForCutting ? "true" : "false",
                     "straightToPublishing" => $flagForCutting ? "false" : "true"
                 )
@@ -260,7 +252,7 @@ class ilOpencastAPI
      */
     public function getScheduledEpisodes(string $series_id)
     {
-        $url = "/api/events/";
+        $url = "/api/events";
 
         $params = array(
             'filter' => self::filter(array(
@@ -285,7 +277,7 @@ class ilOpencastAPI
      */
     public function getOnHoldEpisodes(string $series_id)
     {
-        $url = "/api/events/";
+        $url = "/api/events";
 
         $params = array(
             'filter' => self::filter(array(
@@ -320,7 +312,7 @@ class ilOpencastAPI
      */
     public function getReadyEpisodes(string $series_id)
     {
-        $url = "/api/events/";
+        $url = "/api/events";
 
         $params = array(
             'filter' => self::filter(array(
@@ -450,15 +442,15 @@ class ilOpencastAPI
      *            the endtime of the new tracks in seconds
      * @param array $keeptrack
      *            the id of the tracks to be not removed
-     * @return array
+     * @return string
      */
     private function generateTrimConfiguration(int $trimin, int $trimout, array $keeptracks)
     {
-        return array(
-            "start" => $trimin,
-            "end" => $trimout,
-            "tracks" => $keeptracks
-        );
+        return json_encode(array(
+            "start" => json_encode($trimin),
+            "end" => json_encode($trimout),
+            "tracks" => json_encode($keeptracks)
+        ));
     }
 
     /**
