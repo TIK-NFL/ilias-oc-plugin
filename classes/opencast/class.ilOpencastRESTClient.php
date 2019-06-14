@@ -253,8 +253,8 @@ class ilOpencastRESTClient
     {
         $url = "/api/version";
         try {
-            $versionInfo = json_decode($this->get($url, false), true);
-            return in_array(self::API_VERSION, $versionInfo["versions"]);
+            $versionInfo = $this->get($url);
+            return in_array(self::API_VERSION, $versionInfo->versions);
         } catch (Exception $e) {
             return false;
         }
