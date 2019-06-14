@@ -949,11 +949,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $trimview->setVariable("TRACKLENGTH", $duration / 1000);
             $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
-            $hours = floor($duration / 3600000);
-            $duration = $duration % 3600000;
-            $min = floor($duration / 60000);
-            $duration = $duration % 60000;
-            $sec = floor($duration / 1000);
             $trimview->setVariable("TXT_TRIMIN", $this->getText("trimin"));
             $trimview->setVariable("TXT_TRIMOUT", $this->getText("trimout"));
             $trimview->setVariable("TXT_CONTINUE", $this->getText("continue"));
@@ -962,7 +957,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_PREVIEW_OUTPOINT", $this->getText("preview_outpoint"));
             $trimview->setVariable("TXT_INPOINT", $this->getText("inpoint"));
             $trimview->setVariable("TXT_OUTPOINT", $this->getText("outpoint"));
-            $trimview->setVariable("TRACKLENGTH", sprintf("%d:%02d:%02d", $hours, $min, $sec));
             $trimview->parseCurrentBlock();
             $editorHtml = $trimview->get();
             $content = $factory->panel()->standard($this->getText("ilias_trim_editor"), $factory->legacy($editorHtml));

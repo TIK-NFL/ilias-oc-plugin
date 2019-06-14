@@ -49,6 +49,7 @@
 			this.elementSubmitButton = document.getElementById('octrimbutton');
 			this.slider = $("#slider-range");
 			this.initSlider();
+			this.initTrimInOut();
 			this.elementForm.addEventListener('submit', this.onsubmitForm.bind(this));
 		}
 
@@ -79,6 +80,11 @@
 				slide: this.handleSlide.bind(this),
 				change: this.handleChange.bind(this)
 			});
+		}
+
+		initTrimInOut() {
+			this.elementTrimIn.val(TrimForm.convertSecToTime(this.getIn()));
+			this.elementTrimOut.val(TrimForm.convertSecToTime(this.getOut()));
 		}
 
 		handleChange() {
