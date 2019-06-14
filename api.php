@@ -23,8 +23,6 @@ $GLOBALS['COOKIE_PATH'] = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_S
 // (see ilSession::_writeData for details)
 $GLOBALS['WEB_ACCESS_WITHOUT_SESSION'] = (session_id() == "");
 
-session_cache_limiter('private_no_expire');
-
 include_once "Services/Context/classes/class.ilContext.php";
 ilContext::init(ilContext::CONTEXT_WAC);
 
