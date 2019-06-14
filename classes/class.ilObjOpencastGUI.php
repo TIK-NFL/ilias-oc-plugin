@@ -22,6 +22,7 @@
  */
 use ILIAS\FileUpload\Location;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastUtil;
 
 include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
@@ -73,10 +74,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     const STREAM_TYPE_PRESENTER = "presenter";
 
     const STREAM_TYPE_PRESENTATION = "presentation";
-
-    const TRACK_TYPE_PRENETER = "presenter";
-
-    const TRACK_TYPE_PRESENTATION = "presentation";
 
     /**
      * Initialisation
@@ -999,14 +996,14 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $keeptracks = [];
             switch ($outputStreamType) {
                 case self::STREAM_TYPE_PRESENTATION:
-                    $keeptracks[] = self::TRACK_TYPE_PRESENTATION;
+                    $keeptracks[] = ilOpencastAPI::TRACK_TYPE_PRESENTATION;
                     break;
                 case self::STREAM_TYPE_PRESENTER:
-                    $keeptracks[] = self::TRACK_TYPE_PRENETER;
+                    $keeptracks[] = ilOpencastAPI::TRACK_TYPE_PRENETER;
                     break;
                 case self::STREAM_TYPE_DUAL:
-                    $keeptracks[] = self::TRACK_TYPE_PRESENTATION;
-                    $keeptracks[] = self::TRACK_TYPE_PRENETER;
+                    $keeptracks[] = ilOpencastAPI::TRACK_TYPE_PRESENTATION;
+                    $keeptracks[] = ilOpencastAPI::TRACK_TYPE_PRENETER;
                     break;
                 default:
                     throw new Exception("Invalid Output Stream Type", 400);

@@ -22,6 +22,10 @@ class ilOpencastAPI
 
     const API_PUBLICATION_CHANNEL = "api";
 
+    const TRACK_TYPE_PRENETER = "presenter";
+
+    const TRACK_TYPE_PRESENTATION = "presentation";
+
     /**
      *
      * @var ilOpencastConfig
@@ -438,11 +442,20 @@ class ilOpencastAPI
      */
     private function generateTrimConfiguration(int $trimin, int $trimout, array $keeptracks)
     {
-        return json_encode(array(
-            "start" => json_encode($trimin),
-            "end" => json_encode($trimout),
-            "tracks" => json_encode($keeptracks)
-        ));
+        $configuration = array(
+            "start" => strval($trimin),
+            "end" => strval($trimout)
+        );
+
+        if (! in_array(self::TRACK_TYPE_PRENETER, $keeptracks)) {
+            $configuration["hide_presenter_video"] = "true";
+        }
+
+        if (! in_array(self::TRACK_TYPE_PRESENTATION, $keeptracks)) {
+            $configuration["hide_presentation_video"] = "true";
+        }
+
+        return json_encode($configuration);
     }
 
     /**
