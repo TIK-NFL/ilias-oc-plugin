@@ -26,7 +26,7 @@
 			myPlayer.play();
 		});
 		$('#playtrimout').click(function () {
-			let time = trimForm.getOut(); - 10;
+			let time = trimForm.getOut() - 10;
 			let pausetime = 11000;
 			if (time < 0) {
 				pausetime = (11 + time) * 1000;

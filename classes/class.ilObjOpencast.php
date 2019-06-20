@@ -20,7 +20,6 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
-
 use TIK_NFL\ilias_oc_plugin\api\ilOpencastUserTracking;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastSeries;
@@ -84,7 +83,8 @@ class ilObjOpencast extends ilObjectPlugin
         $this->setType("xoc");
     }
 
-    protected function beforeCreate() {
+    protected function beforeCreate()
+    {
         $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->checkOpencast();
     }
@@ -149,8 +149,8 @@ class ilObjOpencast extends ilObjectPlugin
         $ilDB->manipulate("DELETE FROM rep_robj_xoc_rel_ep WHERE series_id = " . $ilDB->quote($this->getSeriesId(), "text"));
 
         $ilDB->manipulate("DELETE FROM rep_robj_xoc_data WHERE obj_id = " . $ilDB->quote($this->getId(), "integer"));
-        
-        //The series is not deleted in opencast
+
+        // The series is not deleted in opencast
     }
 
     //
@@ -260,15 +260,15 @@ class ilObjOpencast extends ilObjectPlugin
         return $this->download;
     }
 
-	/**
-	 *
-	 * @return ilOpencastSeries
-	 */
-	public function getSeries()
-	{
-		$this->getPlugin()->includeClass("model/class.ilOpencastSeries.php");
-		return new ilOpencastSeries($this->getSeriesId());
-	}
+    /**
+     *
+     * @return ilOpencastSeries
+     */
+    public function getSeries()
+    {
+        $this->getPlugin()->includeClass("model/class.ilOpencastSeries.php");
+        return new ilOpencastSeries($this->getSeriesId());
+    }
 
     /**
      * Get the episode object from id
@@ -294,7 +294,7 @@ class ilObjOpencast extends ilObjectPlugin
     public function getReleasedEpisodeIds()
     {
         global $DIC;
-        //TODO move to OpencastSeries
+        // TODO move to OpencastSeries
         $set = $DIC->database()->query("SELECT episode_id FROM rep_robj_xoc_rel_ep WHERE series_id = " . $DIC->database()
             ->quote($this->getSeriesId(), "text"));
         $released = array();

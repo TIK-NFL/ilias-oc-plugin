@@ -22,7 +22,7 @@ class ilOpencastAPI
 
     const API_PUBLICATION_CHANNEL = "api";
 
-    const TRACK_TYPE_PRENETER = "presenter";
+    const TRACK_TYPE_PRESENTER = "presenter";
 
     const TRACK_TYPE_PRESENTATION = "presentation";
 
@@ -447,7 +447,7 @@ class ilOpencastAPI
             "end" => strval($trimout)
         );
 
-        if (! in_array(self::TRACK_TYPE_PRENETER, $keeptracks)) {
+        if (! in_array(self::TRACK_TYPE_PRESENTER, $keeptracks)) {
             $configuration["hide_presenter_video"] = "true";
         }
 
