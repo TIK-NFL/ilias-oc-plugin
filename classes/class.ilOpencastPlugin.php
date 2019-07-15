@@ -1,5 +1,8 @@
 <?php
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+
 include_once ("./Services/Repository/classes/class.ilRepositoryObjectPlugin.php");
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 
 /**
  * Opencast repository object plugin
@@ -16,15 +19,12 @@ class ilOpencastPlugin extends ilRepositoryObjectPlugin
 
     protected function uninstallCustom()
     {
-        /**
-         *
-         * @var $ilDB ilDB
-         */
-        global $ilDB;
-        $ilDB->query('DROP TABLE  rep_robj_xoc_config, 
-                                  rep_robj_xoc_data,
-                                  rep_robj_xoc_rel_ep,
-                                  rep_robj_xoc_slidetext,
-                                  rep_robj_xoc_views');
+        global $DIC;
+        $ilDB = $DIC->database();
+        $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_CONFIG);
+        $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_DATA);
+        $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES);
+        $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_SLIDETEXT);
+        $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_VIEWS);
     }
 }

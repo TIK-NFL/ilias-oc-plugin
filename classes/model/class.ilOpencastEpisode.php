@@ -4,7 +4,9 @@ namespace TIK_NFL\ilias_oc_plugin\model;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use ilPlugin;
 use Exception;
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass("opencast/class.ilOpencastAPI.php");
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass("class.ilOpencastConfig.php");
 
 /**
  *
@@ -104,7 +106,7 @@ class ilOpencastEpisode
     public function publish()
     {
         global $DIC;
-        $affected_rows = $DIC->database()->manipulate("INSERT INTO rep_robj_xoc_rel_ep (episode_id, series_id) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . ") ON DUPLICATE KEY UPDATE episode_id = episode_id");
+        $affected_rows = $DIC->database()->manipulate("INSERT INTO " . ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES . " (episode_id, series_id) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . ") ON DUPLICATE KEY UPDATE episode_id = episode_id");
         if ($affected_rows != 1) {
             throw new Exception("Episode " . $this->episode_id . " already published!");
         }
@@ -145,7 +147,7 @@ class ilOpencastEpisode
                         $text = $text . " " . (string) $textxml->Text;
                     }
                     if ($text != "") {
-                        $ilDB->manipulate("INSERT INTO rep_robj_xoc_slidetext (episode_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "integer") . ")");
+                        $ilDB->manipulate("INSERT INTO " . ilOpencastConfig::DATABASE_TABLE_SLIDETEXT . " (episode_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "integer") . ")");
                     }
                 }
                 $currentidx ++;
@@ -160,14 +162,14 @@ class ilOpencastEpisode
     public function retract()
     {
         global $ilDB;
-        $ilDB->manipulate("DELETE FROM rep_robj_xoc_rel_ep WHERE episode_id=" . $this->getQuoteEpisodeId() . " AND series_id=" . $this->getQuoteSeriesId());
+        $ilDB->manipulate("DELETE FROM " . ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES . " WHERE episode_id=" . $this->getQuoteEpisodeId() . " AND series_id=" . $this->getQuoteSeriesId());
         $this->removeTextFromDB();
     }
 
     private function removeTextFromDB()
     {
         global $ilDB;
-        $ilDB->manipulate("DELETE FROM rep_robj_xoc_slidetext WHERE episode_id = " . $this->getQuoteEpisodeId());
+        $ilDB->manipulate("DELETE FROM " . ilOpencastConfig::DATABASE_TABLE_SLIDETEXT . " WHERE episode_id = " . $this->getQuoteEpisodeId());
     }
 
     public function delete()

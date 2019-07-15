@@ -86,7 +86,7 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
         global $DIC;
         $ilDB = $DIC->database();
 
-        $set = $ilDB->query("SELECT is_online FROM rep_robj_xoc_data WHERE obj_id = " . $ilDB->quote($a_id, "integer"));
+        $set = $ilDB->query("SELECT is_online FROM " . ilOpencastConfig::DATABASE_TABLE_DATA . " WHERE obj_id = " . $ilDB->quote($a_id, "integer"));
         $rec = $ilDB->fetchAssoc($set);
         return (boolean) $rec["is_online"];
     }

@@ -2,6 +2,7 @@
 namespace TIK_NFL\ilias_oc_plugin\api;
 
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
 /**
  *
@@ -9,8 +10,6 @@ use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
  */
 class ilOpencastUserTracking
 {
-
-    const DATATABLE = 'rep_robj_xoc_views';
 
     /**
      * Adds User-Tracking Data to Database
@@ -63,7 +62,7 @@ class ilOpencastUserTracking
     {
         global $ilDB;
 
-        $query = $ilDB->query("SELECT id, intime, outtime FROM " . self::DATATABLE . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id DESC LIMIT 1");
+        $query = $ilDB->query("SELECT id, intime, outtime FROM " . ilOpencastConfig::DATABASE_TABLE_VIEWS . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($episode_id, "text") . " ORDER BY id DESC LIMIT 1");
 
         if ($ilDB->numRows($query) == 0) {
             return [
@@ -89,9 +88,9 @@ class ilOpencastUserTracking
         global $ilDB;
 
         if (array_key_exists("id", $view)) {
-            $sql = "UPDATE " . self::DATATABLE . " SET intime = " . $ilDB->quote($view["intime"], "integer") . ", outtime = " . $ilDB->quote($view["outtime"], "integer") . " WHERE id = " . $ilDB->quote($view["id"], "integer");
+            $sql = "UPDATE " . ilOpencastConfig::DATABASE_TABLE_VIEWS . " SET intime = " . $ilDB->quote($view["intime"], "integer") . ", outtime = " . $ilDB->quote($view["outtime"], "integer") . " WHERE id = " . $ilDB->quote($view["id"], "integer");
         } else {
-            $sql = "INSERT INTO " . self::DATATABLE . " (user_id, episode_id, intime, outtime) VALUES (" . $ilDB->quote($user_id, "integer") . ", " . $ilDB->quote($episode_id, "text") . ", " . $ilDB->quote($view["intime"], "integer") . ", " . $ilDB->quote($view["outtime"], "integer") . ")";
+            $sql = "INSERT INTO " . ilOpencastConfig::DATABASE_TABLE_VIEWS . " (user_id, episode_id, intime, outtime) VALUES (" . $ilDB->quote($user_id, "integer") . ", " . $ilDB->quote($episode_id, "text") . ", " . $ilDB->quote($view["intime"], "integer") . ", " . $ilDB->quote($view["outtime"], "integer") . ")";
         }
         $ilDB->manipulate($sql);
     }
@@ -108,7 +107,7 @@ class ilOpencastUserTracking
         // TODO video informationen manifest aus lesen
         $dataarray = [];
 
-        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $episode->getQuoteEpisodeId());
+        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . ilOpencastConfig::DATABASE_TABLE_VIEWS . " WHERE intime >= 0 AND episode_id LIKE " . $episode->getQuoteEpisodeId());
         if ($ilDB->numRows($query) > 0) {
             $users = array();
             while ($row = $ilDB->fetchAssoc($query)) {
@@ -163,7 +162,7 @@ class ilOpencastUserTracking
         global $ilDB;
         $array = array();
 
-        $query = $ilDB->query("SELECT intime, outtime FROM " . self::DATATABLE . " WHERE intime >= 0 AND episode_id LIKE " . $episode->getQuoteEpisodeId() . " AND user_id = " . $ilDB->quote($user_id, "integer"));
+        $query = $ilDB->query("SELECT intime, outtime FROM " . ilOpencastConfig::DATABASE_TABLE_VIEWS . " WHERE intime >= 0 AND episode_id LIKE " . $episode->getQuoteEpisodeId() . " AND user_id = " . $ilDB->quote($user_id, "integer"));
         if ($ilDB->numRows($query) > 0) {
             $userviewdata = array();
             while ($view = $ilDB->fetchAssoc($query)) {
@@ -208,7 +207,7 @@ class ilOpencastUserTracking
     {
         global $ilDB;
 
-        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text") . " ORDER BY id ASC");
+        $query = $ilDB->query("SELECT user_id, intime, outtime FROM " . ilOpencastConfig::DATABASE_TABLE_VIEWS . " WHERE episode_id LIKE " . $ilDB->quote($episode->getEpisodeId(), "text") . " ORDER BY id ASC");
 
         $viewsCount = 0;
 
@@ -257,6 +256,6 @@ class ilOpencastUserTracking
     {
         global $ilDB;
 
-        $ilDB->manipulate("DELETE FROM " . self::DATATABLE . " WHERE episode_id LIKE " . $episode->getQuoteEpisodeId());
+        $ilDB->manipulate("DELETE FROM " . ilOpencastConfig::DATABASE_TABLE_VIEWS . " WHERE episode_id LIKE " . $episode->getQuoteEpisodeId());
     }
 }
