@@ -2,7 +2,6 @@
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
 include_once ("./Services/Repository/classes/class.ilRepositoryObjectPlugin.php");
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 
 /**
  * Opencast repository object plugin
@@ -21,6 +20,7 @@ class ilOpencastPlugin extends ilRepositoryObjectPlugin
     {
         global $DIC;
         $ilDB = $DIC->database();
+        $this->includeClass('class.ilOpencastConfig.php');
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_CONFIG);
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_DATA);
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES);
