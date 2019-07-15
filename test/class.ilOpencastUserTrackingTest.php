@@ -6,6 +6,7 @@
  */
 use TIK_NFL\ilias_oc_plugin\api\ilOpencastUserTracking;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
 class ilOpencastUserTrackingTest extends PHPUnit_Framework_TestCase
 {
@@ -63,7 +64,7 @@ class ilOpencastUserTrackingTest extends PHPUnit_Framework_TestCase
 
         $user_id = $ilUser->getId();
 
-        $query = $ilDB->query("SELECT intime, outtime FROM " . ilOpencastUserTracking::DATATABLE . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($this->episode_id, "text"));
+        $query = $ilDB->query("SELECT intime, outtime FROM " . ilOpencastConfig::DATABASE_TABLE_VIEWS . " WHERE user_id = " . $ilDB->quote($user_id, "integer") . " AND episode_id LIKE " . $ilDB->quote($this->episode_id, "text"));
 
         $result = $ilDB->fetchAssoc($query);
         $this->assertEquals(0, $result['intime']);
