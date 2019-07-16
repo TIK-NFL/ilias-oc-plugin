@@ -6,7 +6,7 @@
  */
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
-class ilOpencastonfigTest extends PHPUnit_Framework_TestCase
+class ilOpencastConfigTest extends PHPUnit_Framework_TestCase
 {
 
     protected $backupGlobals = FALSE;
