@@ -112,11 +112,11 @@ class ilObjOpencast extends ilObjectPlugin
 
         $set = $ilDB->query("SELECT * FROM " . ilOpencastConfig::DATABASE_TABLE_DATA . " WHERE obj_id = " . $ilDB->quote($this->getId(), "integer"));
         while ($rec = $ilDB->fetchAssoc($set)) {
-            $this->setSeriesId($rec["series_id"]);
-            $this->setOnline($rec["is_online"]);
-            $this->setViewMode($rec["viewmode"]);
-            $this->setManualRelease($rec["manualrelease"]);
-            $this->setDownload($rec["download"]);
+            $this->setSeriesId((string) $rec["series_id"]);
+            $this->setOnline((bool) $rec["is_online"]);
+            $this->setViewMode((int) $rec["viewmode"]);
+            $this->setManualRelease((bool) $rec["manualrelease"]);
+            $this->setDownload((bool) $rec["download"]);
         }
     }
 
@@ -163,7 +163,7 @@ class ilObjOpencast extends ilObjectPlugin
      *
      * @param string $series_id
      */
-    private function setSeriesId($series_id)
+    private function setSeriesId(string $series_id)
     {
         $this->series_id = $series_id;
     }
@@ -183,7 +183,7 @@ class ilObjOpencast extends ilObjectPlugin
      *
      * @param boolean $a_val
      */
-    public function setOnline($a_val)
+    public function setOnline(bool $a_val)
     {
         $this->online = $a_val;
     }
@@ -204,7 +204,7 @@ class ilObjOpencast extends ilObjectPlugin
      * @param Integer $a_val
      *            viewMode
      */
-    public function setViewMode($a_val)
+    public function setViewMode(int $a_val)
     {
         $this->viewMode = $a_val;
     }
@@ -225,7 +225,7 @@ class ilObjOpencast extends ilObjectPlugin
      * @param boolean $a_val
      *            manual release
      */
-    public function setManualRelease($a_val)
+    public function setManualRelease(bool $a_val)
     {
         $this->manualrelease = $a_val;
     }
@@ -246,7 +246,7 @@ class ilObjOpencast extends ilObjectPlugin
      * @param boolean $a_val
      *            enable download
      */
-    public function setDownload($a_val)
+    public function setDownload(bool $a_val)
     {
         $this->download = $a_val;
     }
