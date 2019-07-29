@@ -5,6 +5,7 @@
  * @group needInstalledILIAS
  */
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
 class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
 {
@@ -83,7 +84,7 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
 
         $this->episode->publish();
 
-        $query = $ilDB->query("SELECT episode_id, series_id FROM rep_robj_xoc_rel_ep WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
+        $query = $ilDB->query("SELECT episode_id, series_id FROM " . ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES . " WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
         $this->assertEquals(1, $ilDB->numRows($query));
     }
 
@@ -95,7 +96,7 @@ class ilOpencastEpisodeTest extends PHPUnit_Framework_TestCase
 
         $this->episode->retract();
 
-        $query = $ilDB->query("SELECT episode_id, series_id FROM rep_robj_xoc_rel_ep WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
+        $query = $ilDB->query("SELECT episode_id, series_id FROM " . ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES . " WHERE episode_id = " . $this->episode->getQuoteEpisodeId() . " AND series_id = " . $this->episode->getQuoteSeriesId());
         $this->assertEquals(0, $ilDB->numRows($query));
     }
 
