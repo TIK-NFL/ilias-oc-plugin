@@ -1,15 +1,15 @@
 <#1>
 <?php
 
-const TABLE_DATA = 'rep_robj_xoc_data';
+const TABLE_DATA = 'rep_robj_xmh_data';
 
-const TABLE_CONFIG = 'rep_robj_xoc_config';
+const TABLE_CONFIG = 'rep_robj_xmh_config';
 
-const TABLE_RELEASED_EPISODES = 'rep_robj_xoc_rel_ep';
+const TABLE_RELEASED_EPISODES = 'rep_robj_xmh_rel_ep';
 
-const TABLE_SLIDETEXT = 'rep_robj_xoc_slidetext';
+const TABLE_SLIDETEXT = 'rep_robj_xmh_slidetext';
 
-const TABLE_VIEWS = 'rep_robj_xoc_views';
+const TABLE_VIEWS = 'rep_robj_xmh_views';
 
 $fields = array(
     'obj_id' => array(

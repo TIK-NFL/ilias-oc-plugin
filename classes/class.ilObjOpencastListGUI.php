@@ -44,7 +44,7 @@ class ilObjOpencastListGUI extends ilObjectPluginListGUI
      */
     public function initType()
     {
-        $this->setType("xoc");
+        $this->setType("xmh");
     }
 
     /**

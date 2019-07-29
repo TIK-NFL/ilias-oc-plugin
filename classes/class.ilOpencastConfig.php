@@ -24,15 +24,15 @@ class ilOpencastConfig
 
     const CONFIG_KEY_PUBLISHER = "publisher";
 
-    const DATABASE_TABLE_CONFIG = "rep_robj_xoc_config";
+    const DATABASE_TABLE_CONFIG = "rep_robj_xmh_config";
 
-    const DATABASE_TABLE_VIEWS = "rep_robj_xoc_views";
+    const DATABASE_TABLE_VIEWS = "rep_robj_xmh_views";
 
-    const DATABASE_TABLE_DATA = "rep_robj_xoc_data";
+    const DATABASE_TABLE_DATA = "rep_robj_xmh_data";
 
-    const DATABASE_TABLE_RELEASED_EPISODES = "rep_robj_xoc_rel_ep";
+    const DATABASE_TABLE_RELEASED_EPISODES = "rep_robj_xmh_rel_ep";
 
-    const DATABASE_TABLE_SLIDETEXT = "rep_robj_xoc_slidetext";
+    const DATABASE_TABLE_SLIDETEXT = "rep_robj_xmh_slidetext";
 
     /**
      * returns the hostname for the Opencast server.

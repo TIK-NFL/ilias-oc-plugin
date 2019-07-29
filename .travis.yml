@@ -7,5 +7,5 @@ before_install:
   - docker pull legion2/ilias-test-docker
 
 script:
-  - docker run --name iliasdev -it -v "${PWD}:/var/www/html/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast" legion2/ilias-test-docker "install-plugin.sh xoc robj Repository Services Opencast; cd Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast/; ./test.sh"
+  - docker run --name iliasdev -it -v "${PWD}:/var/www/html/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast" legion2/ilias-test-docker "install-plugin.sh xmh robj Repository Services Opencast; cd Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast/; ./test.sh"
   

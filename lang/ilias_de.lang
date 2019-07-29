@@ -3,21 +3,21 @@
 //
 
 <!-- language file start -->
-obj_xoc#:#Opencast-Objekt
-objs_xoc#:#Opencast-Objekte
-obj_xoc_duplicate#:#Kopieren
-objs_xoc_duplicate#:#Opencast-Objekt kopieren
-obj_xoc_select#:#Opencast-Objekt ausw&auml;hlen
-xoc_add#:#Opencast-Objekt hinzuf&uuml;gen
-xoc_new#:#Neues Opencast-Objekt anlegen
-xoc_read#:#Opencast-Objekt lesen
-xoc_write#:#Opencast-Objekt bearbeiten
-xoc_delete#:#Opencast-Objekt l&ouml;schen
-xoc_visible#:#Opencast-Objekt ist schichtbar
-xoc_edit_permission#:#Rechteverwaltung
-grp_create_xoc#:#Opencast-Objekt anlegen
-crs_create_xoc#:#Opencast-Objekt anlegen
-fold_create_xoc#:#Opencast-Objekt anlegen
+obj_xmh#:#Opencast-Objekt
+objs_xmh#:#Opencast-Objekte
+obj_xmh_duplicate#:#Kopieren
+objs_xmh_duplicate#:#Opencast-Objekt kopieren
+obj_xmh_select#:#Opencast-Objekt ausw&auml;hlen
+xmh_add#:#Opencast-Objekt hinzuf&uuml;gen
+xmh_new#:#Neues Opencast-Objekt anlegen
+xmh_read#:#Opencast-Objekt lesen
+xmh_write#:#Opencast-Objekt bearbeiten
+xmh_delete#:#Opencast-Objekt l&ouml;schen
+xmh_visible#:#Opencast-Objekt ist schichtbar
+xmh_edit_permission#:#Rechteverwaltung
+grp_create_xmh#:#Opencast-Objekt anlegen
+crs_create_xmh#:#Opencast-Objekt anlegen
+fold_create_xmh#:#Opencast-Objekt anlegen
 content#:#Inhalt
 manage#:#Aufzeichnungen verwalten
 viewmode#:#Kompakte Übersichtsseite verwenden

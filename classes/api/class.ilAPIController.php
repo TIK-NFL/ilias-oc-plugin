@@ -455,7 +455,7 @@ class ilAPIController
         $errorcode = $exception->getCode();
         $errortext = $exception->getMessage();
 
-        ilLoggerFactory::getLogger('xoc')->debug($errorcode . " " . $errortext);
+        ilLoggerFactory::getLogger('xmh')->debug($errorcode . " " . $errortext);
 
         http_response_code($errorcode);
         echo $errortext;

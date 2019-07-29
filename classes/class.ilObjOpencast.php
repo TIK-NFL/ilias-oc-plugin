@@ -81,7 +81,7 @@ class ilObjOpencast extends ilObjectPlugin
      */
     final public function initType()
     {
-        $this->setType("xoc");
+        $this->setType("xmh");
     }
 
     protected function beforeCreate()
@@ -98,7 +98,7 @@ class ilObjOpencast extends ilObjectPlugin
         global $ilDB;
         $new_series_id = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), 0);
 
-        ilLoggerFactory::getLogger('xoc')->info("Created new opencast object on server: $new_series_id");
+        ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $new_series_id");
         $ilDB->manipulate("INSERT INTO " . ilOpencastConfig::DATABASE_TABLE_DATA . " (obj_id, series_id, is_online, viewmode,manualrelease,download) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote($new_series_id, "string") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . ")");
         $this->createMetaData();
     }

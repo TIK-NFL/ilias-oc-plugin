@@ -62,7 +62,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
     const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp';
 
-    const UPLOAD_DIR = "xoc_upload";
+    const UPLOAD_DIR = "xmh_upload";
 
     const UPLOAD_SUFFIXES = [
         'mp4',
@@ -99,7 +99,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      */
     final public function getType()
     {
-        return "xoc";
+        return "xmh";
     }
 
     /**
@@ -757,7 +757,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 ilUtil::sendSuccess($this->txt("msg_episode_uploaded"), true);
                 $ilCtrl->redirect($this, "editTrimProcess");
             } catch (Exception $e) {
-                ilLoggerFactory::getLogger('xoc')->debug("Exception while uploading to opencast: " . $e->getMessage());
+                ilLoggerFactory::getLogger('xmh')->debug("Exception while uploading to opencast: " . $e->getMessage());
                 echo json_encode(array(
                     'success' => false
                 ));

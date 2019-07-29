@@ -75,7 +75,7 @@ class ilOpencastRESTClient
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
-                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                ilLoggerFactory::getLogger('xmh')->warning(curl_error($ch));
                 throw new Exception("error GET request: $url $queryString", 503);
             }
             throw new Exception("error GET request: $url $queryString $httpCode", 500);
@@ -112,7 +112,7 @@ class ilOpencastRESTClient
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === FALSE) {
             if (! $httpCode) {
-                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                ilLoggerFactory::getLogger('xmh')->warning(curl_error($ch));
                 throw new Exception("error POST request: $url $post_string", 503);
             }
             throw new Exception("error POST request: $url $post_string $httpCode", 500);
@@ -152,7 +152,7 @@ class ilOpencastRESTClient
         if ($response === FALSE) {
             $postinfo = print_r($post, true);
             if (! $httpCode) {
-                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                ilLoggerFactory::getLogger('xmh')->warning(curl_error($ch));
                 throw new Exception("error multipart POST request: $url $postinfo", 503);
             }
             throw new Exception("error multipart POST request: $url $postinfo $httpCode", 500);
@@ -193,7 +193,7 @@ class ilOpencastRESTClient
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
-                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                ilLoggerFactory::getLogger('xmh')->warning(curl_error($ch));
                 throw new Exception("error PUT request: $url $post_string", 503);
             }
             throw new Exception("error PUT request: $url $post_string $httpCode", 500);
@@ -234,7 +234,7 @@ class ilOpencastRESTClient
         if ($response === FALSE) {
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
-                ilLoggerFactory::getLogger('xoc')->warning(curl_error($ch));
+                ilLoggerFactory::getLogger('xmh')->warning(curl_error($ch));
                 throw new Exception("error DELETE request: $url $post_string", 503);
             }
             throw new Exception("error DELETE request: $url $post_string $httpCode", 500);
