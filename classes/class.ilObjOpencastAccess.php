@@ -24,6 +24,7 @@ use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 
 include_once ("./Services/Repository/classes/class.ilObjectPluginAccess.php");
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 
 /**
  * Access/Condition checking for Opencast object
@@ -93,8 +94,6 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
 
     private static function lookupOpencastObjectForSeries($series_id)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("class.ilOpencastConfig.php");
         $configObject = new ilOpencastConfig();
         return $configObject->lookupOpencastObjectForSeries($series_id);
     }
