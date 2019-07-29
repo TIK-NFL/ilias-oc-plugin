@@ -589,10 +589,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         ), $scheduledEpisodes);
         usort($scheduled_items, 'self::sortByStartdate');
         $scheduled_items = array_map(function ($scheduled) {
-            $scheduled["startdate"] = ilDatePresentation::formatDate(new ilDateTime($scheduled["startdate"], IL_CAL_ISO_8601));
-            $stopDate = new ilDateTime($scheduled["startdate"], IL_CAL_ISO_8601);
-            $stopDate->increment(iLDateTime::MINUTE, $scheduled["duration"] / 60000);
-            $scheduled["stopdate"] = ilDatePresentation::formatDate($stopDate);
+            $startdate = new ilDateTime($scheduled["startdate"], IL_CAL_ISO_8601);
+            $scheduled["startdate"] = ilDatePresentation::formatDate($startdate);
+            $startdate->increment(iLDateTime::MINUTE, $scheduled["duration"] / 60000);
+            $scheduled["stopdate"] = ilDatePresentation::formatDate($startdate);
             return $scheduled;
         }, $scheduled_items);
 
