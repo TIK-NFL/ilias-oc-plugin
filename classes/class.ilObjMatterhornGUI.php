@@ -296,6 +296,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                     throw $e;
                 } else {
 		    ilLoggerFactory::getLogger('xmh')->info("Error publishing already published XMH ID:" . $eepisodeId);
+		}
             }
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:" . $episode);
