@@ -283,17 +283,19 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
     {
         global $DIC;
         $episodeId = $_GET["id"];
-        ilLoggerFactory::getLogger('xmh')->debug("ID:" . $episodeId);
         $episode = $this->object->getEpisode($episodeId);
-        
+        ilLoggerFactory::getLogger('xmh')->info("Publishing episode:" . $episodeId);
+
         if ($episode) {
             try {
                 $episode->publish();
                 ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
             } catch (Exception $e) {
                 if (strpos($e->getMessage(), "already published") == false) {
+	            ilLoggerFactory::getLogger('xmh')->error("Failed publishing episode:". $episodeId . $e->getMessage());
                     throw $e;
-                }
+                } else {
+		    ilLoggerFactory::getLogger('xmh')->info("Error publishing already published XMH ID:" . $eepisodeId);
             }
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:" . $episode);
