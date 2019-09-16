@@ -413,7 +413,7 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                         ->txt("download"), $item["downloadurl"]);
                 }
                 
-                $cards[] = $factory->card($item["title"], $image)
+                $cards[] = $factory->card()->standard($item["title"], $image)
                     ->withSections($sections)
                     ->withTitleAction($url);
             }
