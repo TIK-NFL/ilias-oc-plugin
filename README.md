@@ -13,6 +13,8 @@ It __MUST__ be installed into `Customizing/global/plugins/Services/Repository/Re
 
 The plugin folder __MUST__ be named `Opencast`.
 
+In production environments you can delete the `test/` directory.
+
 ## Configuration
 
 ### Upload workflow
