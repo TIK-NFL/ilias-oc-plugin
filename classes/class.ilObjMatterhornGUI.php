@@ -292,11 +292,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
             } catch (Exception $e) {
                 if (strpos($e->getMessage(), "already published") == false) {
-	            ilLoggerFactory::getLogger('xmh')->error("Failed publishing episode:". $episodeId . $e->getMessage());
+                    ilLoggerFactory::getLogger('xmh')->error("Failed publishing episode:". $episodeId . $e->getMessage());
                     throw $e;
                 } else {
-		    ilLoggerFactory::getLogger('xmh')->info("Error publishing already published XMH ID:" . $eepisodeId);
-		}
+                    ilLoggerFactory::getLogger('xmh')->info("Error publishing already published XMH ID:" . $episodeId);
+                }
             }
         } else {
             ilLoggerFactory::getLogger('xmh')->debug("ID does not match in publish episode:" . $episode);
