@@ -329,6 +329,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
         $episode = $this->getOCObject()->getEpisode($episodeId);
+        ilLoggerFactory::getLogger('xmh')->info("Publishing episode:" . $episodeId);
 
         if ($episode->exists()) {
             try {
@@ -336,7 +337,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
             } catch (Exception $e) {
                 if (! strpos($e->getMessage(), "already published")) {
+                    ilLoggerFactory::getLogger('xmh')->error("Failed publishing episode:". $episodeId . $e->getMessage());
                     throw $e;
+                } else {
+                    ilLoggerFactory::getLogger('xmh')->info("Error publishing already published XMH ID:" . $episodeId);
                 }
             }
         }
@@ -444,7 +448,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                         ->txt("download"), $item["downloadurl"]);
                 }
 
-                $cards[] = $factory->card($item["title"], $image)
+                $cards[] = $factory->card()->standard($item["title"], $image)
                     ->withSections($sections)
                     ->withTitleAction($url);
             }
