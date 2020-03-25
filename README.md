@@ -50,7 +50,7 @@ The user need the following roles:
 - `ROLE_API_WORKFLOW_DEFINITION_VIEW`
 
 Create this user in Opencast and enter it in the plugin configuration.
-This plugin will create new series and episodes with a acl containing `ROLE_USER_{opencastuser}`, so they can be accessed by the plugin.
+This plugin will create new series and episodes with a acl containing `ROLE_USER_{OPENCASTUSER}`, so they can be accessed by the plugin.
 
 ### URL Signing
 In order to use URL signing the [Opencast Stream Security](https://docs.opencast.org/develop/admin/configuration/stream-security/) must be enabled.
@@ -93,3 +93,15 @@ The media files of the publication __SHOULD__ have the flavor `*/delivery` and m
 This publication is for the trim editor.
 It __SHOULD__ only contain a single track preview with flavor "presentation/preview", "presenter/preview" or "composite/preview".
 This preview __MUST__ be published on the api channel with the tag `preview` on the track.
+
+
+## FAQ
+### What happens if a series created by this plugin is deleted in Opencast?
+The Ilias Opencast object will not be deleted automatically, but it will not display any episodes and no exception will be thrown in the overview UIs of that particular Ilias Opencast object.
+Only opening the properties tab of that Ilias Opencast object will throw an exception.
+### What happens if a Ilias Opencast object?
+The corresponding series and episodes are not deleted in Opencast.
+### Which episodes are displayed on the overview page?
+The episode must be published in Ilias, this means the episode id is in the `rep_robj_xmh_rel_ep` database table.
+The episode must be part of the series corresponding to the Ilias Opencast object and must be have the status `EVENTS.EVENTS.STATUS.PROCESSED`.
+The episode must have a publication on the api channel and the must not have a track with the preview tag.

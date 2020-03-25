@@ -11,7 +11,7 @@ class ilOpencastInfo
 {
 
     /**
-     * Information about the curent user
+     * Information about the current user for the player.
      *
      * @return array
      */
