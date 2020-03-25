@@ -1,4 +1,4 @@
-# ilias-oc
+# ilias-oc [![CI](https://github.com/TIK-NFL/ilias-oc-plugin/workflows/CI/badge.svg)](https://github.com/TIK-NFL/ilias-oc-plugin/actions?query=workflow%3ACI)
 An ILIAS Repository Object plugin for Opencast 5 and newer.
 
 This plugin creates a tight integration of Opencast and ILIAS.

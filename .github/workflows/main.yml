@@ -7,5 +7,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Run a one-line script
-        run: docker run --name iliasdev -it -v "${PWD}:/var/www/html/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast" legion2/ilias-test-docker:release_5-4 "install-plugin.sh xmh robj Repository Services Opencast; cd Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast/; ./test/test.sh"
+      - name: Run Unit Tests
+        run: docker run --name iliasdev -v "${PWD}:/var/www/html/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast" legion2/ilias-test-docker:release_5-4 "install-plugin.sh xmh robj Repository Services Opencast; cd Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast/; ./test/test.sh"
