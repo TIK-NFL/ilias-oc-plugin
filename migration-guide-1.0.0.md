@@ -21,6 +21,8 @@ Version `1.0.0` merged all database updates and renamed the installation directo
 2. Checkout the version `1.0.0` of the plugin
 3. Rename the plugin directory to `Opencast`
 4. Update the Ilias database plugin entry:
-   `DELETE FROM il_plugin WHERE db_version = 0 AND name='Opencast';`
-   `UPDATE il_plugin SET db_version=1,name='Opencast' WHERE plugin_id = 'xmh';`
+   ```sql
+   DELETE FROM il_plugin WHERE db_version = 0 AND name='Opencast';
+   UPDATE il_plugin SET db_version=1,name='Opencast' WHERE plugin_id = 'xmh';
+   ```
 6. Update the plugin version in the Ilias admin ui
