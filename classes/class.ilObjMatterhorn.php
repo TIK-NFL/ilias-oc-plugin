@@ -364,7 +364,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $eventid . "/editor.json";
 
-        $fields_string = '{"concat":{"segments":[{"start":' . (1000 * $trimin) . ',"end":' . (1000 * $trimout) . ',"deleted":false}],' . '"tracks":["' . implode('","', $keeptracks) . '"]},"workflow":"ilias-publish-after-cutting"}';
+        $fields_string = '{"concat":{"segments":[{"start":' . (1000 * $trimin) . ',"end":' . (1000 * $trimout) . ',"deleted":false}],' . '"tracks":["' . implode('","', $keeptracks) . '"],"source_tracks":[]},"workflow":"ilias-publish-after-cutting"}';
 
         ilLoggerFactory::getLogger('xmh')->debug("FIELDSTRING:" . $fields_string);
         // set the url, number of POST vars, POST data
