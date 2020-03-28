@@ -401,3 +401,98 @@ $ilDB->addIndex('rep_robj_xmh_data', array(
 
 $ilDB->dropTableColumn('rep_robj_xmh_slidetext', 'series_id');
 ?>
+<#20>
+<?php
+// rep_robj_xmh_data
+$ilDB->dropTableColumn('rep_robj_xmh_data', 'fsinodupdate');
+
+$ilDB->modifyTableColumn('rep_robj_xmh_data', 'obj_id', array(
+    'type' => 'integer',
+    'length' => 4,
+    'notnull' => true
+));
+
+$ilDB->modifyTableColumn('rep_robj_xmh_data', 'is_online', array(
+    'type' => 'integer',
+    'length' => 1,
+    'notnull' => true,
+    'default' => 0
+));
+
+$ilDB->modifyTableColumn('rep_robj_xmh_data', 'viewmode', array(
+    'type' => 'integer',
+    'length' => 1,
+    'notnull' => true,
+    'default' => 0
+));
+$ilDB->modifyTableColumn('rep_robj_xmh_data', 'manualrelease', array(
+    'type' => 'integer',
+    'length' => 1,
+    'notnull' => true,
+    'default' => 0
+));
+
+$ilDB->modifyTableColumn('rep_robj_xmh_data', 'download', array(
+    'type' => 'integer',
+    'length' => 1,
+    'notnull' => true,
+    'default' => 0
+));
+
+$ilDB->modifyTableColumn('rep_robj_xmh_data', 'series_id', array(
+    'type' => 'text',
+    'length' => 50,
+    'fixed' => false,
+    'notnull' => true
+));
+
+// rep_robj_xmh_config
+$ilDB->modifyTableColumn('rep_robj_xmh_config', 'cfgkey', array(
+    'type' => 'text',
+    'length' => 30,
+    'notnull' => true
+));
+
+$ilDB->modifyTableColumn('rep_robj_xmh_config', 'cfgvalue', array(
+    'type' => 'text',
+    'length' => 100,
+    'fixed' => false,
+    'notnull' => false
+));
+
+// rep_robj_xmh_rel_ep
+$ilDB->modifyTableColumn('rep_robj_xmh_rel_ep', 'episode_id', array(
+    'type' => 'text',
+    'length' => 50,
+    'fixed' => false,
+    'notnull' => true
+));
+
+$ilDB->modifyTableColumn('rep_robj_xmh_rel_ep', 'series_id', array(
+    'type' => 'text',
+    'length' => 50,
+    'fixed' => false,
+    'notnull' => true
+));
+
+// rep_robj_xmh_slidetext
+$ilDB->modifyTableColumn('rep_robj_xmh_slidetext', 'episode_id', array(
+    'type' => 'text',
+    'length' => 50,
+    'fixed' => false,
+    'notnull' => true
+));
+
+$ilDB->modifyTableColumn('rep_robj_xmh_slidetext', 'slidetime', array(
+    'type' => 'integer',
+    'length' => 8,
+    'notnull' => true
+));
+
+$ilDB->modifyTableColumn('rep_robj_xmh_slidetext', 'slidetext', array(
+    'type' => 'text',
+    'length' => 4000,
+    'fixed' => false,
+    'notnull' => true
+));
+?>

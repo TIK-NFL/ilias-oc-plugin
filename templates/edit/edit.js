@@ -3,7 +3,6 @@ function initEdit(iliasopencast) {
     iliasopencast.init = function() {
         iliasopencast.templates = $.get(iliasopencast.settings.uploadtarget + "/../templates/edit/edit.html");
 
-        iliasopencast.lastupdate = -1;
         iliasopencast.updateprocessing();
         window.setInterval(iliasopencast.updateprocessing, 5000);
     }
@@ -15,20 +14,17 @@ function initEdit(iliasopencast) {
         $.when(response, iliasopencast.templates).done(function(dataResponse, templatesResponse) {
             const data = dataResponse[0];
             const templates = templatesResponse[0];
-            if (data.lastupdate > -1) {
-                if (iliasopencast.lastupdate < data.lastupdate) {
-                    updateTable(data['finished'], "finished", templates);
-                    showNumberIndicatorOnSubtab("finishedepisodes", data.finished.length);
-                    iliasopencast.lastupdate = data.lastupdate;
-                    console.log("updated finished");
-                }
-            }
+
+            updateTable(data['finished'], "finished", templates);
             updateTable(data['processing'], "processing", templates);
             updateTable(data['onhold'], "onhold", templates);
             updateTable(data['scheduled'], "scheduled", templates);
 
+            showNumberIndicatorOnSubtab("finishedepisodes", data.finished.length);
             showNumberIndicatorOnSubtab("processtrim", data.onhold.length + data.processing.length);
             showNumberIndicatorOnSubtab("schedule", data.scheduled.length);
+            
+            console.log("updated finished");
         });
 
         var updateTable = function(data, dataname, templates) {

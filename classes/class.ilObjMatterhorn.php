@@ -61,15 +61,6 @@ class ilObjMatterhorn extends ilObjectPlugin
     private $download;
 
     /**
-     * Stores the last time the fs was checked for new updates
-     *
-     * @unused
-     *
-     * @var integer
-     */
-    private $lastfsInodeUpdate;
-
-    /**
      *
      * @var ilMatterhornConfig
      */
@@ -108,7 +99,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         $new_series_id = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
 
         ilLoggerFactory::getLogger('xmh')->info("Created new opencast object on server: $new_series_id");
-        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, series_id, is_online, viewmode,manualrelease,download,fsinodupdate) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote($new_series_id, "string") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . ")");
+        $ilDB->manipulate("INSERT INTO rep_robj_xmh_data (obj_id, series_id, is_online, viewmode,manualrelease,download) VALUES (" . $ilDB->quote($this->getId(), "integer") . "," . $ilDB->quote($new_series_id, "string") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(0, "integer") . "," . $ilDB->quote(1, "integer") . "," . $ilDB->quote(0, "integer") . ")");
         $this->createMetaData();
     }
 
@@ -126,7 +117,6 @@ class ilObjMatterhorn extends ilObjectPlugin
             $this->setViewMode($rec["viewmode"]);
             $this->setManualRelease($rec["manualrelease"]);
             $this->setDownload($rec["download"]);
-            $this->setLastFSInodeUpdate($rec["fsinodupdate"]);
         }
     }
 
@@ -274,33 +264,6 @@ class ilObjMatterhorn extends ilObjectPlugin
         return $this->download;
     }
 
-    /**
-     * Set lastfsInodeUpdate
-     *
-     * @param int $a_val
-     *            the timestamp of the last inode update
-     * @deprecated
-     */
-    public function setLastFSInodeUpdate($a_val)
-    {
-        $this->lastfsInodeUpdate = $a_val;
-    }
-
-    /**
-     * Get lastfsInodeUpdate
-     *
-     * @return int the timestamp of the last inode update
-     * @deprecated
-     */
-    public function getLastFSInodeUpdate()
-    {
-        $filename = $this->configObject->getDistributionDirectory() . $this->getSeriesId();
-        if (file_exists($filename)) {
-            return filemtime($filename);
-        }
-        return - 1;
-    }
-
 	/**
 	 *
 	 * @return ilMatterhornSeries
@@ -401,7 +364,7 @@ class ilObjMatterhorn extends ilObjectPlugin
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
         $url = $this->configObject->getMatterhornServer() . "/admin-ng/tools/" . $eventid . "/editor.json";
 
-        $fields_string = '{"concat":{"segments":[{"start":' . (1000 * $trimin) . ',"end":' . (1000 * $trimout) . ',"deleted":false}],' . '"tracks":["' . implode('","', $keeptracks) . '"]},"workflow":"ilias-publish-after-cutting"}';
+        $fields_string = '{"concat":{"segments":[{"start":' . (1000 * $trimin) . ',"end":' . (1000 * $trimout) . ',"deleted":false}],' . '"tracks":["' . implode('","', $keeptracks) . '"],"source_tracks":[]},"workflow":"ilias-publish-after-cutting"}';
 
         ilLoggerFactory::getLogger('xmh')->debug("FIELDSTRING:" . $fields_string);
         // set the url, number of POST vars, POST data
