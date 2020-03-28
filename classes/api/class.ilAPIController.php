@@ -140,7 +140,7 @@ class ilAPIController
     }
 
     /**
-     * Send the requested eposide.json
+     * Send the requested episode.json
      *
      * @param ilOpencastEpisode $episode
      */

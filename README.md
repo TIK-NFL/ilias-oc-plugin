@@ -87,7 +87,7 @@ It __MUST__ either publish a [Preview Publication](#preview-publication) or a [N
 ### Non Preview Publication
 This publication is for finished episodes, that can be published in the ilias plugin.
 The publication __MAY__ contain a search preview for the episodes list view, the search preview __MUST__ have the flavor `*/search+preview`.
-The media files of the publication __SHOULD__ have the flavor `*/delivery` and mimetype `video/mp4`.
+The media files of the publication __SHOULD__ have the flavor `*/delivery` and mediatype `video/mp4`.
 
 ### Preview Publication
 This publication is for the trim editor.
