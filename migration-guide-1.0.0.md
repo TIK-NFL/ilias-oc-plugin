@@ -8,8 +8,9 @@ Version `1.0.0` merged all database updates and renamed the installation directo
 2. Configure Opencast as described in the readme:
     - external API
     - URL Signing
-    - API User
-3. Add the role `ROLE_USER_{OPENCASTUSER}` to all existing series and episodes created by the plugin (and remove the old role, which is the Ilias user login name)
+    - API User (The API user should also have the role `ROLE_ADMIN`, because the old plugin version requires it)
+3. Add the role `ROLE_USER_{OPENCASTUSER}` to all existing series created by the plugin (and remove the old role, which is the Ilias user login name)
+   Use the "Update Event permissions" button to apply the change to the episodes as well.
 4. All existing episodes must be republished to the api channel, this can take some time.
    So you can use a workflow to publish to the api channel and the old Ilias publication channel at the same time to serve the old plugin version.
    Api channel publications:
@@ -25,4 +26,13 @@ Version `1.0.0` merged all database updates and renamed the installation directo
    DELETE FROM il_plugin WHERE db_version = 0 AND name='Opencast';
    UPDATE il_plugin SET db_version=1,name='Opencast' WHERE plugin_id = 'xmh';
    ```
-6. Update the plugin version in the Ilias admin ui
+5. Configure the plugin in the Ilias admin ui
+    - enter Opencast url and save
+    - select workflows and save
+6. Update the plugin in the Ilias admin ui
+
+## Clean up
+1. You can now remove the `ROLE_ADMIN` from the opencast api user.
+2. Sendfile is not used in version `1.0.0` so you can disable it.
+3. The network file share of opencast and ilias can now be disabled and removed.
+4. Remove old config entries like digest user from the ilias database `rep_robj_xmh_config` table.
