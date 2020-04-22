@@ -41,6 +41,9 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $values['distribution_directory'] = $this->configObject->getDistributionDirectory();
         $values['opencast_version'] = $this->configObject->getMatterhornVersion();
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
+        $values['signingkey'] = $this->configObject->getSigningKey();
+        $values['distributionserver'] = $this->configObject->getDistributionServer();
+        $values['stripurl'] = $this->configObject->getStripUrl();
         $form->setValuesByArray($values);
         $tpl->setContent($form->getHTML());
     }
@@ -136,6 +139,28 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $uploadworkflow->setMaxLength(100);
         $uploadworkflow->setSize(100);
         $form->addItem($uploadworkflow);
+
+        // signingkey
+        $signingkey = new ilTextInputGUI($pl->txt('signingkey'), 'signingkey');
+        $signingkey->setRequired(true);
+        $signingkey->setMaxLength(100);
+        $signingkey->setSize(100);
+        $form->addItem($signingkey);
+
+        // distributionserver
+        $distributionserver = new ilTextInputGUI($pl->txt('distributionserver'), 'distributionserver');
+        $distributionserver->setRequired(true);
+        $distributionserver->setMaxLength(100);
+        $distributionserver->setSize(100);
+        $form->addItem($distributionserver);
+
+        // stripurl
+        $stripurl = new ilTextInputGUI($pl->txt('stripurl'), 'stripurl');
+        $stripurl->setRequired(true);
+        $stripurl->setMaxLength(200);
+        $stripurl->setSize(200);
+        $form->addItem($stripurl);
+
         
         $form->addItem($matterhorn_version);
         $form->addCommandButton('save', $lng->txt('save'));
@@ -163,6 +188,9 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $distribution_directory = $form->getInput('distribution_directory');
             $opencast_version = $form->getInput('opencast_version');
             $uploadworkflow = $form->getInput('uploadworkflow');
+            $signingkey = $form->getInput('signingkey');
+            $distributionserver = $form->getInput('distributionserver');
+            $stripurl = $form->getInput('stripurl');
             
             $this->configObject->setMatterhornServer($mh_server);
             $this->configObject->setMatterhornEngageServer($mh_server_engage);
@@ -175,6 +203,9 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $this->configObject->setDistributionDirectory($distribution_directory);
             $this->configObject->setMatterhornVersion($opencast_version);
             $this->configObject->setUploadWorkflow($uploadworkflow);
+            $this->configObject->setSigningKey($signingkey);
+            $this->configObject->setDistributionServer($distributionserver);
+            $this->configObject->setStripUrl($stripurl);
             
             ilUtil::sendSuccess($pl->txt('saving_invoked'), true);
             $ilCtrl->redirect($this, 'configure');

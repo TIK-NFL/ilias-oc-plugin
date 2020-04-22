@@ -1,5 +1,5 @@
 <?php
-
+require_once __DIR__ . '/../vendor/autoload.php';
 /* Copyright (c) 1998-2010 ILIAS open source, Extended GPL, see docs/LICENSE */
 
 /**
@@ -13,6 +13,9 @@
  * @author Fred Neumann <fred.neumann@fim.uni-erlangen.de>
  * @version $Id: class.ilWebAccessChecker.php 50013 2014-05-13 16:20:01Z akill $
  */
+
+use Firebase\JWT\JWT;
+
 class ilMatterhornSendfile
 {
 
@@ -363,7 +366,18 @@ class ilMatterhornSendfile
                 $att['mimetype'] = (string) $attachment->mimetype;
             }
             if (isset($attachment->url)) {
-                $att['url'] = (string) $attachment->url;
+                $baseurl = str_replace($this->configObject->getStripUrl(),'',(string)$attachment->url);
+                $key = $this->configObject->getSigningKey();
+                $payload = array(
+                    #"iss" => "http://example.org",
+                    #"aud" => "http://example.com",
+                    #"iat" => 1356999524,
+                    #"nbf" => 1357000000,
+                    "url" => $baseurl
+                );
+                $token = JWT::encode($payload, $key);
+                $att['url'] = $this->configObject->getDistributionServer().$baseurl.'?token='.$token;
+
             }
             if (isset($attachment->tags)) {
                 $att['tags'] = array(
@@ -405,7 +419,17 @@ class ilMatterhornSendfile
                 $cat['mimetype'] = (string) $catalog->mimetype;
             }
             if (isset($catalog->url)) {
-                $cat['url'] = (string) $catalog->url;
+                $baseurl = str_replace($this->configObject->getStripUrl(),'',(string)$cat->url);
+                $key = $this->configObject->getSigningKey();
+                $payload = array(
+                    #"iss" => "http://example.org",
+                    #"aud" => "http://example.com",
+                    #"iat" => 1356999524,
+                    #"nbf" => 1357000000,
+                    "url" => $baseurl
+                );
+                $token = JWT::encode($payload, $key);
+                $cat['url'] = $this->configObject->getDistributionServer().$baseurl.'?token='.$token;
             }
             if (isset($catalog->tags)) {
                 $cat['tags'] = array(
@@ -445,7 +469,17 @@ class ilMatterhornSendfile
                 $trk['mimetype'] = (string) $track->mimetype;
             }
             if (isset($track->url)) {
-                $trk['url'] = (string) $track->url;
+                $baseurl = str_replace($this->configObject->getStripUrl(),'',(string)$track->url);
+                $key = $this->configObject->getSigningKey();
+                $payload = array(
+                    #"iss" => "http://example.org",
+                    #"aud" => "http://example.com",
+                    #"iat" => 1356999524,
+                    #"nbf" => 1357000000,
+                    "url" => $baseurl
+                );
+                $token = JWT::encode($payload, $key);
+                $trk['url'] = $this->configObject->getDistributionServer().$baseurl.'?token='.$token;
             }
             if (isset($track->duration)) {
                 $trk['duration'] = (string) $track->duration;

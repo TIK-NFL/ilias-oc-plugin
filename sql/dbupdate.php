@@ -496,3 +496,12 @@ $ilDB->modifyTableColumn('rep_robj_xmh_slidetext', 'slidetext', array(
     'notnull' => true
 ));
 ?>
+<#21>
+<?php
+$ilDB->modifyTableColumn('rep_robj_xmh_config', 'cfgvalue', array(
+    'type' => 'text',
+    'length' => 200,
+    'fixed' => false,
+    'notnull' => false
+));
+?>

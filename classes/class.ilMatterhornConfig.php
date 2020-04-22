@@ -203,6 +203,50 @@ class ilMatterhornConfig
         $this->setValue('uploadworkflow', $value);
     }
 
+    public function getSigningKey()
+    {
+        $retVal = $this->getValue('signingkey');
+        if (! $retVal) {
+            return 'default';
+        }
+
+        return $retVal;
+    }
+
+    public function setSigningKey($value)
+    {
+        $this->setValue('signingkey', $value);
+    }
+
+    public function getDistributionServer()
+    {
+        $retVal = $this->getValue('distributionserver');
+        if (! $retVal) {
+            return 'http://unknown.host';
+        }
+
+        return $retVal;
+    }
+
+    public function setDistributionServer($value)
+    {
+        $this->setValue('distributionserver', $value);
+    }
+
+    public function getStripUrl()    {
+        $retVal = $this->getValue('stripurl');
+        if (! $retVal) {
+            return 'http://unknown.host';
+        }
+
+        return $retVal;
+    }
+
+    public function setStripUrl($value)
+    {
+        $this->setValue('stripurl', $value);
+    }
+
     /**
      *
      * @param string $series_id

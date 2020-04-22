@@ -20,7 +20,7 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
-require_once 'Services/Repository/classes/class.ilObjectPlugin.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
 
 /**
@@ -29,8 +29,10 @@ ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->
  * @author Per Pascal Grube <pascal.grube@tik.uni-stuttgart.de>
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
+
 class ilObjMatterhorn extends ilObjectPlugin
 {
+
 
     /**
      * The Opencast series id

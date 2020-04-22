@@ -20,7 +20,7 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
-include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
+require_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * ListGUI implementation for Matterhorn object plugin.

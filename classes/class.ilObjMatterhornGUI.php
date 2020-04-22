@@ -20,8 +20,8 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
-include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
-
+require_once __DIR__ . '/../vendor/autoload.php';
+#include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 /**
  * User Interface class for Opencast repository object.
  *
@@ -40,6 +40,9 @@ include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
  * @ilCtrl_Calls ilObjMatterhornGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI
  * @ilCtrl_Calls ilObjMatterhornGUI: ilCommonActionDispatcherGUI
  */
+
+use Firebase\JWT\JWT;
+
 class ilObjMatterhornGUI extends ilObjectPluginGUI
 {
 
@@ -385,6 +388,17 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['opencast_id']);
                 $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
+                $baseurl = str_replace($this->configObject->getStripUrl(),'',$item["previewurl"]);
+                $key = $this->configObject->getSigningKey();
+                $payload = array(
+                    #"iss" => "http://example.org",
+                    #"aud" => "http://example.com",
+                    #"iat" => 1356999524,
+                    #"nbf" => 1357000000,
+                    "url" => $baseurl
+                );
+                $token = JWT::encode($payload, $key);
+                $item['previewurl'] = $this->configObject->getDistributionServer().$baseurl.'?token='.$token;
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
                 $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
@@ -506,12 +520,23 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             }
             
             $published = in_array($value['id'], $releasedEpisodeIds);
+            $baseurl = str_replace($this->configObject->getStripUrl(),'',(string) $previewurl);
+            $key = $this->configObject->getSigningKey();
+            $payload = array(
+                #"iss" => "http://example.org",
+                #"aud" => "http://example.com",
+                #"iat" => 1356999524,
+                #"nbf" => 1357000000,
+                "url" => $baseurl
+            );
+            $token = JWT::encode($payload, $key);
+            $signedpreviewurl = $this->configObject->getDistributionServer().$baseurl.'?token='.$token;
             
             $episode = array(
                 "title" => (string) $value->title,
                 "date" => (string) $value['start'],
                 "opencast_id" => $this->object->getSeriesId() . "/" . (string) $value['id'],
-                "previewurl" => (string) $previewurl,
+                "previewurl" => $signedpreviewurl,
                 "downloadurl" => (string) $downloadurl,
                 "viewurl" => $this->getLinkForEpisodeUnescaped("showEpisode", $this->object->getSeriesId() . "/" . (string) $value['id'])
             );
