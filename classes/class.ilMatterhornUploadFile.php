@@ -204,7 +204,8 @@ class ilMatterhornUploadFile
         $xpath = new DOMXPath($dom);
         $xpath->registerNamespace('dcterms', 'http://purl.org/dc/terms/');
         $result = $xpath->query('//dcterms:title');
-        $result->item(0)->nodeValue = $episodename;
+        $result->item(0)->nodeValue = "";
+        $result->item(0)->appendChild($dom->createTextNode($episodename));
         $result = $xpath->query('//dcterms:isPartOf');
         $result->item(0)->nodeValue = $this->series_id;
         $result = $xpath->query('//dcterms:recordDate');
@@ -213,7 +214,8 @@ class ilMatterhornUploadFile
         $result->item(0)->nodeValue = $datestring;
         if ($creator) {
             $result = $xpath->query('//dcterms:creator');
-            $result->item(0)->nodeValue = $creator;
+            $result->item(0)->nodeValue = "";
+            $result->item(0)->appendChild($dom->createTextNode($creator));
         }
         $episodexml = $dom->saveXML();
 
