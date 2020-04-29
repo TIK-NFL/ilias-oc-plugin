@@ -233,6 +233,21 @@ class ilMatterhornConfig
         $this->setValue('distributionserver', $value);
     }
 
+    public function getTokenValidity()
+    {
+        $retVal = $this->getValue('tokenvalidity');
+        if (! $retVal) {
+            return 6;
+        }
+
+        return intval($retVal);
+    }
+
+    public function setTokenValidity($value)
+    {
+        $this->setValue('tokenvalidity', $value);
+    }
+
     public function getStripUrl()    {
         $retVal = $this->getValue('stripurl');
         if (! $retVal) {

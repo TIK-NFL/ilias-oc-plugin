@@ -388,17 +388,6 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
                 
                 $ilCtrl->setParameterByClass("ilobjmatterhorngui", "id", $item['opencast_id']);
                 $seriestpl->setVariable("CMD_PLAYER", $ilCtrl->getLinkTargetByClass("ilobjmatterhorngui", "showEpisode"));
-                $baseurl = str_replace($this->configObject->getStripUrl(),'',$item["previewurl"]);
-                $key = $this->configObject->getSigningKey();
-                $payload = array(
-                    #"iss" => "http://example.org",
-                    #"aud" => "http://example.com",
-                    #"iat" => 1356999524,
-                    #"nbf" => 1357000000,
-                    "url" => $baseurl
-                );
-                $token = JWT::encode($payload, $key);
-                $item['previewurl'] = $this->configObject->getDistributionServer().$baseurl.'?token='.$token;
                 $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
                 $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["date"], IL_CAL_DATETIME)));
@@ -523,10 +512,11 @@ class ilObjMatterhornGUI extends ilObjectPluginGUI
             $baseurl = str_replace($this->configObject->getStripUrl(),'',(string) $previewurl);
             $key = $this->configObject->getSigningKey();
             $payload = array(
-                #"iss" => "http://example.org",
-                #"aud" => "http://example.com",
-                #"iat" => 1356999524,
-                #"nbf" => 1357000000,
+                "iss" => ILIAS_HTTP_PATH,
+                "aud" => $this->configObject->getDistributionServer(),
+                "iat" => time(),
+                "nbf" => time()-10,
+                "exp" => time() + 3600 * $this->configObject->getTokenValidity(),
                 "url" => $baseurl
             );
             $token = JWT::encode($payload, $key);

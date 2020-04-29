@@ -44,6 +44,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $values['signingkey'] = $this->configObject->getSigningKey();
         $values['distributionserver'] = $this->configObject->getDistributionServer();
         $values['stripurl'] = $this->configObject->getStripUrl();
+        $values['tokenvalidity'] = $this->configObject->getTokenValidity();
         $form->setValuesByArray($values);
         $tpl->setContent($form->getHTML());
     }
@@ -161,6 +162,13 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
         $stripurl->setSize(200);
         $form->addItem($stripurl);
 
+        // token validity
+        $tokenvalidity = new ilTextInputGUI($pl->txt('tokenvalidity'), 'tokenvalidity');
+        $tokenvalidity->setRequired(true);
+        $tokenvalidity->setMaxLength(200);
+        $tokenvalidity->setSize(200);
+        $form->addItem($tokenvalidity);
+
         
         $form->addItem($matterhorn_version);
         $form->addCommandButton('save', $lng->txt('save'));
@@ -191,6 +199,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $signingkey = $form->getInput('signingkey');
             $distributionserver = $form->getInput('distributionserver');
             $stripurl = $form->getInput('stripurl');
+            $tokenvalidity = $form->getInput('tokenvalidity');
             
             $this->configObject->setMatterhornServer($mh_server);
             $this->configObject->setMatterhornEngageServer($mh_server_engage);
@@ -206,6 +215,7 @@ class ilMatterhornConfigGUI extends ilPluginConfigGUI
             $this->configObject->setSigningKey($signingkey);
             $this->configObject->setDistributionServer($distributionserver);
             $this->configObject->setStripUrl($stripurl);
+            $this->configObject->setTokenValidity($tokenvalidity);
             
             ilUtil::sendSuccess($pl->txt('saving_invoked'), true);
             $ilCtrl->redirect($this, 'configure');

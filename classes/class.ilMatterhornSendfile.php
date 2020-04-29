@@ -369,10 +369,11 @@ class ilMatterhornSendfile
                 $baseurl = str_replace($this->configObject->getStripUrl(),'',(string)$attachment->url);
                 $key = $this->configObject->getSigningKey();
                 $payload = array(
-                    #"iss" => "http://example.org",
-                    #"aud" => "http://example.com",
-                    #"iat" => 1356999524,
-                    #"nbf" => 1357000000,
+                    "iss" => ILIAS_HTTP_PATH,
+                    "aud" => $this->configObject->getDistributionServer(),
+                    "iat" => time(),
+                    "nbf" => time()-10,
+                    "exp" => time() + 3600 * $this->configObject->getTokenValidity(),
                     "url" => $baseurl
                 );
                 $token = JWT::encode($payload, $key);
@@ -422,10 +423,11 @@ class ilMatterhornSendfile
                 $baseurl = str_replace($this->configObject->getStripUrl(),'',(string)$cat->url);
                 $key = $this->configObject->getSigningKey();
                 $payload = array(
-                    #"iss" => "http://example.org",
-                    #"aud" => "http://example.com",
-                    #"iat" => 1356999524,
-                    #"nbf" => 1357000000,
+                    "iss" => ILIAS_HTTP_PATH,
+                    "aud" => $this->configObject->getDistributionServer(),
+                    "iat" => time(),
+                    "nbf" => time()-10,
+                    "exp" => time() + 3600 * $this->configObject->getTokenValidity(),
                     "url" => $baseurl
                 );
                 $token = JWT::encode($payload, $key);
@@ -472,10 +474,11 @@ class ilMatterhornSendfile
                 $baseurl = str_replace($this->configObject->getStripUrl(),'',(string)$track->url);
                 $key = $this->configObject->getSigningKey();
                 $payload = array(
-                    #"iss" => "http://example.org",
-                    #"aud" => "http://example.com",
-                    #"iat" => 1356999524,
-                    #"nbf" => 1357000000,
+                    "iss" => ILIAS_HTTP_PATH,
+                    "aud" => $this->configObject->getDistributionServer(),
+                    "iat" => time(),
+                    "nbf" => time()-10,
+                    "exp" => time() + 3600 * $this->configObject->getTokenValidity(),
                     "url" => $baseurl
                 );
                 $token = JWT::encode($payload, $key);
