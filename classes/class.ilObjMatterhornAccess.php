@@ -102,7 +102,7 @@ class ilObjMatterhornAccess extends ilObjectPluginAccess
     public static function checkEpisodeUploadAccess($obj_id)
     {
         global $DIC;
-        if (self::checkAccessObject($obj_id, "access", "upload")) {
+        if (self::checkAccessObject($obj_id, "write", "upload")) {
             return true;
         }
         // none of the checks above gives access
