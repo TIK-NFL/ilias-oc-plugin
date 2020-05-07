@@ -209,9 +209,21 @@ class ilOpencastAPI
     {
         $url = "/series/";
         $series_id = 'ilias_xmh_' . $obj_id;
-        $fields = $this->createPostFields($series_id, $title, $description, $obj_id, $refId);
-        // TODO use api
-        $this->post($url, $fields);
+
+        $seriesxml = self::getEmptyXML();
+        $xml = new SimpleXMLElement($seriesxml);
+        $ns = "http://purl.org/dc/terms/";
+        self::setChildren($xml, "title", self::title($title, $obj_id, $refId), $ns);
+        self::setChildren($xml, "description", $description, $ns);
+        self::setChildren($xml, "modified", date("c"), $ns);
+        self::setChildren($xml, "identifier", $series_id, $ns);
+
+        $seriesxml = $xml->asXML();
+        $fields = array(
+            'series' => $seriesxml,
+            'acl' => $this->getAccessControl()
+        );
+        $httpCode = (integer) $this->post($url, $fields, true);
         return $series_id;
     }
 
@@ -263,48 +275,32 @@ class ilOpencastAPI
             $userid = $ilUser->getExternalAccount();
         }
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security">
-								<ace><role>' . $userid . '</role><action>read</action><allow>true</allow></ace>
-								<ace><role>' . $userid . '</role><action>write</action><allow>true</allow></ace>
-						</acl>';
+                        <ace><role>' . $userid . '</role><action>read</action><allow>true</allow></ace>
+                        <ace><role>' . $userid . '</role><action>write</action><allow>true</allow></ace>
+                </acl>';
     }
 
     /**
+     * Return an empty series xml with id set to dummyid
      *
-     * @param string $series_id
-     * @param string $title
-     * @param string $description
-     * @param integer $obj_id
-     * @param integer $refId
-     * @return string[]
+     * @return string
      */
-    private function createPostFields($series_id, $title, $description, $obj_id, $refId)
+    private static function getEmptyXML()
     {
-        $fields = array(
-            'series' => '<?xml version="1.0"?>
-<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
-  xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
-		
-  <dcterms:title xml:lang="en">' . self::title($title, $obj_id, $refId) . '</dcterms:title>
-  <dcterms:subject>
-    </dcterms:subject>
-  <dcterms:description xml:lang="en">' . $description . '</dcterms:description>
-  <dcterms:publisher>
-    University of Stuttgart, Germany
-    </dcterms:publisher>
-  <dcterms:identifier>
-    ' . $series_id . '</dcterms:identifier>
-  <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("c") . '</dcterms:modified>
-  <dcterms:format xsi:type="dcterms:IMT">
-    video/mp4
-    </dcterms:format>
-  <oc:promoted>
-   	false
-  </oc:promoted>
-</dublincore>',
-            'acl' => $this->getAccessControl()
-        );
-        return $fields;
+        return
+            '<?xml version="1.0"?>
+            <dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
+                xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">                    
+                <dcterms:title xml:lang="en">dummytitle</dcterms:title>
+                <dcterms:subject></dcterms:subject>
+                <dcterms:description xml:lang="en">dummydescription</dcterms:description>
+                <dcterms:publisher>University of Stuttgart, Germany</dcterms:publisher>
+                <dcterms:identifier>dummyid</dcterms:identifier>
+                <dcterms:modified xsi:type="dcterms:W3CDTF">dummydate</dcterms:modified>
+                <dcterms:format xsi:type="dcterms:IMT">video/mp4</dcterms:format>
+                <oc:promoted>false</oc:promoted>
+            </dublincore>';
     }
 
     /**

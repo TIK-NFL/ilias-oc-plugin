@@ -463,6 +463,10 @@ class ilMatterhornSendfile
             }
             if (isset($track['type'])) {
                 $trk['type'] = (string) $track['type'];
+                if (!strpos($trk['type'],'delivery')) {
+                    continue;
+                }
+
             }
             if (isset($track['ref'])) {
                 $trk['ref'] = (string) $track['ref'];
