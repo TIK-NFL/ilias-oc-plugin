@@ -312,8 +312,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $object->setTitle($form->getInput("title"));
             $object->setDescription($form->getInput("desc"));
             $object->setOnline($form->getInput("online"));
-            $object->setViewMode($form->getInput("viewMode"));
-            $object->setManualRelease($form->getInput("manualRelease"));
+            $object->setViewMode(boolval($form->getInput("viewMode")));
+            $object->setManualRelease(boolval($form->getInput("manualRelease")));
             $object->setDownload($form->getInput("download"));
             $object->update();
             ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
@@ -795,7 +795,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("SERIES_ID", $this->getOCObject()
             ->getSeriesId());
         $seriestpl->setVariable("MANUAL_RELEASE", $this->getOCObject()
-            ->getManualRelease());
+            ->getManualRelease()?"1":"0");
         $seriestpl->parseCurrentBlock();
         $jsConfig = $seriestpl->get();
         switch ($section) {
