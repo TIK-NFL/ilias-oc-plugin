@@ -209,6 +209,9 @@ class ilAPIController
                     'tag' => $track->tags
                 )
             );
+            if ($track->flavor == 'composite/sbs') {
+                continue;
+            }
             if ($track->has_video) {
                 $trk['video'] = array();
                 $trk['video']['id'] = "video-1";
