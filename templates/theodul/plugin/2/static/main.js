@@ -24,7 +24,7 @@ define(["require", "jquery", "backbone", "engage/core"], function(require, $, Ba
     "use strict";
 
     var insertIntoDOM = true;
-    var PLUGIN_NAME = "Engage Custom Matterhorn Endpoint Connection";
+    var PLUGIN_NAME = "Engage Custom Opencast Endpoint Connection";
     var PLUGIN_TYPE = "engage_custom";
     var PLUGIN_VERSION = "1.0";
     var PLUGIN_TEMPLATE_DESKTOP = "none";
@@ -96,7 +96,7 @@ define(["require", "jquery", "backbone", "engage/core"], function(require, $, Ba
 
     /* change these variables */
     // var SEARCH_ENDPOINT = "/search/episode.json"; ILPATCH
-    var SEARCH_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/" + "episode.json";
+    var SEARCH_ENDPOINT = ILIAS_THEODUL_PATH + "../../api.php/" + "episode.json";
 
     /* don't change these variables */
     var initCount = 5;

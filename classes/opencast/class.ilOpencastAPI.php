@@ -1,30 +1,50 @@
 <?php
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Matterhorn')->includeClass('class.ilMatterhornConfig.php');
+namespace TIK_NFL\ilias_oc_plugin\opencast;
+
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use DateTime;
+use ilPlugin;
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('opencast/class.ilOpencastRESTClient.php');
+ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('opencast/class.ilOpencastUtil.php');
 
 /**
  * All Communication with the Opencast server should be implemented in this class
+ *
+ * Require Opencast API version 1.1.0 or higher
  *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
  */
 class ilOpencastAPI
 {
 
-    const API_VERSION = "v1.0.0";
-
     private static $instance = null;
+
+    const API_PUBLICATION_CHANNEL = "api";
+
+    const TRACK_TYPE_PRESENTER = "presenter";
+
+    const TRACK_TYPE_PRESENTATION = "presentation";
 
     /**
      *
-     * @var ilMatterhornConfig
+     * @var ilOpencastConfig
      */
     private $configObject;
+
+    /**
+     *
+     * @var ilOpencastRESTClient
+     */
+    private $opencastRESTClient;
 
     /**
      * Singleton constructor
      */
     private function __construct()
     {
-        $this->configObject = new ilMatterhornConfig();
+        $this->configObject = new ilOpencastConfig();
+        $this->opencastRESTClient = new ilOpencastRESTClient($this->configObject->getOpencastServer(), $this->configObject->getOpencastAPIUser(), $this->configObject->getOpencastAPIPassword());
     }
 
     /**
@@ -40,161 +60,14 @@ class ilOpencastAPI
         return self::$instance;
     }
 
-    /**
-     * Do a GET Request of the given url on the Matterhorn Server with authorization
-     *
-     * @param string $url
-     * @throws Exception
-     * @return mixed
-     */
-    private function get($url)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
-        $this->digestAuthentication($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-
-        $response = curl_exec($ch);
-
-        if ($response === FALSE) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            if (! $httpCode) {
-                throw new Exception("error GET request: $url", 503);
-            }
-            throw new Exception("error GET request: $url $httpCode", 500);
-        }
-        return $response;
-    }
-
-    /**
-     * Do a GET Request of the given url on the Matterhorn Server with basic authorization
-     *
-     * @param string $url
-     * @throws Exception
-     * @return mixed
-     */
-    private function getAPI(string $url)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
-        $this->basicAuthentication($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Accept: application/" . self::API_VERSION . "+json"
-        ));
-
-        $response = curl_exec($ch);
-        if ($response === FALSE) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            if (! $httpCode) {
-                throw new Exception("error GET request: $url", 503);
-            }
-            throw new Exception("error GET request: $url $httpCode", 500);
-        }
-        return $response;
-    }
-
-    /**
-     * Do a POST Request of the given url on the Matterhorn Server with authorization
-     *
-     * @param string $url
-     * @param array $post
-     * @param boolean $returnHttpCode
-     * @throws Exception
-     * @return mixed
-     */
-    private function post($url, $post, $returnHttpCode = false)
-    {
-        $post_string = http_build_query($post);
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
-        curl_setopt($ch, CURLOPT_POST, count($post));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
-        $this->digestAuthentication($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($response === FALSE) {
-            throw new Exception("error POST request: $url $post_string $httpCode", 500);
-        }
-
-        if ($returnHttpCode) {
-            return $httpCode;
-        }
-        return $response;
-    }
-
-    /**
-     * Do a PUT Request of the given url on the Opencast Server with Basic Authentication
-     *
-     * @param string $url
-     * @param array $post
-     * @param boolean $returnHttpCode
-     * @throws Exception
-     * @return mixed
-     */
-    private function put($url, $post, $returnHttpCode = false)
-    {
-        $post_string = http_build_query($post);
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->configObject->getMatterhornServer() . $url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-        curl_setopt($ch, CURLOPT_POST, count($post));
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_string);
-        $this->basicAuthentication($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "Accept: application/" . self::API_VERSION . "+json"
-        ));
-
-        $response = curl_exec($ch);
-        if ($response === FALSE) {
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            throw new Exception("error PUT request: $url $post_string $httpCode", 500);
-        }
-
-        if ($returnHttpCode) {
-            return curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        }
-        return $response;
-    }
-
-    private function digestAuthentication($ch)
-    {
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getMatterhornUser() . ':' . $this->configObject->getMatterhornPassword());
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            "X-Requested-Auth: Digest",
-            "X-Opencast-Matterhorn-Authorization: true"
-        ));
-    }
-
-    private function basicAuthentication($ch)
-    {
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-        curl_setopt($ch, CURLOPT_USERPWD, $this->configObject->getOpencastAPIUser() . ':' . $this->configObject->getOpencastAPIPassword());
-    }
-
-    private static function title($title, $id, $refId)
+    private static function title(string $title, int $id, int $refId)
     {
         return "ILIAS-$id:$refId:$title";
     }
 
     public function checkOpencast()
     {
-        try {
-            $versionInfo = json_decode($this->getAPI("/api/version"), true);
-            return in_array(self::API_VERSION, $versionInfo["versions"]);
-        } catch (Exception $e) {
-            return false;
-        }
+        return $this->opencastRESTClient->checkOpencast();
     }
 
     /**
@@ -205,24 +78,13 @@ class ilOpencastAPI
      * @param integer $refId
      * @return string the series id
      */
-    public function createSeries($title, $description, $obj_id, $refId)
+    public function createSeries(string $title, string $description, int $obj_id, int $refId)
     {
-        $url = "/series/";
-        $series_id = 'ilias_xmh_' . $obj_id;
-        $fields = $this->createPostFields($series_id, $title, $description, $obj_id, $refId);
-        // TODO use api
-        $this->post($url, $fields);
-        return $series_id;
-    }
+        $url = "/api/series";
+        $fields = $this->createPostFields($title, $description, $obj_id, $refId);
 
-    private static function setChildren($xml, $name, $value, $ns)
-    {
-        $cc = $xml->children($ns);
-        if (isset($cc->$name)) {
-            $cc->$name = $value;
-        } else {
-            $xml->addChild($name, $value, $ns);
-        }
+        $series = json_decode($this->opencastRESTClient->post($url, $fields));
+        return $series->identifier;
     }
 
     /**
@@ -230,42 +92,33 @@ class ilOpencastAPI
      * @param string $series_id
      * @param string $title
      * @param string $description
-     * @param integer $obj_id
-     * @param integer $refId
-     * @return integer the httpCode
+     * @param int $obj_id
+     * @param int $refId
      */
-    public function updateSeries($series_id, $title, $description, $obj_id, $refId)
+    public function updateSeries(string $series_id, string $title, string $description, int $obj_id, int $refId)
     {
-        $url = "/series/";
-
-        $seriesxml = $this->getSeries($series_id);
-        $xml = new SimpleXMLElement($seriesxml);
-        $ns = "http://purl.org/dc/terms/";
-        self::setChildren($xml, "title", self::title($title, $obj_id, $refId), $ns);
-        self::setChildren($xml, "description", $description, $ns);
-        self::setChildren($xml, "modified", date("c"), $ns);
-        $seriesxml = $xml->asXML();
-        $fields = array(
-            'series' => $seriesxml,
-            'acl' => $this->getAccessControl()
-        );
-        $httpCode = (integer) $this->post($url, $fields, true);
-        return $httpCode;
+        $this->setSeriesMetadata($series_id, array(
+            "title" => self::title($title, $obj_id, $refId),
+            "description" => $description
+        ));
     }
 
     private function getAccessControl()
     {
-        global $DIC;
-        $ilUser = $DIC->user();
+        $userRole = "ROLE_USER_" . strtoupper($this->configObject->getOpencastAPIUser());
 
-        $userid = $ilUser->getLogin();
-        if (null != $ilUser->getExternalAccount) {
-            $userid = $ilUser->getExternalAccount();
-        }
-        return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><acl xmlns="http://org.opencastproject.security">
-								<ace><role>' . $userid . '</role><action>read</action><allow>true</allow></ace>
-								<ace><role>' . $userid . '</role><action>write</action><allow>true</allow></ace>
-						</acl>';
+        return json_encode(array(
+            array(
+                "role" => $userRole,
+                "action" => "read",
+                "allow" => true
+            ),
+            array(
+                "role" => $userRole,
+                "action" => "write",
+                "allow" => true
+            )
+        ));
     }
 
     /**
@@ -277,47 +130,126 @@ class ilOpencastAPI
      * @param integer $refId
      * @return string[]
      */
-    private function createPostFields($series_id, $title, $description, $obj_id, $refId)
+    private function createPostFields(string $title, string $description, int $obj_id, int $refId)
     {
-        $fields = array(
-            'series' => '<?xml version="1.0"?>
-<dublincore xmlns="http://www.opencastproject.org/xsd/1.0/dublincore/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.opencastproject.org http://www.opencastproject.org/schema.xsd" xmlns:dc="http://purl.org/dc/elements/1.1/"
-  xmlns:dcterms="http://purl.org/dc/terms/" xmlns:oc="http://www.opencastproject.org/matterhorn/">
-		
-  <dcterms:title xml:lang="en">' . self::title($title, $obj_id, $refId) . '</dcterms:title>
-  <dcterms:subject>
-    </dcterms:subject>
-  <dcterms:description xml:lang="en">' . $description . '</dcterms:description>
-  <dcterms:publisher>
-    University of Stuttgart, Germany
-    </dcterms:publisher>
-  <dcterms:identifier>
-    ' . $series_id . '</dcterms:identifier>
-  <dcterms:modified xsi:type="dcterms:W3CDTF">' . date("c") . '</dcterms:modified>
-  <dcterms:format xsi:type="dcterms:IMT">
-    video/mp4
-    </dcterms:format>
-  <oc:promoted>
-   	false
-  </oc:promoted>
-</dublincore>',
+        $metadata = array(
+            "title" => self::title($title, $obj_id, $refId),
+            "description" => $description
+        );
+
+        $publisher = $this->configObject->getPublisher();
+        if ($publisher) {
+            $metadata["publisher"] = array(
+                $publisher
+            );
+        }
+
+        return array(
+            'metadata' => json_encode(array(
+                array(
+                    "flavor" => "dublincore/series",
+                    "fields" => self::values($metadata)
+                )
+            )),
             'acl' => $this->getAccessControl()
         );
-        return $fields;
     }
 
     /**
-     * Get the series dublin core
+     * Get the series with the default metadata catalog
      *
      * @param string $series_id
-     * @return string the series dublin core XML document
+     * @return object the series object from opencast
      */
-    public function getSeries($series_id)
+    public function getSeries(string $series_id)
     {
-        $url = "/series/" . $series_id . ".xml";
-        $seriesxml = (string) $this->get($url);
-        return $seriesxml;
+        $url = "/api/series/$series_id";
+        return $this->opencastRESTClient->get($url);
+    }
+
+    /**
+     *
+     * @param string $title
+     *            the title of the new created episode
+     * @param string $creator
+     *            the creator of the episode
+     * @param DateTime $startDate
+     *            the start date of the episode
+     * @param string $series_id
+     *            the series id the created episode should be part of
+     * @param bool $flagForCutting
+     *            if true the cutting flag is set
+     * @param string $presentationFilePath
+     *            the path to the presentation track file, which is uploaded
+     * @return string the event id
+     */
+    public function createEpisode(string $title, string $creator, DateTime $startDate, string $series_id, bool $flagForCutting, string $presentationFilePath)
+    {
+        $url = "/api/events";
+        $startDate->setTimezone(new \DateTimeZone("UTC"));
+        $metadata = array(
+            "title" => $title,
+            "creator" => array(
+                $creator
+            ),
+            "startDate" => $startDate->format("Y-m-d"),
+            "startTime" => $startDate->format("H:i:s"),
+            "isPartOf" => $series_id
+        );
+
+        $post = array(
+            'metadata' => json_encode(array(
+                array(
+                    "flavor" => "dublincore/episode",
+                    "fields" => self::values($metadata)
+                )
+            )),
+            'acl' => $this->getAccessControl(),
+            'processing' => json_encode(array(
+                "workflow" => $this->configObject->getUploadWorkflow(),
+                "configuration" => array( // TODO
+                    "flagForCutting" => $flagForCutting ? "true" : "false",
+                    "straightToPublishing" => $flagForCutting ? "false" : "true"
+                )
+            )),
+            'presentation' => new \CurlFile($presentationFilePath)
+        );
+        $episode = json_decode($this->opencastRESTClient->postMultipart($url, $post));
+        return $episode->identifier;
+    }
+
+    /**
+     * Get the episode with the default metadata catalog
+     *
+     * @param string $episode_id
+     * @return object the episode object from opencast
+     */
+    public function getEpisode(string $episode_id)
+    {
+        $url = "/api/events/$episode_id";
+        return $this->opencastRESTClient->get($url);
+    }
+
+    /**
+     * Get the episode publication for a channel
+     *
+     * @param string $episode_id
+     * @return object the publication of the episode or null if there is no publication for the channel
+     */
+    public function getEpisodePublication(string $episode_id, string $channel = self::API_PUBLICATION_CHANNEL)
+    {
+        $url = "/api/events/$episode_id/publications";
+        $params = array(
+            "sign" => "true"
+        );
+
+        $publications = $this->opencastRESTClient->get($url, $params);
+        foreach ($publications as $publication) {
+            if ($publication->channel == $channel) {
+                return $publication;
+            }
+        }
+        return null;
     }
 
     /**
@@ -327,40 +259,19 @@ class ilOpencastAPI
      *            series id
      * @return array the scheduled episodes for the series returned by opencast
      */
-    public function getScheduledEpisodes($series_id)
+    public function getScheduledEpisodes(string $series_id)
     {
-        $url = "/admin-ng/event/events.json";
-        /* $_GET Parameters to Send */
+        $url = "/api/events";
+
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.SCHEDULED,series:' . $series_id,
+            'filter' => self::filter(array(
+                "status" => "EVENTS.EVENTS.STATUS.SCHEDULED",
+                "series" => $series_id
+            )),
             'sort' => 'date:ASC'
         );
 
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . http_build_query($params);
-
-        $curlret = $this->get($url);
-        $searchResult = json_decode($curlret, true);
-
-        return $searchResult;
-    }
-
-    public function deleteschedule($workflowid)
-    {
-        $url = $this->configObject->getMatterhornServer() . '/admin-ng/event/' . $workflowid;
-
-        // open connection
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        $this->digestAuthentication($ch);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        $curlret = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        ilLoggerFactory::getLogger('xmh')->debug("delete code: " . $httpCode);
-        return $httpCode;
+        return $this->opencastRESTClient->get($url, $params);
     }
 
     /**
@@ -368,104 +279,202 @@ class ilOpencastAPI
      *
      * @param string $series_id
      *            series id
-     * @return array the episodes which are on hold for the series returned by matterhorn
+     * @return array the episodes which are on hold for the series returned by opencast
      */
-    public function getOnHoldEpisodes($series_id)
+    public function getOnHoldEpisodes(string $series_id)
     {
-        $url = "/admin-ng/event/events.json";
-        /* $_GET Parameters to Send */
+        $url = "/api/events";
+
         $params = array(
-            'filter' => 'status:EVENTS.EVENTS.STATUS.PROCESSED,comments:OPEN,series:' . $series_id,
-            'sort' => 'date:ASC'
+            'filter' => self::filter(array(
+                "status" => "EVENTS.EVENTS.STATUS.PROCESSED",
+                "series" => $series_id
+            )),
+            'sort' => 'date:ASC',
+            'withpublications' => "true",
+            'sign' => "true"
         );
 
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
+        $episodes = $this->opencastRESTClient->get($url, $params);
+        return array_filter($episodes, array(
+            $this,
+            'isOnholdEpisode'
+        ));
+    }
 
-        $curlret = $this->get($url);
-        $searchResult = json_decode($curlret, true);
-
-        if (is_array($searchResult)) {
-            return $searchResult['results'];
-        } else {
-            return [];
-        }
+    private function isOnholdEpisode($episode)
+    {
+        return ! $this->isReadyEpisode($episode);
     }
 
     /**
-     * Get the episodes which are on hold for the given series
+     * Get the episodes which have a publication on the api channel and non preview tracks for given series
      *
      * @param string $series_id
      *            series id
-     * @return array the episodes which are on hold for the series returned by matterhorn
+     * @return array the episodes which are published for the series returned by opencast
      */
-    public function getProcessingEpisodes($series_id)
+    public function getReadyEpisodes(string $series_id)
     {
-        $url = "/workflow/instances.json";
+        $url = "/api/events";
+
         $params = array(
-            'seriesId' => $series_id,
-            'state' => array(
-                '-stopped',
-                'running'
-            ),
-            'op' => array(
-                '-schedule',
-                '-capture'
-            )
+            'filter' => self::filter(array(
+                "status" => "EVENTS.EVENTS.STATUS.PROCESSED",
+                "series" => $series_id
+            )),
+            'sort' => 'date:ASC',
+            'withpublications' => "true",
+            'sign' => "true"
         );
 
-        /* Update URL to container Query String of Paramaters */
-        $url .= '?' . preg_replace('/%5B(?:[0-9]|[1-9][0-9]+)%5D=/', '=', http_build_query($params, null, '&'));
+        $episodes = $this->opencastRESTClient->get($url, $params);
+        return array_filter($episodes, 'self::isReadyEpisode');
+    }
 
-        $curlret = $this->get($url);
-        $searchResult = json_decode($curlret, true);
+    private static function isReadyEpisode($episode)
+    {
+        if (! in_array(self::API_PUBLICATION_CHANNEL, $episode->publication_status)) {
+            return false;
+        }
 
-        return $searchResult;
+        $apiPublication = null;
+        foreach ($episode->publications as $publication) {
+            if ($publication->channel == self::API_PUBLICATION_CHANNEL) {
+                $apiPublication = $publication;
+            }
+        }
+        if ($apiPublication == null) {
+            return false;
+        }
+
+        $nonPreviewTracks = array_filter($apiPublication->media, function ($track) {
+            return ! in_array("preview", $track->tags);
+        });
+
+        return count($nonPreviewTracks) > 0;
     }
 
     /**
-     * Get editor tool json from admin-ng
+     * Get the workflows of the given series which are in processing
      *
-     * @param string $episodeid
+     * @param string $series_id
+     *            series id
+     * @return object the workfolws which are in processing for the series returned by opencast
+     */
+    public function getActiveWorkflows(string $series_id)
+    {
+        $url = "/api/workflows";
+        $params = array(
+            "filter" => self::filter(array(
+                "series_identifier" => $series_id,
+                "state" => "running",
+                "state_not" => "stopped",
+                "current_operation_not" => "schedule",
+                "current_operation_not" => "capture"
+            )),
+            "withoperations" => "true"
+        );
+
+        return $this->opencastRESTClient->get($url, $params);
+    }
+
+    /**
+     * Get the workflow definitions with the given tag
+     *
+     * @param string $tag
+     *            series id
+     * @return array the workflow definition returned by opencast
+     */
+    public function getWorkflowDefinition(string $tag)
+    {
+        $url = "/api/workflow-definitions";
+        $params = array(
+            "filter" => self::filter(array(
+                "tag" => $tag
+            ))
+        );
+
+        return $this->opencastRESTClient->get($url, $params);
+    }
+
+    public function delete(string $episodeid)
+    {
+        $url = "/api/events/$episodeid";
+
+        $this->opencastRESTClient->delete($url);
+    }
+
+    /**
+     * Trims the tracks of a episode
+     *
+     * @param string $eventid
      *            the id of the episode
-     * @throws Exception
-     * @return mixed the decoded editor json from the admin ui
+     * @param array $keeptrack
+     *            the id of the tracks to be not removed
+     * @param int $trimin
+     *            the starttime of the new tracks in seconds
+     * @param int $trimout
+     *            the endtime of the new tracks in seconds
      */
-    public function getEditor($episodeid)
+    public function trim(string $eventid, array $keeptracks, int $trimin, int $trimout)
     {
-        $url = "/admin-ng/tools/$episodeid/editor.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
-        try {
-            $curlret = $this->get($url);
-        } catch (Exception $e) {
-            throw new Exception("error loading editor.json for episode " . $episodeid, 500, $e);
-        }
-        $editorjson = json_decode($curlret);
-        if ($editorjson === false) {
-            throw new Exception("error loading editor.json for episode " . $episodeid, 500);
-        }
-        return $editorjson;
+        $url = "/api/workflows";
+
+        $params = array(
+            "event_identifier" => $eventid,
+            "workflow_definition_identifier" => $this->configObject->getTrimWorkflow(),
+            "configuration" => $this->generateTrimConfiguration($trimin, $trimout, $keeptracks)
+        );
+
+        $this->opencastRESTClient->post($url, $params);
     }
 
     /**
-     * Get the media objects json from admin-ng
      *
-     * @param
-     *            string the id of the episode
-     * @throws Exception
-     * @return mixed the decoded media json from the admin ui
+     * @param int $trimin
+     *            the starttime of the new tracks in seconds
+     * @param int $trimout
+     *            the endtime of the new tracks in seconds
+     * @param array $keeptrack
+     *            the id of the tracks to be not removed
+     * @return string
      */
-    public function getMedia($episodeid)
+    private function generateTrimConfiguration(int $trimin, int $trimout, array $keeptracks)
     {
-        $url = "/admin-ng/event/$episodeid/asset/media/media.json";
-        ilLoggerFactory::getLogger('xmh')->info("loading: " . $url);
+        $configuration = array(
+            "start" => strval($trimin),
+            "end" => strval($trimout)
+        );
 
-        $curlret = $this->get($url);
-        $mediajson = json_decode($curlret);
-        if ($mediajson === false) {
-            throw new Exception("error loading media for episode " . $episodeid, 500);
+        if (! in_array(self::TRACK_TYPE_PRESENTER, $keeptracks)) {
+            $configuration["hide_presenter_video"] = "true";
         }
-        return $mediajson;
+
+        if (! in_array(self::TRACK_TYPE_PRESENTATION, $keeptracks)) {
+            $configuration["hide_presentation_video"] = "true";
+        }
+
+        return json_encode($configuration);
+    }
+
+    /**
+     *
+     * @param string $seriesid
+     * @param array $metadata
+     * @param string $type
+     */
+    public function setSeriesMetadata(string $seriesid, array $metadata, string $type = "dublincore/series")
+    {
+        $url = "/api/series/$seriesid/metadata";
+        $query = http_build_query(array(
+            "type" => $type
+        ));
+
+        $post = array(
+            "metadata" => json_encode(self::values($metadata))
+        );
+        $this->opencastRESTClient->put("$url?$query", $post);
     }
 
     /**
@@ -474,12 +483,27 @@ class ilOpencastAPI
      * @param array $metadata
      * @param string $type
      */
-    public function setEpisodeMetadata($episodeid, $metadata, $type = "dublincore/episode")
+    public function setEpisodeMetadata(string $episodeid, array $metadata, string $type = "dublincore/episode")
     {
         $url = "/api/events/$episodeid/metadata";
         $query = http_build_query(array(
             "type" => $type
         ));
+
+        $post = array(
+            "metadata" => json_encode(self::values($metadata))
+        );
+        $this->opencastRESTClient->put("$url?$query", $post);
+    }
+
+    /**
+     * Convert a php array to the json structure of Opencast values
+     *
+     * @param array $metadata
+     * @return array
+     */
+    private static function values(array $metadata)
+    {
         $adapter = array();
         foreach ($metadata as $id => $value) {
             $adapter[] = array(
@@ -487,10 +511,15 @@ class ilOpencastAPI
                 "value" => $value
             );
         }
+        return $adapter;
+    }
 
-        $post = array(
-            "metadata" => json_encode($adapter)
-        );
-        $this->put("$url?$query", $post);
+    private static function filter(array $filter)
+    {
+        $filters = array();
+        foreach ($filter as $name => $value) {
+            $filters[] = "$name:$value";
+        }
+        return implode(',', $filters);
     }
 }

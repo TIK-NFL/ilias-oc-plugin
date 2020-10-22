@@ -38,17 +38,15 @@ status#:#Status
 offline#:#Offline
 online#:#Online
 opencast_plugin_configuration#:#Opencast-Plugin-Konfiguration
-mh_server#:#Basis-URL des Opencast Server
-mh_server_engage#:#Basis-URL des Opencast Engage Server
-mh_digest_user#:#Benutzername des Opencast Digest User
-mh_digest_password#:#Passwort des Opencast Digest User
+oc_server#:#Basis-URL des Opencast Server
 oc_api_user#:#Benutzername des Opencast API User
 oc_api_password#:#Passwort des Opencast API User
-mh_directory#:#Basisverzeichnis von Opencast (org.opencastproject.storage.dir)
 xsendfile_header#:#Header f&uuml;r XSendfile-Feature
 distribution_directory#:#Ilias Verteilungsverzeichnis
-opencast_version#:#Opencast-Version
-upload_workflow#:#Workflow zum Verarbeiten von Uploads
+upload_workflow#:#Workflow zum verarbeiten von Uploads
+trim_workflow#:#Workflow zum verarbeiten f&#252;r den integrierten Video-Editor
+oc_api_setup_required#:#Opencast API setup erforderlich
+oc_publisher#:#Herausgeber
 saving_invoked#:#&Auml;nderungen erfolgreich gespeichert
 
 finished_recordings#:#Fertige Aufzeichnungen
@@ -80,9 +78,6 @@ none_onhold#:#Es gibt keine Aufnahmen, die geschnitten werden können
 msg_episode_send_to_triming#:#Die Aufnahme wurde erfolgreich zur Weiterverarbeitung geschickt
 msg_scheduling_deleted#:#Die geplante Aufzeichnung wurde erfolgreich gelöscht
 track_title#:#Titel der Aufzeichnung
-flavor_unset#:#Typ unbekannt
-flavor_presenter#:#Dozent
-flavor_presentation#:#Präsentation
 set_to_current_time#:#Jetzt setzen
 inpoint#:#Startpunkt
 outpoint#:#Endpunkt
@@ -95,16 +90,10 @@ running#:#Verarbeitungsschritt
 none_processing#:#Es gibt keine Aufnahmen, die aktuell vom Server verarbeitet werden
 add_new_episode#:#Eigene Aufzeichnung hochladen
 track_presenter#:#Name des Vortragenden
-track_date#:#Datum der Aufzeichnung
-track_time#:#Uhrzeit der Aufzeichnung
-select_file#:#Datei auswählen
+track_datetime#:#Datum und Uhrzeit der Aufzeichnung
 upload_file#:#Datei hochladen
 usetrimeditor#:#Video schneiden
-no_files#:#Bitte Datei zum Hochladen auswählen
-uploading#:#Hochladen...
-done_uploading#:#Hochladen erfolgreich
-upload_canceled#:#Hochladen abgebrochen
-cancel_upload#:#Hochladen abbrechen
+msg_episode_uploaded#:#Die Aufnahme wurde erfolgreich hochgeladen und wird verarbeitet
 
 to_edit#:#Aufzeichnungen bereit zum Schneiden
 

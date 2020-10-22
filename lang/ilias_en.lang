@@ -38,17 +38,15 @@ status#:#Status
 offline#:#Offline
 online#:#Online
 opencast_plugin_configuration#:#Opencast plugin configuration
-mh_server#:#Base URL of the Opencast Server
-mh_server_engage#:#Base URL of the Opencast Engage Server
-mh_digest_user#:#Username of the Opencast Digest User
-mh_digest_password#:#Password of the Opencast Digest User
+oc_server#:#Base URL of the Opencast Server
 oc_api_user#:#Username of the Opencast API User
 oc_api_password#:#Password of the Opencast API User
 xsendfile_header#:#Header for XSendfile-Feature
 distribution_directory#:#Distribution directory for ilias
-mh_directory#:#Base directory for Opencast (org.opencastproject.storage.dir)
-opencast_version#:#Opencast Version
 upload_workflow#:#Workflow for processing uploaded files
+trim_workflow#:#Workflow for trimming with the plugin editor
+oc_api_setup_required#:#Opencast API setup required
+oc_publisher#:#Publisher
 saving_invoked#:#Save procedure has been executed
 
 finished_recordings#:#Finished Recordings
@@ -80,9 +78,6 @@ none_onhold#:#There are no recordings waiting for trimming
 msg_episode_send_to_triming#:#The episode has been successfully sent to trimming
 msg_scheduling_deleted#:#The scheduling has been successfully removed
 track_title#:#Title of recording
-flavor_unset#:#No flavor selected
-flavor_presenter#:#Presenter
-flavor_presentation#:#Presentation
 set_to_current_time#:#Set to current time
 inpoint#:#Inpoint
 outpoint#:#Outpoint
@@ -95,16 +90,10 @@ running#:#Processing step
 none_processing#:#There are no recordings being processed on the server
 add_new_episode#:#Upload own recording
 track_presenter#:#Presenter name
-track_date#:#Date of recording
-track_time#:#Time of recording
-select_file#:#Select file
+track_datetime#:#Date and time of recording
 upload_file#:#Upload file
 usetrimeditor#:#Trim video
-no_files#:#Please select a file to upload
-uploading#:#Uploading...
-done_uploading#:#Done uploading
-upload_canceled#:#Upload canceled
-cancel_upload#:#Cancel upload
+msg_episode_uploaded#:#The recording was successfully uploaded and is processing
 
 to_edit#:#Episodes ready to be trimmmed
 

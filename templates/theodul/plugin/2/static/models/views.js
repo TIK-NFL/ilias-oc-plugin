@@ -35,7 +35,7 @@ define(["jquery", "backbone", "engage/core"], function($, Backbone, Engage) {
     });
 
     // var USERTRACKING_ENDPOINT = "/usertracking"; ILPATCH
-    var USERTRACKING_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/" + "usertracking";
+    var USERTRACKING_ENDPOINT = ILIAS_THEODUL_PATH + "../../api.php/" + "usertracking";
     var USERTRACKING_ENDPOINT_STATS = "/stats.json";
 
     var mediaPackageID = Engage.model.get("urlParameters").id;

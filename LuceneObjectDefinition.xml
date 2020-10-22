@@ -18,7 +18,5 @@
             <Field global="YES" store="YES" index="NOT_ANALYZED" column="slidetext.episode_id" type="text" name="subItem" />
             <Field global="NO" store="YES" index="NOT_ANALYZED" column="data.obj_id" type="integer" name="objId" />
         </DataSource>
-        
     </Document>
-    
 </ObjectDefinition>

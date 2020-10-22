@@ -1,7 +1,7 @@
 function initEdit(iliasopencast) {
 
     iliasopencast.init = function() {
-        iliasopencast.templates = $.get(iliasopencast.settings.uploadtarget + "/../templates/edit/edit.html");
+        iliasopencast.templates = $.get(iliasopencast.settings.pluginbasedir + "/templates/edit/edit.html");
 
         iliasopencast.updateprocessing();
         window.setInterval(iliasopencast.updateprocessing, 5000);
@@ -23,8 +23,6 @@ function initEdit(iliasopencast) {
             showNumberIndicatorOnSubtab("finishedepisodes", data.finished.length);
             showNumberIndicatorOnSubtab("processtrim", data.onhold.length + data.processing.length);
             showNumberIndicatorOnSubtab("schedule", data.scheduled.length);
-            
-            console.log("updated finished");
         });
 
         var updateTable = function(data, dataname, templates) {

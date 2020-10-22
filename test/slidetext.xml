@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Mpeg7 xmlns="urn:mpeg:mpeg7:schema:2001" 
+    xmlns:mpeg7="urn:mpeg7:schema:2001" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Description xsi:type="ContentEntityType">
+        <MultimediaContent xsi:type="VideoType">
+            <Video id="videosegment">
+                <MediaLocator>
+                    <MediaUri>https://stable.opencast.org/files/mediapackage/28b408e5-da79-4737-ba1c-5567d76a3cb6/94ec0db8-d54c-4eb5-821a-1350175f86aa/ocr_test_very_small_40sec_640x400.mp4</MediaUri>
+                </MediaLocator>
+                <MediaTime>
+                    <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                    <MediaDuration>PT40S32N1000F</MediaDuration>
+                </MediaTime>
+                <TemporalDecomposition criteria="temporal" gap="false" overlap="false">
+                    <VideoSegment id="segment-1">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-2">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:01:334F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-3">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:02:668F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-4">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:04:2F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-5">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:05:336F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-6">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:06:670F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-7">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:08:4F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-8">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:09:338F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-9">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:10:672F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-10">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:12:6F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-11">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:13:340F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-12">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:14:674F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-13">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:16:8F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-14">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:17:342F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-15">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:18:676F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-16">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:20:10F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-17">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:21:344F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-18">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:22:678F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is a slide</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-19">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:24:12F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-20">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:25:346F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-21">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:26:680F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-22">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:28:14F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-23">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:29:348F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-24">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:30:682F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-25">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:32:16F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-26">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:33:350F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-27">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:34:684F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-28">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:36:18F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-29">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:37:352F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S334N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S334N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                    <VideoSegment id="segment-30">
+                        <MediaTime>
+                            <MediaRelTimePoint>T00:00:38:686F1000</MediaRelTimePoint>
+                            <MediaDuration>PT01S346N1000F</MediaDuration>
+                        </MediaTime>
+                        <SpatioTemporalDecomposition gap="true" overlap="false">
+                            <VideoText id="null-1" textType="superimposed">
+                                <SpatioTemporalLocator>
+                                    <MediaTime>
+                                        <MediaRelTimePoint>T00:00:00:0F1000</MediaRelTimePoint>
+                                        <MediaDuration>PT01S346N1000F</MediaDuration>
+                                    </MediaTime>
+                                </SpatioTemporalLocator>
+                                <Text>This is another one</Text>
+                            </VideoText>
+                        </SpatioTemporalDecomposition>
+                    </VideoSegment>
+                </TemporalDecomposition>
+            </Video>
+        </MultimediaContent>
+    </Description>
+</Mpeg7>

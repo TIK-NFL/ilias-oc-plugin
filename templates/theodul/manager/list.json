@@ -4,7 +4,7 @@
 			{
 				"name": "EngagePluginCustomNotifications",
 				"id": "7",
-				"description": "Handles Matterhorns Endpoints",
+				"description": "Handles Opencasts Endpoints",
 				"static-path": "7\/static"
 			},
 			{
@@ -46,7 +46,7 @@
 			{
 				"name": "EngagePluginCustomMhConnection",
 				"id": "2",
-				"description": "Handles Matterhorns Endpoints",
+				"description": "Handles Opencasts Endpoints",
 				"static-path": "2\/static"
 			},
 			{

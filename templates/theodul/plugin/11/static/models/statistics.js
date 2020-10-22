@@ -1,6 +1,7 @@
 define([ "backbone", "engage/core" ], function(Backbone, Engage) {
 	"use strict";
-	var USERTRACKING_ENDPOINT = ILIAS_THEODUL_PATH + "../../MHData/"
+	// ILPATCH
+	var USERTRACKING_ENDPOINT = ILIAS_THEODUL_PATH + "../../api.php/"
 			+ "usertracking";
 	var USERTRACKING_ENDPOINT_STATISTICS = USERTRACKING_ENDPOINT
 			+ "/statistic.json";
