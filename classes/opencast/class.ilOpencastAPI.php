@@ -209,7 +209,8 @@ class ilOpencastAPI
                 "workflow" => $this->configObject->getUploadWorkflow(),
                 "configuration" => array( // TODO
                     "flagForCutting" => $flagForCutting ? "true" : "false",
-                    "straightToPublishing" => $flagForCutting ? "false" : "true"
+                    "straightToPublishing" => $flagForCutting ? "false" : "true",
+                    "rewritefiles" => "true"
                 )
             )),
             'presentation' => new \CurlFile($presentationFilePath)

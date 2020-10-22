@@ -76,9 +76,9 @@ class ilOpencastRESTClient
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if (! $httpCode) {
                 ilLoggerFactory::getLogger('xmh')->warning(curl_error($ch));
-                throw new Exception("error GET request: $url $queryString", 503);
+                throw new Exception("error GET request: $requestURL $queryString", 503);
             }
-            throw new Exception("error GET request: $url $queryString $httpCode", 500);
+            throw new Exception("error GET request: $requestURL $queryString $httpCode", 500);
         }
         return json_decode($response);
     }
