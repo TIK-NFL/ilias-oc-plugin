@@ -29,7 +29,7 @@ class ilOpencastUtil
     {
         $downloadurl = null;
         foreach ($tracks as $track) {
-            if ('composite/delivery' == $track->flavor && 'video/mp4' == $track->mediatype) {
+            if ('composite/sbs' == $track->flavor && 'video/mp4' == $track->mediatype) {
                 return $track->url;
             } else if ('presentation/delivery' == $track->flavor && 'video/mp4' == $track->mediatype) {
                 $downloadurl = $track->url;
