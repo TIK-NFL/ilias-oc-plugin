@@ -66,7 +66,9 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
     const UPLOAD_SUFFIXES = [
         'mp4',
-        'webm'
+        'webm',
+        'mkv',
+        'wmv'
     ];
 
     const STREAM_TYPE_DUAL = "dual";
