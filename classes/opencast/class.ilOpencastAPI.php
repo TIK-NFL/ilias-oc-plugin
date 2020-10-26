@@ -84,6 +84,12 @@ class ilOpencastAPI
         $fields = $this->createPostFields($title, $description, $obj_id, $refId);
 
         $series = json_decode($this->opencastRESTClient->post($url, $fields));
+        # add a property containing the ilias object id
+        $propurl = "/api/series/".$series->identifier."/properties";
+        $propfields = array('properties' => json_encode(array(
+            "ilobjid" => "$obj_id"
+        )));
+        $this->opencastRESTClient->put($propurl, $propfields);
         return $series->identifier;
     }
 
