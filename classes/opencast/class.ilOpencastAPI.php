@@ -187,9 +187,12 @@ class ilOpencastAPI
      *            if true the cutting flag is set
      * @param string $presentationFilePath
      *            the path to the presentation track file, which is uploaded
+     * @param string $presenterFilePath
+     *            the path to the presenter track file, which is uploaded
+     *
      * @return string the event id
      */
-    public function createEpisode(string $title, string $creator, DateTime $startDate, string $series_id, bool $flagForCutting, string $presentationFilePath)
+    public function createEpisode(string $title, string $creator, DateTime $startDate, string $series_id, bool $flagForCutting, ?string $presentationFilePath, ?string $presenterFilePath)
     {
         $url = "/api/events";
         $startDate->setTimezone(new \DateTimeZone("UTC"));
@@ -218,9 +221,14 @@ class ilOpencastAPI
                     "straightToPublishing" => $flagForCutting ? "false" : "true",
                     "rewritefiles" => "true"
                 )
-            )),
-            'presentation' => new \CurlFile($presentationFilePath)
+            ))
         );
+        if(null != $presentationFilePath) {
+            $post['presentation'] = new \CurlFile($presentationFilePath);
+        }
+        if(null != $presenterFilePath) {
+            $post['presenter'] = new \CurlFile($presenterFilePath);
+        }
         $episode = json_decode($this->opencastRESTClient->postMultipart($url, $post));
         return $episode->identifier;
     }

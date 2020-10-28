@@ -654,6 +654,17 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $this->showEditEpisodes('scheduled');
     }
 
+    /*
+     * Create a configured ilFileInputGUI for usage in the UploadForm
+     * @return ilFileInputGUI
+     */
+    private function createFileInputGUI(string $label, string $fieldname):ilFileInputGUI{
+        $fig = new ilFileInputGUI($this->txt($label), $fieldname);
+        $fig->setSuffixes(self::UPLOAD_SUFFIXES);
+        $fig->setRequired(true);
+        return $fig;
+    }
+
     /**
      * Init Upload form.
      *
@@ -692,12 +703,36 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $usetrimeditor = new ilCheckboxInputGUI($this->txt("usetrimeditor"), self::POST_USETRIMEDITOR);
         $form->addItem($usetrimeditor);
 
-        $item = new ilFileStandardDropzoneInputGUI('Files', 'files');
-        $item->setUploadUrl($form->getFormAction());
-        $item->setSuffixes(self::UPLOAD_SUFFIXES);
-        $item->setInfo('Allowed file types: ' . implode(', ', $item->getSuffixes()));
-        $form->addItem($item);
+        // file uploads
+        $radg = new ilRadioGroupInputGUI("Upload Files", "upload_files");
+        $radg->setValue('only_presentation');
 
+        $file_presentation = $this->createFileInputGUI("presentation", 'single_presentation');
+        $op1 = new ilRadioOption(
+            $this->txt("only_presentation"),
+            "only_presentation"
+            );
+        $op1->addSubItem($file_presentation);
+        $radg->addOption($op1);
+
+        $file_presenter = $this->createFileInputGUI("presenter", 'single_presenter');
+        $op2 = new ilRadioOption(
+            $this->txt("only_presenter"),
+            "only_presenter"
+            );
+        $op2->addSubItem($file_presenter);
+        $radg->addOption($op2);
+
+        $dual_presentation = $this->createFileInputGUI("presentation", 'dual_presentation');
+        $dual_presenter = $this->createFileInputGUI("presenter", 'dual_presenter');
+        $op3 = new ilRadioOption(
+            $this->txt("presentation_and_presenter"),
+            "both");
+        $op3->addSubItem($dual_presenter);
+        $op3->addSubItem($dual_presentation);
+        $radg->addOption($op3);
+
+        $form->addItem($radg);
         $form->addCommandButton("editUpload", $this->txt("upload_file"));
         $form->setFormAction($DIC->ctrl()
             ->getFormAction($this));
@@ -718,57 +753,53 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         if ($form->checkInput()) {
             $upload = $DIC->upload();
             $filesystem = $DIC->filesystem()->temp();
-            if (! $upload->hasUploads()) {
-                echo json_encode(array(
-                    'success' => false,
-                    'message' => 'No file uploaded'
-                ));
-                exit();
-            }
-
             try {
                 $upload->process();
                 $results = $upload->getResults();
-                if (count($results) != 1) {
-                    echo json_encode(array(
-                        'success' => false,
-                        'message' => 'Only one file is supported'
-                    ));
-                    exit();
+                $file_prefix = "both" == $form->getInput('upload_files') ? "dual" : "single";
+                if ($form->hasFileUpload($file_prefix."_presenter")){
+                    $file = $results[$form->getInput($file_prefix."_presenter")['tmp_name']];
+                    if ($file != NULL) {
+                        $presenter_filename = uniqid() . $file->getName();
+                        $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $presenter_filename);
+                        $presenter_filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $presenter_filename;
+                        ilLoggerFactory::getLogger('xmh')->debug("presenter file: ".$presenter_filepath);
+                    } else {
+                        $presenter_filepath = NULL;
+                    }
                 }
-                $file = current($results);
-                $filename = uniqid() . $file->getName();
-                $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $filename);
-                $filepath = self::UPLOAD_DIR . "/" . $filename;
-                // check if the file was store with the correct path
-                if (! $filesystem->has($filepath)) {
-                    echo json_encode(array(
-                        'success' => false,
-                        'message' => 'Cloud not store file'
-                    ));
-                    exit();
+                if ($form->hasFileUpload($file_prefix."_presentation")){
+                    $file = $results[$form->getInput($file_prefix."_presentation")['tmp_name']];
+                    if ($file != NULL) {
+                        $presentation_filename = uniqid() . $file->getName();
+                        $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $presentation_filename);
+                        $presentation_filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $presentation_filename;
+                        ilLoggerFactory::getLogger('xmh')->debug("presentation file: ".$presentation_filepath);
+                    } else {
+                        $presentation_filepath = NULL;
+                    }
                 }
                 $title = $form->getInput(self::POST_EPISODENAME);
                 $creator = $form->getInput(self::POST_PRESENTER);
                 $ildatetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
                 $datetime = new DateTime($ildatetime->get(IL_CAL_ISO_8601));
                 $flagForCutting = isset($_POST[self::POST_USETRIMEDITOR]) && $_POST[self::POST_USETRIMEDITOR];
-
+                ilLoggerFactory::getLogger('xmh')->debug("creating new opencast episode");
                 $this->getOCObject()
                     ->getSeries()
-                    ->createEpisode($title, $creator, $datetime, $flagForCutting, self::ILIAS_TEMP_DIR . "/" . $filepath);
-
-                $filesystem->delete($filepath);
-
+                    ->createEpisode($title, $creator, $datetime, $flagForCutting, $presentation_filepath, $presenter_filepath);
+                ilLoggerFactory::getLogger('xmh')->debug("create new episode");
+                if (null != $presenter_filename) {
+                    $filesystem->delete(self::UPLOAD_DIR . "/" . $presenter_filename);
+                }
+                if (null != $presentation_filename) {
+                    $filesystem->delete(self::UPLOAD_DIR . "/" . $presentation_filename);
+                }
                 ilUtil::sendSuccess($this->txt("msg_episode_uploaded"), true);
                 $ilCtrl->redirect($this, "editTrimProcess");
             } catch (Exception $e) {
-                ilLoggerFactory::getLogger('xmh')->debug("Exception while uploading to opencast: " . $e->getMessage());
-                echo json_encode(array(
-                    'success' => false
-                ));
+                ilLoggerFactory::getLogger('xmh')->error("Exception while uploading to opencast: " . $e->getMessage().$e->getTraceAsString());
             }
-            exit();
         } else {
             $form->setValuesByPost();
         }

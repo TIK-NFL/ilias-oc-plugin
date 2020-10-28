@@ -155,8 +155,8 @@ class ilOpencastSeries
      *
      * @see ilOpencastAPI#createEpisode()
      */
-    public function createEpisode(string $title, string $creator, DateTime $startDate, bool $flagForCutting, string $presentationfilePath)
+    public function createEpisode(string $title, string $creator, DateTime $startDate, bool $flagForCutting, ?string $presentationFilePath, ?string $presenterFilePath)
     {
-        ilOpencastAPI::getInstance()->createEpisode($title, $creator, $startDate, $this->series_id, $flagForCutting, $presentationfilePath);
+        ilOpencastAPI::getInstance()->createEpisode($title, $creator, $startDate, $this->series_id, $flagForCutting, $presentationFilePath, $presenterFilePath);
     }
 }

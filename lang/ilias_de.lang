@@ -103,3 +103,9 @@ series#:#Serie
 
 series_id#:#Serien Id
 opencast_information#:#Opencast Information
+presentation#:#Präsentation
+presenter#:#Vortragender
+only_presentation#:#Nur Präsentation hochladen
+only_presenter#:#Nur Vortragenden hochladen
+presentation_and_presenter#:#Vortragenden und Präsentation hochladen
+
