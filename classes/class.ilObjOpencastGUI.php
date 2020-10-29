@@ -677,6 +677,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $form = new ilPropertyFormGUI();
         $form->setId('episode_upload');
         $form->setTitle($this->txt("add_new_episode"));
+        $form->setDescription("<h2 class=\"bg-warning\">".$this->txt("no_progress_bar")."</h2>");
 
         $form->setPreventDoubleSubmission(false);
         $flag = new ilHiddenInputGUI('submitted');
