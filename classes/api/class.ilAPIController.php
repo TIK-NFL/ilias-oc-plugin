@@ -192,10 +192,10 @@ class ilAPIController
             );
 
             if (0 == strcmp($cat['type'], 'mpeg-7/segments')) {
-                $segmentsUrl = $catalog->url;
+                $segmentsUrl = $this->getDeliveryUrl($catalog->url);
             }
             if (0 == strcmp($cat['type'], 'mpeg-7/text')) {
-                $segmentsUrl = $catalog->url;
+                $segmentsUrl = $this->getDeliveryUrl($catalog->url);
             }
             array_push($metadata['catalog'], $cat);
         }
@@ -325,6 +325,7 @@ class ilAPIController
             $segment['text'] = $text;
 
             $segment['duration'] = ($min * 60 + $sec) * 1000 + $msec;
+            //TODO: check unused variable
             $curmesc = $cursec = $curmin = $remainhour = 0;
             $curmsec = $currenttime % 1000;
             $remainsec = intdiv($currenttime, 1000);
