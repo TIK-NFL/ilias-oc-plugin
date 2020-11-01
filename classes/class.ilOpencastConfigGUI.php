@@ -1,7 +1,7 @@
 <?php
-use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+require_once __DIR__ . '/../vendor/autoload.php';
 
-include_once './Services/Component/classes/class.ilPluginConfigGUI.php';
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
 /**
  * Opencast configuration user interface class.
@@ -38,6 +38,11 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
         $values['uploadworkflow'] = $this->configObject->getUploadWorkflow();
         $values['trimworkflow'] = $this->configObject->getTrimWorkflow();
         $values['publisher'] = $this->configObject->getPublisher();
+        $values['delivery_method'] = $this->configObject->getDeliveryMethod();
+        $values['signingkey'] = $this->configObject->getSigningKey();
+        $values['distributionserver'] = $this->configObject->getDistributionServer();
+        $values['stripurl'] = $this->configObject->getStripUrl();
+        $values['tokenvalidity'] = $this->configObject->getTokenValidity();
         $form->setValuesByArray($values);
         $tpl->setContent($form->getHTML());
     }
@@ -112,6 +117,48 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
         $publisher->setSize(100);
         $form->addItem($publisher);
 
+        $radg = new ilRadioGroupInputGUI($pl->txt('delivery_method'), 'delivery_method');
+        $op1 = new ilRadioOption(
+            $pl->txt('use_opencast_api_url'),
+            'api'
+            );
+        $radg->addOption($op1);
+
+        $op2 = new ilRadioOption(
+            $pl->txt('use_external_distribution_server'),
+            "external"
+            );
+        $radg->addOption($op2);
+        // signingkey
+        $signingkey = new ilTextInputGUI($pl->txt('signingkey'), 'signingkey');
+        $signingkey->setRequired(true);
+        $signingkey->setMaxLength(100);
+        $signingkey->setSize(100);
+        $op2->addSubItem($signingkey);
+
+        // distributionserver
+        $distributionserver = new ilTextInputGUI($pl->txt('distributionserver'), 'distributionserver');
+        $distributionserver->setRequired(true);
+        $distributionserver->setMaxLength(100);
+        $distributionserver->setSize(100);
+        $op2->addSubItem($distributionserver);
+
+        // stripurl
+        $stripurl = new ilTextInputGUI($pl->txt('stripurl'), 'stripurl');
+        $stripurl->setRequired(true);
+        $stripurl->setMaxLength(200);
+        $stripurl->setSize(200);
+        $op2->addSubItem($stripurl);
+
+        // token validity
+        $tokenvalidity = new ilTextInputGUI($pl->txt('tokenvalidity'), 'tokenvalidity');
+        $tokenvalidity->setRequired(true);
+        $tokenvalidity->setMaxLength(200);
+        $tokenvalidity->setSize(200);
+        $op2->addSubItem($tokenvalidity);
+
+        $form->addItem($radg);
+
         $form->addCommandButton('save', $lng->txt('save'));
         $form->setTitle($pl->txt('opencast_plugin_configuration'));
         $form->setFormAction($ilCtrl->getFormAction($this));
@@ -132,6 +179,11 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
             $uploadworkflow = $form->getInput('uploadworkflow');
             $trimworkflow = $form->getInput('trimworkflow');
             $publisher = $form->getInput('publisher');
+            $delivery_method = $form->getInput('delivery_method');
+            $signingkey = $form->getInput('signingkey');
+            $distributionserver = $form->getInput('distributionserver');
+            $stripurl = $form->getInput('stripurl');
+            $tokenvalidity = $form->getInput('tokenvalidity');
 
             $this->configObject->setOpencastServer($oc_server);
             $this->configObject->setOpencastAPIUser($oc_api_user);
@@ -139,6 +191,11 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
             $this->configObject->setUploadWorkflow($uploadworkflow);
             $this->configObject->setTrimWorkflow($trimworkflow);
             $this->configObject->setPublisher($publisher);
+            $this->configObject->setDeliveryMethod($delivery_method);
+            $this->configObject->setSigningKey($signingkey);
+            $this->configObject->setDistributionServer($distributionserver);
+            $this->configObject->setStripUrl($stripurl);
+            $this->configObject->setTokenValidity($tokenvalidity);
 
             ilUtil::sendSuccess($pl->txt('saving_invoked'), true);
             $ilCtrl->redirect($this, 'configure');

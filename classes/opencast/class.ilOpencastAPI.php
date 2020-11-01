@@ -255,7 +255,7 @@ class ilOpencastAPI
     {
         $url = "/api/events/$episode_id/publications";
         $params = array(
-            "sign" => "true"
+            "sign" => $this->configObject->getDeliveryMethod()=='api'?"true":"false"
         );
 
         $publications = $this->opencastRESTClient->get($url, $params);

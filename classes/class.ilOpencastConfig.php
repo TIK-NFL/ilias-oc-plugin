@@ -24,6 +24,16 @@ class ilOpencastConfig
 
     const CONFIG_KEY_PUBLISHER = "publisher";
 
+    const CONFIG_KEY_SIGNING_KEY = "signingkey";
+
+    const CONFIG_KEY_DELIVERY_METHOD= "delivery_method";
+
+    const CONFIG_KEY_DISTRIBUTION_SERVER = "distributionserver";
+
+    const CONFIG_KEY_TOKEN_VALIDITY = "tokenvalidity";
+
+    const CONFIG_KEY_STRIP_URL = "stripurl";
+
     const DATABASE_TABLE_CONFIG = "rep_robj_xmh_config";
 
     const DATABASE_TABLE_VIEWS = "rep_robj_xmh_views";
@@ -114,7 +124,6 @@ class ilOpencastConfig
         if (! $retVal) {
             return 'default';
         }
-
         return $retVal;
     }
 
@@ -130,6 +139,75 @@ class ilOpencastConfig
     public function getTrimWorkflowOptions()
     {
         return $this->getAvailableWorkflows("editor");
+    }
+
+    public function getDeliveryMethod():string
+    {
+        $retVal = $this->getValue(SELF::CONFIG_KEY_DELIVERY_METHOD);
+        if (! $retVal) {
+            return "api";
+        }
+        return $retVal;
+    }
+
+    public function setDeliveryMethod(string $value)
+    {
+        $this->setValue(SELF::CONFIG_KEY_DELIVERY_METHOD, $value);
+    }
+
+    public function getSigningKey()
+    {
+        $retVal = $this->getValue(SELF::CONFIG_KEY_SIGNING_KEY);
+        if (! $retVal) {
+            return 'default';
+        }
+        return $retVal;
+    }
+
+    public function setSigningKey($value)
+    {
+        $this->setValue(SELF::CONFIG_KEY_SIGNING_KEY, $value);
+    }
+
+    public function getDistributionServer()
+    {
+        $retVal = $this->getValue(SELF::CONFIG_KEY_DISTRIBUTION_SERVER);
+        if (! $retVal) {
+            return 'http://unknown.host';
+        }
+        return $retVal;
+    }
+
+    public function setDistributionServer($value)
+    {
+        $this->setValue(SELF::CONFIG_KEY_DISTRIBUTION_SERVER, $value);
+    }
+
+    public function getTokenValidity()
+    {
+        $retVal = $this->getValue(SELF::CONFIG_KEY_TOKEN_VALIDITY);
+        if (! $retVal) {
+            return 6;
+        }
+        return intval($retVal);
+    }
+
+    public function setTokenValidity($value)
+    {
+        $this->setValue(SELF::CONFIG_KEY_TOKEN_VALIDITY, $value);
+    }
+
+    public function getStripUrl()    {
+        $retVal = $this->getValue(SELF::CONFIG_KEY_STRIP_URL);
+        if (! $retVal) {
+            return 'http://unknown.host';
+        }
+        return $retVal;
+    }
+
+    public function setStripUrl($value)
+    {
+        $this->setValue(SELF::CONFIG_KEY_STRIP_URL, $value);
     }
 
     /**

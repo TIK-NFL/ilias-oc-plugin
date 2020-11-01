@@ -26,7 +26,7 @@ use TIK_NFL\ilias_oc_plugin\model\ilOpencastSeries;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
-require_once 'Services/Repository/classes/class.ilObjectPlugin.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 
 /**

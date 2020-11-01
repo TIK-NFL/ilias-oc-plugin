@@ -23,7 +23,7 @@
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 
-include_once "./Services/Repository/classes/class.ilObjectPluginListGUI.php";
+require_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * ListGUI implementation for Opencast object plugin.

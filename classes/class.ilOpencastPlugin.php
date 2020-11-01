@@ -1,7 +1,7 @@
 <?php
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
-include_once ("./Services/Repository/classes/class.ilRepositoryObjectPlugin.php");
+require_once __DIR__ . '/../vendor/autoload.php';
 
 /**
  * Opencast repository object plugin

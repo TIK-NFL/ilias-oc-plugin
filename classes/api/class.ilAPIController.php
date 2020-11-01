@@ -1,6 +1,8 @@
 <?php
 namespace TIK_NFL\ilias_oc_plugin\api;
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 use ilLoggerFactory;
@@ -9,10 +11,13 @@ use ilOpencastPlugin;
 use ilPlugin;
 use Exception;
 
+use Firebase\JWT\JWT;
+
 /**
  * simple REST API for the video player
  *
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
+ * @author Per Pascal Seeland <pascal.seeland@tik.uni-stuttgart.de>
  */
 class ilAPIController
 {
@@ -159,7 +164,7 @@ class ilAPIController
                 'type' => $attachment->flavor,
                 'ref' => $attachment->ref,
                 'mimetype' => $attachment->mediatype,
-                'url' => $attachment->url,
+                'url' => $this->getDeliveryUrl($attachment->url),
                 'tags' => array(
                     'tag' => $attachment->tags
                 )
@@ -180,7 +185,7 @@ class ilAPIController
                 'id' => $catalog->id,
                 'type' => $catalog->flavor,
                 'mimetype' => $catalog->mediatype,
-                'url' => $catalog->url,
+                'url' => $this->getDeliveryUrl($catalog->url),
                 'tags' => array(
                     'tag' => $catalog->tags
                 )
@@ -203,7 +208,7 @@ class ilAPIController
                 'id' => $track->id,
                 'type' => $track->flavor,
                 'mimetype' => $track->mediatype,
-                'url' => $track->url,
+                'url' => $this->getDeliveryUrl($track->url),
                 'duration' => $track->duration,
                 'tags' => array(
                     'tag' => $track->tags
@@ -252,6 +257,32 @@ class ilAPIController
         );
 
         $this->sendJSON($episode);
+    }
+
+    /*
+     * Return the URL depending on the delivery mode. This is either the original URL or
+     * the modified URL for the external content server
+     *
+     * @param string $url the original url
+     * @return string the actual deliveryurl based on the selected method
+     */
+    private function getDeliveryUrl(string $url){
+        if ($this->configObject->getDeliveryMethod() == 'api'){
+            return url;
+        } else {
+            $baseurl = str_replace($this->configObject->getStripUrl(),'',$url);
+            $key = $this->configObject->getSigningKey();
+            $payload = array(
+                "iss" => ILIAS_HTTP_PATH,
+                "aud" => $this->configObject->getDistributionServer(),
+                "iat" => time(),
+                "nbf" => time()-10,
+                "exp" => time() + 3600 * $this->configObject->getTokenValidity(),
+                "url" => $baseurl
+            );
+            $token = JWT::encode($payload, $key);
+            return $this->configObject->getDistributionServer().$baseurl.'?token='.$token;
+        }
     }
 
     /**
