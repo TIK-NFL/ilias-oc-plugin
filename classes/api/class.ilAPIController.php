@@ -268,7 +268,7 @@ class ilAPIController
      */
     private function getDeliveryUrl(string $url){
         if ($this->configObject->getDeliveryMethod() == 'api'){
-            return url;
+            return $url;
         } else {
             $baseurl = str_replace($this->configObject->getStripUrl(),'',$url);
             $key = $this->configObject->getSigningKey();
