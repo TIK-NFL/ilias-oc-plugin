@@ -27,7 +27,7 @@ class ilOpencastUtil
 
     public static function getTrackDownloadURL(array $tracks)
     {
-        $downloadurl = null;
+        $downloadurl = $tracks[0]->url;
         foreach ($tracks as $track) {
             if ('composite/sbs' == $track->flavor && 'video/mp4' == $track->mediatype) {
                 return $track->url;
