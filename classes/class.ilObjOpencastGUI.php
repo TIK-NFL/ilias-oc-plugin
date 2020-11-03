@@ -422,11 +422,11 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $seriestpl->setCurrentBlock($this->getOCObject()
                     ->getDownload() ? "episodedownload" : "episode");
                 $seriestpl->setVariable("CMD_PLAYER", $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true));
-                $seriestpl->setVariable("PREVIEWURL", $item["previewurl"]);
+                $seriestpl->setVariable("PREVIEWURL", $this->getDeliveryUrl($item["previewurl"]));
                 $seriestpl->setVariable("TXT_TITLE", $item["title"]);
                 $seriestpl->setVariable("TXT_DATE", ilDatePresentation::formatDate(new ilDateTime($item["startdate"], IL_CAL_ISO_8601)));
                 if ($this->getOCObject()->getDownload()) {
-                    $seriestpl->setVariable("DOWNLOADURL", $item["downloadurl"]);
+                    $seriestpl->setVariable("DOWNLOADURL", $this->getDeliveryUrl($item["downloadurl"]));
                     $seriestpl->setVariable("TXT_DOWNLOAD", $DIC->language()
                         ->txt("download"));
                 }
@@ -440,7 +440,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             foreach ($released_episodes as $item) {
                 $url = $this->getLinkForShowEpisode($item['series_id'], $item['episode_id'], true);
 
-                $image = $factory->image()->responsive($item["previewurl"], $this->getText("preview"));
+                $image = $factory->image()->responsive($this->getDeliveryUrl($item["previewurl"]), $this->getText("preview"));
                 $content = $factory->listing()->descriptive(array(
                     $this->getText("date") => ilDatePresentation::formatDate(new ilDateTime($item["startdate"], IL_CAL_ISO_8601))
                 ));
@@ -449,7 +449,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 );
                 if ($this->getOCObject()->getDownload()) {
                     $sections[] = $factory->link()->standard($DIC->language()
-                        ->txt("download"), $item["downloadurl"]);
+                        ->txt("download"), $this->getDeliveryUrl($item["downloadurl"]));
                 }
 
                 $cards[] = $factory->card()->standard($item["title"], $image)
@@ -502,8 +502,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 "startdate" => $readyEpisode->start,
                 "series_id" => $readyEpisode->is_part_of,
                 "episode_id" => $readyEpisode->identifier,
-                "previewurl" => $previewurl,
-                "downloadurl" => $downloadurl,
+                "previewurl" => $this->getDeliveryUrl($previewurl),
+                "downloadurl" => $this->getDeliveryUrl($downloadurl),
                 "viewurl" => $this->getLinkForShowEpisode($this->getOCObject()
                     ->getSeriesId(), $readyEpisode->identifier, false)
             );

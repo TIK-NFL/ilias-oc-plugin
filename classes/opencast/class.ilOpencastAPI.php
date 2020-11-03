@@ -307,7 +307,7 @@ class ilOpencastAPI
             )),
             'sort' => 'date:ASC',
             'withpublications' => "true",
-            'sign' => "true"
+            'sign' => $this->configObject->getDeliveryMethod()=='api'?"true":"false"
         );
 
         $episodes = $this->opencastRESTClient->get($url, $params);
@@ -340,7 +340,7 @@ class ilOpencastAPI
             )),
             'sort' => 'date:ASC',
             'withpublications' => "true",
-            'sign' => "true"
+            'sign' => $this->configObject->getDeliveryMethod()=='api'?"true":"false"
         );
 
         $episodes = $this->opencastRESTClient->get($url, $params);
