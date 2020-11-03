@@ -48,6 +48,8 @@ include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 class ilObjOpencastGUI extends ilObjectPluginGUI
 {
 
+    use TIK_NFL\ilias_oc_plugin\opencast\ilDeliveryUrlTrait;
+
     const QUERY_EPISODE_IDENTIFIER = "id";
 
     const QUERY_MEDIAPACKAGE_ID = "id";
@@ -988,7 +990,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             }
             $trimview->setCurrentBlock("video");
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
-            $downloadurlmp4 = $previewTrack->url;
+            $downloadurlmp4 = $this->getDeliveryUrl($previewTrack->url);
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
 
             $duration = $previewTrack->duration;
