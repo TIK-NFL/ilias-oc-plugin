@@ -67,9 +67,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     const UPLOAD_DIR = "xmh_upload";
 
     const UPLOAD_SUFFIXES = [
+        'mkv',
+        'mov',
         'mp4',
         'webm',
-        'mkv',
         'wmv'
     ];
 
