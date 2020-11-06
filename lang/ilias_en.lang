@@ -109,3 +109,6 @@ only_presentation#:#Upload only presentation video
 only_presenter#:#Upload only presenter video
 presentation_and_presenter#:#Upload presenter and presentation video
 no_progress_bar#:#There is currently no progress bar when uploading. Please leave the browser open. It will automatically redirect you to a different page once the upload is finished.
+
+published#:# Published
+retracted#:# Unpublished

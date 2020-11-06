@@ -110,3 +110,5 @@ only_presenter#:#Nur Vortragenden hochladen
 presentation_and_presenter#:#Vortragenden und Präsentation hochladen
 no_progress_bar#:#Derzeit ist während des Uploads keine Fortschrittsanzeige vorhanden. Bitte lassen Sie ihr Browserfenster offen. Sie werden nach Ende des Uploads automatisch auf eine neue Seite weitergeleitet.
 
+published#:# Veröffentlicht
+retracted#:# Unveröffentlicht

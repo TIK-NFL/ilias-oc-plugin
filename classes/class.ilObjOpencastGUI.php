@@ -509,8 +509,9 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                     ->getSeriesId(), $readyEpisode->identifier, false)
             );
             if ($this->getOCObject()->getManualRelease()) {
+                $episode["txt_publish_state"] = $this->getText($published ? "published" : "retracted");
                 $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", $readyEpisode->identifier);
-                $episode["txt_publish"] = $this->getText($published ? "retract" : "publish");
+                $episode["txt_publish_action"] = $this->getText($published ? "retract" : "publish");
             }
             $episodes[] = $episode;
         }
@@ -828,6 +829,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("TXT_NONE_ONHOLD", $this->getText("none_onhold"));
         $seriestpl->setVariable("TXT_NONE_SCHEDULED", $this->getText("none_scheduled"));
         $seriestpl->setVariable("TXT_DELETE", $this->getText("delete"));
+        $seriestpl->setVariable("TXT_EDIT_METADATA", $this->getText("edit_metadata"));
         $seriestpl->setVariable("CMD_PROCESSING", $ilCtrl->getLinkTarget($this, "getEpisodes", "", true));
         $seriestpl->setVariable("SERIES_ID", $this->getOCObject()
             ->getSeriesId());
@@ -845,6 +847,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                     $this->getText("date")
                 );
                 if ($this->getOCObject()->getManualRelease()) {
+                    $colums[] = $this->getText("status");
                     $colums[] = $this->getText("action");
                 }
 

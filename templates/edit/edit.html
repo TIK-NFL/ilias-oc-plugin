@@ -16,7 +16,7 @@
 {{#finished}}
 {{^episodes}}
 <tr class="tblrow1">
- <td class="std" style="text-align:center;" colspan="{{#manualRelease}}4{{/manualRelease}}{{^manualRelease}}3{{/manualRelease}}">{{txt.txt_none_finished}}</td>
+ <td class="std" style="text-align:center;" colspan="{{#manualRelease}}5{{/manualRelease}}{{^manualRelease}}4{{/manualRelease}}">{{txt.txt_none_finished}}</td>
 </tr>
 {{/episodes}}
 {{#episodes}}
@@ -24,7 +24,22 @@
  <td class="std"><a href="{{viewurl}}">{{title}}</a></td>
  <td class="std"><a href="{{viewurl}}"><img src="{{previewurl}}" class="img-thumbnail"/></a></td>
  <td class="std">{{startdate}}</td>
- {{#manualRelease}}<td><a class="btn btn-default" href="{{publishurl}}">{{txt_publish}}</a></td>{{/manualRelease}}
+ {{#manualRelease}}
+ <td>{{txt_publish_state}}</td>
+ {{/manualRelease}}
+ <td>
+ <div class="dropdown btn-group">
+    <a class="btn btn-default dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+    {{#manualRelease}}
+    <li><a class="dropdown-item" href="{{publishurl}}">{{txt_publish_action}}</a></li>
+    {{/manualRelease}}
+<!--  <li><a class="dropdown-item" href="#">{{txt.txt_edit_metadata}}</a></li>
+    <li><a class="dropdown-item" href="#">{{txt.txt_delete}}</a></li> -->
+  </ul>
+</div></td>
 </tr>
 {{/episodes}}
 {{/finished}}
