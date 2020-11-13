@@ -2,12 +2,59 @@
 (function () {
 	$(document).ready(function () {
 		const trimForm = new TrimForm(document.getElementById("trim-form"));
-		const myPlayer = videojs('ocpreviewvideo');
+		const videoCurrentTime = $("#videocurrenttime");
+		const videoTotalTime = $("#videototaltime");
+		const playButton = $("#videoplaybutton span");
+		const myPlayer = videojs('ocpreviewvideo',{
+		  inactivityTimeout: 0,
+		  fluid: false,
+		  controls: true,
+		  preload:"auto",
+	      controlBar: {
+	          playToggle: false,
+	          volumePanel: false,
+	          durationDisplay: false,
+	          timeDivider: false,
+	          currentTimeDisplay: false,
+	          remainingTimeDisplay: false,
+	          pictureInPictureToggle: false,
+	          fullscreenToggle: false
+	      }
+		});
+		myPlayer.ready(function(){
+			videoCurrentTime.text(TrimForm.convertSecToTime(Math.round(myPlayer.currentTime())));
+		});
+
+		myPlayer.on('durationchange', function(event){
+			videoTotalTime.text(TrimForm.convertSecToTime(Math.round(myPlayer.duration())));
+		});
+
+		myPlayer.on('timeupdate', function(event){
+			videoCurrentTime.text(TrimForm.convertSecToTime(Math.round(myPlayer.currentTime())));
+		});
+
+		myPlayer.on('play', function(event){
+			playButton.removeClass("glyphicon-play");
+			playButton.addClass("glyphicon-pause");
+		});
+
+		myPlayer.on('pause', function(event){
+			playButton.removeClass("glyphicon-pause");
+			playButton.addClass("glyphicon-play");
+		});
+
 		trimForm.elementTrimIn.keypress(function (event) {
 			const keyCode = (event.keyCode ? event.keyCode : event.which);
 			if (keyCode == 13) {
 				event.preventDefault();
 				trimForm.setIn(TrimForm.convertTimeToSec(trimForm.elementTrimIn.val()));
+			}
+		});
+		trimForm.elementTrimIn.blur(function (event) {
+			if(!isNaN(TrimForm.convertTimeToSec(trimForm.elementTrimIn.val()))){
+				trimForm.setIn(TrimForm.convertTimeToSec(trimForm.elementTrimIn.val()));
+			} else {
+				trimForm.elementTrimIn.val(TrimForm.convertSecToTime(trimForm.getIn()));
 			}
 		});
 		trimForm.elementTrimOut.keypress(function (event) {
@@ -17,6 +64,18 @@
 				trimForm.setOut(TrimForm.convertTimeToSec(trimForm.elementTrimOut.val()));
 			}
 		});
+		trimForm.elementTrimOut.blur(function (event) {
+			trimForm.setOut(TrimForm.convertTimeToSec(trimForm.elementTrimOut.val()));
+		});
+
+		playButton.parent().click(function() {
+			if(myPlayer.paused()){
+				myPlayer.play();
+			} else {
+				myPlayer.pause();
+			}
+		});
+
 		$('#settrimin').click(() => trimForm.setIn(myPlayer.currentTime().toFixed(0)));
 		$('#settrimout').click(() => trimForm.setOut(myPlayer.currentTime().toFixed(0)));
 
@@ -78,7 +137,12 @@
 				max: this.slider.data('time'),
 				values: [0, this.slider.data('time')],
 				slide: this.handleSlide.bind(this),
-				change: this.handleChange.bind(this)
+				change: this.handleChange.bind(this),
+				classes: {
+				  "ui-slider": "ui-corner-all",
+				  "ui-slider-handle": "ui-corner-all",
+				  "ui-slider-range": "ui-corner-all ui-widget-header btn-primary"
+				}
 			});
 		}
 
@@ -181,7 +245,7 @@
 		static convertTimeToSec(time) {
 			const ts = time.split(':'); // split it at the colons
 			const seconds = (+ts[0]) * 60 * 60 + (+ts[1]) * 60 + (+ts[2]);
-			return isNaN(seconds) ? 0 : seconds;
+			return seconds;
 		}
 	}
 })();

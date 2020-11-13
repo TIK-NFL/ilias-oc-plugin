@@ -112,3 +112,8 @@ no_progress_bar#:#There is currently no progress bar when uploading. Please leav
 
 published#:# Published
 retracted#:# Unpublished
+
+setinpoint_to_current_player_time#:#Set inpoint to current video position
+setoutpoint_to_current_player_time#:#Set outpoint to current video position
+current_time#:#Current position
+duration#:#Duration

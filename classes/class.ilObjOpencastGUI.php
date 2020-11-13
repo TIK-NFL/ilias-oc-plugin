@@ -996,15 +996,18 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_DOWNLOAD_PREVIEW", $this->getText("download_preview"));
             $downloadurlmp4 = $this->getDeliveryUrl($previewTrack->url);
             $trimview->setVariable("DOWNLOAD_PREVIEW_URL_MP4", $downloadurlmp4);
-
             $duration = $previewTrack->duration;
             $trimview->setVariable("TRACKLENGTH", $duration / 1000);
+            $trimview->setVariable("TXT_SETINPOINT_TO_CURRENT_PLAYER_TIME", $this->getText("setinpoint_to_current_player_time"));
+            $trimview->setVariable("TXT_SETOUTPOINT_TO_CURRENT_PLAYER_TIME", $this->getText("setoutpoint_to_current_player_time"));
+            $trimview->setVariable("TXT_CURRENT_TIME", $this->getText("current_time"));
+            $trimview->setVariable("TXT_DURATION", $this->getText("duration"));
             $trimview->parseCurrentBlock();
             $trimview->setCurrentBlock("formend");
             $trimview->setVariable("TXT_TRIMIN", $this->getText("trimin"));
             $trimview->setVariable("TXT_TRIMOUT", $this->getText("trimout"));
             $trimview->setVariable("TXT_CONTINUE", $this->getText("continue"));
-            $trimview->setVariable("TXT_SET_TO_CURRENT_TIME", $this->getText("set_to_current_time"));
+
             $trimview->setVariable("TXT_PREVIEW_INPOINT", $this->getText("preview_inpoint"));
             $trimview->setVariable("TXT_PREVIEW_OUTPOINT", $this->getText("preview_outpoint"));
             $trimview->setVariable("TXT_INPOINT", $this->getText("inpoint"));
@@ -1019,10 +1022,11 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
             $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
             $tpl->addJavaScript("$trimbase/trim.js");
-            $tpl->addJavaScript("$trimbase/video-js-7.5.4/video.min.js");
-            $tpl->addJavaScript("$trimbase/video-js-7.5.4/lang/en.js");
-            $tpl->addJavaScript("$trimbase/video-js-7.5.4/lang/de.js");
-            $tpl->addCss("$trimbase/video-js-7.5.4/video-js.min.css");
+            $tpl->addJavaScript("$trimbase/video-js-7.10.2/video.min.js");
+            $tpl->addJavaScript("$trimbase/video-js-7.10.2/lang/en.js");
+            $tpl->addJavaScript("$trimbase/video-js-7.10.2/lang/de.js");
+            $tpl->addCss("$trimbase/video-js-7.10.2/video-js.min.css");
+            $tpl->addCss("$trimbase/trim.css");
             $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/jquery-ui.min.css");
             $DIC->tabs()->activateTab("manage");
         } else {

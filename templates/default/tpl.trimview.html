@@ -18,12 +18,29 @@
 <!-- BEGIN video -->  
   <div class="form-group">
     <div class="col-sm-12">
-      <video id="ocpreviewvideo" class="center-block video-js vjs-default-skin"
-        controls preload="auto" width="640" height="264"
-        data-setup='{"inactivityTimeout": 0, "fluid": true }'>
+      <video id="ocpreviewvideo" class="center-block video-js vjs-default-skin">
         <source src="{DOWNLOAD_PREVIEW_URL_MP4}" type='video/mp4' />
         <p class="vjs-no-js">To view this video please enable JavaScript, and consider upgrading to a web browser that <a href="https://videojs.com/html5-video-support/" target="_blank">supports HTML5 video</a></p>
       </video>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-3">
+      <button id="settrimin" type="button" class="btn btn-default">
+        <span class="glyphicon"></span> {TXT_SETINPOINT_TO_CURRENT_PLAYER_TIME}
+      </button>
+    </div>
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-default" id="videoplaybutton"><span class="glyphicon glyphicon-play"></span></button>
+    </div>
+    <div class="col-sm-4 text-right">
+      {TXT_CURRENT_TIME}:<span id="videocurrenttime"></span>
+      {TXT_DURATION}:<span id="videototaltime"></span>
+    </div>
+    <div class="col-sm-3">
+      <button id="settrimout" type="button" class="btn btn-default pull-right">
+        <span class="glyphicon"></span> {TXT_SETOUTPOINT_TO_CURRENT_PLAYER_TIME}
+      </button>
     </div>
   </div>
   <div class="form-group">
@@ -37,31 +54,29 @@
     <div class="col-sm-6">
       <div>
         <div>{TXT_INPOINT}</div>
-        <div class="input-group">
+        <div class="input-group top-buffer">
           <input id="trimin">
-          <button id="settrimin" type="button" class="btn btn-default">
-            <span class="glyphicon"></span> {TXT_SET_TO_CURRENT_TIME}
-          </button>
         </div>
-        <button type="button" class="btn btn-default" id="playtrimin"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_INPOINT}</button>
+        <div class="top-buffer">
+          <button type="button" class="btn btn-default" id="playtrimin"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_INPOINT}</button>
+        </div>
       </div>
     </div>
     <div class="col-sm-6 pull-right">
       <div class="pull-right">
-        <div>{TXT_OUTPOINT}</div>
-        <div class="input-group">
+        <div class="text-right">{TXT_OUTPOINT}</div>
+        <div class="input-group float-right top-buffer">
           <input id="trimout" >
-          <button id="settrimout" type="button" class="btn btn-default">
-            {TXT_SET_TO_CURRENT_TIME}
-          </button>
         </div>
-        <button type="button" class="btn btn-default" id="playtrimout"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_OUTPOINT}</button>
+        <div class="text-right top-buffer">
+          <button type="button" class="btn btn-default" id="playtrimout"><span class="glyphicon glyphicon-play"></span>{TXT_PREVIEW_OUTPOINT}</button>
+        </div>
       </div>
     </div>
   </div>
   <div class="form-group">
-    <div class="col-sm-12">
-      <button type="submit" class="btn btn-primary" id="octrimbutton"><span class="glyphicon glyphicon-ok"></span> {TXT_CONTINUE}</button>
+    <div class="col-sm-12 pull-right">
+      <button type="submit" class="btn btn-primary pull-right" id="octrimbutton"><span class="glyphicon glyphicon-ok"></span> {TXT_CONTINUE}</button>
     </div>
   </div>
 </form>

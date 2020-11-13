@@ -1,0 +1,17 @@
+.video-js .vjs-time-control {
+    display: block;
+}
+.video-js .vjs-remaining-time {
+    display: none;
+}
+
+.video-js {
+	background-color: lightgrey;
+}
+.videosegments {
+	height: 60px;
+	width: 100%;
+	background-color: lightgrey;
+}
+
+.top-buffer { margin-top:2px; }
