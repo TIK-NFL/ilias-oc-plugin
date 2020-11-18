@@ -14,6 +14,7 @@ ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->in
  */
 class ilOpencastEpisode
 {
+    use \TIK_NFL\ilias_oc_plugin\opencast\ilDeliveryUrlTrait;
 
     /**
      * The Opencast series id, not the ilias object id
@@ -30,6 +31,12 @@ class ilOpencastEpisode
 
     /**
      *
+     * @var ilOpencastConfig
+     */
+    private $configObject;
+
+    /**
+     *
      * @param string $series_id
      * @param string $episode_id
      */
@@ -37,6 +44,7 @@ class ilOpencastEpisode
     {
         $this->series_id = $series_id;
         $this->episode_id = $episode_id;
+        $this->configObject = new ilOpencastConfig();
     }
 
     /**
@@ -120,7 +128,7 @@ class ilOpencastEpisode
         $textCatalogUrl = null;
         foreach ($publication->metadata as $catalog) {
             if (0 == strcmp($catalog->flavor, 'mpeg-7/text')) {
-                $textCatalogUrl = $catalog->url;
+                $textCatalogUrl = $this->getDeliveryUrl($catalog->url);
             }
         }
         if ($textCatalogUrl) {
