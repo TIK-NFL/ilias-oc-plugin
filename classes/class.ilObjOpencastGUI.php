@@ -62,6 +62,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
     const POST_USETRIMEDITOR = "usetrimeditor";
 
+    const POST_EPISODE_ID = "episodeId";
+
     const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp';
 
     const UPLOAD_DIR = "xmh_upload";
@@ -125,6 +127,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 break;
             case "showTrimEditor":
             case "editFinishedEpisodes":
+            case "editMetadata":
+            case "updateMetadata":
             case "editTrimProcess":
             case "editUpload":
             case "editSchedule":
@@ -272,8 +276,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
         // online
         $cb = new ilCheckboxInputGUI($this->txt("online"), "online");
-
         $form->addItem($cb);
+
         $form->addCommandButton("updateProperties", $this->txt("save"));
 
         $form->setTitle($this->txt("edit_properties"));
@@ -327,6 +331,110 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
         $form->setValuesByPost();
         $tpl->setContent($form->getHtml());
+    }
+
+    //
+    // Edit episode metadata
+    //
+
+    /**
+     * Edit episode metadata.
+     * This commands uses the form class to display an input form.
+     */
+    public function editMetadata()
+    {
+        global $DIC;
+        $tpl = $DIC->ui()->mainTemplate();
+        $ilTabs = $DIC->tabs();
+        $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
+        $ilTabs->activateTab("properties");
+        $form = $this->initMetadataForm();
+        $values = $this->getMetadataValues($episodeId);
+        $form->setValuesByArray($values);
+        $tpl->setContent($form->getHTML());
+    }
+
+    /**
+     * Init metadata form.
+     *
+     * @return ilPropertyFormGUI
+     */
+    private function initMetadataForm()
+    {
+        global $DIC;
+
+        include_once ("Services/Form/classes/class.ilPropertyFormGUI.php");
+        $form = new ilPropertyFormGUI();
+
+        // episode_id
+        $episode_id = new ilHiddenInputGUI(self::POST_EPISODE_ID);
+        $form->addItem($episode_id);
+
+        // title
+        $ti = new ilTextInputGUI($this->txt("track_title"), self::POST_EPISODENAME);
+        $ti->setRequired(true);
+        $form->addItem($ti);
+
+        // presenter
+        // $presenter = new ilTextInputGUI($this->txt("track_presenter"), self::POST_PRESENTER);
+        // $presenter->setRequired(false);
+        // $form->addItem($presenter);
+
+        // datetime
+        $datetime = new ilDateTimeInputGUI($this->txt("track_datetime"), self::POST_EPISODEDATETIME);
+        $datetime->setShowTime(true);
+        $datetime->setRequired(true);
+        $form->addItem($datetime);
+
+        $form->addCommandButton("updateMetadata", $this->txt("save"));
+
+        $form->setTitle($this->txt("edit_metadata"));
+        $form->setFormAction($DIC->ctrl()
+            ->getFormAction($this));
+
+        return $form;
+    }
+
+    /**
+     * Get values for edit properties form
+     *
+     * @return array values
+     */
+    private function getMetadataValues($episodeId)
+    {
+        $episode = $this->getOCObject()
+            ->getEpisode($episodeId)
+            ->getEpisode();
+        $values = array();
+        $values["episodeId"] = $episodeId;
+        $values[self::POST_EPISODENAME] = $episode->title;
+        // $values[self::POST_PRESENTER] = print_r($episode->presenter,true);
+        $values[self::POST_EPISODEDATETIME] = new ilDateTime($episode->start, IL_CAL_ISO_8601);
+        return $values;
+    }
+
+    /**
+     * Update metadata
+     */
+    public function updateMetadata()
+    {
+        global $DIC;
+        $tpl = $DIC->ui()->mainTemplate();
+
+        $form = $this->initMetadataForm();
+        if ($form->checkInput()) {
+            $episode = $this->getOCObject()->getEpisode($form->getInput(self::POST_EPISODE_ID));
+            $episode->setTitle($form->getInput(self::POST_EPISODENAME));
+            $ildatetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
+            $datetime = new DateTime($ildatetime->get(IL_CAL_ISO_8601));
+            $datetime->setTimezone(new \DateTimeZone("UTC"));
+            $episode->setStartdate($datetime->format(DateTimeInterface::ISO8601));
+            ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
+            $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
+        } else {
+            $form->setValuesByPost();
+            $tpl->setContent($form->getHtml());
+        }
     }
 
     public function publish()
@@ -513,6 +621,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $episode["publishurl"] = $this->getLinkForEpisodeUnescaped($published ? "retract" : "publish", $readyEpisode->identifier);
                 $episode["txt_publish_action"] = $this->getText($published ? "retract" : "publish");
             }
+            $episode["txt_edit_metadata"] = $this->getText("edit_metadata");
+            $episode["editmetadataurl"] = $this->getLinkForEpisodeUnescaped("editMetadata", $readyEpisode->identifier);
             $episodes[] = $episode;
         }
 

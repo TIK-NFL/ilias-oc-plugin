@@ -117,3 +117,5 @@ setinpoint_to_current_player_time#:#Set inpoint to current video position
 setoutpoint_to_current_player_time#:#Set outpoint to current video position
 current_time#:#Current position
 duration#:#Duration
+
+edit_metadata#:#Edit metadata

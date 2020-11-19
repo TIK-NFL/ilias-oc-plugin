@@ -117,3 +117,5 @@ setinpoint_to_current_player_time#:#Startpunkt auf aktuelle Videoposition setzen
 setoutpoint_to_current_player_time#:#Endpunkt auf aktuelle Videoposition setzen
 current_time#:#Aktuelle Position
 duration#:#Gesamtzeit
+
+edit_metadata#:#Metadaten anpassen

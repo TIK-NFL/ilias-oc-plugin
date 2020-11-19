@@ -103,9 +103,27 @@ class ilOpencastEpisode
 
     public function setTitle($title)
     {
+        if (strcmp($this->getEpisode()->title, $title) !== 0) {
+            ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
+                "title" => $title
+            ));
+        }
+    }
+
+    public function setPresenter($presenter)
+    {
         ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
-            "title" => $title
+            "presenter" => [$presenter]
         ));
+    }
+
+    public function setStartdate($startdate)
+    {
+        if (strcmp($this->getEpisode()->start, $startdate) !== 0) {
+            ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
+                "startDate" => $startdate
+            ));
+        }
     }
 
     /**
