@@ -424,11 +424,16 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $form = $this->initMetadataForm();
         if ($form->checkInput()) {
             $episode = $this->getOCObject()->getEpisode($form->getInput(self::POST_EPISODE_ID));
-            $episode->setTitle($form->getInput(self::POST_EPISODENAME));
+            $metadata = array();
+            // title
+            $metadata["title"] = $form->getInput(self::POST_EPISODENAME);
+            // date
             $ildatetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
             $datetime = new DateTime($ildatetime->get(IL_CAL_ISO_8601));
             $datetime->setTimezone(new \DateTimeZone("UTC"));
-            $episode->setStartdate($datetime->format(DateTimeInterface::ISO8601));
+            $metadata["startDate"] = $datetime;
+            // set new metadata
+            $episode->setMetadata($metadata);
             ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
             $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
         } else {

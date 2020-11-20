@@ -117,12 +117,27 @@ class ilOpencastEpisode
         ));
     }
 
-    public function setStartdate($startdate)
+    public function setStartdate(\DateTime $startdate)
     {
-        if (strcmp($this->getEpisode()->start, $startdate) !== 0) {
+        if (new \DateTime($this->getEpisode()->start) != $startdate) {
             ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
                 "startDate" => $startdate
             ));
+        }
+    }
+
+    public function setMetadata($entries)
+    {
+        $oc_entries = array();
+        if (array_key_exists("title", $entries) && strcmp($this->getEpisode()->title, $entries["title"]) !== 0) {
+            $oc_entries["title"] = $entries["title"];
+        }
+        if (array_key_exists("startDate", $entries) && new \DateTime($this->getEpisode()->start) != $entries["startDate"]) {
+            $oc_entries["startDate"] = $entries["startDate"]->format("Y-m-d");
+            $oc_entries["startTime"] = $entries["startDate"]->format("H:i:s");
+        }
+        if (count($oc_entries) > 0) {
+            ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), $oc_entries);
         }
     }
 
