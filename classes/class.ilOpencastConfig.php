@@ -24,13 +24,17 @@ class ilOpencastConfig
 
     const CONFIG_KEY_PUBLISHER = "publisher";
 
-    const CONFIG_KEY_SIGNING_KEY = "signingkey";
+    const CONFIG_KEY_URL_SIGNING_KEY = "urlsigningkey";
 
     const CONFIG_KEY_DELIVERY_METHOD= "delivery_method";
 
     const CONFIG_KEY_DISTRIBUTION_SERVER = "distributionserver";
 
     const CONFIG_KEY_TOKEN_VALIDITY = "tokenvalidity";
+
+    const CONFIG_KEY_SHOW_QRCODE = "show_qrcode";
+
+    const CONFIG_KEY_SERIES_SIGNING_KEY = "series_signing_key";
 
     const CONFIG_KEY_STRIP_URL = "stripurl";
 
@@ -155,18 +159,18 @@ class ilOpencastConfig
         $this->setValue(SELF::CONFIG_KEY_DELIVERY_METHOD, $value);
     }
 
-    public function getSigningKey()
+    public function getUrlSigningKey()
     {
-        $retVal = $this->getValue(SELF::CONFIG_KEY_SIGNING_KEY);
+        $retVal = $this->getValue(SELF::CONFIG_KEY_URL_SIGNING_KEY);
         if (! $retVal) {
             return 'default';
         }
         return $retVal;
     }
 
-    public function setSigningKey($value)
+    public function setUrlSigningKey($value)
     {
-        $this->setValue(SELF::CONFIG_KEY_SIGNING_KEY, $value);
+        $this->setValue(SELF::CONFIG_KEY_URL_SIGNING_KEY, $value);
     }
 
     public function getDistributionServer()
@@ -208,6 +212,34 @@ class ilOpencastConfig
     public function setStripUrl($value)
     {
         $this->setValue(SELF::CONFIG_KEY_STRIP_URL, $value);
+    }
+
+    public function getSeriesSigningKey(): string
+    {
+        $retVal = $this->getValue(SELF::CONFIG_KEY_SERIES_SIGNING_KEY);
+        if (! $retVal) {
+            return 'default';
+        }
+        return $retVal;
+    }
+
+    public function setSeriesSigningKey(string $value): void
+    {
+        $this->setValue(SELF::CONFIG_KEY_SERIES_SIGNING_KEY, $value);
+    }
+
+    public function getShowQRCode():bool
+    {
+        $retVal = $this->getValue(SELF::CONFIG_KEY_SHOW_QRCODE);
+        if (! $retVal) {
+            return false;
+        }
+        return boolval($retVal);
+    }
+
+    public function setShowQRCode(bool $value): void
+    {
+        $this->setValue(SELF::CONFIG_KEY_SHOW_QRCODE, $value);
     }
 
     /**

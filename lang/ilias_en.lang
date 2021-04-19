@@ -119,3 +119,18 @@ current_time#:#Current position
 duration#:#Duration
 
 edit_metadata#:#Edit metadata
+
+delivery_method#:#Delivery method
+use_opencast_api_url#:#Use the URL provided by the Opencast API
+use_external_distribution_server#:#Use a custom distribution server
+urlsigningkey#:#Key to sign the JWTs for the distribution server
+distributionserver#:#Base URL of the distribution server
+stripurl#:#Part of the URL returned by the Opencast API that should be replaced
+tokenvalidity#:#Validity in hours of the generated JWT
+
+showqrcode#:#Show QRCode for autoassigning a recording to an Opencast series
+seriessigningkey#:#Key for signing the JWT contained in the QRCode
+
+series_qrcode#:#QRCode for Opencast Object
+qrcodedescription#:#This qrcode can be used as a first slide in your presentation to automatically add an unscheduled recording to this Opencast object.
+qrcodevaliduntil#:#This qrcode is valid until

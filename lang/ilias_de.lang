@@ -119,3 +119,18 @@ current_time#:#Aktuelle Position
 duration#:#Gesamtzeit
 
 edit_metadata#:#Metadaten anpassen
+
+delivery_method#:#Auslieferungmethode
+use_opencast_api_url#:#Videos über die Opencast API ausliefern
+use_external_distribution_server#:#Eine eigene Auslieferungserver verwenden
+urlsigningkey#:#Schlüssel zum Signieren des JWT Token für den Auslieferungserver
+distributionserver#:#URL des Auslieferungsserver
+stripurl#:#Teil der URL, der aus der der URL des Opencast API entferntwerden soll
+tokenvalidity#:#Gültigkeitsdauer des JWT Token
+
+showqrcode#:#Zeige QRCode für das automatischen Hinzufügen von Aufnahmen zu einer Series
+seriessigningkey#:#Schlüssel für das Signieren des im QRCode enthaltenen JWT Token.
+
+series_qrcode#:#QRCode für Opencast Objekt
+qrcodedescription#:#Sie können diesen QRCode vor ihrer Präsentation zeigen, um eine spontane Aufnahme in einem Hörsaal automatisch zu diesem Opencast Objekt zuzuordnen.
+qrcodevaliduntil#:#Dieser QRCode ist gültig bis

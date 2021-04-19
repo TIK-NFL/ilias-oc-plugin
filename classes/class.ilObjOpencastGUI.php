@@ -24,6 +24,8 @@ use ILIAS\FileUpload\Location;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastUtil;
+use chillerlan\QRCode\QRCode;
+use Firebase\JWT\JWT;
 
 include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 
@@ -131,6 +133,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             case "updateMetadata":
             case "editTrimProcess":
             case "editUpload":
+            case "qrcode":
             case "editSchedule":
                 $this->checkPermission("write");
                 $this->setSubTabs('manage');
@@ -218,6 +221,9 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $ilTabs->addSubTab("processtrim", $this->txt('processtrim'), $ilCtrl->getLinkTarget($this, 'editTrimProcess'));
                 $ilTabs->addSubTab("schedule", $this->txt('scheduled_recordings'), $ilCtrl->getLinkTarget($this, 'editSchedule'));
                 $ilTabs->addSubTab("upload", $this->txt('add_new_episode'), $ilCtrl->getLinkTarget($this, 'editUpload'));
+                if ($this->configObject->getShowQRCode()) {
+                    $ilTabs->addSubTab("qrcode", $this->txt('series_qrcode'), $ilCtrl->getLinkTarget($this, 'qrcode'));
+                }
                 break;
         }
     }
@@ -509,6 +515,36 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
         $tpl->setContent($player->get());
         $ilTabs->activateTab("content");
+    }
+
+    public function qrcode()
+    {
+        global $DIC;
+        $factory = $DIC->ui()->factory();
+        $this->checkPermission("write");
+        $key = $this->configObject->getSeriesSigningKey();
+        $valid_date = time() + 3600 * 24 * 30 * 6;
+        $payload = array(
+            "iss" => ILIAS_HTTP_PATH,
+            "aud" => "tikca",
+            "iat" => time(),
+            "nbf" => time()-10,
+            "exp" => $valid_date,
+            "series" => $this->getOCObject()->getSeriesId()
+        );
+        $token = JWT::encode($payload, $key);
+
+        $image = $factory->image()->standard((new QRCode)->render($token), "qrcode for series");
+        $qrcodetpl = $this->getPlugin()->getTemplate("default/tpl.qrcode.html", true, true);
+        $qrcodetpl->setVariable("TXT_QRCODE", $this->getText("qrcodedescription"));
+        $qrcodetpl->setVariable("IMAGE",         $DIC->ui()
+            ->renderer()
+            ->render($image));
+        $qrcodetpl->setVariable("TXT_VALID_UNTIL", $this->getText("qrcodevaliduntil"));
+        $qrcodetpl->setVariable("VALID_DATE", ilDatePresentation::formatDate(new ilDateTime($valid_date, IL_CAL_UNIX)));
+        $html = $qrcodetpl->get();
+        $DIC->ui()->mainTemplate()->setContent($html);
+        $DIC->tabs()->activateTab("manage");
     }
 
     public function showSeries()

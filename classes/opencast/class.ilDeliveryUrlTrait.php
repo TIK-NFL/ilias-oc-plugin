@@ -21,7 +21,7 @@ trait ilDeliveryUrlTrait
             return $url;
         } else {
             $baseurl = str_replace($this->configObject->getStripUrl(),'',$url);
-            $key = $this->configObject->getSigningKey();
+            $key = $this->configObject->getUrlSigningKey();
             $payload = array(
                 "iss" => ILIAS_HTTP_PATH,
                 "aud" => $this->configObject->getDistributionServer(),

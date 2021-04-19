@@ -229,6 +229,11 @@ class ilAPIController
             array_push($media['track'], $trk);
         }
 
+        usort($media['track'], function($a,$b){
+            // reverse order so presenter is before presentation
+            return(-1 * strcmp($a['type'],$b['type']));
+        });
+
         if ($segmentsUrl) {
             $segments = $this->convertSegment($segmentsUrl, $previewrefs);
         }

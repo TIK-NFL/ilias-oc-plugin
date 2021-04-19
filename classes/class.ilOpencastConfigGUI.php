@@ -11,6 +11,9 @@ use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 class ilOpencastConfigGUI extends ilPluginConfigGUI
 {
 
+    const FIELD_SERIES_SIGNING_KEY = 'series_signing_key';
+    const FIELD_SHOW_QRCODE = 'show_qrcode';
+
     /**
      * Handles all commmands, default is "configure".
      */
@@ -39,10 +42,12 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
         $values['trimworkflow'] = $this->configObject->getTrimWorkflow();
         $values['publisher'] = $this->configObject->getPublisher();
         $values['delivery_method'] = $this->configObject->getDeliveryMethod();
-        $values['signingkey'] = $this->configObject->getSigningKey();
+        $values['urlsigningkey'] = $this->configObject->getUrlSigningKey();
         $values['distributionserver'] = $this->configObject->getDistributionServer();
         $values['stripurl'] = $this->configObject->getStripUrl();
         $values['tokenvalidity'] = $this->configObject->getTokenValidity();
+        $values[self::FIELD_SHOW_QRCODE] = $this->configObject->getShowQRCode();
+        $values[self::FIELD_SERIES_SIGNING_KEY] = $this->configObject->getSeriesSigningKey();
         $form->setValuesByArray($values);
         $tpl->setContent($form->getHTML());
     }
@@ -129,8 +134,8 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
             "external"
             );
         $radg->addOption($op2);
-        // signingkey
-        $signingkey = new ilTextInputGUI($pl->txt('signingkey'), 'signingkey');
+        // urlsigningkey
+        $signingkey = new ilTextInputGUI($pl->txt('urlsigningkey'), 'urlsigningkey');
         $signingkey->setRequired(true);
         $signingkey->setMaxLength(100);
         $signingkey->setSize(100);
@@ -159,6 +164,15 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
 
         $form->addItem($radg);
 
+        // show qrcode
+        $show_qrcode = new ilCheckboxInputGUI($pl->txt('showqrcode'), self::FIELD_SHOW_QRCODE);
+        $seriessigningkey = new ilTextInputGUI($pl->txt('seriessigningkey'), self::FIELD_SERIES_SIGNING_KEY);
+        $seriessigningkey->setRequired(true);
+        $seriessigningkey->setMaxLength(100);
+        $seriessigningkey->setSize(100);
+        $show_qrcode->addSubItem($seriessigningkey);
+        $form->addItem($show_qrcode);
+
         $form->addCommandButton('save', $lng->txt('save'));
         $form->setTitle($pl->txt('opencast_plugin_configuration'));
         $form->setFormAction($ilCtrl->getFormAction($this));
@@ -180,10 +194,12 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
             $trimworkflow = $form->getInput('trimworkflow');
             $publisher = $form->getInput('publisher');
             $delivery_method = $form->getInput('delivery_method');
-            $signingkey = $form->getInput('signingkey');
+            $urlsigningkey = $form->getInput('urlsigningkey');
             $distributionserver = $form->getInput('distributionserver');
             $stripurl = $form->getInput('stripurl');
             $tokenvalidity = $form->getInput('tokenvalidity');
+            $showqrcode = $form->getInput(self::FIELD_SHOW_QRCODE);
+            $seriessigningkey = $form->getInput(self::FIELD_SERIES_SIGNING_KEY);
 
             $this->configObject->setOpencastServer($oc_server);
             $this->configObject->setOpencastAPIUser($oc_api_user);
@@ -192,10 +208,12 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
             $this->configObject->setTrimWorkflow($trimworkflow);
             $this->configObject->setPublisher($publisher);
             $this->configObject->setDeliveryMethod($delivery_method);
-            $this->configObject->setSigningKey($signingkey);
+            $this->configObject->setUrlSigningKey($urlsigningkey);
             $this->configObject->setDistributionServer($distributionserver);
             $this->configObject->setStripUrl($stripurl);
             $this->configObject->setTokenValidity($tokenvalidity);
+            $this->configObject->setShowQRCode(boolval($showqrcode));
+            $this->configObject->setSeriesSigningKey($seriessigningkey);
 
             ilUtil::sendSuccess($pl->txt('saving_invoked'), true);
             $ilCtrl->redirect($this, 'configure');

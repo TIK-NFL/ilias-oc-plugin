@@ -162,3 +162,9 @@ $fields = array(
 $ilDB->createTable(TABLE_VIEWS, $fields);
 $ilDB->manipulate("ALTER TABLE " . TABLE_VIEWS . " MODIFY COLUMN `id` BIGINT AUTO_INCREMENT primary key;");
 ?>
+<#2>
+<?php
+$ilDB->update('rep_robj_xmh_config',
+    array('cfgkey' => array('text','urlsigningkey')),
+    array('cfgkey' => array('text','signingkey')) );
+?>
