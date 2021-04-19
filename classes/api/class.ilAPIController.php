@@ -390,7 +390,7 @@ class ilAPIController
         $infoarray['name'] = $episodeData->title;
         $infoarray['episode_id'] = $episode->getEpisodeId();
         $infoarray['series_id'] = $episode->getSeriesId();
-        $infoarray['duration'] = strval($episodeData->duration);
+        $infoarray['duration'] = strval($episode->getMedia()[0]->duration);
         $infoarray['data'] = $data;
 
         $this->sendJSON($infoarray);
