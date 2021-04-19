@@ -24,7 +24,6 @@ use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 
 include_once ("./Services/Repository/classes/class.ilObjectPluginAccess.php");
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 
 /**
  * Access/Condition checking for Opencast object
@@ -54,7 +53,7 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
      *            object id
      * @param int $a_user_id
      *            user id (if not provided, current user is taken)
-     *            
+     *
      * @return boolean true, if everything is ok
      */
     public function _checkAccess($a_cmd, $a_permission, $a_ref_id, $a_obj_id, $a_user_id = "")

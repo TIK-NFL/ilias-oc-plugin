@@ -20,14 +20,12 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
+use Firebase\JWT\JWT;
 use ILIAS\FileUpload\Location;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastUtil;
 use chillerlan\QRCode\QRCode;
-use Firebase\JWT\JWT;
-
-include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
 
 /**
  * User Interface class for Opencast repository object.
@@ -42,7 +40,7 @@ include_once ("./Services/Repository/classes/class.ilObjectPluginGUI.php");
  *
  * @author Per Pascal Seeland <pascal.seeland@tik.uni-stuttgart.de>
  * @author Leon Kiefer <leon.kiefer@tik.uni-stuttgart.de>
- *        
+ *
  * @ilCtrl_isCalledBy ilObjOpencastGUI: ilRepositoryGUI, ilAdministrationGUI, ilObjPluginDispatchGUI
  * @ilCtrl_Calls ilObjOpencastGUI: ilPermissionGUI, ilInfoScreenGUI, ilObjectCopyGUI
  * @ilCtrl_Calls ilObjOpencastGUI: ilCommonActionDispatcherGUI
@@ -461,7 +459,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
             } catch (Exception $e) {
                 if (! strpos($e->getMessage(), "already published")) {
-                    ilLoggerFactory::getLogger('xmh')->error("Failed publishing episode:". $episodeId . $e->getMessage());
+                    ilLoggerFactory::getLogger('xmh')->error("Failed publishing episode:" . $episodeId . $e->getMessage());
                     throw $e;
                 } else {
                     ilLoggerFactory::getLogger('xmh')->info("Error publishing already published XMH ID:" . $episodeId);
@@ -528,22 +526,24 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             "iss" => ILIAS_HTTP_PATH,
             "aud" => "tikca",
             "iat" => time(),
-            "nbf" => time()-10,
+            "nbf" => time() - 10,
             "exp" => $valid_date,
             "series" => $this->getOCObject()->getSeriesId()
         );
         $token = JWT::encode($payload, $key);
 
-        $image = $factory->image()->standard((new QRCode)->render($token), "qrcode for series");
+        $image = $factory->image()->standard((new QRCode())->render($token), "qrcode for series");
         $qrcodetpl = $this->getPlugin()->getTemplate("default/tpl.qrcode.html", true, true);
         $qrcodetpl->setVariable("TXT_QRCODE", $this->getText("qrcodedescription"));
-        $qrcodetpl->setVariable("IMAGE",         $DIC->ui()
+        $qrcodetpl->setVariable("IMAGE", $DIC->ui()
             ->renderer()
             ->render($image));
         $qrcodetpl->setVariable("TXT_VALID_UNTIL", $this->getText("qrcodevaliduntil"));
         $qrcodetpl->setVariable("VALID_DATE", ilDatePresentation::formatDate(new ilDateTime($valid_date, IL_CAL_UNIX)));
         $html = $qrcodetpl->get();
-        $DIC->ui()->mainTemplate()->setContent($html);
+        $DIC->ui()
+            ->mainTemplate()
+            ->setContent($html);
         $DIC->tabs()->activateTab("manage");
     }
 
@@ -602,7 +602,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                         ->txt("download"), $item["downloadurl"]);
                 }
 
-                $cards[] = $factory->card()->standard($item["title"], $image)
+                $cards[] = $factory->card()
+                    ->standard($item["title"], $image)
                     ->withSections($sections)
                     ->withTitleAction($url);
             }
@@ -813,7 +814,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      * Create a configured ilFileInputGUI for usage in the UploadForm
      * @return ilFileInputGUI
      */
-    private function createFileInputGUI(string $label, string $fieldname):ilFileInputGUI{
+    private function createFileInputGUI(string $label, string $fieldname): ilFileInputGUI
+    {
         $fig = new ilFileInputGUI($this->txt($label), $fieldname);
         $fig->setSuffixes(self::UPLOAD_SUFFIXES);
         $fig->setRequired(true);
@@ -832,7 +834,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $form = new ilPropertyFormGUI();
         $form->setId('episode_upload');
         $form->setTitle($this->txt("add_new_episode"));
-        $form->setDescription("<h2 class=\"bg-warning\">".$this->txt("no_progress_bar")."</h2>");
+        $form->setDescription("<h2 class=\"bg-warning\">" . $this->txt("no_progress_bar") . "</h2>");
 
         $form->setPreventDoubleSubmission(false);
         $flag = new ilHiddenInputGUI('submitted');
@@ -864,26 +866,18 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $radg->setValue('only_presentation');
 
         $file_presentation = $this->createFileInputGUI("presentation", 'single_presentation');
-        $op1 = new ilRadioOption(
-            $this->txt("only_presentation"),
-            "only_presentation"
-            );
+        $op1 = new ilRadioOption($this->txt("only_presentation"), "only_presentation");
         $op1->addSubItem($file_presentation);
         $radg->addOption($op1);
 
         $file_presenter = $this->createFileInputGUI("presenter", 'single_presenter');
-        $op2 = new ilRadioOption(
-            $this->txt("only_presenter"),
-            "only_presenter"
-            );
+        $op2 = new ilRadioOption($this->txt("only_presenter"), "only_presenter");
         $op2->addSubItem($file_presenter);
         $radg->addOption($op2);
 
         $dual_presentation = $this->createFileInputGUI("presentation", 'dual_presentation');
         $dual_presenter = $this->createFileInputGUI("presenter", 'dual_presenter');
-        $op3 = new ilRadioOption(
-            $this->txt("presentation_and_presenter"),
-            "both");
+        $op3 = new ilRadioOption($this->txt("presentation_and_presenter"), "both");
         $op3->addSubItem($dual_presenter);
         $op3->addSubItem($dual_presentation);
         $radg->addOption($op3);
@@ -913,24 +907,24 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $upload->process();
                 $results = $upload->getResults();
                 $file_prefix = "both" == $form->getInput('upload_files') ? "dual" : "single";
-                if ($form->hasFileUpload($file_prefix."_presenter")){
-                    $file = $results[$form->getInput($file_prefix."_presenter")['tmp_name']];
+                if ($form->hasFileUpload($file_prefix . "_presenter")) {
+                    $file = $results[$form->getInput($file_prefix . "_presenter")['tmp_name']];
                     if ($file != NULL) {
                         $presenter_filename = uniqid() . $file->getName();
                         $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $presenter_filename);
                         $presenter_filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $presenter_filename;
-                        ilLoggerFactory::getLogger('xmh')->debug("presenter file: ".$presenter_filepath);
+                        ilLoggerFactory::getLogger('xmh')->debug("presenter file: " . $presenter_filepath);
                     } else {
                         $presenter_filepath = NULL;
                     }
                 }
-                if ($form->hasFileUpload($file_prefix."_presentation")){
-                    $file = $results[$form->getInput($file_prefix."_presentation")['tmp_name']];
+                if ($form->hasFileUpload($file_prefix . "_presentation")) {
+                    $file = $results[$form->getInput($file_prefix . "_presentation")['tmp_name']];
                     if ($file != NULL) {
                         $presentation_filename = uniqid() . $file->getName();
                         $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $presentation_filename);
                         $presentation_filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $presentation_filename;
-                        ilLoggerFactory::getLogger('xmh')->debug("presentation file: ".$presentation_filepath);
+                        ilLoggerFactory::getLogger('xmh')->debug("presentation file: " . $presentation_filepath);
                     } else {
                         $presentation_filepath = NULL;
                     }
@@ -954,7 +948,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 ilUtil::sendSuccess($this->txt("msg_episode_uploaded"), true);
                 $ilCtrl->redirect($this, "editTrimProcess");
             } catch (Exception $e) {
-                ilLoggerFactory::getLogger('xmh')->error("Exception while uploading to opencast: " . $e->getMessage().$e->getTraceAsString());
+                ilLoggerFactory::getLogger('xmh')->error("Exception while uploading to opencast: " . $e->getMessage() . $e->getTraceAsString());
             }
         } else {
             $form->setValuesByPost();
@@ -985,7 +979,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $seriestpl->setVariable("SERIES_ID", $this->getOCObject()
             ->getSeriesId());
         $seriestpl->setVariable("MANUAL_RELEASE", $this->getOCObject()
-            ->getManualRelease()?"1":"0");
+            ->getManualRelease() ? "1" : "0");
         $seriestpl->parseCurrentBlock();
         $jsConfig = $seriestpl->get();
         switch ($section) {

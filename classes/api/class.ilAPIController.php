@@ -5,11 +5,11 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
+use Exception;
 use ilLoggerFactory;
 use ilObjOpencastAccess;
 use ilOpencastPlugin;
 use ilPlugin;
-use Exception;
 
 /**
  * simple REST API for the video player
@@ -229,9 +229,9 @@ class ilAPIController
             array_push($media['track'], $trk);
         }
 
-        usort($media['track'], function($a,$b){
+        usort($media['track'], function ($a, $b) {
             // reverse order so presenter is before presentation
-            return(-1 * strcmp($a['type'],$b['type']));
+            return (- 1 * strcmp($a['type'], $b['type']));
         });
 
         if ($segmentsUrl) {
@@ -304,7 +304,7 @@ class ilAPIController
             $segment['text'] = $text;
 
             $segment['duration'] = ($min * 60 + $sec) * 1000 + $msec;
-            //TODO: check unused variable
+            // TODO: check unused variable
             $curmesc = $cursec = $curmin = $remainhour = 0;
             $curmsec = $currenttime % 1000;
             $remainsec = intdiv($currenttime, 1000);

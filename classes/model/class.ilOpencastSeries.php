@@ -3,9 +3,7 @@ namespace TIK_NFL\ilias_oc_plugin\model;
 
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use DateTime;
-use ilPlugin;
 use stdClass;
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass("opencast/class.ilOpencastAPI.php");
 
 /**
  *

@@ -3,10 +3,6 @@ namespace TIK_NFL\ilias_oc_plugin\opencast;
 
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use DateTime;
-use ilPlugin;
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('opencast/class.ilOpencastRESTClient.php');
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('opencast/class.ilOpencastUtil.php');
 
 /**
  * All Communication with the Opencast server should be implemented in this class
@@ -85,10 +81,12 @@ class ilOpencastAPI
 
         $series = json_decode($this->opencastRESTClient->post($url, $fields));
         # add a property containing the ilias object id
-        $propurl = "/api/series/".$series->identifier."/properties";
-        $propfields = array('properties' => json_encode(array(
-            "ilobjid" => "$obj_id"
-        )));
+        $propurl = "/api/series/" . $series->identifier . "/properties";
+        $propfields = array(
+            'properties' => json_encode(array(
+                "ilobjid" => "$obj_id"
+            ))
+        );
         $this->opencastRESTClient->put($propurl, $propfields);
         return $series->identifier;
     }
@@ -223,10 +221,10 @@ class ilOpencastAPI
                 )
             ))
         );
-        if(null != $presentationFilePath) {
+        if (null != $presentationFilePath) {
             $post['presentation'] = new \CurlFile($presentationFilePath);
         }
-        if(null != $presenterFilePath) {
+        if (null != $presenterFilePath) {
             $post['presenter'] = new \CurlFile($presenterFilePath);
         }
         $episode = json_decode($this->opencastRESTClient->postMultipart($url, $post));
@@ -255,7 +253,7 @@ class ilOpencastAPI
     {
         $url = "/api/events/$episode_id/publications";
         $params = array(
-            "sign" => $this->configObject->getDeliveryMethod()=='api'?"true":"false"
+            "sign" => $this->configObject->getDeliveryMethod() == 'api' ? "true" : "false"
         );
 
         $publications = $this->opencastRESTClient->get($url, $params);
@@ -307,7 +305,7 @@ class ilOpencastAPI
             )),
             'sort' => 'date:ASC',
             'withpublications' => "true",
-            'sign' => $this->configObject->getDeliveryMethod()=='api'?"true":"false"
+            'sign' => $this->configObject->getDeliveryMethod() == 'api' ? "true" : "false"
         );
 
         $episodes = $this->opencastRESTClient->get($url, $params);
@@ -340,7 +338,7 @@ class ilOpencastAPI
             )),
             'sort' => 'date:ASC',
             'withpublications' => "true",
-            'sign' => $this->configObject->getDeliveryMethod()=='api'?"true":"false"
+            'sign' => $this->configObject->getDeliveryMethod() == 'api' ? "true" : "false"
         );
 
         $episodes = $this->opencastRESTClient->get($url, $params);

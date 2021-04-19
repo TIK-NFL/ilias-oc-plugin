@@ -1,12 +1,9 @@
 <?php
 namespace TIK_NFL\ilias_oc_plugin\model;
 
-use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
-use ilPlugin;
-use Exception;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass("opencast/class.ilOpencastAPI.php");
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass("class.ilOpencastConfig.php");
+use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
+use Exception;
 
 /**
  *
@@ -113,7 +110,9 @@ class ilOpencastEpisode
     public function setPresenter($presenter)
     {
         ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
-            "presenter" => [$presenter]
+            "presenter" => [
+                $presenter
+            ]
         ));
     }
 

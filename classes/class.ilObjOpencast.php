@@ -20,14 +20,14 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
+use Ramsey\Uuid\Type\Integer;
+use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\api\ilOpencastUserTracking;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastSeries;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
-use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 
 require_once __DIR__ . '/../vendor/autoload.php';
-ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast')->includeClass('class.ilOpencastConfig.php');
 
 /**
  * Application class for Opencast repository object.
