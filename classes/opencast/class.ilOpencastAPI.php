@@ -92,6 +92,24 @@ class ilOpencastAPI
     }
 
     /**
+     * marks a series as delete on the opencast server
+     *
+     * @param string $series_id
+     *            the is of series to be marked delete
+     */
+    public function deleteSeries(string $series_id)
+    {
+        # add a property marking the series as deleted
+        $propurl = "/api/series/" . $series_id . "/properties";
+        $propfields = array(
+            'properties' => json_encode(array(
+                "deleted" => "true"
+            ))
+        );
+        $this->opencastRESTClient->put($propurl, $propfields);
+    }
+
+    /**
      *
      * @param string $series_id
      * @param string $title

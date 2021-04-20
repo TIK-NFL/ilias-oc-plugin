@@ -146,6 +146,7 @@ class ilObjOpencast extends ilObjectPlugin
         foreach ($this->getReleasedEpisodeIds() as $episode_id) {
             ilOpencastUserTracking::removeViews($this->getEpisode($episode_id));
         }
+        ilOpencastAPI::getInstance()->deleteSeries($this->getSeriesId());
 
         $ilDB->manipulate("DELETE FROM " . ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES . " WHERE series_id = " . $ilDB->quote($this->getSeriesId(), "text"));
 
