@@ -8,4 +8,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run Unit Tests
-        run: docker run --name iliasdev -v "${PWD}:/var/www/html/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast" legion2/ilias-test-docker:release_5-4 "cd Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast/; composer install; install-plugin.sh xmh robj Repository Services Opencast; ./test/test.sh"
+        run: docker run --name iliasdev -v "${PWD}:/var/www/html/ilias/Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast" legion2/ilias-test-docker:latest "cd Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast/; composer install; install-plugin.sh xmh robj Repository Services Opencast; ./test/test.sh"
