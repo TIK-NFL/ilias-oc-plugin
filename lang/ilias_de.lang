@@ -132,5 +132,5 @@ showqrcode#:#Zeige QRCode für das automatischen Hinzufügen von Aufnahmen zu ei
 seriessigningkey#:#Schlüssel für das Signieren des im QRCode enthaltenen JWT Token.
 
 series_qrcode#:#QRCode für Opencast Objekt
-qrcodedescription#:#Sie können diesen QRCode vor ihrer Präsentation zeigen, um eine spontane Aufnahme in einem Hörsaal automatisch zu diesem Opencast Objekt zuzuordnen.
+qrcodedescription#:#Sie können diesen QR-Code in den ersten Folien Ihrer Präsentation zeigen, um eine spontane Aufnahme in einem Hörsaal automatisch zu diesem Opencast-Objekt zuzuordnen.
 qrcodevaliduntil#:#Dieser QRCode ist gültig bis
