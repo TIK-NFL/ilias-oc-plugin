@@ -22,6 +22,7 @@
  */
 use Firebase\JWT\JWT;
 use ILIAS\FileUpload\Location;
+use Psr\Http\Message\ServerRequestInterface;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastUtil;
@@ -129,6 +130,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             case "editFinishedEpisodes":
             case "editMetadata":
             case "updateMetadata":
+            case "deleteEpisode":
             case "editTrimProcess":
             case "editUpload":
             case "qrcode":
@@ -351,7 +353,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $tpl = $DIC->ui()->mainTemplate();
         $ilTabs = $DIC->tabs();
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
-        $ilTabs->activateTab("properties");
+        $ilTabs->activateTab("manage");
         $form = $this->initMetadataForm();
         $values = $this->getMetadataValues($episodeId);
         $form->setValuesByArray($values);
@@ -443,6 +445,38 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         } else {
             $form->setValuesByPost();
             $tpl->setContent($form->getHtml());
+        }
+    }
+
+    /**
+     * Delete Episodes
+     */
+    public function deleteEpisode()
+    {
+        global $DIC;
+
+        /**
+         *
+         * @var ServerRequestInterface $request
+         */
+        $request = $DIC->http()->request();
+
+        if ("POST" == $request->getMethod() && isset($request->getParsedBody()[self::POST_EPISODE_ID])) {
+            $episode = $this->getOCObject()->getEpisode($request->getParsedBody()[self::POST_EPISODE_ID]);
+            $episode->delete();
+            ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
+            $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
+        } else {
+            $c_gui = new ilConfirmationGUI();
+            $c_gui->setFormAction($DIC->ctrl()
+                ->getFormAction($this));
+            $c_gui->setHeaderText($this->lng->txt("info_delete_sure"));
+            $c_gui->setCancel($this->lng->txt("cancel"), "editFinishedEpisodes");
+            $c_gui->setConfirm($this->lng->txt("confirm"), "deleteEpisode");
+            $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
+            $episode = $this->getOCObject()->getEpisode($episodeId);
+            $c_gui->addItem(self::POST_EPISODE_ID, $episodeId, "asdf" . $episode->getEpisode()->title);
+            $this->tpl->setContent($c_gui->getHTML());
         }
     }
 
@@ -665,6 +699,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             }
             $episode["txt_edit_metadata"] = $this->getText("edit_metadata");
             $episode["editmetadataurl"] = $this->getLinkForEpisodeUnescaped("editMetadata", $readyEpisode->identifier);
+            $episode["deleteepisodeurl"] = $this->getLinkForEpisodeUnescaped("deleteEpisode", $readyEpisode->identifier);
             $episodes[] = $episode;
         }
 
