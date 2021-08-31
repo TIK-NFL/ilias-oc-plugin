@@ -58,8 +58,6 @@
             "../../../../../../../Services/Object/classes/class.ilObjectCopyGUI.php",
             "../../../../../../../Services/Object/classes/class.ilObjectDataCache.php",
             "../../../../../../../Services/Object/classes/class.ilObject2.php",
-            "../../../../../../../Services/PersonalDesktop/classes/class.ilDesktopItemGUI.php",
-            "../../../../../../../Services/PersonalDesktop/interfaces/interface.ilDesktopItemHandling.php",
             "../../../../../../../Services/Repository/classes/class.ilObjectPlugin.php",
             "../../../../../../../Services/Repository/classes/class.ilObjectPluginAccess.php",
             "../../../../../../../Services/Repository/classes/class.ilObjectPluginGUI.php",
