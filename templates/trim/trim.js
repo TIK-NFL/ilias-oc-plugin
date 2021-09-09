@@ -235,7 +235,7 @@
 			if (values[1] - values[0] == 0) {
 			    this.elementSubmitButton.disabled = true
 			} else {
-			    this.elementSubmitButton.disabled = true
+			    this.elementSubmitButton.disabled = false
 			}
 		}
 
