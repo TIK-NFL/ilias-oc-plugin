@@ -232,6 +232,11 @@
 		refreshTimesFromSliderEvent(values) {
 			this.elementTrimIn.val(TrimForm.convertSecToTime(values[0]));
 			this.elementTrimOut.val(TrimForm.convertSecToTime(values[1]));
+			if (values[1] - values[0] == 0) {
+			    this.elementSubmitButton.disabled = true
+			} else {
+			    this.elementSubmitButton.disabled = true
+			}
 		}
 
 		static convertSecToTime(totalSec) {
