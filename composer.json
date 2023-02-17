@@ -1,7 +1,7 @@
 {
     "name": "tik-nfk/matterhorn",
     "require": {
-        "firebase/php-jwt": "^5.2",
+        "firebase/php-jwt": "^6.0",
         "srag/librariesnamespacechanger": ">=0.1.0",
         "chillerlan/php-qrcode": "^3.3"
     },
