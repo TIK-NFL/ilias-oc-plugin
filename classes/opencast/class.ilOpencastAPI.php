@@ -395,16 +395,16 @@ class ilOpencastAPI
      */
     public function getActiveWorkflows(string $series_id)
     {
-        $url = "/api/workflows";
+        $url = "/api/events";
+
         $params = array(
-            "filter" => self::filter(array(
-                "series_identifier" => $series_id,
-                "state" => "running",
-                "state_not" => "stopped",
-                "current_operation_not" => "schedule",
-                "current_operation_not" => "capture"
+            'filter' => self::filter(array(
+               "status" => "EVENTS.EVENTS.STATUS.PROCESSING",
+                "series" => $series_id
             )),
-            "withoperations" => "true"
+            'sort' => 'date:ASC',
+            'withpublications' => "true",
+            'sign' => $this->configObject->getDeliveryMethod() == 'api' ? "true" : "false"
         );
 
         return $this->opencastRESTClient->get($url, $params);

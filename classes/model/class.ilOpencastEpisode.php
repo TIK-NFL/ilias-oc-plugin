@@ -150,7 +150,7 @@ class ilOpencastEpisode
         if ($affected_rows != 1) {
             throw new Exception("Episode " . $this->episode_id . " already published!");
         }
-        $this->addTextToDB();
+        //$this->addTextToDB();
     }
 
     private function addTextToDB()

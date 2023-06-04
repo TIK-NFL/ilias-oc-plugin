@@ -1041,8 +1041,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 $processingTable = $this->getTableWithId("iliasopencast_processingtable", array(
                     $this->getText("title"),
                     $this->getText("recorddate"),
-                    $this->getText("progress"),
-                    $this->getText("running")
+                   // $this->getText("progress"),
+                   // $this->getText("running")
                 ), "fixed");
 
                 $onholdTable = $this->getTableWithId("iliasopencast_onholdtable", array(
