@@ -14,7 +14,7 @@ use ilLoggerFactory;
 class ilOpencastRESTClient
 {
 
-    const API_VERSION = "v1.1.0";
+    const API_VERSION = "v1.9.0";
 
     /**
      *
