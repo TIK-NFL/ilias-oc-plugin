@@ -9,7 +9,7 @@ use Exception;
 use ilLoggerFactory;
 use ilObjOpencastAccess;
 use ilOpencastPlugin;
-use ilPlugin;
+use TIK_NFL\ilias_oc_plugin\opencast\ilDeliveryUrlTrait;
 
 /**
  * simple REST API for the video player
@@ -20,20 +20,20 @@ use ilPlugin;
 class ilAPIController
 {
 
-    use \TIK_NFL\ilias_oc_plugin\opencast\ilDeliveryUrlTrait;
+    use ilDeliveryUrlTrait;
 
     /**
      *
      * @var ilOpencastPlugin
      */
-    private $plugin;
+    private ilOpencastPlugin $plugin;
 
     /**
      * the configuration for the Opencast plugin
      *
      * @var ilOpencastConfig
      */
-    private $configObject;
+    private ilOpencastConfig $configObject;
 
     /**
      * Constructor
@@ -44,22 +44,17 @@ class ilAPIController
      *            the REQUEST_METHOD
      * @access public
      */
-    public function __construct($uri, $method)
+    public function __construct($uri, string $method)
     {
         $this->params = array();
-        $this->plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
 
-        if ($method == 'GET') {
-            parse_str($uri["query"], $this->params);
-        } elseif ($method == 'PUT') {
+        if ($method === 'GET') {
+            if(isset($uri["query"])) {
+                parse_str($uri["query"], $this->params);
+            }
+        } elseif ($method === 'PUT') {
             parse_str(file_get_contents("php://input"), $this->params);
         }
-
-        $this->plugin->includeClass("class.ilOpencastConfig.php");
-        $this->plugin->includeClass("class.ilObjOpencastAccess.php");
-        $this->plugin->includeClass("api/class.ilOpencastUserTracking.php");
-        $this->plugin->includeClass("model/class.ilOpencastEpisode.php");
-        $this->plugin->includeClass("api/class.ilOpencastInfo.php");
         $this->configObject = new ilOpencastConfig();
     }
 
@@ -68,17 +63,16 @@ class ilAPIController
      *
      * @param string $path
      *            the path of the request
-     * @return boolean
      */
-    public function handleRequest($path)
+    public function handleRequest(string $path): void
     {
         try {
             // check if it is a request for an episode
-            if (0 == strcmp("/episode.json", $path)) {
+            if (0 === strcmp("/episode.json", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
                 ilObjOpencastAccess::checkEpisodeAccess($epsiode);
                 $this->sendEpisode($epsiode);
-            } else if (0 == strcmp("/usertracking", $path)) {
+            } else if (0 === strcmp("/usertracking", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
                 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                     switch ($this->params['type']) {
@@ -95,21 +89,21 @@ class ilAPIController
                 } else {
                     throw new Exception($this->plugin->txt("no_such_method"), 404);
                 }
-            } else if (0 == strcmp("/usertracking/stats.json", $path)) {
+            } else if (0 === strcmp("/usertracking/stats.json", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
                 ilObjOpencastAccess::checkEpisodeAccess($epsiode);
                 $this->sendStats($epsiode);
-            } else if (0 == strcmp("/usertracking/footprint.json", $path)) {
+            } else if (0 === strcmp("/usertracking/footprint.json", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
                 ilObjOpencastAccess::checkEpisodeAccess($epsiode);
                 $this->sendFootprint($epsiode);
-            } else if (0 == strcmp("/usertracking/statistic.json", $path)) {
+            } else if (0 === strcmp("/usertracking/statistic.json", $path)) {
                 $epsiode = $this->getEpisodeFromParameter();
                 ilObjOpencastAccess::checkEpisodeAccess($epsiode, "write");
                 $this->sendStatistic($epsiode);
-            } else if (0 == strcmp("/info/me.json", $path)) {
+            } else if (0 === strcmp("/info/me.json", $path)) {
                 $this->sendMe();
-            } else if (0 == strcmp("/manager/list.json", $path)) {
+            } else if (0 === strcmp("/manager/list.json", $path)) {
                 $this->sendList();
             } else {
                 throw new Exception("Bad Request", 400);
@@ -121,10 +115,8 @@ class ilAPIController
 
     /**
      * extract series_id and episode_id from the request param
-     *
-     * @return ilOpencastEpisode
      */
-    private function getEpisodeFromParameter()
+    private function getEpisodeFromParameter(): ilOpencastEpisode
     {
         $ids = explode('/', $this->params['id'], 2);
         $series_id = $ids[0];
@@ -139,17 +131,15 @@ class ilAPIController
      * @param string $episode_id
      * @return ilOpencastEpisode
      */
-    private function getEpisode(string $series_id, string $episode_id)
+    private function getEpisode(string $series_id, string $episode_id): ilOpencastEpisode
     {
         return new ilOpencastEpisode($series_id, $episode_id);
     }
 
     /**
      * Send the requested episode.json
-     *
-     * @param ilOpencastEpisode $episode
      */
-    private function sendEpisode(ilOpencastEpisode $episodeObject)
+    private function sendEpisode(ilOpencastEpisode $episodeObject): void
     {
         $episodeData = $episodeObject->getEpisode();
         $publication = $episodeObject->getPublication();
@@ -169,11 +159,11 @@ class ilAPIController
                     'tag' => $attachment->tags
                 )
             );
-            if ($att['type'] == "presentation/segment+preview") {
+            if ($att['type'] === "presentation/segment+preview") {
                 preg_match("/(.*)time=(.*)F(\d+)/", $att['ref'], $regmatches);
                 $previewrefs[$regmatches[2]] = $att;
             }
-            array_push($attachments['attachment'], $att);
+            $attachments['attachment'][] = $att;
         }
 
         $metadata = array(
@@ -191,13 +181,13 @@ class ilAPIController
                 )
             );
 
-            if (0 == strcmp($cat['type'], 'mpeg-7/segments')) {
+            if (0 === strcmp($cat['type'], 'mpeg-7/segments')) {
                 $segmentsUrl = $this->getDeliveryUrl($catalog->url);
             }
-            if (0 == strcmp($cat['type'], 'mpeg-7/text')) {
+            if (0 === strcmp($cat['type'], 'mpeg-7/text')) {
                 $segmentsUrl = $this->getDeliveryUrl($catalog->url);
             }
-            array_push($metadata['catalog'], $cat);
+            $metadata['catalog'][] = $cat;
         }
 
         $media = array(
@@ -214,7 +204,7 @@ class ilAPIController
                     'tag' => $track->tags
                 )
             );
-            if ($track->flavor == 'composite/sbs') {
+            if ($track->flavor === 'composite/sbs') {
                 continue;
             }
             if ($track->has_video) {
@@ -226,7 +216,7 @@ class ilAPIController
                 $trk['audio'] = array();
                 $trk['audio']['id'] = "audio-1";
             }
-            array_push($media['track'], $trk);
+            $media['track'][] = $trk;
         }
 
         usort($media['track'], function ($a, $b) {
@@ -270,7 +260,7 @@ class ilAPIController
      * @param array $previewrefs
      * @return array[]
      */
-    private function convertSegment(string $url, array $previewrefs)
+    private function convertSegment(string $url, array $previewrefs): array
     {
         $segmentsxml = new \SimpleXMLElement($url, null, true);
 
@@ -337,7 +327,7 @@ class ilAPIController
 
             $currentidx ++;
             $currenttime = $currenttime + $segment['duration'];
-            array_push($segments['segment'], $segment);
+            $segments['segment'][] = $segment;
         }
         return $segments;
     }
@@ -347,11 +337,11 @@ class ilAPIController
      *
      * @param ilOpencastEpisode $episode
      */
-    private function putUserTracking(ilOpencastEpisode $episode)
+    private function putUserTracking(ilOpencastEpisode $episode): void
     {
         global $ilUser;
-        $intime = intval($this->params['in']);
-        $outtime = intval($this->params['out']);
+        $intime = (int)$this->params['in'];
+        $outtime = (int)$this->params['out'];
         $user_id = $ilUser->getId();
 
         ilOpencastUserTracking::putUserTracking($user_id, $episode, $intime, $outtime);
@@ -361,10 +351,8 @@ class ilAPIController
 
     /**
      * send the Statistic overview for the episode as json.
-     *
-     * @param ilOpencastEpisode $episode
      */
-    private function sendStatistic(ilOpencastEpisode $episode)
+    private function sendStatistic(ilOpencastEpisode $episode): void
     {
         $statistic = ilOpencastUserTracking::getStatisticFromVideo($episode);
         $data = array();
@@ -386,11 +374,11 @@ class ilAPIController
 
         $episodeData = $episode->getEpisode();
 
-        $infoarray = array();
+        $infoarray = [];
         $infoarray['name'] = $episodeData->title;
         $infoarray['episode_id'] = $episode->getEpisodeId();
         $infoarray['series_id'] = $episode->getSeriesId();
-        $infoarray['duration'] = strval($episode->getMedia()[0]->duration);
+        $infoarray['duration'] = (string)$episode->getMedia()[0]->duration;
         $infoarray['data'] = $data;
 
         $this->sendJSON($infoarray);
@@ -417,7 +405,7 @@ class ilAPIController
      *
      * @param ilOpencastEpisode $episode
      */
-    private function sendStats(ilOpencastEpisode $episode)
+    private function sendStats(ilOpencastEpisode $episode): void
     {
         $response = array();
         $views = ilOpencastUserTracking::getViews($episode);
@@ -430,7 +418,7 @@ class ilAPIController
     /**
      * send the info/me.json
      */
-    private function sendMe()
+    private function sendMe(): void
     {
         $info = new ilOpencastInfo();
         $response = $info->getMyInfo();
@@ -440,7 +428,7 @@ class ilAPIController
     /**
      * send the manager/list.json
      */
-    private function sendList()
+    private function sendList(): void
     {
         $info = new ilOpencastInfo();
         $response = $info->listPlugins();
@@ -453,7 +441,7 @@ class ilAPIController
      * @param array $array
      *            the array
      */
-    private function sendJSON($array)
+    private function sendJSON(array $array): void
     {
         header("Content-Type: application/json");
         echo json_encode($array);
@@ -464,7 +452,7 @@ class ilAPIController
      *
      * @param Exception $exception
      */
-    public function sendError($exception)
+    public function sendError(Exception $exception): void
     {
         $errorcode = $exception->getCode();
         $errortext = $exception->getMessage();

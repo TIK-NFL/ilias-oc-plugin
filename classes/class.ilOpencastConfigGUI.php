@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
@@ -7,17 +10,30 @@ use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
  * Opencast configuration user interface class.
  *
  * @author Per Pascal Seeland <pascal.seeland@tik.uni-stuttgart.de>
+ *
+ * @ilCtrl_Calls ilOpencastConfigGUI: ilCommonActionDispatcherGUI
+ * @ilCtrl_IsCalledBy ilOpencastConfigGUI: ilObjComponentSettingsGUI
  */
 class ilOpencastConfigGUI extends ilPluginConfigGUI
 {
 
-    const FIELD_SERIES_SIGNING_KEY = 'series_signing_key';
-    const FIELD_SHOW_QRCODE = 'show_qrcode';
+    public const FIELD_SERIES_SIGNING_KEY = 'series_signing_key';
+    public const FIELD_SHOW_QRCODE = 'show_qrcode';
+
+    private ?ilOpencastConfig $configObject = null;
+    private ilGlobalTemplateInterface $tpl;
+    private ilCtrlInterface $ctrl;
+
+    public function __construct() {
+        global $DIC;
+        $this->tpl = $DIC->ui()->mainTemplate();
+        $this->ctrl = $DIC->ctrl();
+    }
 
     /**
      * Handles all commmands, default is "configure".
      */
-    public function performCommand($cmd)
+    public function performCommand(string $cmd) : void
     {
         switch ($cmd) {
             case 'configure':
@@ -30,9 +46,8 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
     /**
      * Configure screen.
      */
-    public function configure()
+    public function configure() : void
     {
-        global $tpl;
         $form = $this->initConfigurationForm();
         $values = array();
         $values['oc_server'] = $this->configObject->getOpencastServer();
@@ -49,25 +64,22 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
         $values[self::FIELD_SHOW_QRCODE] = $this->configObject->getShowQRCode();
         $values[self::FIELD_SERIES_SIGNING_KEY] = $this->configObject->getSeriesSigningKey();
         $form->setValuesByArray($values);
-        $tpl->setContent($form->getHTML());
+        $this->tpl->setContent($form->getHTML());
     }
 
     /**
      * Init configuration form.
      *
-     * @return object form object
+     * @return ilPropertyFormGUI form object
      */
-    public function initConfigurationForm()
+    public function initConfigurationForm() :  ilPropertyFormGUI
     {
-        global $lng, $ilCtrl;
+        global $lng;
 
         $pl = $this->getPluginObject();
 
-        $pl->includeClass("class.ilOpencastConfig.php");
-
         $this->configObject = new ilOpencastConfig();
 
-        include_once 'Services/Form/classes/class.ilPropertyFormGUI.php';
         $form = new ilPropertyFormGUI();
 
         // oc server
@@ -175,15 +187,13 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
 
         $form->addCommandButton('save', $lng->txt('save'));
         $form->setTitle($pl->txt('opencast_plugin_configuration'));
-        $form->setFormAction($ilCtrl->getFormAction($this));
+        $form->setFormAction($this->ctrl->getFormAction($this));
 
         return $form;
     }
 
-    public function save()
+    public function save(): void
     {
-        global $tpl, $ilCtrl;
-
         $pl = $this->getPluginObject();
         $form = $this->initConfigurationForm();
         if ($form->checkInput()) {
@@ -197,7 +207,7 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
             $urlsigningkey = $form->getInput('urlsigningkey');
             $distributionserver = $form->getInput('distributionserver');
             $stripurl = $form->getInput('stripurl');
-            $tokenvalidity = $form->getInput('tokenvalidity');
+            $tokenvalidity = (int) $form->getInput('tokenvalidity');
             $showqrcode = $form->getInput(self::FIELD_SHOW_QRCODE);
             $seriessigningkey = $form->getInput(self::FIELD_SERIES_SIGNING_KEY);
 
@@ -212,14 +222,14 @@ class ilOpencastConfigGUI extends ilPluginConfigGUI
             $this->configObject->setDistributionServer($distributionserver);
             $this->configObject->setStripUrl($stripurl);
             $this->configObject->setTokenValidity($tokenvalidity);
-            $this->configObject->setShowQRCode(boolval($showqrcode));
+            $this->configObject->setShowQRCode((bool)$showqrcode);
             $this->configObject->setSeriesSigningKey($seriessigningkey);
 
-            ilUtil::sendSuccess($pl->txt('saving_invoked'), true);
-            $ilCtrl->redirect($this, 'configure');
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $pl->txt('saving_invoked'), true);
+            $this->ctrl->redirect($this, 'configure');
         } else {
             $form->setValuesByPost();
-            $tpl->setContent($form->getHtml());
+            $this->tpl->setContent($form->getHtml());
         }
     }
 }

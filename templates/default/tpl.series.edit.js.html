@@ -10,8 +10,12 @@ const settings = {
   processingcmd : "{CMD_PROCESSING}",
   manualRelease : {MANUAL_RELEASE}
 }
-$.extend(true,iliasopencast.settings, settings);
 
+for(let key in settings) {
+    if (settings.hasOwnProperty(key)) {
+        iliasopencast.settings[key] = settings[key];
+    }
+}
 iliasopencast.translation = {
     txt_none_processing : "{TXT_NONE_PROCESSING}",
     txt_none_finished : "{TXT_NONE_FINISHED}",

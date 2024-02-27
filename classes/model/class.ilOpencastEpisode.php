@@ -2,6 +2,7 @@
 namespace TIK_NFL\ilias_oc_plugin\model;
 
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use TIK_NFL\ilias_oc_plugin\opencast\ilDeliveryUrlTrait;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use Exception;
 
@@ -11,33 +12,23 @@ use Exception;
  */
 class ilOpencastEpisode
 {
-    use \TIK_NFL\ilias_oc_plugin\opencast\ilDeliveryUrlTrait;
+    use ilDeliveryUrlTrait;
 
     /**
      * The Opencast series id, not the ilias object id
-     *
-     * @var string
      */
-    private $series_id;
+    private string $series_id;
 
-    /**
-     *
-     * @var string
-     */
-    private $episode_id;
+    private string $episode_id;
 
-    /**
-     *
-     * @var ilOpencastConfig
-     */
-    private $configObject;
+    private ilOpencastConfig $configObject;
 
     /**
      *
      * @param string $series_id
      * @param string $episode_id
      */
-    public function __construct($series_id, $episode_id)
+    public function __construct(string $series_id, string $episode_id)
     {
         $this->series_id = $series_id;
         $this->episode_id = $episode_id;
@@ -46,38 +37,24 @@ class ilOpencastEpisode
 
     /**
      * The Opencast series id, not the ilias object id
-     *
-     * @return string
      */
-    public function getSeriesId()
+    public function getSeriesId(): string
     {
         return $this->series_id;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getQuoteSeriesId()
+    public function getQuoteSeriesId(): string
     {
         global $ilDB;
         return $ilDB->quote($this->getSeriesId(), "text");
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getEpisodeId()
+    public function getEpisodeId(): string
     {
         return $this->episode_id;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getQuoteEpisodeId()
+    public function getQuoteEpisodeId(): string
     {
         global $ilDB;
         return $ilDB->quote($this->getEpisodeId(), "text");
@@ -85,20 +62,18 @@ class ilOpencastEpisode
 
     /**
      * Check if the episode exists in Opencast and is part of the correct series
-     *
-     * @return boolean
      */
-    public function exists()
+    public function exists(): bool
     {
         try {
             $episode = ilOpencastAPI::getInstance()->getEpisode($this->episode_id);
-            return $episode->is_part_of == $this->series_id;
+            return $episode->is_part_of === $this->series_id;
         } catch (Exception $e) {
             return false;
         }
     }
 
-    public function setTitle($title)
+    public function setTitle($title): void
     {
         if (strcmp($this->getEpisode()->title, $title) !== 0) {
             ilOpencastAPI::getInstance()->setEpisodeMetadata($this->getEpisodeId(), array(
@@ -125,7 +100,7 @@ class ilOpencastEpisode
         }
     }
 
-    public function setMetadata($entries)
+    public function setMetadata($entries): void
     {
         $oc_entries = array();
         if (array_key_exists("title", $entries) && strcmp($this->getEpisode()->title, $entries["title"]) !== 0) {
@@ -143,7 +118,7 @@ class ilOpencastEpisode
     /**
      * publish this episode
      */
-    public function publish()
+    public function publish(): void
     {
         global $DIC;
         $affected_rows = $DIC->database()->manipulate("INSERT INTO " . ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES . " (episode_id, series_id) VALUES (" . $this->getQuoteEpisodeId() . "," . $this->getQuoteSeriesId() . ") ON DUPLICATE KEY UPDATE episode_id = episode_id");
@@ -172,21 +147,21 @@ class ilOpencastEpisode
                 preg_match("/PT(\d+M)?(\d+S)?(\d+)?N1000F/", (string) $segmentxml->MediaTime->MediaDuration, $regmatches);
                 $ms = $regmatches[3];
                 $sec = 0;
-                if (0 != strcmp('', $regmatches[2])) {
+                if (0 !== strcmp('', $regmatches[2])) {
                     $sec = substr($regmatches[2], 0, - 1);
                 }
 
                 $min = 0;
-                if (0 != strcmp('', $regmatches[1])) {
+                if (0 !== strcmp('', $regmatches[1])) {
                     $min = substr($regmatches[1], 0, - 1);
                 }
                 $duration = ($min * 60 + $sec) * 1000 + $ms;
                 if ($segmentxml->SpatioTemporalDecomposition) {
                     $text = "";
                     foreach ($segmentxml->SpatioTemporalDecomposition->VideoText as $textxml) {
-                        $text = $text . " " . (string) $textxml->Text;
+                        $text .= " " . (string)$textxml->Text;
                     }
-                    if ($text != "") {
+                    if ($text !== "") {
                         $ilDB->manipulate("INSERT INTO " . ilOpencastConfig::DATABASE_TABLE_SLIDETEXT . " (episode_id, slidetext, slidetime) VALUES (" . $this->getQuoteEpisodeId() . "," . $ilDB->quote($text, "text") . "," . $ilDB->quote($currenttime, "integer") . ")");
                     }
                 }
@@ -199,14 +174,14 @@ class ilOpencastEpisode
     /**
      * retract this episode
      */
-    public function retract()
+    public function retract(): void
     {
         global $ilDB;
         $ilDB->manipulate("DELETE FROM " . ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES . " WHERE episode_id=" . $this->getQuoteEpisodeId() . " AND series_id=" . $this->getQuoteSeriesId());
         $this->removeTextFromDB();
     }
 
-    private function removeTextFromDB()
+    private function removeTextFromDB(): void
     {
         global $ilDB;
         $ilDB->manipulate("DELETE FROM " . ilOpencastConfig::DATABASE_TABLE_SLIDETEXT . " WHERE episode_id = " . $this->getQuoteEpisodeId());

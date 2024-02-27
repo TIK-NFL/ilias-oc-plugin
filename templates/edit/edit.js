@@ -14,14 +14,14 @@ function initEdit(iliasopencast) {
         $.when(response, iliasopencast.templates).done(function(dataResponse, templatesResponse) {
             const data = dataResponse[0];
             const templates = templatesResponse[0];
-            finishedepisodes = data['finished'].map(x => x.episode_id).sort()
-            onholdepisodes = data['onhold'].map(x => x.episode_id).sort()
-            scheduledepisodes = data['scheduled'].map(x => x.episode_id).sort()
+            const finishedepisodes = data['finished'].map(x => x.episode_id).sort()
+            const onholdepisodes = data['onhold'].map(x => x.episode_id).sort()
+            const scheduledepisodes = data['scheduled'].map(x => x.episode_id).sort()
             if (!arrayEquals(finishedepisodes, iliasopencast.currentrenderings.finished)) {
                 iliasopencast.currentrenderings.finished = finishedepisodes;
                 updateTable(data['finished'], "finished", templates);
             }
-            if (data['processing'] != []) {
+            if (data['processing'] !== []) {
                 updateTable(data['processing'], "processing", templates);
             }
             if (!arrayEquals(onholdepisodes, iliasopencast.currentrenderings.onhold)) {
@@ -37,38 +37,36 @@ function initEdit(iliasopencast) {
             showNumberIndicatorOnSubtab("schedule", data.scheduled.length);
         });
 
-        var arrayEquals = function(a, b) {
+        let arrayEquals = function(a, b) {
           return Array.isArray(a) &&
             Array.isArray(b) &&
             a.length === b.length &&
             a.every((val, index) => val === b[index]);
         }
 
-        var updateTable = function(data, dataname, templates) {
-            var sections = {
+        let updateTable = function(data, dataname, templates) {
+            let sections = {
                 txt : txt,
                 manualRelease : ils.manualRelease
             };
             sections[dataname] = [ {
                 episodes : data
             } ];
-            var tabledata = Mustache.render(templates, sections);
+            let tabledata = Mustache.render(templates, sections);
 
             $("#iliasopencast_" + dataname + "table").html(tabledata);
         }
     }
 
     /**
-     * @param string
-     *            id id of sub tab
-     * @param number
-     *            number number to be shown
+     * @param id string id of sub tab
+     * @param number number to be shown
      */
     function showNumberIndicatorOnSubtab(id, number) {
         const tabContent = $("#ilSubTab #subtab_" + id + " a").html(function(index, html) {
             const indexOfNumberIdicator = html.indexOf(" (<b>");
-            const text = indexOfNumberIdicator == -1 ? html : html.substring(0, indexOfNumberIdicator);
-            return text + (number == 0 ? "" : " (<b>" + number + "</b>)");
+            const text = indexOfNumberIdicator === -1 ? html : html.substring(0, indexOfNumberIdicator);
+            return text + (number === 0 ? "" : " (<b>" + number + "</b>)");
         });
     }
 

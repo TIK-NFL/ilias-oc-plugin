@@ -20,7 +20,6 @@
  | Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA. |
  +-----------------------------------------------------------------------------+
  */
-use Ramsey\Uuid\Type\Integer;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\api\ilOpencastUserTracking;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
@@ -79,21 +78,21 @@ class ilObjOpencast extends ilObjectPlugin
     /**
      * Get type.
      */
-    final public function initType()
+    final public function initType() : void
     {
         $this->setType("xmh");
     }
 
-    protected function beforeCreate()
+    protected function beforeCreate() : bool
     {
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        //$this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
         return ilOpencastAPI::getInstance()->checkOpencast();
     }
 
     /**
      * Create object
      */
-    protected function doCreate()
+    protected function doCreate(bool $clone_mode = false) : void
     {
         global $ilDB;
         $new_series_id = ilOpencastAPI::getInstance()->createSeries($this->getTitle(), $this->getDescription(), $this->getId(), 0);
@@ -106,7 +105,7 @@ class ilObjOpencast extends ilObjectPlugin
     /**
      * Read data from db
      */
-    public function doRead()
+    public function doRead() : void
     {
         global $ilDB;
 
@@ -123,10 +122,10 @@ class ilObjOpencast extends ilObjectPlugin
     /**
      * Update data
      */
-    public function doUpdate()
+    public function doUpdate() : void
     {
         global $ilDB;
-        $this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
+        //$this->getPlugin()->includeClass("opencast/class.ilOpencastAPI.php");
         ilOpencastAPI::getInstance()->updateSeries($this->getSeriesId(), $this->getTitle(), $this->getDescription(), $this->getId(), $this->getRefId());
 
         $ilDB->manipulate("UPDATE " . ilOpencastConfig::DATABASE_TABLE_DATA . " SET is_online = " . $ilDB->quote($this->getOnline(), "integer") . ", viewmode = " . $ilDB->quote($this->getViewMode(), "integer") . ", manualrelease = " . $ilDB->quote($this->getManualRelease(), "integer") . ", download = " . $ilDB->quote($this->getDownload(), "integer") . " WHERE obj_id = " . $ilDB->quote($this->getId(), "text"));
@@ -137,11 +136,11 @@ class ilObjOpencast extends ilObjectPlugin
     /**
      * Delete data from db
      */
-    public function doDelete()
+    public function doDelete() : void
     {
         global $ilDB;
 
-        $this->getPlugin()->includeClass("api/class.ilOpencastUserTracking.php");
+        //$this->getPlugin()->includeClass("api/class.ilOpencastUserTracking.php");
 
         foreach ($this->getReleasedEpisodeIds() as $episode_id) {
             ilOpencastUserTracking::removeViews($this->getEpisode($episode_id));
@@ -161,40 +160,32 @@ class ilObjOpencast extends ilObjectPlugin
 
     /**
      * The Opencast series id associated with this ilias object.
-     *
-     * @param string $series_id
      */
-    private function setSeriesId(string $series_id)
+    private function setSeriesId(string $series_id) : void
     {
         $this->series_id = $series_id;
     }
 
     /**
      * The Opencast series id associated with this ilias object.
-     *
-     * @return string
      */
-    public function getSeriesId()
+    public function getSeriesId() : string
     {
         return $this->series_id;
     }
 
     /**
      * Set online
-     *
-     * @param boolean $a_val
      */
-    public function setOnline(bool $a_val)
+    public function setOnline(bool $a_val) : void
     {
         $this->online = $a_val;
     }
 
     /**
      * Get online
-     *
-     * @return boolean online
      */
-    public function getOnline()
+    public function getOnline() : bool
     {
         return $this->online;
     }
@@ -202,10 +193,9 @@ class ilObjOpencast extends ilObjectPlugin
     /**
      * Set the ViewMode
      *
-     * @param Integer $a_val
-     *            viewMode
+     * @param int $a_val viewMode
      */
-    public function setViewMode(int $a_val)
+    public function setViewMode(int $a_val) : void
     {
         $this->viewMode = $a_val;
     }
@@ -213,9 +203,9 @@ class ilObjOpencast extends ilObjectPlugin
     /**
      * Get the ViewMode
      *
-     * @return Integer viewMode
+     * @return int viewMode
      */
-    public function getViewMode()
+    public function getViewMode() : int
     {
         return $this->viewMode;
     }
@@ -226,7 +216,7 @@ class ilObjOpencast extends ilObjectPlugin
      * @param boolean $a_val
      *            manual release
      */
-    public function setManualRelease(bool $a_val)
+    public function setManualRelease(bool $a_val) : void
     {
         $this->manualrelease = $a_val;
     }
@@ -236,7 +226,7 @@ class ilObjOpencast extends ilObjectPlugin
      *
      * @return boolean manualrelease
      */
-    public function getManualRelease()
+    public function getManualRelease() : bool
     {
         return $this->manualrelease;
     }
@@ -247,7 +237,7 @@ class ilObjOpencast extends ilObjectPlugin
      * @param boolean $a_val
      *            enable download
      */
-    public function setDownload(bool $a_val)
+    public function setDownload(bool $a_val) : void
     {
         $this->download = $a_val;
     }
@@ -257,7 +247,7 @@ class ilObjOpencast extends ilObjectPlugin
      *
      * @return boolean download enabled
      */
-    public function getDownload()
+    public function getDownload() : bool
     {
         return $this->download;
     }
@@ -266,9 +256,9 @@ class ilObjOpencast extends ilObjectPlugin
      *
      * @return ilOpencastSeries
      */
-    public function getSeries()
+    public function getSeries() : ilOpencastSeries
     {
-        $this->getPlugin()->includeClass("model/class.ilOpencastSeries.php");
+        //$this->getPlugin()->includeClass("model/class.ilOpencastSeries.php");
         return new ilOpencastSeries($this->getSeriesId());
     }
 
@@ -279,9 +269,9 @@ class ilObjOpencast extends ilObjectPlugin
      * @return ilOpencastEpisode
      * @throws InvalidArgumentException
      */
-    public function getEpisode($episodeId)
+    public function getEpisode($episodeId) : ilOpencastEpisode
     {
-        $this->getPlugin()->includeClass("model/class.ilOpencastEpisode.php");
+        //$this->getPlugin()->includeClass("model/class.ilOpencastEpisode.php");
         if (preg_match('/^[0-9a-f\-]+/', $episodeId)) {
             return new ilOpencastEpisode($this->getSeriesId(), $episodeId);
         }
@@ -293,7 +283,7 @@ class ilObjOpencast extends ilObjectPlugin
      *
      * @return array containing the ids of the episodes that have been made public available.
      */
-    public function getReleasedEpisodeIds()
+    public function getReleasedEpisodeIds() : array
     {
         global $DIC;
         // TODO move to OpencastSeries

@@ -14,44 +14,26 @@ class ilOpencastSeries
 
     /**
      * The Opencast series id, not the ilias object id
-     *
-     * @var string
      */
-    private $series_id;
+    private string $series_id;
 
-    /**
-     *
-     * @param string $series_id
-     */
-    public function __construct($series_id)
+    public function __construct(string $series_id)
     {
         $this->series_id = $series_id;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getSeriesId()
+    public function getSeriesId(): string
     {
         return $this->series_id;
     }
 
-    /**
-     *
-     * @return string
-     */
-    public function getQuoteSeriesId()
+    public function getQuoteSeriesId(): string
     {
         global $ilDB;
         return $ilDB->quote($this->getSeriesId(), "text");
     }
 
-    /**
-     *
-     * @return array
-     */
-    public function getSeriesInformationFromOpencast()
+    public function getSeriesInformationFromOpencast(): array
     {
         $series = ilOpencastAPI::getInstance()->getSeries($this->getSeriesId());
         $series = array(
@@ -68,7 +50,7 @@ class ilOpencastSeries
      *
      * @return array the scheduled episodes for this series returned by opencast
      */
-    public function getScheduledEpisodes()
+    public function getScheduledEpisodes(): array
     {
         return ilOpencastAPI::getInstance()->getScheduledEpisodes($this->getSeriesId());
     }
@@ -78,7 +60,7 @@ class ilOpencastSeries
      *
      * @return array the episodes
      */
-    public function getOnHoldEpisodes()
+    public function getOnHoldEpisodes(): array
     {
         return ilOpencastAPI::getInstance()->getOnHoldEpisodes($this->getSeriesId());
     }
@@ -88,7 +70,7 @@ class ilOpencastSeries
      *
      * @return array the episodes
      */
-    public function getReadyEpisodes()
+    public function getReadyEpisodes(): array
     {
         return ilOpencastAPI::getInstance()->getReadyEpisodes($this->getSeriesId());
     }
@@ -98,7 +80,7 @@ class ilOpencastSeries
      *
      * @return array the episodes which are on hold for this series returned by opencast
      */
-    public function getProcessingEpisodes()
+    public function getProcessingEpisodes(): array
     {
         $workflows = ilOpencastAPI::getInstance()->getActiveWorkflows($this->getSeriesId());
 

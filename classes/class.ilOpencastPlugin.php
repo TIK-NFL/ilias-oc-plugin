@@ -11,12 +11,12 @@ require_once __DIR__ . '/../vendor/autoload.php';
 class ilOpencastPlugin extends ilRepositoryObjectPlugin
 {
 
-    public function getPluginName()
+    public function getPluginName() : string
     {
         return "Opencast";
     }
 
-    protected function uninstallCustom()
+    protected function uninstallCustom() : void
     {
         global $DIC;
         $ilDB = $DIC->database();

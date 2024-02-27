@@ -23,7 +23,7 @@
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 
-include_once ("./Services/Repository/classes/class.ilObjectPluginAccess.php");
+//include_once ("./Services/Repository/classes/class.ilObjectPluginAccess.php");
 
 /**
  * Access/Condition checking for Opencast object
@@ -43,33 +43,33 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
      * Please do not check any preconditions handled by
      * ilConditionHandler here. Also don't do usual RBAC checks.
      *
-     * @param string $a_cmd
+     * @param string $cmd
      *            command (not permission!)
-     * @param string $a_permission
+     * @param string $permission
      *            permission
-     * @param int $a_ref_id
+     * @param int $ref_id
      *            reference id
-     * @param int $a_obj_id
+     * @param int $obj_id
      *            object id
-     * @param int $a_user_id
+     * @param ?int $user_id
      *            user id (if not provided, current user is taken)
      *
      * @return boolean true, if everything is ok
      */
-    public function _checkAccess($a_cmd, $a_permission, $a_ref_id, $a_obj_id, $a_user_id = "")
+    public function _checkAccess(string $cmd, string $permission, int $ref_id, int $obj_id, ?int $user_id = null) : bool
     {
         global $DIC;
         $ilUser = $DIC->user();
         $ilAccess = $DIC->access();
 
-        if ($a_user_id == "") {
-            $a_user_id = $ilUser->getId();
+        if ($user_id === 0) {
+            $user_id = $ilUser->getId();
         }
 
-        switch ($a_permission) {
+        switch ($permission) {
             case "visible":
             case "read":
-                if (! ilObjOpencastAccess::checkOnline($a_obj_id) && ! $ilAccess->checkAccessOfUser($a_user_id, "write", "", $a_ref_id)) {
+                if (! self::checkOnline($obj_id) && ! $ilAccess->checkAccessOfUser($user_id, "write", "", $ref_id)) {
                     return false;
                 }
                 break;
@@ -81,7 +81,7 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
     /**
      * Check online status of example object
      */
-    public static function checkOnline($a_id)
+    public static function checkOnline(int $a_id) : bool
     {
         global $DIC;
         $ilDB = $DIC->database();
@@ -91,10 +91,9 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
         return (boolean) $rec["is_online"];
     }
 
-    private static function lookupOpencastObjectForSeries($series_id)
+    private static function lookupOpencastObjectForSeries(string $series_id)
     {
-        $configObject = new ilOpencastConfig();
-        return $configObject->lookupOpencastObjectForSeries($series_id);
+        return (new ilOpencastConfig())->lookupOpencastObjectForSeries($series_id);
     }
 
     /**
@@ -104,7 +103,7 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
      * @param string $permission
      * @throws Exception if user have no $permission access for the file of the episode
      */
-    public static function checkEpisodeAccess($episode, $permission = "read")
+    public static function checkEpisodeAccess(ilOpencastEpisode $episode, string $permission = "read"): void
     {
         global $DIC;
         if (self::checkAccessObject(self::lookupOpencastObjectForSeries($episode->getSeriesId()), $permission)) {
@@ -120,7 +119,7 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
      * @param ilOpencastEpisode $episode
      * @throws Exception if user have no access rights for the preview
      */
-    public static function checkPreviewAccess($episode)
+    public static function checkPreviewAccess(ilOpencastEpisode $episode): void
     {
         self::checkFileAccess($episode);
     }
@@ -131,7 +130,7 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
      * @param ilOpencastEpisode $episode
      * @throws Exception if user have no access rights for the file
      */
-    public static function checkFileAccess($episode)
+    public static function checkFileAccess(ilOpencastEpisode $episode): void
     {
         global $DIC;
         if (self::checkAccessObject(self::lookupOpencastObjectForSeries($episode->getSeriesId()))) {
@@ -150,7 +149,7 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
      *            read/write
      * @return boolean access given (true/false)
      */
-    private static function checkAccessObject($obj_id, $permission = 'read', $cmd = 'view')
+    private static function checkAccessObject(int $obj_id, string $permission = 'read'): bool
     {
         global $DIC;
         $ilUser = $DIC->user();
@@ -159,7 +158,7 @@ class ilObjOpencastAccess extends ilObjectPluginAccess
         $obj_type = ilObject::_lookupType($obj_id);
         $ref_ids = ilObject::_getAllReferences($obj_id);
         foreach ($ref_ids as $ref_id) {
-            if ($ilAccess->checkAccessOfUser($ilUser->getId(), $permission, $cmd, $ref_id, $obj_type, $obj_id)) {
+            if ($ilAccess->checkAccessOfUser($ilUser->getId(), $permission, 'view', $ref_id, $obj_type, $obj_id)) {
                 return true;
             }
         }

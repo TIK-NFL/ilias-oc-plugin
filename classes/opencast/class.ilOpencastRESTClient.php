@@ -14,29 +14,14 @@ use ilLoggerFactory;
 class ilOpencastRESTClient
 {
 
-    const API_VERSION = "v1.9.0";
+    public const API_VERSION = "v1.9.0";
 
-    /**
-     *
-     * @var string
-     */
-    private $opencastURL;
+    private string $opencastURL;
 
-    /**
-     *
-     * @var string
-     */
-    private $opencastAPIUser;
+    private string $opencastAPIUser;
 
-    /**
-     *
-     * @var string
-     */
-    private $opencastAPIPassword;
+    private string $opencastAPIPassword;
 
-    /**
-     * Singleton constructor
-     */
     public function __construct(string $opencastURL, string $opencastAPIUser, string $opencastAPIPassword)
     {
         $this->opencastURL = $opencastURL;
@@ -48,10 +33,10 @@ class ilOpencastRESTClient
      * Do a GET Request of the given url on the Opencast server with basic authorization
      *
      * @param string $url
-     * @param array $query
+     * @param array|null $query
      *            this array gets url encoded
-     * @throws Exception
      * @return mixed
+     * @throws Exception
      */
     public function get(string $url, array $query = null)
     {
@@ -80,7 +65,7 @@ class ilOpencastRESTClient
             }
             throw new Exception("error GET request: $requestURL $queryString $httpCode", 500);
         }
-        return json_decode($response);
+        return json_decode($response, false, 512, JSON_THROW_ON_ERROR);
     }
 
     /**
@@ -210,8 +195,8 @@ class ilOpencastRESTClient
      *
      * @param string $url
      * @param array $post
+     * @return bool|string
      * @throws Exception
-     * @return mixed
      */
     public function delete(string $url, array $post = [])
     {
@@ -243,18 +228,18 @@ class ilOpencastRESTClient
         return $response;
     }
 
-    private function basicAuthentication($ch)
+    private function basicAuthentication($ch): void
     {
         curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
         curl_setopt($ch, CURLOPT_USERPWD, $this->opencastAPIUser . ':' . $this->opencastAPIPassword);
     }
 
-    public function checkOpencast()
+    public function checkOpencast(): bool
     {
         $url = "/api/version";
         try {
             $versionInfo = $this->get($url);
-            return in_array(self::API_VERSION, $versionInfo->versions);
+            return in_array(self::API_VERSION, $versionInfo->versions, true);
         } catch (Exception $e) {
             return false;
         }

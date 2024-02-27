@@ -1,7 +1,7 @@
 <?php
 namespace TIK_NFL\ilias_oc_plugin\api;
 
-use ilPlugin;
+use JsonException;
 
 /**
  *
@@ -15,7 +15,7 @@ class ilOpencastInfo
      *
      * @return array
      */
-    public function getMyInfo()
+    public function getMyInfo(): array
     {
         return array(
             "username" => "anonymous",
@@ -35,10 +35,11 @@ class ilOpencastInfo
      * Returns the list of all registered Engage Player plugins.
      *
      * @return array
+     * @throws JsonException
      */
-    public function listPlugins()
+    public function listPlugins(): array
     {
-        $staticPluginsList = ilPlugin::_getDirectory(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast') . "/templates/theodul/manager/list.json";
-        return json_decode(file_get_contents($staticPluginsList));
+        $staticPluginsList = __DIR__. "../../../templates/theodul/manager/list.json";
+        return json_decode(file_get_contents($staticPluginsList), false, 512, JSON_THROW_ON_ERROR);
     }
 }

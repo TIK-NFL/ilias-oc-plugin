@@ -2,7 +2,6 @@
 namespace TIK_NFL\ilias_oc_plugin;
 
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
-use ilPlugin;
 
 /**
  * Configuration manager, stores and loads the configuration
@@ -12,41 +11,41 @@ use ilPlugin;
 class ilOpencastConfig
 {
 
-    const CONFIG_KEY_OPENCAST_SERVER = "oc_server";
+    public const CONFIG_KEY_OPENCAST_SERVER = "oc_server";
 
-    const CONFIG_KEY_OPENCAST_API_USER = "oc_api_user";
+    public const CONFIG_KEY_OPENCAST_API_USER = "oc_api_user";
 
-    const CONFIG_KEY_OPENCAST_API_PASSWORD = "oc_api_password";
+    public const CONFIG_KEY_OPENCAST_API_PASSWORD = "oc_api_password";
 
-    const CONFIG_KEY_UPLOAD_WORKFLOW = "uploadworkflow";
+    public const CONFIG_KEY_UPLOAD_WORKFLOW = "uploadworkflow";
 
-    const CONFIG_KEY_TRIM_WORKFLOW = "trimworkflow";
+    public const CONFIG_KEY_TRIM_WORKFLOW = "trimworkflow";
 
-    const CONFIG_KEY_PUBLISHER = "publisher";
+    public const CONFIG_KEY_PUBLISHER = "publisher";
 
-    const CONFIG_KEY_URL_SIGNING_KEY = "urlsigningkey";
+    public const CONFIG_KEY_URL_SIGNING_KEY = "urlsigningkey";
 
-    const CONFIG_KEY_DELIVERY_METHOD= "delivery_method";
+    public const CONFIG_KEY_DELIVERY_METHOD= "delivery_method";
 
-    const CONFIG_KEY_DISTRIBUTION_SERVER = "distributionserver";
+    public const CONFIG_KEY_DISTRIBUTION_SERVER = "distributionserver";
 
-    const CONFIG_KEY_TOKEN_VALIDITY = "tokenvalidity";
+    public const CONFIG_KEY_TOKEN_VALIDITY = "tokenvalidity";
 
-    const CONFIG_KEY_SHOW_QRCODE = "show_qrcode";
+    public const CONFIG_KEY_SHOW_QRCODE = "show_qrcode";
 
-    const CONFIG_KEY_SERIES_SIGNING_KEY = "series_signing_key";
+    public const CONFIG_KEY_SERIES_SIGNING_KEY = "series_signing_key";
 
-    const CONFIG_KEY_STRIP_URL = "stripurl";
+    public const CONFIG_KEY_STRIP_URL = "stripurl";
 
-    const DATABASE_TABLE_CONFIG = "rep_robj_xmh_config";
+    public const DATABASE_TABLE_CONFIG = "rep_robj_xmh_config";
 
-    const DATABASE_TABLE_VIEWS = "rep_robj_xmh_views";
+    public const DATABASE_TABLE_VIEWS = "rep_robj_xmh_views";
 
-    const DATABASE_TABLE_DATA = "rep_robj_xmh_data";
+    public const DATABASE_TABLE_DATA = "rep_robj_xmh_data";
 
-    const DATABASE_TABLE_RELEASED_EPISODES = "rep_robj_xmh_rel_ep";
+    public const DATABASE_TABLE_RELEASED_EPISODES = "rep_robj_xmh_rel_ep";
 
-    const DATABASE_TABLE_SLIDETEXT = "rep_robj_xmh_slidetext";
+    public const DATABASE_TABLE_SLIDETEXT = "rep_robj_xmh_slidetext";
 
     /**
      * returns the hostname for the Opencast server.
@@ -63,7 +62,7 @@ class ilOpencastConfig
         return $retVal;
     }
 
-    public function setOpencastServer($a_server)
+    public function setOpencastServer($a_server): void
     {
         $this->setValue(self::CONFIG_KEY_OPENCAST_SERVER, $a_server);
     }
@@ -78,7 +77,7 @@ class ilOpencastConfig
         return $retVal;
     }
 
-    public function setOpencastAPIUser($a_user)
+    public function setOpencastAPIUser($a_user): void
     {
         $this->setValue(self::CONFIG_KEY_OPENCAST_API_USER, $a_user);
     }
@@ -93,7 +92,7 @@ class ilOpencastConfig
         return $retVal;
     }
 
-    public function setOpencastAPIPassword($a_password)
+    public function setOpencastAPIPassword($a_password): void
     {
         $this->setValue(self::CONFIG_KEY_OPENCAST_API_PASSWORD, $a_password);
     }
@@ -108,7 +107,7 @@ class ilOpencastConfig
         return $retVal;
     }
 
-    public function setUploadWorkflow($value)
+    public function setUploadWorkflow($value): void
     {
         $this->setValue(self::CONFIG_KEY_UPLOAD_WORKFLOW, $value);
     }
@@ -131,7 +130,7 @@ class ilOpencastConfig
         return $retVal;
     }
 
-    public function setTrimWorkflow($value)
+    public function setTrimWorkflow($value): void
     {
         $this->setValue(self::CONFIG_KEY_TRIM_WORKFLOW, $value);
     }
@@ -147,76 +146,76 @@ class ilOpencastConfig
 
     public function getDeliveryMethod():string
     {
-        $retVal = $this->getValue(SELF::CONFIG_KEY_DELIVERY_METHOD);
+        $retVal = $this->getValue(self::CONFIG_KEY_DELIVERY_METHOD);
         if (! $retVal) {
             return "api";
         }
         return $retVal;
     }
 
-    public function setDeliveryMethod(string $value)
+    public function setDeliveryMethod(string $value): void
     {
-        $this->setValue(SELF::CONFIG_KEY_DELIVERY_METHOD, $value);
+        $this->setValue(self::CONFIG_KEY_DELIVERY_METHOD, $value);
     }
 
     public function getUrlSigningKey()
     {
-        $retVal = $this->getValue(SELF::CONFIG_KEY_URL_SIGNING_KEY);
+        $retVal = $this->getValue(self::CONFIG_KEY_URL_SIGNING_KEY);
         if (! $retVal) {
             return 'default';
         }
         return $retVal;
     }
 
-    public function setUrlSigningKey($value)
+    public function setUrlSigningKey($value): void
     {
-        $this->setValue(SELF::CONFIG_KEY_URL_SIGNING_KEY, $value);
+        $this->setValue(self::CONFIG_KEY_URL_SIGNING_KEY, $value);
     }
 
     public function getDistributionServer()
     {
-        $retVal = $this->getValue(SELF::CONFIG_KEY_DISTRIBUTION_SERVER);
+        $retVal = $this->getValue(self::CONFIG_KEY_DISTRIBUTION_SERVER);
         if (! $retVal) {
             return 'http://unknown.host';
         }
         return $retVal;
     }
 
-    public function setDistributionServer($value)
+    public function setDistributionServer($value): void
     {
-        $this->setValue(SELF::CONFIG_KEY_DISTRIBUTION_SERVER, $value);
+        $this->setValue(self::CONFIG_KEY_DISTRIBUTION_SERVER, $value);
     }
 
-    public function getTokenValidity()
+    public function getTokenValidity(): int
     {
-        $retVal = $this->getValue(SELF::CONFIG_KEY_TOKEN_VALIDITY);
+        $retVal = $this->getValue(self::CONFIG_KEY_TOKEN_VALIDITY);
         if (! $retVal) {
             return 6;
         }
-        return intval($retVal);
+        return (int)$retVal;
     }
 
-    public function setTokenValidity($value)
+    public function setTokenValidity(int $value): void
     {
-        $this->setValue(SELF::CONFIG_KEY_TOKEN_VALIDITY, $value);
+        $this->setValue(self::CONFIG_KEY_TOKEN_VALIDITY, $value);
     }
 
     public function getStripUrl()    {
-        $retVal = $this->getValue(SELF::CONFIG_KEY_STRIP_URL);
+        $retVal = $this->getValue(self::CONFIG_KEY_STRIP_URL);
         if (! $retVal) {
             return 'http://unknown.host';
         }
         return $retVal;
     }
 
-    public function setStripUrl($value)
+    public function setStripUrl(string $value): void
     {
-        $this->setValue(SELF::CONFIG_KEY_STRIP_URL, $value);
+        $this->setValue(self::CONFIG_KEY_STRIP_URL, $value);
     }
 
     public function getSeriesSigningKey(): string
     {
-        $retVal = $this->getValue(SELF::CONFIG_KEY_SERIES_SIGNING_KEY);
+        $retVal = $this->getValue(self::CONFIG_KEY_SERIES_SIGNING_KEY);
         if (! $retVal) {
             return 'default';
         }
@@ -225,21 +224,21 @@ class ilOpencastConfig
 
     public function setSeriesSigningKey(string $value): void
     {
-        $this->setValue(SELF::CONFIG_KEY_SERIES_SIGNING_KEY, $value);
+        $this->setValue(self::CONFIG_KEY_SERIES_SIGNING_KEY, $value);
     }
 
     public function getShowQRCode():bool
     {
-        $retVal = $this->getValue(SELF::CONFIG_KEY_SHOW_QRCODE);
+        $retVal = $this->getValue(self::CONFIG_KEY_SHOW_QRCODE);
         if (! $retVal) {
             return false;
         }
-        return boolval($retVal);
+        return (bool)$retVal;
     }
 
     public function setShowQRCode(bool $value): void
     {
-        $this->setValue(SELF::CONFIG_KEY_SHOW_QRCODE, $value);
+        $this->setValue(self::CONFIG_KEY_SHOW_QRCODE, $value);
     }
 
     /**
@@ -248,8 +247,6 @@ class ilOpencastConfig
      */
     private function getAvailableWorkflows(string $tag)
     {
-        $plugin = ilPlugin::getPluginObject(IL_COMP_SERVICE, 'Repository', 'robj', 'Opencast');
-        $plugin->includeClass("opencast/class.ilOpencastAPI.php");
         if (ilOpencastAPI::getInstance()->checkOpencast()) {
             $workflowDefinitions = ilOpencastAPI::getInstance()->getWorkflowDefinition($tag);
             $options = array();
@@ -280,7 +277,7 @@ class ilOpencastConfig
      *
      * @param string $publisher
      */
-    public function setPublisher(string $publisher)
+    public function setPublisher(string $publisher): void
     {
         $this->setValue(self::CONFIG_KEY_PUBLISHER, $publisher);
     }
@@ -294,24 +291,23 @@ class ilOpencastConfig
     {
         global $ilDB;
         $result = $ilDB->query('SELECT obj_id FROM ' . self::DATABASE_TABLE_DATA . ' WHERE series_id = ' . $ilDB->quote($series_id, 'text'));
-        if ($result->numRows() == 0) {
+        if ($result->numRows() === 0) {
             return false;
         }
         $record = $ilDB->fetchAssoc($result);
 
-        return intval($record['obj_id']);
+        return (int)$record['obj_id'];
     }
 
     /**
      *
-     * @param int $obj_id
      * @return string $series_id
      */
-    public function lookupSeriesForOpencastObject($obj_id)
+    public function lookupSeriesForOpencastObject(int $obj_id) : string
     {
         global $ilDB;
         $result = $ilDB->query('SELECT series_id FROM ' . self::DATABASE_TABLE_DATA . ' WHERE obj_id = ' . $ilDB->quote($obj_id, 'integer'));
-        if ($result->numRows() == 0) {
+        if ($result->numRows() === 0) {
             return false;
         }
         $record = $ilDB->fetchAssoc($result);
@@ -319,12 +315,7 @@ class ilOpencastConfig
         return $record['series_id'];
     }
 
-    /**
-     *
-     * @param string $key
-     * @param string $value
-     */
-    private function setValue(string $key, string $value)
+    private function setValue(string $key, string $value): void
     {
         global $ilDB;
 
@@ -368,7 +359,7 @@ class ilOpencastConfig
     {
         global $ilDB;
         $result = $ilDB->query('SELECT cfgvalue FROM ' . self::DATABASE_TABLE_CONFIG . ' WHERE cfgkey = ' . $ilDB->quote($key, 'text'));
-        if ($result->numRows() == 0) {
+        if ($result->numRows() === 0) {
             return false;
         }
         $record = $ilDB->fetchAssoc($result);

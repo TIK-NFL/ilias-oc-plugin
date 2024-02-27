@@ -14,25 +14,17 @@ use DateTime;
 class ilOpencastAPI
 {
 
-    private static $instance = null;
+    private static ?ilOpencastAPI $instance = null;
 
-    const API_PUBLICATION_CHANNEL = "api";
+    public const API_PUBLICATION_CHANNEL = "api";
 
-    const TRACK_TYPE_PRESENTER = "presenter";
+    public const TRACK_TYPE_PRESENTER = "presenter";
 
-    const TRACK_TYPE_PRESENTATION = "presentation";
+    public const TRACK_TYPE_PRESENTATION = "presentation";
 
-    /**
-     *
-     * @var ilOpencastConfig
-     */
-    private $configObject;
+    private ilOpencastConfig $configObject;
 
-    /**
-     *
-     * @var ilOpencastRESTClient
-     */
-    private $opencastRESTClient;
+    private ilOpencastRESTClient $opencastRESTClient;
 
     /**
      * Singleton constructor
@@ -45,10 +37,8 @@ class ilOpencastAPI
 
     /**
      * Get singleton instance
-     *
-     * @return ilOpencastAPI
      */
-    public static function getInstance()
+    public static function getInstance(): ilOpencastAPI
     {
         if (! self::$instance) {
             self::$instance = new self();
@@ -56,12 +46,12 @@ class ilOpencastAPI
         return self::$instance;
     }
 
-    private static function title(string $title, int $id, int $refId)
+    private static function title(string $title, int $id, int $refId): string
     {
         return "ILIAS-$id:$refId:$title";
     }
 
-    public function checkOpencast()
+    public function checkOpencast(): bool
     {
         return $this->opencastRESTClient->checkOpencast();
     }
@@ -74,7 +64,7 @@ class ilOpencastAPI
      * @param integer $refId
      * @return string the series id
      */
-    public function createSeries(string $title, string $description, int $obj_id, int $refId)
+    public function createSeries(string $title, string $description, int $obj_id, int $refId): string
     {
         $url = "/api/series";
         $fields = $this->createPostFields($title, $description, $obj_id, $refId);
@@ -207,6 +197,8 @@ class ilOpencastAPI
      *            the path to the presenter track file, which is uploaded
      *
      * @return string the event id
+     * @throws \JsonException
+     * @throws \Exception
      */
     public function createEpisode(string $title, string $creator, DateTime $startDate, string $series_id, bool $flagForCutting, ?string $presentationFilePath, ?string $presenterFilePath)
     {
@@ -245,7 +237,7 @@ class ilOpencastAPI
         if (null != $presenterFilePath) {
             $post['presenter'] = new \CurlFile($presenterFilePath);
         }
-        $episode = json_decode($this->opencastRESTClient->postMultipart($url, $post));
+        $episode = json_decode($this->opencastRESTClient->postMultipart($url, $post), false, 512, JSON_THROW_ON_ERROR);
         return $episode->identifier;
     }
 
@@ -271,12 +263,12 @@ class ilOpencastAPI
     {
         $url = "/api/events/$episode_id/publications";
         $params = array(
-            "sign" => $this->configObject->getDeliveryMethod() == 'api' ? "true" : "false"
+            "sign" => $this->configObject->getDeliveryMethod() === 'api' ? "true" : "false"
         );
 
         $publications = $this->opencastRESTClient->get($url, $params);
         foreach ($publications as $publication) {
-            if ($publication->channel == $channel) {
+            if ($publication->channel === $channel) {
                 return $publication;
             }
         }
@@ -323,7 +315,7 @@ class ilOpencastAPI
             )),
             'sort' => 'date:ASC',
             'withpublications' => "true",
-            'sign' => $this->configObject->getDeliveryMethod() == 'api' ? "true" : "false"
+            'sign' => $this->configObject->getDeliveryMethod() === 'api' ? "true" : "false"
         );
 
         $episodes = $this->opencastRESTClient->get($url, $params);
@@ -335,7 +327,7 @@ class ilOpencastAPI
 
     private function isOnholdEpisode($episode)
     {
-        return ! $this->isReadyEpisode($episode);
+        return ! self::isReadyEpisode($episode);
     }
 
     /**
@@ -356,10 +348,13 @@ class ilOpencastAPI
             )),
             'sort' => 'date:ASC',
             'withpublications' => "true",
-            'sign' => $this->configObject->getDeliveryMethod() == 'api' ? "true" : "false"
+            'sign' => $this->configObject->getDeliveryMethod() === 'api' ? "true" : "false"
         );
 
         $episodes = $this->opencastRESTClient->get($url, $params);
+
+        \ilLoggerFactory::getLogger('xmh')->error(print_r($params,true));
+
         return array_filter($episodes, 'self::isReadyEpisode');
     }
 
@@ -404,7 +399,7 @@ class ilOpencastAPI
             )),
             'sort' => 'date:ASC',
             'withpublications' => "true",
-            'sign' => $this->configObject->getDeliveryMethod() == 'api' ? "true" : "false"
+            'sign' => $this->configObject->getDeliveryMethod() === 'api' ? "true" : "false"
         );
 
         return $this->opencastRESTClient->get($url, $params);

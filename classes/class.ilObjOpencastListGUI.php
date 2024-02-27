@@ -42,7 +42,7 @@ class ilObjOpencastListGUI extends ilObjectPluginListGUI
     /**
      * Init type
      */
-    public function initType()
+    public function initType() : void
     {
         $this->setType("xmh");
     }
@@ -50,7 +50,7 @@ class ilObjOpencastListGUI extends ilObjectPluginListGUI
     /**
      * Get name of gui class handling the commands
      */
-    public function getGuiClass()
+    public function getGuiClass() : string
     {
         return "ilObjOpencastGUI";
     }
@@ -58,7 +58,7 @@ class ilObjOpencastListGUI extends ilObjectPluginListGUI
     /**
      * Get commands
      */
-    public function initCommands()
+    public function initCommands() : array
     {
         return array(
             array(
@@ -83,14 +83,14 @@ class ilObjOpencastListGUI extends ilObjectPluginListGUI
      *         "property" (string) => property name
      *         "value" (string) => property value
      */
-    public function getProperties()
+    public function getProperties() : array
     {
         global $DIC;
         $ilAccess = $DIC->access();
 
         $props = array();
 
-        $this->plugin->includeClass("class.ilObjOpencastAccess.php");
+        //$this->plugin->includeClass("class.ilObjOpencastAccess.php");
         if (! ilObjOpencastAccess::checkOnline($this->obj_id)) {
             $props[] = array(
                 "alert" => true,
@@ -100,10 +100,10 @@ class ilObjOpencastListGUI extends ilObjectPluginListGUI
         }
 
         if ($ilAccess->checkAccess("write", "", $this->ref_id)) {
-            $this->plugin->includeClass("class.ilOpencastConfig.php");
+           // $this->plugin->includeClass("class.ilOpencastConfig.php");
             $configObject = new ilOpencastConfig();
             $series_id = $configObject->lookupSeriesForOpencastObject($this->obj_id);
-            $this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
+            //$this->plugin->includeClass("opencast/class.ilOpencastAPI.php");
             $onHoldEpisodes = ilOpencastAPI::getInstance()->getOnHoldEpisodes($series_id);
             $count = count($onHoldEpisodes);
             if (0 < $count) {

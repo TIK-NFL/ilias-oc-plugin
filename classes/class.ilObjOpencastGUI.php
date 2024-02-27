@@ -51,25 +51,25 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
     use TIK_NFL\ilias_oc_plugin\opencast\ilDeliveryUrlTrait;
 
-    const QUERY_EPISODE_IDENTIFIER = "id";
+    public const QUERY_EPISODE_IDENTIFIER = "id";
 
-    const QUERY_MEDIAPACKAGE_ID = "id";
+    public const QUERY_MEDIAPACKAGE_ID = "id";
 
-    const POST_EPISODENAME = "episodename";
+    public const POST_EPISODENAME = "episodename";
 
-    const POST_PRESENTER = "presenter";
+    public const POST_PRESENTER = "presenter";
 
-    const POST_EPISODEDATETIME = "episodendatetime";
+    public const POST_EPISODEDATETIME = "episodendatetime";
 
-    const POST_USETRIMEDITOR = "usetrimeditor";
+    public const POST_USETRIMEDITOR = "usetrimeditor";
 
-    const POST_EPISODE_ID = "episodeId";
+    public const POST_EPISODE_ID = "episodeId";
 
-    const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp';
+    public const ILIAS_TEMP_DIR = ILIAS_DATA_DIR . '/' . CLIENT_ID . '/temp';
 
-    const UPLOAD_DIR = "xmh_upload";
+    public const UPLOAD_DIR = "xmh_upload";
 
-    const UPLOAD_SUFFIXES = [
+    public const UPLOAD_SUFFIXES = [
         'mkv',
         'mov',
         'mp4',
@@ -77,27 +77,25 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         'wmv'
     ];
 
-    const STREAM_TYPE_DUAL = "dual";
+    public const STREAM_TYPE_DUAL = "dual";
 
-    const STREAM_TYPE_PRESENTER = "presenter";
+    public const STREAM_TYPE_PRESENTER = "presenter";
 
-    const STREAM_TYPE_PRESENTATION = "presentation";
+    public const STREAM_TYPE_PRESENTATION = "presentation";
+    private ilOpencastConfig $configObject;
 
     /**
      * Initialisation
      */
-    protected function afterConstructor()
+    protected function afterConstructor() : void
     {
-        $this->getPlugin()->includeClass("class.ilOpencastConfig.php");
         $this->configObject = new ilOpencastConfig();
     }
 
     /**
-     * Get the ilObjOpencast for the GUI.
-     *
-     * @return ilObjOpencast
+     * Get the ilObjOpencast for the GUI
      */
-    private function getOCObject()
+    private function getOCObject(): ilObjOpencast
     {
         return $this->object;
     }
@@ -105,7 +103,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * Get type.
      */
-    final public function getType()
+    final public function getType() : string
     {
         return "xmh";
     }
@@ -113,7 +111,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * Handles all commmands of this class, centralizes permission checks
      */
-    public function performCommand($cmd)
+    public function performCommand($cmd) : void
     {
         switch ($cmd) {
             case "editProperties": // list all commands that need write permission here
@@ -154,7 +152,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * After object has been created -> jump to this command
      */
-    public function getAfterCreationCmd()
+    public function getAfterCreationCmd() : string
     {
         return "editProperties";
     }
@@ -162,7 +160,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * Get standard command
      */
-    public function getStandardCmd()
+    public function getStandardCmd() : string
     {
         return "showSeries";
     }
@@ -171,7 +169,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      *
      * @override
      */
-    protected function supportsCloning()
+    protected function supportsCloning() : bool
     {
         return false;
     }
@@ -183,7 +181,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * Set tabs
      */
-    public function setTabs()
+    public function setTabs() : void
     {
         global $ilTabs, $ilCtrl, $ilAccess;
 
@@ -211,7 +209,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      * @param
      *            string main tab identifier
      */
-    public function setSubTabs($a_tab)
+    public function setSubTabs($a_tab): void
     {
         global $ilTabs, $ilCtrl;
 
@@ -327,11 +325,12 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $object->setTitle($form->getInput("title"));
             $object->setDescription($form->getInput("desc"));
             $object->setOnline($form->getInput("online"));
-            $object->setViewMode(boolval($form->getInput("viewMode")));
-            $object->setManualRelease(boolval($form->getInput("manualRelease")));
+            $object->setViewMode((bool)$form->getInput("viewMode"));
+            $object->setManualRelease((bool)$form->getInput("manualRelease"));
             $object->setDownload($form->getInput("download"));
             $object->update();
-            ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+                $DIC->language()->txt("msg_obj_modified"), true);
             $DIC->ctrl()->redirect($this, "editProperties");
         }
 
@@ -362,10 +361,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
     /**
      * Init metadata form.
-     *
-     * @return ilPropertyFormGUI
      */
-    private function initMetadataForm()
+    private function initMetadataForm(): ilPropertyFormGUI
     {
         global $DIC;
 
@@ -406,7 +403,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      *
      * @return array values
      */
-    private function getMetadataValues($episodeId)
+    private function getMetadataValues($episodeId): array
     {
         $episode = $this->getOCObject()
             ->getEpisode($episodeId)
@@ -440,7 +437,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $metadata["startDate"] = $datetime;
             // set new metadata
             $episode->setMetadata($metadata);
-            ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+                $DIC->language()->txt("msg_obj_modified"), true);
             $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
         } else {
             $form->setValuesByPost();
@@ -461,10 +459,11 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
          */
         $request = $DIC->http()->request();
 
-        if ("POST" == $request->getMethod() && isset($request->getParsedBody()[self::POST_EPISODE_ID])) {
+        if ("POST" === $request->getMethod() && isset($request->getParsedBody()[self::POST_EPISODE_ID])) {
             $episode = $this->getOCObject()->getEpisode($request->getParsedBody()[self::POST_EPISODE_ID]);
             $episode->delete();
-            ilUtil::sendSuccess($DIC->language()->txt("msg_obj_modified"), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+                $DIC->language()->txt("msg_obj_modified"), true);
             $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
         } else {
             $c_gui = new ilConfirmationGUI();
@@ -490,14 +489,14 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         if ($episode->exists()) {
             try {
                 $episode->publish();
-                ilUtil::sendSuccess($this->txt("msg_episode_published"), true);
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+                    $this->txt("msg_episode_published"), true);
             } catch (Exception $e) {
                 if (! strpos($e->getMessage(), "already published")) {
                     ilLoggerFactory::getLogger('xmh')->error("Failed publishing episode:" . $episodeId . $e->getMessage());
                     throw $e;
-                } else {
-                    ilLoggerFactory::getLogger('xmh')->info("Error publishing already published XMH ID:" . $episodeId);
                 }
+                ilLoggerFactory::getLogger('xmh')->info("Error publishing already published XMH ID:" . $episodeId);
             }
         }
         $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
@@ -510,7 +509,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $episode = $this->getOCObject()->getEpisode($episodeId);
 
         $episode->retract();
-        ilUtil::sendSuccess($this->txt("msg_episode_retracted"), true);
+        $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+            $this->txt("msg_episode_retracted"), true);
         $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
 
@@ -521,7 +521,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $episode = $this->getOCObject()->getEpisode($episodeId);
         if ($episode->exists()) {
             $episode->delete();
-            ilUtil::sendSuccess($this->txt("msg_scheduling_deleted"), true);
+            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+                $this->txt("msg_scheduling_deleted"), true);
         }
         $DIC->ctrl()->redirect($this, "editSchedule");
     }
@@ -546,6 +547,13 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $player->setVariable("INITJS", $theodulbase);
 
         $tpl->setContent($player->get());
+	    $tpl->setPermanentLink('xmh', $_GET['ref_id'], $_GET['id'] );
+        $tpl->addJavaScript($theodulbase."/js/ployfill.arrayfrom.js");
+        $tpl->addOnLoadCode("
+            var my_awesome_script = document.createElement('script');
+            my_awesome_script.setAttribute('src','".$theodulbase."/ui/js/lib/require.js');
+            my_awesome_script.setAttribute('data-main','".$theodulbase."/ui/engage_init');
+            document.body.appendChild(my_awesome_script);");
         $ilTabs->activateTab("content");
     }
 
@@ -564,9 +572,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             "exp" => $valid_date,
             "series" => $this->getOCObject()->getSeriesId()
         );
-        $token = JWT::encode($payload, $key);
+        $token = JWT::encode($payload, $key,'HS256');
 
-        $image = $factory->image()->standard((new QRCode())->render($token), "qrcode for series");
+
+        $image = $factory->image()->responsive((new QRCode())->render($token), "qrcode for series");
         $qrcodetpl = $this->getPlugin()->getTemplate("default/tpl.qrcode.html", true, true);
         $qrcodetpl->setVariable("TXT_QRCODE", $this->getText("qrcodedescription"));
         $qrcodetpl->setVariable("IMAGE", $DIC->ui()
@@ -669,7 +678,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
             $apiPublication = null;
             foreach ($readyEpisode->publications as $publication) {
-                if ($publication->channel == "api") {
+                if ($publication->channel === "api") {
                     $apiPublication = $publication;
                 }
             }
@@ -941,11 +950,11 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             try {
                 $upload->process();
                 $results = $upload->getResults();
-                $file_prefix = "both" == $form->getInput('upload_files') ? "dual" : "single";
+                $file_prefix = "both" === $form->getInput('upload_files') ? "dual" : "single";
                 if ($form->hasFileUpload($file_prefix . "_presenter")) {
                     $file = $results[$form->getInput($file_prefix . "_presenter")['tmp_name']];
-                    if ($file != NULL) {
-                        $presenter_filename = uniqid() . $file->getName();
+                    if ($file !== NULL) {
+                        $presenter_filename = uniqid('', true) . $file->getName();
                         $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $presenter_filename);
                         $presenter_filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $presenter_filename;
                         ilLoggerFactory::getLogger('xmh')->debug("presenter file: " . $presenter_filepath);
@@ -955,8 +964,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 }
                 if ($form->hasFileUpload($file_prefix . "_presentation")) {
                     $file = $results[$form->getInput($file_prefix . "_presentation")['tmp_name']];
-                    if ($file != NULL) {
-                        $presentation_filename = uniqid() . $file->getName();
+                    if ($file !== NULL) {
+                        $presentation_filename = uniqid('', true) . $file->getName();
                         $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $presentation_filename);
                         $presentation_filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $presentation_filename;
                         ilLoggerFactory::getLogger('xmh')->debug("presentation file: " . $presentation_filepath);
@@ -980,7 +989,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 if (null != $presentation_filename) {
                     $filesystem->delete(self::UPLOAD_DIR . "/" . $presentation_filename);
                 }
-                ilUtil::sendSuccess($this->txt("msg_episode_uploaded"), true);
+                $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->txt("msg_episode_uploaded"), true);
                 $ilCtrl->redirect($this, "editTrimProcess");
             } catch (Exception $e) {
                 ilLoggerFactory::getLogger('xmh')->error("Exception while uploading to opencast: " . $e->getMessage() . $e->getTraceAsString());
@@ -1155,7 +1164,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                     break;
                 default:
                     throw new Exception("Unknown media flavor for preview: " . $previewTrack->flavor);
-                    break;
             }
 
             $trimview = $this->getPlugin()->getTemplate("default/tpl.trimview.html", true, true);
@@ -1166,7 +1174,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $trimview->setVariable("EPISODE_ID", $episode->getEpisodeId());
             $trimview->setVariable("INPUTSTREAMTYPE", $streamType);
             $trimview->parseCurrentBlock();
-            if ($streamType == "dual") {
+            if ($streamType === "dual") {
                 $trimview->setCurrentBlock("dualstream");
                 $trimview->setVariable("TXT_LEFT_TRACK", $this->getText("keep_left_side"));
                 $trimview->setVariable("TXT_RIGHT_TRACK", $this->getText("keep_right_side"));
@@ -1238,22 +1246,23 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                 default:
                     throw new Exception("Invalid Output Stream Type", 400);
             }
-            $trimin = intval($_POST["trimin"]);
-            $trimout = intval($_POST["trimout"]);
+            $trimin = (int)$_POST["trimin"];
+            $trimout = (int)$_POST["trimout"];
 
             $episode->trim($keeptracks, $trimin, $trimout);
 
-            ilUtil::sendSuccess($this->txt("msg_episode_send_to_triming"), true);
+           $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+               $this->txt("msg_episode_send_to_triming"), true);
         }
         $DIC->ctrl()->redirect($this, "editTrimProcess");
     }
 
-    public function getText(string $a_text)
+    public function getText(string $a_text): string
     {
         return $this->txt($a_text);
     }
 
-    public function addInfoItems($info)
+    public function addInfoItems($info) : void
     {
         $info->addSection($this->getText("opencast_information"));
         $info->addProperty($this->getText("series_id"), $this->getOCObject()

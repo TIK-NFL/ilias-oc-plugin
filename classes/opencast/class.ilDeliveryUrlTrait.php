@@ -17,7 +17,7 @@ trait ilDeliveryUrlTrait
      */
     private function getDeliveryUrl(string $url)
     {
-        if ($this->configObject->getDeliveryMethod() == 'api') {
+        if ($this->configObject->getDeliveryMethod() === 'api') {
             return $url;
         } else {
             $baseurl = str_replace($this->configObject->getStripUrl(), '', $url);
