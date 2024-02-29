@@ -40,6 +40,6 @@ class ilOpencastInfo
     public function listPlugins(): array
     {
         $staticPluginsList = __DIR__. "../../../templates/theodul/manager/list.json";
-        return json_decode(file_get_contents($staticPluginsList), false, 512, JSON_THROW_ON_ERROR);
+        return json_decode(file_get_contents($staticPluginsList), true, 512, JSON_THROW_ON_ERROR);
     }
 }

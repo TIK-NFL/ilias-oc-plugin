@@ -19,19 +19,19 @@ trait ilDeliveryUrlTrait
     {
         if ($this->configObject->getDeliveryMethod() === 'api') {
             return $url;
-        } else {
-            $baseurl = str_replace($this->configObject->getStripUrl(), '', $url);
-            $key = $this->configObject->getUrlSigningKey();
-            $payload = array(
-                "iss" => ILIAS_HTTP_PATH,
-                "aud" => $this->configObject->getDistributionServer(),
-                "iat" => time(),
-                "nbf" => time() - 10,
-                "exp" => time() + 3600 * $this->configObject->getTokenValidity(),
-                "url" => $baseurl
-            );
-            $token = JWT::encode($payload, $key);
-            return $this->configObject->getDistributionServer() . $baseurl . '?token=' . $token;
         }
+
+        $baseurl = str_replace($this->configObject->getStripUrl(), '', $url);
+        $key = $this->configObject->getUrlSigningKey();
+        $payload = array(
+            "iss" => ILIAS_HTTP_PATH,
+            "aud" => $this->configObject->getDistributionServer(),
+            "iat" => time(),
+            "nbf" => time() - 10,
+            "exp" => time() + 3600 * $this->configObject->getTokenValidity(),
+            "url" => $baseurl
+        );
+        $token = JWT::encode($payload, $key,'RS256');
+        return $this->configObject->getDistributionServer() . $baseurl . '?token=' . $token;
     }
 }
