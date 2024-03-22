@@ -31,7 +31,7 @@ trait ilDeliveryUrlTrait
             "exp" => time() + 3600 * $this->configObject->getTokenValidity(),
             "url" => $baseurl
         );
-        $token = JWT::encode($payload, $key,'RS256');
+        $token = JWT::encode($payload, $key,'HS256');
         return $this->configObject->getDistributionServer() . $baseurl . '?token=' . $token;
     }
 }

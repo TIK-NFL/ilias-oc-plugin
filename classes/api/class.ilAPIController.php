@@ -3,6 +3,7 @@ namespace TIK_NFL\ilias_oc_plugin\api;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
+use ilLogger;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 use Exception;
@@ -22,19 +23,11 @@ class ilAPIController
 
     use ilDeliveryUrlTrait;
 
-    /**
-     *
-     * @var ilOpencastPlugin
-     */
     private ilOpencastPlugin $plugin;
 
-    /**
-     * the configuration for the Opencast plugin
-     *
-     * @var ilOpencastConfig
-     */
     private ilOpencastConfig $configObject;
 
+    private ilLogger $logger;
     /**
      * Constructor
      *
@@ -46,6 +39,9 @@ class ilAPIController
      */
     public function __construct($uri, string $method)
     {
+        global  $DIC;
+        $this->logger = $DIC->logger()->opencast();
+
         $this->params = array();
 
         if ($method === 'GET') {
@@ -224,10 +220,6 @@ class ilAPIController
             return (- 1 * strcmp($a['type'], $b['type']));
         });
 
-        if ($segmentsUrl) {
-            $segments = $this->convertSegment($segmentsUrl, $previewrefs);
-        }
-
         $episode = array(
             'search-results' => array(
                 "total" => "1",
@@ -246,10 +238,18 @@ class ilAPIController
                         'duration' => "0", // TODO
                         'id' => $episodeObject->getEpisodeId()
                     ),
-                    "segments" => $segments
                 )
             )
         );
+        if ($segmentsUrl) {
+            try {
+                $segments = $this->convertSegment($segmentsUrl, $previewrefs);
+                $episode['search-results']['result'][0]["segments"] = $segments;
+            } catch (Exception $e) {
+                $this->logger->error($e->getMessage() . ':' . $e->getTraceAsString());
+            }
+
+        }
 
         $this->sendJSON($episode);
     }
@@ -259,6 +259,7 @@ class ilAPIController
      * @param string $url
      * @param array $previewrefs
      * @return array[]
+     * @throws Exception
      */
     private function convertSegment(string $url, array $previewrefs): array
     {
