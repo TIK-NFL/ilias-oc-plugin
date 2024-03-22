@@ -244,7 +244,7 @@ class ilAPIController
         if ($segmentsUrl) {
             try {
                 $segments = $this->convertSegment($segmentsUrl, $previewrefs);
-                $episode['search-results']['result'][0]["segments"] = $segments;
+                $episode['search-results']['result']["segments"] = $segments;
             } catch (Exception $e) {
                 $this->logger->error($e->getMessage() . ':' . $e->getTraceAsString());
             }
