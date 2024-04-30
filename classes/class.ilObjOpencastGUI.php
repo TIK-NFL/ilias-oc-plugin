@@ -948,29 +948,31 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $upload = $DIC->upload();
             $filesystem = $DIC->filesystem()->temp();
             try {
-                $upload->process();
+                if (!$upload->hasBeenProcessed()){
+                    $upload->process();
+                }
                 $results = $upload->getResults();
                 $file_prefix = "both" === $form->getInput('upload_files') ? "dual" : "single";
+                $presenter_filepath = null;
+                $presenter_filename = null;
                 if ($form->hasFileUpload($file_prefix . "_presenter")) {
                     $file = $results[$form->getInput($file_prefix . "_presenter")['tmp_name']];
-                    if ($file !== NULL) {
+                    if ($file !== null) {
                         $presenter_filename = uniqid('', true) . $file->getName();
                         $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $presenter_filename);
                         $presenter_filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $presenter_filename;
                         ilLoggerFactory::getLogger('xmh')->debug("presenter file: " . $presenter_filepath);
-                    } else {
-                        $presenter_filepath = NULL;
                     }
                 }
+                $presentation_filepath = null;
+                $presentation_filename = null;
                 if ($form->hasFileUpload($file_prefix . "_presentation")) {
                     $file = $results[$form->getInput($file_prefix . "_presentation")['tmp_name']];
-                    if ($file !== NULL) {
+                    if ($file !== null) {
                         $presentation_filename = uniqid('', true) . $file->getName();
                         $upload->moveOneFileTo($file, self::UPLOAD_DIR, Location::TEMPORARY, $presentation_filename);
                         $presentation_filepath = self::ILIAS_TEMP_DIR . "/" . self::UPLOAD_DIR . "/" . $presentation_filename;
                         ilLoggerFactory::getLogger('xmh')->debug("presentation file: " . $presentation_filepath);
-                    } else {
-                        $presentation_filepath = NULL;
                     }
                 }
                 $title = $form->getInput(self::POST_EPISODENAME);
@@ -983,10 +985,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                     ->getSeries()
                     ->createEpisode($title, $creator, $datetime, $flagForCutting, $presentation_filepath, $presenter_filepath);
                 ilLoggerFactory::getLogger('xmh')->debug("create new episode");
-                if (null != $presenter_filename) {
+                if (null !== $presenter_filename) {
                     $filesystem->delete(self::UPLOAD_DIR . "/" . $presenter_filename);
                 }
-                if (null != $presentation_filename) {
+                if (null !== $presentation_filename) {
                     $filesystem->delete(self::UPLOAD_DIR . "/" . $presentation_filename);
                 }
                 $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS, $this->txt("msg_episode_uploaded"), true);
