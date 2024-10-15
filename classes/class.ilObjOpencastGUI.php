@@ -22,6 +22,7 @@
  */
 use Firebase\JWT\JWT;
 use ILIAS\FileUpload\Location;
+use ILIAS\UI\Component\Legacy\Legacy;
 use Psr\Http\Message\ServerRequestInterface;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
@@ -181,7 +182,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * Set tabs
      */
-    public function setTabs() : void
+    protected function setTabs() : void
     {
         global $ilTabs, $ilCtrl, $ilAccess;
 
@@ -234,7 +235,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      * Edit Properties.
      * This commands uses the form class to display an input form.
      */
-    public function editProperties()
+    public function editProperties(): void
     {
         global $tpl, $ilTabs;
 
@@ -250,7 +251,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      *
      * @return ilPropertyFormGUI
      */
-    private function initPropertiesForm()
+    private function initPropertiesForm(): ilPropertyFormGUI
     {
         global $DIC;
 
@@ -296,7 +297,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      *
      * @return array values
      */
-    private function getPropertiesValues()
+    private function getPropertiesValues(): array
     {
         $series = $this->getOCObject()
             ->getSeries()
@@ -314,7 +315,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * Update properties
      */
-    public function updateProperties()
+    public function updateProperties(): void
     {
         global $DIC;
         $tpl = $DIC->ui()->mainTemplate();
@@ -346,7 +347,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
      * Edit episode metadata.
      * This commands uses the form class to display an input form.
      */
-    public function editMetadata()
+    public function editMetadata() : void
     {
         global $DIC;
         $tpl = $DIC->ui()->mainTemplate();
@@ -419,7 +420,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * Update metadata
      */
-    public function updateMetadata()
+    public function updateMetadata() : void
     {
         global $DIC;
         $tpl = $DIC->ui()->mainTemplate();
@@ -433,7 +434,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             // date
             $ildatetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
             $datetime = new DateTime($ildatetime->get(IL_CAL_ISO_8601));
-            $datetime->setTimezone(new \DateTimeZone("UTC"));
+            $datetime->setTimezone(new DateTimeZone("UTC"));
             $metadata["startDate"] = $datetime;
             // set new metadata
             $episode->setMetadata($metadata);
@@ -449,7 +450,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     /**
      * Delete Episodes
      */
-    public function deleteEpisode()
+    public function deleteEpisode() : void
     {
         global $DIC;
 
@@ -479,7 +480,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         }
     }
 
-    public function publish()
+    public function publish(): void
     {
         global $DIC;
         $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
@@ -685,8 +686,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
             $previewurl = ilOpencastUtil::getSearchPreviewURL($apiPublication->attachments);
 
-            $nonPreviewTracks = array_filter($apiPublication->media, function ($track) {
-                return ! in_array("preview", $track->tags);
+            $nonPreviewTracks = array_filter($apiPublication->media, static function ($track) {
+                return !in_array("preview", $track->tags, true);
             });
 
             $downloadurl = ilOpencastUtil::getTrackDownloadURL($nonPreviewTracks);
@@ -1102,13 +1103,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
     }
 
-    /**
-     *
-     * @param $id string
-     * @param $columns array
-     * @return \ILIAS\UI\Component\Legacy\Legacy
-     */
-    private function getTableWithId(string $id, array $columns, string $layout = "auto")
+    private function getTableWithId(string $id, array $columns, string $layout = "auto"): Legacy
     {
         global $DIC;
         $tableTpl = $this->getPlugin()->getTemplate("default/tpl.empty_table.html");
@@ -1149,8 +1144,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                     break;
                 }
             }
-            if ($previewTrack == null) {
-                throw new Exception("There is no preview Track.");
+            if ($previewTrack === null) {
+                throw new \RuntimeException("There is no preview Track.");
             }
 
             $streamType = null;
@@ -1212,12 +1207,12 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
             $trimbase = $this->getPlugin()->getDirectory() . "/templates/trim";
             $tpl->addJavaScript("$trimbase/trim.js");
-            $tpl->addJavaScript("$trimbase/video-js-7.10.2/video.min.js");
-            $tpl->addJavaScript("$trimbase/video-js-7.10.2/lang/en.js");
-            $tpl->addJavaScript("$trimbase/video-js-7.10.2/lang/de.js");
-            $tpl->addCss("$trimbase/video-js-7.10.2/video-js.min.css");
+            $tpl->addJavaScript("$trimbase/video-js-8.18.1/video.min.js");
+            $tpl->addJavaScript("$trimbase/video-js-8.18.1/lang/en.js");
+            $tpl->addJavaScript("$trimbase/video-js-8.18.1/lang/de.js");
+            $tpl->addCss("./node_modules/jquery-ui-dist/jquery-ui.min.css");
+            $tpl->addCss("$trimbase/video-js-8.18.1/video-js.min.css");
             $tpl->addCss("$trimbase/trim.css");
-            $tpl->addCss("./libs/bower/bower_components/jquery-ui/themes/base/jquery-ui.min.css");
             $DIC->tabs()->activateTab("manage");
         } else {
             $ilCtrl->redirect($this, "editTrimProcess");

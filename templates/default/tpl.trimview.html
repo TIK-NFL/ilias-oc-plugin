@@ -2,7 +2,7 @@
 <form id="trim-form" class="form-horizontal" action="{CMD_TRIM}" method="post">
   <input type="hidden" id="episode_id" value="{EPISODE_ID}" />
   <input type="hidden" id="inputStreamType" value="{INPUTSTREAMTYPE}">
-  <div class="form-group">
+  <div class="form-group row">
     <label for="episodetitle" class="col-sm-3 control-label">{TXT_TRACK_TITLE}<span class="asterisk">*</span></label>
     <div class="col-sm-9">
       <input type="text" class="form-control" id="episodetitle" value="{TRACKTITLE}" required>
@@ -10,13 +10,13 @@
   </div>
 <!-- END formstart -->
 <!-- BEGIN dualstream -->
-  <div class="form-group">
+  <div class="form-group row">
     <div class="col-sm-6">{TXT_LEFT_TRACK}<input type="checkbox" id="lefttrack" checked></div>
     <div class="col-sm-6"><span class="pull-right">{TXT_RIGHT_TRACK}<input type="checkbox" id="righttrack" checked></span></div>
   </div>
 <!-- END dualstream -->
 <!-- BEGIN video -->  
-  <div class="form-group">
+  <div class="form-group row">
     <div class="col-sm-12">
       <video id="ocpreviewvideo" class="center-block video-js vjs-default-skin">
         <source src="{DOWNLOAD_PREVIEW_URL_MP4}" type='video/mp4' />
@@ -24,7 +24,7 @@
       </video>
     </div>
   </div>
-  <div class="form-group">
+  <div class="form-group row">
     <div class="col-sm-3">
       <button id="settrimin" type="button" class="btn btn-default">
         <span class="glyphicon"></span> {TXT_SETINPOINT_TO_CURRENT_PLAYER_TIME}
@@ -43,14 +43,14 @@
       </button>
     </div>
   </div>
-  <div class="form-group">
+  <div class="form-group row ">
     <div class="col-sm-12">
       <div id="slider-range" data-time="{TRACKLENGTH}"></div>
     </div>
   </div>
 <!-- END video -->  
 <!-- BEGIN formend -->  
-  <div class="form-group">
+  <div class="form-group row">
     <div class="col-sm-6">
       <div>
         <div>{TXT_INPOINT}</div>
@@ -74,7 +74,7 @@
       </div>
     </div>
   </div>
-  <div class="form-group">
+  <div class="form-group row">
     <div class="col-sm-12 pull-right">
       <button type="submit" class="btn btn-primary pull-right" id="octrimbutton"><span class="glyphicon glyphicon-ok"></span> {TXT_CONTINUE}</button>
     </div>

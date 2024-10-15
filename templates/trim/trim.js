@@ -141,7 +141,7 @@
 				classes: {
 				  "ui-slider": "ui-corner-all",
 				  "ui-slider-handle": "ui-corner-all",
-				  "ui-slider-range": "ui-corner-all ui-widget-header btn-primary"
+				  "ui-slider-range": "ui-corner-all ui-widget-header trimslider"
 				}
 			});
 		}

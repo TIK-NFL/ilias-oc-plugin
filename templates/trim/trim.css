@@ -14,4 +14,8 @@
 	background-color: lightgrey;
 }
 
+.ui-slider-range {
+	background-color: #6ea03c;
+}
+
 .top-buffer { margin-top:2px; }
