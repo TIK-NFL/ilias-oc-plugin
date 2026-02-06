@@ -20,7 +20,7 @@ class ilOpencastPlugin extends ilRepositoryObjectPlugin
     {
         global $DIC;
         $ilDB = $DIC->database();
-        $this->includeClass('class.ilOpencastConfig.php');
+        //$this->includeClass('class.ilOpencastConfig.php');
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_CONFIG);
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_DATA);
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES);
