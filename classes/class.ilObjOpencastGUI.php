@@ -255,7 +255,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     {
         global $DIC;
 
-        include_once ("Services/Form/classes/class.ilPropertyFormGUI.php");
         $form = new ilPropertyFormGUI();
 
         // title
@@ -367,7 +366,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     {
         global $DIC;
 
-        include_once ("Services/Form/classes/class.ilPropertyFormGUI.php");
         $form = new ilPropertyFormGUI();
 
         // episode_id
@@ -600,7 +598,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $this->checkPermission("read");
 
         $released_episodes = $this->getReadyEpisodes(true);
-        usort($released_episodes, 'self::sortByStartdate');
+        usort($released_episodes, [self::class, 'sortByStartdate']);
         if (! $this->getOCObject()->getViewMode()) {
             $seriestpl = $this->getPlugin()->getTemplate("default/tpl.series.html", true, true);
             $seriestpl->setCurrentBlock($this->getOCObject()

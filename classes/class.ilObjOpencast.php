@@ -65,6 +65,8 @@ class ilObjOpencast extends ilObjectPlugin
      */
     private $download;
 
+    private $online;
+    
     /**
      * Constructor
      *

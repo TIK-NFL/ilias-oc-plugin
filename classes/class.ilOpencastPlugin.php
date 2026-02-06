@@ -11,6 +11,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 class ilOpencastPlugin extends ilRepositoryObjectPlugin
 {
 
+    const ID ="xmh";
+    
     public function getPluginName() : string
     {
         return "Opencast";
@@ -20,7 +22,6 @@ class ilOpencastPlugin extends ilRepositoryObjectPlugin
     {
         global $DIC;
         $ilDB = $DIC->database();
-        //$this->includeClass('class.ilOpencastConfig.php');
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_CONFIG);
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_DATA);
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_RELEASED_EPISODES);

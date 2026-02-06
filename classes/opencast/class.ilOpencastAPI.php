@@ -355,7 +355,7 @@ class ilOpencastAPI
 
         \ilLoggerFactory::getLogger('xmh')->error(print_r($params,true));
 
-        return array_filter($episodes, 'self::isReadyEpisode');
+        return array_filter($episodes, [self::class, 'isReadyEpisode']);
     }
 
     private static function isReadyEpisode($episode)
