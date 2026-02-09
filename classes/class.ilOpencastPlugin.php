@@ -28,4 +28,14 @@ class ilOpencastPlugin extends ilRepositoryObjectPlugin
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_SLIDETEXT);
         $ilDB->dropTable(ilOpencastConfig::DATABASE_TABLE_VIEWS);
     }
+
+    public static function _getIcon(string $a_type): string
+    {
+        return "/Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast/templates/images/icon_xmh.svg";
+    }
+
+    public function getDirectory(): string
+    {
+        return "Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast";    
+    }
 }

@@ -774,14 +774,14 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $series = $this->getOCObject()->getSeries();
 
         $process_items = $series->getProcessingEpisodes();
-        usort($process_items, 'self::sortByStartdate');
+        usort($process_items, [self::class, 'sortByStartdate']);
         $process_items = array_map(function ($process) {
             $process["startdate"] = ilDatePresentation::formatDate(new ilDateTime($process["startdate"], IL_CAL_ISO_8601));
             return $process;
         }, $process_items);
 
         $finished_episodes = $this->getReadyEpisodes(false);
-        usort($finished_episodes, 'self::sortByStartdate');
+        usort($finished_episodes, [self::class, 'sortByStartdate']);
         $finished_episodes = array_map(function ($finished) {
             $finished["startdate"] = ilDatePresentation::formatDate(new ilDateTime($finished["startdate"], IL_CAL_ISO_8601));
             return $finished;
@@ -792,7 +792,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $this,
             'extractScheduledEpisode'
         ), $scheduledEpisodes);
-        usort($scheduled_items, 'self::sortByStartdate');
+        usort($scheduled_items, [self::class, 'sortByStartdate']);
         $scheduled_items = array_map(function ($scheduled) {
             $startdate = new ilDateTime($scheduled["startdate"], IL_CAL_ISO_8601);
             $scheduled["startdate"] = ilDatePresentation::formatDate($startdate);
@@ -806,7 +806,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $this,
             'extractOnholdEpisode'
         ), $onHoldEpisodes);
-        usort($onhold_items, 'self::sortByStartdate');
+        usort($onhold_items, [self::class, 'sortByStartdate']);
         $onhold_items = array_map(function ($onhold) {
             $onhold["startdate"] = ilDatePresentation::formatDate(new ilDateTime($onhold["startdate"], IL_CAL_ISO_8601));
             return $onhold;
