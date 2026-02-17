@@ -26,18 +26,19 @@
  <td>{{txt_publish_state}}</td>
  {{/manualRelease}}
  <td>
- <div class="dropdown btn-group">
-    <a class="btn btn-default dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-    {{#manualRelease}}
-    <li><a class="dropdown-item" href="{{publishurl}}">{{txt_publish_action}}</a></li>
-    {{/manualRelease}}
-    <li><a class="dropdown-item" href="{{editmetadataurl}}">{{txt.txt_edit_metadata}}</a></li>
-    <li><a class="dropdown-item" href="{{deleteepisodeurl}}">{{txt.txt_delete}}</a></li>
-  </ul>
-</div></td>
+  <div class="dropdown btn-group">
+      <a class="btn btn-default dropdown-toggle iliasopencast_dropdown_toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+      {{#manualRelease}}
+      <li><a class="dropdown-item" href="{{publishurl}}">{{txt_publish_action}}</a></li>
+      {{/manualRelease}}
+      <li><a class="dropdown-item" href="{{editmetadataurl}}">{{txt.txt_edit_metadata}}</a></li>
+      <li><a class="dropdown-item" href="{{deleteepisodeurl}}">{{txt.txt_delete}}</a></li>
+    </ul>
+  </div>
+</td>
 </tr>
 {{/episodes}}
 {{/finished}}
