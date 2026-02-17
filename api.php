@@ -1,6 +1,6 @@
 <?php
-chdir("../../../../../../../");
 
+chdir(dirname(__DIR__, 8)); // 8 since we got the public folder now
 // Prevent a general redirect to the login screen for anonymous users.
 // The checker will show an error page with login link instead
 // (see ilInitialisation::InitILIAS() for details)
@@ -23,16 +23,21 @@ $GLOBALS['COOKIE_PATH'] = substr($_SERVER['PHP_SELF'], 0, strpos($_SERVER['PHP_S
 // (see ilSession::_writeData for details)
 $GLOBALS['WEB_ACCESS_WITHOUT_SESSION'] = (session_id() == "");
 
-include_once "Services/Context/classes/class.ilContext.php";
+// for debugging
+//error_log("cwd=" . getcwd());
+//error_log("PHP_SELF=" . $_SERVER['PHP_SELF']);
+//error_log("basename=" . $basename);
+//error_log("context_exists=" . (file_exists("components/ILIAS/Context/classes/class.ilContext.php") ? "yes" : "no"));
+
+// ILIAS 10 bootstrap
+require_once "vendor/composer/vendor/autoload.php";
+
+// /ILIAS/components/ILIAS/Context/handle-context-related-possibilities.md
+include_once "components/ILIAS/Context/classes/class.ilContext.php";
 ilContext::init(ilContext::CONTEXT_WAC);
 
 // Now the ILIAS header can be included
-require_once "./include/inc.header.php";
-require_once "./Services/Utilities/classes/class.ilUtil.php";
-require_once "./Services/Object/classes/class.ilObject.php";
-require_once "./Services/MediaObjects/classes/class.ilObjMediaObject.php";
-
-require_once "./Customizing/global/plugins/Services/Repository/RepositoryObject/Opencast/classes/api/class.ilAPIController.php";
+ilInitialisation::initILIAS();
 
 $uri = parse_url($_SERVER['REQUEST_URI']);
 $method = $_SERVER['REQUEST_METHOD'];

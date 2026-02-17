@@ -28,6 +28,8 @@ class ilAPIController
     private ilOpencastConfig $configObject;
 
     private ilLogger $logger;
+
+    private array $params = [];
     /**
      * Constructor
      *
