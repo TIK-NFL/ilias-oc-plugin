@@ -350,10 +350,18 @@ class ilOpencastAPI
             'withpublications' => "true",
             'sign' => $this->configObject->getDeliveryMethod() === 'api' ? "true" : "false"
         );
+        
+        try {
+            $episodes = $this->opencastRESTClient->get($url, $params);
+        } catch (\Throwable $e) {
+            $log = \ilLoggerFactory::getLogger('xmh');
+            $log->error('getReadyEpisodes failed: ' . get_class($e) . ': ' . $e->getMessage());
+            $log->error('params=' . print_r($params, true));
+            throw $e;
+        }
+        
 
-        $episodes = $this->opencastRESTClient->get($url, $params);
-
-        \ilLoggerFactory::getLogger('xmh')->error(print_r($params,true));
+        //\ilLoggerFactory::getLogger('xmh')->error(print_r($params,true));
 
         return array_filter($episodes, [self::class, 'isReadyEpisode']);
     }
