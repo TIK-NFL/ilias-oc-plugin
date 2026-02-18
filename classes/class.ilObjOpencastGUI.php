@@ -573,7 +573,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         );
         $token = JWT::encode($payload, $key,'HS256');
 
-
         $image = $factory->image()->responsive((new QRCode())->render($token), "qrcode for series");
         $qrcodetpl = $this->getPlugin()->getTemplate("default/tpl.qrcode.html", true, true);
         $qrcodetpl->setVariable("TXT_QRCODE", $this->getText("qrcodedescription"));
@@ -1096,6 +1095,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
         $tpl->setContent($jsConfig . $html);
         $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/mustache.min.js");
+        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/action.js");
         $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/edit.js");
         $tpl->addOnLoadCode("initEdit(iliasopencast);");
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
@@ -1208,7 +1208,8 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $tpl->addJavaScript("$trimbase/video-js-8.18.1/video.min.js");
             $tpl->addJavaScript("$trimbase/video-js-8.18.1/lang/en.js");
             $tpl->addJavaScript("$trimbase/video-js-8.18.1/lang/de.js");
-            $tpl->addCss("./node_modules/jquery-ui-dist/jquery-ui.min.css");
+            $tpl->addJavaScript("$trimbase/jquery-ui-dist/jquery-ui.min.js");
+            $tpl->addCss("$trimbase/jquery-ui-dist/jquery-ui.min.css");
             $tpl->addCss("$trimbase/video-js-8.18.1/video-js.min.css");
             $tpl->addCss("$trimbase/trim.css");
             $DIC->tabs()->activateTab("manage");
