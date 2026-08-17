@@ -1,6 +1,9 @@
 {
     "name": "tik-nfk/matterhorn",
     "require": {
+        "php": ">=8.3 <8.5",
+        "ext-curl": "*",
+        "ext-json": "*",
         "firebase/php-jwt": "^v6.10.0",
         "chillerlan/php-qrcode": "^5.0.1"
     },
@@ -11,9 +14,6 @@
         }
     ],
     "autoload": {
-        "psr-4": {
-            "Opencast\\": "src/"
-        },
         "classmap": [
             "./classes/"
         ]

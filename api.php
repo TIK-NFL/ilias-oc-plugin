@@ -29,8 +29,10 @@ $GLOBALS['WEB_ACCESS_WITHOUT_SESSION'] = (session_id() == "");
 //error_log("basename=" . $basename);
 //error_log("context_exists=" . (file_exists("components/ILIAS/Context/classes/class.ilContext.php") ? "yes" : "no"));
 
-// ILIAS 10 bootstrap
+// ILIAS 11 bootstrap
 require_once "vendor/composer/vendor/autoload.php";
+require_once "artifacts/bootstrap_default.php";
+entry_point('ILIAS Legacy Initialisation Adapter');
 
 // /ILIAS/components/ILIAS/Context/handle-context-related-possibilities.md
 include_once "components/ILIAS/Context/classes/class.ilContext.php";

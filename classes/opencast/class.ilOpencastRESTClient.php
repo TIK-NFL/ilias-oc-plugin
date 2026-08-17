@@ -38,7 +38,7 @@ class ilOpencastRESTClient
      * @return mixed
      * @throws Exception
      */
-    public function get(string $url, array $query = null)
+    public function get(string $url, ?array $query = null)
     {
         $queryString = "null";
         if ($query) {

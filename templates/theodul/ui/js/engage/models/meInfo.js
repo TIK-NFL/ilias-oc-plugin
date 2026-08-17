@@ -127,6 +127,10 @@ define(['jquery', 'backbone'], function($, Backbone) {
                     me.set("layout", layout);
                     me.set("focusedflavor", focusedflavor);
                     ready = true;
+                },
+                error: function() {
+                    // Anonymous defaults are sufficient to start the player.
+                    ready = true;
                 }
             });
         },

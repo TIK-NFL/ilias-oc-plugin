@@ -43,8 +43,9 @@ class ilAPIController
     {
         global  $DIC;
         $this->logger = $DIC->logger()->opencast();
+        $this->plugin = $DIC['component.factory']->getPlugin(ilOpencastPlugin::ID);
 
-        $this->params = array();
+        $this->params = [];
 
         if ($method === 'GET') {
             if(isset($uri["query"])) {

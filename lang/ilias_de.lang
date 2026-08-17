@@ -134,3 +134,4 @@ seriessigningkey#:#Schlüssel für das Signieren des im QRCode enthaltenen JWT T
 series_qrcode#:#QRCode für Opencast Objekt
 qrcodedescription#:#Sie können diesen QR-Code in den ersten Folien Ihrer Präsentation zeigen, um eine spontane Aufnahme in einem Hörsaal automatisch zu diesem Opencast-Objekt zuzuordnen.
 qrcodevaliduntil#:#Dieser QRCode ist gültig bis
+qrcode_large_view#:#Großen QR-Code anzeigen

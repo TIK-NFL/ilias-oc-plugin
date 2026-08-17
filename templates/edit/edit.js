@@ -1,61 +1,54 @@
 function initEdit(iliasopencast) {
 
     iliasopencast.init = function() {
-        iliasopencast.templates = $.get(iliasopencast.settings.pluginbasedir + "/templates/edit/edit.html");
-
+        iliasopencast.requestInFlight = false;
         iliasopencast.updateprocessing();
         window.setInterval(iliasopencast.updateprocessing, 5000);
     }
 
     iliasopencast.updateprocessing = function() {
-        const txt = iliasopencast.translation;
-        const ils = iliasopencast.settings;
-        const response = $.get(ils.processingcmd);
-        $.when(response, iliasopencast.templates).done(function(dataResponse, templatesResponse) {
-            const data = dataResponse[0];
-            const templates = templatesResponse[0];
-            const finishedepisodes = data['finished'].map(x => x.episode_id).sort()
-            const onholdepisodes = data['onhold'].map(x => x.episode_id).sort()
-            const scheduledepisodes = data['scheduled'].map(x => x.episode_id).sort()
-            if (!arrayEquals(finishedepisodes, iliasopencast.currentrenderings.finished)) {
-                iliasopencast.currentrenderings.finished = finishedepisodes;
-                updateTable(data['finished'], "finished", templates);
-            }
-            if (data['processing'] !== []) {
-                updateTable(data['processing'], "processing", templates);
-            }
-            if (!arrayEquals(onholdepisodes, iliasopencast.currentrenderings.onhold)) {
-                iliasopencast.currentrenderings.onhold = onholdepisodes;
-                updateTable(data['onhold'], "onhold", templates);
-            }
-            if (!arrayEquals(scheduledepisodes, iliasopencast.currentrenderings.scheduled)) {
-                iliasopencast.currentrenderings.scheduled = scheduledepisodes;
-                updateTable(data['scheduled'], "scheduled", templates);
-            }
+        if (iliasopencast.requestInFlight) {
+            return;
+        }
+
+        iliasopencast.requestInFlight = true;
+        $.getJSON(iliasopencast.settings.processingcmd).done(function(data) {
+            ["finished", "processing", "onhold", "scheduled"].forEach(function(type) {
+                const signature = JSON.stringify(data[type]);
+                if (iliasopencast.currentrenderings[type] !== signature) {
+                    const mount = document.getElementById("iliasopencast_" + type + "table");
+                    if (mount && data.html && typeof data.html[type] === "string") {
+                        replaceTable(mount, data.html[type]);
+                        iliasopencast.currentrenderings[type] = signature;
+                    }
+                }
+            });
+
             showNumberIndicatorOnSubtab("finishedepisodes", data.finished.length);
             showNumberIndicatorOnSubtab("processtrim", data.onhold.length + data.processing.length);
             showNumberIndicatorOnSubtab("schedule", data.scheduled.length);
+        }).always(function() {
+            iliasopencast.requestInFlight = false;
         });
+    }
 
-        let arrayEquals = function(a, b) {
-          return Array.isArray(a) &&
-            Array.isArray(b) &&
-            a.length === b.length &&
-            a.every((val, index) => val === b[index]);
-        }
+    function replaceTable(mount, html) {
+        const fragment = document.createRange().createContextualFragment(html);
+        const scripts = Array.from(fragment.querySelectorAll("script"));
 
-        let updateTable = function(data, dataname, templates) {
-            let sections = {
-                txt : txt,
-                manualRelease : ils.manualRelease
-            };
-            sections[dataname] = [ {
-                episodes : data
-            } ];
-            let tabledata = Mustache.render(templates, sections);
+        scripts.forEach(function(script) {
+            script.remove();
+        });
+        mount.replaceChildren(fragment);
 
-            $("#iliasopencast_" + dataname + "table").html(tabledata);
-        }
+        scripts.forEach(function(script) {
+            const executable = document.createElement("script");
+            Array.from(script.attributes).forEach(function(attribute) {
+                executable.setAttribute(attribute.name, attribute.value);
+            });
+            executable.textContent = script.textContent;
+            mount.appendChild(executable);
+        });
     }
 
     /**

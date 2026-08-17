@@ -134,3 +134,4 @@ seriessigningkey#:#Key for signing the JWT contained in the QRCode
 series_qrcode#:#QRCode for Opencast Object
 qrcodedescription#:#This qrcode can be used as a first slide in your presentation to automatically add an unscheduled recording to this Opencast object.
 qrcodevaliduntil#:#This qrcode is valid until
+qrcode_large_view#:#Show large QR code

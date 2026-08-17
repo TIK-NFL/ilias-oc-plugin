@@ -22,7 +22,8 @@
  */
 use Firebase\JWT\JWT;
 use ILIAS\FileUpload\Location;
-use ILIAS\UI\Component\Legacy\Legacy;
+use ILIAS\UI\Component\Input\Container\Form\Form;
+use ILIAS\UI\Component\Legacy\Content;
 use Psr\Http\Message\ServerRequestInterface;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
@@ -349,70 +350,46 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     public function editMetadata() : void
     {
         global $DIC;
-        $tpl = $DIC->ui()->mainTemplate();
-        $ilTabs = $DIC->tabs();
-        $episodeId = $_GET[self::QUERY_EPISODE_IDENTIFIER];
-        $ilTabs->activateTab("manage");
-        $form = $this->initMetadataForm();
-        $values = $this->getMetadataValues($episodeId);
-        $form->setValuesByArray($values);
-        $tpl->setContent($form->getHTML());
+        $episodeId = (string) ($_GET[self::QUERY_EPISODE_IDENTIFIER] ?? '');
+        $episode = $this->getOCObject()->getEpisode($episodeId)->getEpisode();
+
+        $DIC->tabs()->activateTab("manage");
+        $DIC->ui()->mainTemplate()->setContent(
+            $DIC->ui()->renderer()->render($this->initMetadataForm($episodeId, $episode))
+        );
     }
 
     /**
      * Init metadata form.
      */
-    private function initMetadataForm(): ilPropertyFormGUI
+    private function initMetadataForm(string $episodeId = '', ?object $episode = null): Form
     {
         global $DIC;
 
-        $form = new ilPropertyFormGUI();
+        $field = $DIC->ui()->factory()->input()->field();
+        $title = $field->text($this->txt("track_title"))->withRequired(true);
+        $date = $field->dateTime($this->txt("track_datetime"))
+            ->withUseTime(true)
+            ->withTimezone($DIC->user()->getTimeZone())
+            ->withRequired(true);
 
-        // episode_id
-        $episode_id = new ilHiddenInputGUI(self::POST_EPISODE_ID);
-        $form->addItem($episode_id);
+        if ($episode !== null) {
+            $title = $title->withValue((string) $episode->title);
+            $date = $date->withValue(
+                (new DateTimeImmutable((string) $episode->start))->setTimezone(
+                    new DateTimeZone($DIC->user()->getTimeZone())
+                )
+            );
+        }
 
-        // title
-        $ti = new ilTextInputGUI($this->txt("track_title"), self::POST_EPISODENAME);
-        $ti->setRequired(true);
-        $form->addItem($ti);
-
-        // presenter
-        // $presenter = new ilTextInputGUI($this->txt("track_presenter"), self::POST_PRESENTER);
-        // $presenter->setRequired(false);
-        // $form->addItem($presenter);
-
-        // datetime
-        $datetime = new ilDateTimeInputGUI($this->txt("track_datetime"), self::POST_EPISODEDATETIME);
-        $datetime->setShowTime(true);
-        $datetime->setRequired(true);
-        $form->addItem($datetime);
-
-        $form->addCommandButton("updateMetadata", $this->txt("save"));
-
-        $form->setTitle($this->txt("edit_metadata"));
-        $form->setFormAction($DIC->ctrl()
-            ->getFormAction($this));
-
-        return $form;
-    }
-
-    /**
-     * Get values for edit properties form
-     *
-     * @return array values
-     */
-    private function getMetadataValues($episodeId): array
-    {
-        $episode = $this->getOCObject()
-            ->getEpisode($episodeId)
-            ->getEpisode();
-        $values = array();
-        $values["episodeId"] = $episodeId;
-        $values[self::POST_EPISODENAME] = $episode->title;
-        // $values[self::POST_PRESENTER] = print_r($episode->presenter,true);
-        $values[self::POST_EPISODEDATETIME] = new ilDateTime($episode->start, IL_CAL_ISO_8601);
-        return $values;
+        return $DIC->ui()->factory()->input()->container()->form()->standard(
+            $DIC->ctrl()->getFormAction($this, 'updateMetadata'),
+            [
+                self::POST_EPISODE_ID => $field->hidden()->withValue($episodeId),
+                self::POST_EPISODENAME => $title,
+                self::POST_EPISODEDATETIME => $date
+            ]
+        )->withSubmitLabel($this->txt("save"));
     }
 
     /**
@@ -421,28 +398,29 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
     public function updateMetadata() : void
     {
         global $DIC;
-        $tpl = $DIC->ui()->mainTemplate();
+        $body = $DIC->http()->request()->getParsedBody();
+        $episodeId = is_array($body) ? (string) ($body[self::POST_EPISODE_ID] ?? '') : '';
+        $form = $this->initMetadataForm($episodeId)->withRequest($DIC->http()->request());
+        $data = $form->getData();
 
-        $form = $this->initMetadataForm();
-        if ($form->checkInput()) {
-            $episode = $this->getOCObject()->getEpisode($form->getInput(self::POST_EPISODE_ID));
-            $metadata = array();
-            // title
-            $metadata["title"] = $form->getInput(self::POST_EPISODENAME);
-            // date
-            $ildatetime = new ilDateTime($form->getInput(self::POST_EPISODEDATETIME), IL_CAL_DATETIME);
-            $datetime = new DateTime($ildatetime->get(IL_CAL_ISO_8601));
-            $datetime->setTimezone(new DateTimeZone("UTC"));
-            $metadata["startDate"] = $datetime;
-            // set new metadata
-            $episode->setMetadata($metadata);
-            $this->tpl->setOnScreenMessage(ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
-                $DIC->language()->txt("msg_obj_modified"), true);
-            $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
-        } else {
-            $form->setValuesByPost();
-            $tpl->setContent($form->getHtml());
+        if ($data === null) {
+            $DIC->ui()->mainTemplate()->setContent($DIC->ui()->renderer()->render($form));
+            return;
         }
+
+        $startDate = DateTime::createFromImmutable(
+            $data[self::POST_EPISODEDATETIME]->setTimezone(new DateTimeZone("UTC"))
+        );
+        $this->getOCObject()->getEpisode((string) $data[self::POST_EPISODE_ID])->setMetadata([
+            "title" => (string) $data[self::POST_EPISODENAME],
+            "startDate" => $startDate
+        ]);
+        $this->tpl->setOnScreenMessage(
+            ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+            $DIC->language()->txt("msg_obj_modified"),
+            true
+        );
+        $DIC->ctrl()->redirect($this, "editFinishedEpisodes");
     }
 
     /**
@@ -551,16 +529,22 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $tpl->addOnLoadCode("
             var my_awesome_script = document.createElement('script');
             my_awesome_script.setAttribute('src','".$theodulbase."/ui/js/lib/require.js');
-            my_awesome_script.setAttribute('data-main','".$theodulbase."/ui/engage_init');
+            my_awesome_script.onload = function () {
+                var player_bootstrap = document.createElement('script');
+                player_bootstrap.setAttribute('src','".$theodulbase."/ui/engage_init.js?v=6');
+                document.body.appendChild(player_bootstrap);
+            };
             document.body.appendChild(my_awesome_script);");
         $ilTabs->activateTab("content");
     }
 
-    public function qrcode()
+    public function qrcode(): void
     {
         global $DIC;
         $factory = $DIC->ui()->factory();
+        $renderer = $DIC->ui()->renderer();
         $this->checkPermission("write");
+
         $key = $this->configObject->getSeriesSigningKey();
         $valid_date = time() + 3600 * 24 * 30 * 6;
         $payload = array(
@@ -571,21 +555,40 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             "exp" => $valid_date,
             "series" => $this->getOCObject()->getSeriesId()
         );
-        $token = JWT::encode($payload, $key,'HS256');
+        $token = JWT::encode($payload, $key, 'HS256');
 
-        $image = $factory->image()->responsive((new QRCode())->render($token), "qrcode for series");
-        $qrcodetpl = $this->getPlugin()->getTemplate("default/tpl.qrcode.html", true, true);
-        $qrcodetpl->setVariable("TXT_QRCODE", $this->getText("qrcodedescription"));
-        $qrcodetpl->setVariable("IMAGE", $DIC->ui()
-            ->renderer()
-            ->render($image));
-        $qrcodetpl->setVariable("TXT_VALID_UNTIL", $this->getText("qrcodevaliduntil"));
-        $qrcodetpl->setVariable("VALID_DATE", ilDatePresentation::formatDate(new ilDateTime($valid_date, IL_CAL_UNIX)));
-        $html = $qrcodetpl->get();
-        $DIC->ui()
-            ->mainTemplate()
-            ->setContent($html);
+        $image = $factory->image()->responsive(
+            (new QRCode())->render($token),
+            $this->getText('series_qrcode')
+        );
+        $details = $factory->listing()->descriptive([
+            $this->getText('qrcodevaliduntil') => ilDatePresentation::formatDate(
+                new ilDateTime($valid_date, IL_CAL_UNIX)
+            )
+        ]);
+        $largeView = $factory->modal()->lightbox(
+            $factory->modal()->lightboxImagePage(
+                $image,
+                $this->getText('series_qrcode'),
+                $this->getText('qrcodedescription')
+            )
+        );
+        $largeViewButton = $factory->button()
+            ->standard($this->getText('qrcode_large_view'), '')
+            ->withOnClick($largeView->getShowSignal());
+        $card = $factory->card()
+            ->standard($this->getText('series_qrcode'), $image)
+            ->withSections([
+                $factory->messageBox()->info($this->getText('qrcodedescription')),
+                $details,
+                $largeViewButton
+            ]);
+
+        $DIC->ui()->mainTemplate()->setContent(
+            $renderer->render([$factory->deck([$card]), $largeView])
+        );
         $DIC->tabs()->activateTab("manage");
+        $DIC->tabs()->activateSubTab("qrcode");
     }
 
     public function showSeries()
@@ -818,11 +821,127 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             'scheduled' => $scheduled_items
         );
 
+        $data['html'] = $this->renderEpisodeTables($data);
+
         header('Vary: Accept');
         header('Content-type: application/json');
         echo json_encode($data);
         // no further processing!
         exit();
+    }
+
+    /**
+     * Render all episode states from the already fetched snapshot. This deliberately
+     * does not retrieve any data itself, so polling still causes only one Opencast
+     * snapshot request.
+     */
+    private function renderEpisodeTables(array $episodes): array
+    {
+        global $DIC;
+
+        $renderer = $DIC->ui()->renderer();
+        $titles = [
+            'finished' => $this->getText('finished_recordings'),
+            'processing' => $this->getText('processing'),
+            'onhold' => $this->getText('onhold_recordings'),
+            'scheduled' => $this->getText('scheduled_recordings')
+        ];
+        $rendered = [];
+
+        foreach ($titles as $type => $title) {
+            $rendered[$type] = $renderer->renderAsync(
+                $this->buildEpisodeTable($title, $type, $episodes[$type])
+            );
+        }
+
+        return $rendered;
+    }
+
+    private function buildEpisodeTable(string $title, string $type, array $episodes)
+    {
+        global $DIC;
+
+        $factory = $DIC->ui()->factory();
+        $dateLabel = $this->getText('recorddate');
+        $statusLabel = $this->getText('status');
+        $actionsLabel = $DIC->language()->txt('actions');
+        $viewLabel = $DIC->language()->txt('view');
+        $manualRelease = $this->getOCObject()->getManualRelease();
+
+        return $factory->table()->presentation(
+            $title,
+            [],
+            function ($row, array $episode, $uiFactory) use (
+                $type,
+                $dateLabel,
+                $statusLabel,
+                $actionsLabel,
+                $viewLabel,
+                $manualRelease
+            ) {
+                $importantFields = [
+                    $dateLabel => (string) ($episode['startdate'] ?? '')
+                ];
+                if ($type === 'finished' && $manualRelease) {
+                    $importantFields[$statusLabel] = (string) ($episode['txt_publish_state'] ?? '');
+                }
+
+                $row = $row
+                    ->withHeadline((string) ($episode['title'] ?? ''))
+                    ->withImportantFields($importantFields)
+                    ->withContent($uiFactory->listing()->descriptive([]));
+
+                if ($type === 'finished') {
+                    if (!empty($episode['previewurl'])) {
+                        $row = $row->withContent(
+                            $uiFactory->image()->responsive(
+                                (string) $episode['previewurl'],
+                                (string) ($episode['title'] ?? '')
+                            )
+                        );
+                    }
+
+                    $actions = [
+                        $uiFactory->link()->standard($viewLabel, (string) $episode['viewurl'])
+                    ];
+                    if ($manualRelease && !empty($episode['publishurl'])) {
+                        $actions[] = $uiFactory->link()->standard(
+                            (string) $episode['txt_publish_action'],
+                            (string) $episode['publishurl']
+                        );
+                    }
+                    $actions[] = $uiFactory->link()->standard(
+                        $this->getText('edit_metadata'),
+                        (string) $episode['editmetadataurl']
+                    );
+                    $actions[] = $uiFactory->link()->standard(
+                        $this->getText('delete'),
+                        (string) $episode['deleteepisodeurl']
+                    );
+                    $row = $row->withAction(
+                        $uiFactory->dropdown()->standard($actions)->withLabel($actionsLabel)
+                    );
+                } elseif ($type === 'onhold' && !empty($episode['trimurl'])) {
+                    $row = $row->withAction(
+                        $uiFactory->button()->standard($this->getText('usetrimeditor'), (string) $episode['trimurl'])
+                    );
+                } elseif ($type === 'scheduled' && !empty($episode['deletescheduledurl'])) {
+                    $row = $row
+                        ->withFurtherFields([
+                            $this->getText('enddate') => (string) ($episode['stopdate'] ?? ''),
+                            $this->getText('location') => (string) ($episode['location'] ?? '')
+                        ])
+                        ->withAction(
+                            $uiFactory->button()->standard(
+                                $this->getText('delete'),
+                                (string) $episode['deletescheduledurl']
+                            )
+                        );
+                }
+
+                return $row;
+            }
+        )->withData($episodes);
     }
 
     private static function sortByStartdate(array $a, array $b)
@@ -876,7 +995,6 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $form = new ilPropertyFormGUI();
         $form->setId('episode_upload');
         $form->setTitle($this->txt("add_new_episode"));
-        $form->setDescription("<h2 class=\"bg-warning\">" . $this->txt("no_progress_bar") . "</h2>");
 
         $form->setPreventDoubleSubmission(false);
         $flag = new ilHiddenInputGUI('submitted');
@@ -896,6 +1014,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         // datetime
         $datetime = new ilDateTimeInputGUI($this->txt("track_datetime"), self::POST_EPISODEDATETIME);
         $datetime->setShowTime(true);
+        $datetime->setDate(new ilDateTime(time(), IL_CAL_UNIX));
         $datetime->setRequired(true);
         $form->addItem($datetime);
 
@@ -1029,39 +1148,29 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         switch ($section) {
             case 'finished':
                 $ilTabs->activateSubTab('finishedepisodes');
-
-                $colums = array(
-                    $this->getText("title"),
-                    $this->getText("preview"),
-                    $this->getText("date")
+                $content = $this->getEpisodeTableMount(
+                    "iliasopencast_finishedtable",
+                    $this->getText('finished_recordings'),
+                    'finished'
                 );
-                if ($this->getOCObject()->getManualRelease()) {
-                    $colums[] = $this->getText("status");
-                    $colums[] = $this->getText("action");
-                }
-
-                $finishedTable = $this->getTableWithId("iliasopencast_finishedtable", $colums);
-
-                $content = $factory->panel()->standard($this->getText("finished_recordings"), $finishedTable);
                 break;
             case 'trimprocess':
                 $ilTabs->activateSubTab('processtrim');
 
-                $processingTable = $this->getTableWithId("iliasopencast_processingtable", array(
-                    $this->getText("title"),
-                    $this->getText("recorddate"),
-                   // $this->getText("progress"),
-                   // $this->getText("running")
-                ), "fixed");
-
-                $onholdTable = $this->getTableWithId("iliasopencast_onholdtable", array(
-                    $this->getText("title"),
-                    $this->getText("recorddate")
-                ));
+                $processingTable = $this->getEpisodeTableMount(
+                    "iliasopencast_processingtable",
+                    $this->getText('processing'),
+                    'processing'
+                );
+                $onholdTable = $this->getEpisodeTableMount(
+                    "iliasopencast_onholdtable",
+                    $this->getText('onhold_recordings'),
+                    'onhold'
+                );
 
                 $content = array(
-                    $factory->panel()->standard($this->getText("processing"), $processingTable),
-                    $factory->panel()->standard($this->getText("onhold_recordings"), $onholdTable)
+                    $processingTable,
+                    $onholdTable
                 );
                 break;
             case 'upload':
@@ -1073,51 +1182,45 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
                     $this->handleUpload($form);
                 }
 
-                $content = $factory->legacy($form->getHTML());
+                $content = [
+                    $factory->messageBox()->info($this->txt("no_progress_bar")),
+                    $factory->legacy()->content($form->getHTML())
+                ];
                 break;
             case 'scheduled':
                 $ilTabs->activateSubTab('schedule');
 
-                $scheduledTable = $this->getTableWithId("iliasopencast_scheduledtable", array(
-                    $this->getText("title"),
-                    $this->getText("startdate"),
-                    $this->getText("enddate"),
-                    $this->getText("location"),
-                    $this->getText("action")
-                ));
-
-                $content = $factory->panel()->standard($this->getText("scheduled_recordings"), $scheduledTable);
+                $content = $this->getEpisodeTableMount(
+                    "iliasopencast_scheduledtable",
+                    $this->getText('scheduled_recordings'),
+                    'scheduled'
+                );
                 break;
         }
         $html = $DIC->ui()
             ->renderer()
             ->render($content);
 
-        $tpl->setContent($jsConfig . $html);
-        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/mustache.min.js");
-        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/action.js");
-        $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/edit.js");
-        $tpl->addOnLoadCode("initEdit(iliasopencast);");
+        $tpl->setContent(($section === 'upload' ? '' : $jsConfig) . $html);
+        if ($section !== 'upload') {
+            $tpl->addJavaScript($this->plugin->getDirectory() . "/templates/edit/edit.js?v=3");
+            $tpl->addOnLoadCode("initEdit(iliasopencast);");
+        }
         $tpl->setPermanentLink($this->object->getType(), $this->object->getRefId());
     }
 
-    private function getTableWithId(string $id, array $columns, string $layout = "auto"): Legacy
+    private function getEpisodeTableMount(string $id, string $title, string $type): Content
     {
         global $DIC;
-        $tableTpl = $this->getPlugin()->getTemplate("default/tpl.empty_table.html");
-        $tableTpl->setCurrentBlock("headercolumn");
-        foreach ($columns as $column) {
-            $tableTpl->setVariable("TXT_HEAD", $column);
-            $tableTpl->parseCurrentBlock();
-        }
-
-        $tableTpl->setCurrentBlock("table");
-        $tableTpl->setVariable("TABLE_STYLE", "table-layout: $layout;");
-        $tableTpl->setVariable("ID", $id);
-        $tableTpl->parseCurrentBlock();
+        $emptyTable = $DIC->ui()->renderer()->render(
+            $this->buildEpisodeTable($title, $type, [])
+        );
         return $DIC->ui()
             ->factory()
-            ->legacy($tableTpl->get());
+            ->legacy()
+            ->content(
+                '<div id="' . htmlspecialchars($id, ENT_QUOTES) . '">' . $emptyTable . '</div>'
+            );
     }
 
     /**
@@ -1197,7 +1300,10 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
             $trimview->setVariable("TXT_OUTPOINT", $this->getText("outpoint"));
             $trimview->parseCurrentBlock();
             $editorHtml = $trimview->get();
-            $content = $factory->panel()->standard($this->getText("ilias_trim_editor"), $factory->legacy($editorHtml));
+            $content = $factory->panel()->standard(
+                $this->getText("ilias_trim_editor"),
+                $factory->legacy()->content($editorHtml)
+            );
             $html = $DIC->ui()
                 ->renderer()
                 ->render($content);

@@ -340,7 +340,7 @@ class ilOpencastAPI
     public function getReadyEpisodes(string $series_id)
     {
         $url = "/api/events";
-
+        $log = \ilLoggerFactory::getLogger('xmh');
         $params = array(
             'filter' => self::filter(array(
                 "status" => "EVENTS.EVENTS.STATUS.PROCESSED",
@@ -354,13 +354,14 @@ class ilOpencastAPI
         try {
             $episodes = $this->opencastRESTClient->get($url, $params);
         } catch (\Throwable $e) {
-            $log = \ilLoggerFactory::getLogger('xmh');
             $log->error('getReadyEpisodes failed: ' . get_class($e) . ': ' . $e->getMessage());
             $log->error('params=' . print_r($params, true));
             throw $e;
         }
         
-
+        if (!$episodes){
+            $log->debug('getReadyEpisodes, no Episodes found for Parameters: ' . print_r($params,true));
+        }
         //\ilLoggerFactory::getLogger('xmh')->error(print_r($params,true));
 
         return array_filter($episodes, [self::class, 'isReadyEpisode']);
