@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="{LANGUAGE}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{PLAYER_TITLE}</title>
+    <script>window.paella_debug_baseUrl = {PAELLA_BASE_URL};</script>
+    <script src="{PAELLA_BASE}/javascript/swfobject.js"></script>
+    <script src="{PAELLA_BASE}/javascript/base.js"></script>
+    <script src="{PAELLA_BASE}/javascript/jquery.min.js"></script>
+    <script src="{PAELLA_BASE}/javascript/lunr.min.js"></script>
+    <script src="{PAELLA_BASE}/javascript/require.js"></script>
+    <script src="{PAELLA_BASE}/javascript/paella_player_es2015.js?v=3"></script>
+    <style>
+        html, body, #playerContainer {
+            width: 100%;
+            height: 100%;
+            min-height: 480px;
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .expandable-content.volumeRangeButton {
+            display: inline-flex !important;
+            align-items: center;
+            width: 132px;
+            height: 40px;
+            padding: 0 10px;
+            box-sizing: border-box;
+            vertical-align: top;
+            background: transparent;
+        }
+
+        button.buttonPlugin.volumeRangeButton {
+            margin: 5px;
+            padding: 0;
+            border: 0;
+            border-radius: 2px;
+            box-shadow: none;
+            color: #fff;
+            background: transparent;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        button.buttonPlugin.volumeRangeButton:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        button.buttonPlugin.volumeRangeButton:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: -2px;
+            box-shadow: none;
+        }
+
+        .expandable-content.volumeRangeButton input[type="range"] {
+            width: 112px !important;
+            height: 20px;
+            margin: 0 !important;
+            padding: 0;
+            appearance: none;
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .expandable-content.volumeRangeButton input[type="range"]::-moz-range-track {
+            height: 4px;
+            border: 0;
+            border-radius: 2px;
+            box-shadow: none;
+            background: #666;
+        }
+
+        .expandable-content.volumeRangeButton input[type="range"]::-moz-range-progress {
+            height: 4px;
+            border-radius: 2px;
+            background: #cc0000;
+        }
+
+        .expandable-content.volumeRangeButton input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #cc0000;
+            border-radius: 50%;
+            box-shadow: none;
+            background: #f2f2f2;
+        }
+
+        .expandable-content.volumeRangeButton input[type="range"]::-webkit-slider-runnable-track {
+            height: 4px;
+            border: 0;
+            border-radius: 2px;
+            box-shadow: none;
+            background: #666;
+        }
+
+        .expandable-content.volumeRangeButton input[type="range"]::-webkit-slider-thumb {
+            width: 14px;
+            height: 14px;
+            margin-top: -5px;
+            border: 2px solid #cc0000;
+            border-radius: 50%;
+            box-shadow: none;
+            background: #f2f2f2;
+            -webkit-appearance: none;
+        }
+    </style>
+</head>
+<body>
+<div id="playerContainer"></div>
+<script>
+    paella.load('playerContainer', {
+        data: {PLAYER_DATA},
+        configUrl: {CONFIG_URL}
+    });
+</script>
+</body>
+</html>

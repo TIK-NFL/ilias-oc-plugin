@@ -26,6 +26,7 @@ use ILIAS\UI\Component\Input\Container\Form\Form;
 use ILIAS\UI\Component\Legacy\Content;
 use Psr\Http\Message\ServerRequestInterface;
 use TIK_NFL\ilias_oc_plugin\ilOpencastConfig;
+use TIK_NFL\ilias_oc_plugin\model\ilOpencastEpisode;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastAPI;
 use TIK_NFL\ilias_oc_plugin\opencast\ilOpencastUtil;
 use chillerlan\QRCode\QRCode;
@@ -142,6 +143,7 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
 
             case "showSeries": // list all commands that need read permission here
             case "showEpisode":
+            case "showPaellaPlayer":
                 $this->checkPermission("read");
                 $this->$cmd();
                 break;
@@ -518,24 +520,195 @@ class ilObjOpencastGUI extends ilObjectPluginGUI
         $tpl = $DIC->ui()->mainTemplate();
 
         $this->checkPermission("read");
-        $theodulbase = $this->getPlugin()->getDirectory() . "/templates/theodul";
-
-        $player = $this->getPlugin()->getTemplate("default/tpl.player.html", true, false);
-        $player->setVariable("INITJS", $theodulbase);
+        $episode = $this->getRequestedEpisode();
+        $episode_data = $episode->getEpisode();
+        $player = $this->getPlugin()->getTemplate("default/tpl.paella_embed.html", true, false);
+        $player->setVariable("PLAYER_URL", htmlspecialchars(
+            $this->getPaellaPlayerUrl($episode->getSeriesId() . "/" . $episode->getEpisodeId()),
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            "UTF-8"
+        ));
+        $player->setVariable("PLAYER_TITLE", htmlspecialchars(
+            (string) $episode_data->title,
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            "UTF-8"
+        ));
 
         $tpl->setContent($player->get());
-	    $tpl->setPermanentLink('xmh', $_GET['ref_id'], $_GET['id'] );
-        $tpl->addJavaScript($theodulbase."/js/ployfill.arrayfrom.js");
-        $tpl->addOnLoadCode("
-            var my_awesome_script = document.createElement('script');
-            my_awesome_script.setAttribute('src','".$theodulbase."/ui/js/lib/require.js');
-            my_awesome_script.onload = function () {
-                var player_bootstrap = document.createElement('script');
-                player_bootstrap.setAttribute('src','".$theodulbase."/ui/engage_init.js?v=6');
-                document.body.appendChild(player_bootstrap);
-            };
-            document.body.appendChild(my_awesome_script);");
+	    $tpl->setPermanentLink('xmh', $_GET['ref_id'], $_GET['id']);
         $ilTabs->activateTab("content");
+    }
+
+    public function showPaellaPlayer(): never
+    {
+        global $DIC;
+
+        $this->checkPermission("read");
+        $episode = $this->getRequestedEpisode();
+        $episode_data = $episode->getEpisode();
+        $plugin_directory = $this->getPlugin()->getDirectory();
+        $paella_base = $plugin_directory . "/templates/paella/player";
+        $player = $this->getPlugin()->getTemplate("default/tpl.paella_player.html", true, false);
+        $json_flags = JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT;
+
+        $player->setVariable("LANGUAGE", htmlspecialchars(
+            substr($DIC->language()->getLangKey(), 0, 2),
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            "UTF-8"
+        ));
+        $player->setVariable("PLAYER_TITLE", htmlspecialchars(
+            (string) $episode_data->title,
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            "UTF-8"
+        ));
+        $player->setVariable("PAELLA_BASE", htmlspecialchars(
+            $paella_base,
+            ENT_QUOTES | ENT_SUBSTITUTE,
+            "UTF-8"
+        ));
+        $player->setVariable("PAELLA_BASE_URL", json_encode(
+            $paella_base . "/",
+            $json_flags
+        ));
+        $player->setVariable("PLAYER_DATA", json_encode(
+            $this->buildPaellaData($episode, $episode_data),
+            $json_flags
+        ));
+        $player->setVariable("CONFIG_URL", json_encode(
+            $plugin_directory . "/templates/paella/config.json",
+            $json_flags
+        ));
+
+        header("Content-Type: text/html; charset=UTF-8");
+        echo $player->get();
+        exit;
+    }
+
+    private function getRequestedEpisode(): ilOpencastEpisode
+    {
+        $identifier = (string) ($_GET[self::QUERY_MEDIAPACKAGE_ID] ?? "");
+        $parts = explode("/", $identifier, 2);
+        if (count($parts) !== 2 || $parts[0] === "" || $parts[1] === "") {
+            throw new InvalidArgumentException("Invalid Opencast episode identifier");
+        }
+
+        return new ilOpencastEpisode($parts[0], $parts[1]);
+    }
+
+    private function getPaellaPlayerUrl(string $identifier): string
+    {
+        global $DIC;
+
+        $DIC->ctrl()->setParameter($this, self::QUERY_MEDIAPACKAGE_ID, $identifier);
+        $url = $DIC->ctrl()->getLinkTarget($this, "showPaellaPlayer", "", false, false);
+        $DIC->ctrl()->clearParameterByClass("ilobjopencastgui", self::QUERY_MEDIAPACKAGE_ID);
+
+        return $url;
+    }
+
+    private function buildPaellaData(ilOpencastEpisode $episode, object $episode_data): array
+    {
+        $publication = $episode->getPublication();
+        if ($publication === null) {
+            throw new RuntimeException("No player publication exists for " . $episode->getEpisodeId());
+        }
+
+        $previews = [];
+        $frames = [];
+        foreach (($publication->attachments ?? []) as $attachment) {
+            $role = explode("/", (string) $attachment->flavor, 2)[0];
+            if (str_contains((string) $attachment->flavor, "player+preview")) {
+                $previews[$role] = $this->getDeliveryUrl((string) $attachment->url);
+            }
+            if (str_contains((string) $attachment->flavor, "segment+preview")) {
+                $time = $this->getPaellaFrameTime((string) ($attachment->ref ?? ""));
+                if ($time !== null && (!isset($frames[$time]) || $role === self::STREAM_TYPE_PRESENTATION)) {
+                    $url = $this->getDeliveryUrl((string) $attachment->url);
+                    $frames[$time] = [
+                        "id" => "frame_" . $time,
+                        "mimetype" => (string) $attachment->mediatype,
+                        "time" => $time,
+                        "url" => $url,
+                        "thumb" => $url
+                    ];
+                }
+            }
+        }
+
+        $streams = [];
+        $duration = 0;
+        foreach (($publication->media ?? []) as $track) {
+            if (!(bool) ($track->has_video ?? str_starts_with((string) $track->mediatype, "video/"))) {
+                continue;
+            }
+
+            $role = explode("/", (string) $track->flavor, 2)[0];
+            $content = $role === self::STREAM_TYPE_PRESENTATION
+                ? self::STREAM_TYPE_PRESENTATION
+                : self::STREAM_TYPE_PRESENTER;
+            $source_type = $this->getPaellaSourceType((string) $track->mediatype, (string) $track->url);
+            $source = [
+                "src" => $this->getDeliveryUrl((string) $track->url),
+                "mimetype" => (string) $track->mediatype
+            ];
+            if (!empty($track->width) && !empty($track->height)) {
+                $source["res"] = ["w" => (int) $track->width, "h" => (int) $track->height];
+            }
+
+            if (!isset($streams[$content])) {
+                $streams[$content] = [
+                    "type" => "video",
+                    "content" => $content,
+                    "sources" => [],
+                    "preview" => $previews[$role] ?? ""
+                ];
+            }
+            $streams[$content]["sources"][$source_type][] = $source;
+            $duration = max($duration, (int) ($track->duration ?? 0));
+        }
+
+        if ($streams === []) {
+            throw new RuntimeException("No playable video tracks exist for " . $episode->getEpisodeId());
+        }
+
+        ksort($frames, SORT_NUMERIC);
+        $data = [
+            "streams" => array_values($streams),
+            "metadata" => [
+                "title" => (string) $episode_data->title,
+                "duration" => $duration
+            ]
+        ];
+        if ($frames !== []) {
+            $data["frameList"] = array_values($frames);
+        }
+
+        return $data;
+    }
+
+    private function getPaellaSourceType(string $mimetype, string $url): string
+    {
+        $normalized = strtolower($mimetype . " " . parse_url($url, PHP_URL_PATH));
+        if (str_contains($normalized, "mpegurl") || str_contains($normalized, ".m3u8")) {
+            return "hls";
+        }
+        if (str_contains($normalized, "dash+xml") || str_contains($normalized, ".mpd")) {
+            return "dash";
+        }
+        if (str_contains($normalized, "webm")) {
+            return "webm";
+        }
+
+        return "mp4";
+    }
+
+    private function getPaellaFrameTime(string $reference): ?int
+    {
+        if (!preg_match("/;time=T(\\d{2}):(\\d{2}):(\\d{2}):(\\d{1,3})/", $reference, $matches)) {
+            return null;
+        }
+
+        return ((int) $matches[1] * 3600) + ((int) $matches[2] * 60) + (int) $matches[3];
     }
 
     public function qrcode(): void
